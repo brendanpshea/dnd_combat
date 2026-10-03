@@ -569,9 +569,9 @@ const scenes: Record<string, Scene> = {
     lines: [
       // A party sent by Mira (`know-spy`) has just looked his stall over in `spy-stalk`.
       { if: [{ kind: 'notFlag', flag: 'know-spy' }], text: 'The peddler\'s stall is a marvel of things nobody wants — chipped buttons, one good boot, a birdcage with no bird. He never takes his eyes off the gate.' },
-      { if: [{ kind: 'flag', flag: 'know-spy' }, { kind: 'notFlag', flag: 'spy-slipped' }], text: 'Up close he is younger than he looked, and he smells of the fish stall. He still hasn\'t looked round.' },
-      // Back at his stall the evening after he saw you creeping up on him.
-      { if: [{ kind: 'flag', flag: 'know-spy' }, { kind: 'flag', flag: 'spy-slipped' }], text: 'Up close he is younger than he looked, and he smells of the fish stall. He knows your faces from yesterday, and he watches you all the way across the square.' },
+      // Worded for a first stalk and for the evening after he saw you
+      // creeping up on him (`spy-slipped`, which says so itself).
+      { if: [{ kind: 'flag', flag: 'know-spy' }], text: 'Up close he is younger than he looked, and he smells of the fish stall.' },
       'When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.',
     ],
     again: ['The peddler is back behind his stall of chipped buttons. He sees you coming this time. His fingers are at his teeth before you reach him, and the whistle brings his crew out of the crowd again.'],
@@ -722,8 +722,7 @@ const scenes: Record<string, Scene> = {
   'spy-slipped': {
     id: 'spy-slipped', kind: 'story', noBack: true, art: { imageId: 'loc-village', emoji: '🕵️' },
     text: ['A board creaks under your boot, three stalls short. The peddler glances round, sees you, and is gone into the crowd before you can reach him. He does not come back to his stall until the next evening. You lose a whole day watching it stand empty.'],
-    // `spy-slipped`: he has seen them now, and the confrontation says so.
-    next: [{ id: 'on', label: 'Walk up to his stall', to: 'spy-confront', effects: [{ kind: 'passDay' }, { kind: 'setFlag', flag: 'spy-slipped' }] }],
+    next: [{ id: 'on', label: 'Walk up to his stall', to: 'spy-confront', effects: [{ kind: 'passDay' }] }],
   },
   // A failed read of the crowd: while you look for his crew, one of them robs you.
   'spy-pinched': {
@@ -972,8 +971,7 @@ const scenes: Record<string, Scene> = {
     ],
     next: [
       // Sent home from here, she has the reeve's men on the marsh road long
-      // before the den falls (saved, and never `wren-parted`): the epilogue's
-      // pens slide reads it. Every rescue that lands here earns her +1, by
+      // before the den falls: the epilogue's pens slide reads it. Every rescue that lands here earns her +1, by
       // potion, prayer or a steady hand alike.
       { id: 'ok', label: 'Send {wren} back to {thornwick}', to: 'trail', effects: [...WREN_SAVED, { kind: 'npc', npc: 'wren', attitude: 1 }] },
       // The Gold Box guide: she knows the marsh, and she owes you twice over.
@@ -996,7 +994,7 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'companion', companion: 'wren' }],
     text: ['At the tree line above the hollow {wren} stops, and eases her weight off the leg. "This is as far as I said." She looks down at the hollow a long moment. "Reeve\'s men by nightfall, if I run. Leave me something to arrest."'],
     next: [{ id: 'go', label: 'Let her go, and face the gate', to: 'gate',
-      effects: [{ kind: 'leaveParty', companion: 'wren' }, { kind: 'setFlag', flag: 'wren-parted' }] }],
+      effects: [{ kind: 'leaveParty', companion: 'wren' }] }],
   },
   // A slip fails forward: she lives, but the bleeding costs the day, and the
   // leg won't carry her through the marsh, so she can't guide.
@@ -1049,10 +1047,8 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'noCompanion', companion: 'wren' }],
     text: [
       'The dead horse still lies across the trail.',
-      { if: [{ kind: 'flag', flag: 'wren-parted' }],
-        text: '{wren} left you at the tree line above the hollow, running for the reeve\'s men. The flies have the horse to themselves.' },
-      { if: [{ kind: 'notFlag', flag: 'wren-parted' }],
-        text: '{wren} is long gone, limping to {thornwick} for the reeve\'s men. A line of neat round holes in the mud shows where she leaned on her bow.' },
+      // Sent home from here, or gone from the tree line above the hollow.
+      '{wren} is long gone to {thornwick} for the reeve\'s men. The flies have the horse to themselves.',
     ],
     next: [{ id: 'ok', label: 'Keep to the trail', to: 'trail' }], noBack: true,
   },
@@ -1126,14 +1122,10 @@ const scenes: Record<string, Scene> = {
     loot: false, encounterId: 'marsh-dead', mapId: 'bog',
     intro: ['You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are clawing up out of the mire beyond the fire. Behind them comes a fifth that reeks of something long dead. They come for the light on all fours, jaws working.'],
     again: ['The dragging sound comes again, out in the dark. The marsh has more dead in it than you hoped, and they are crawling toward your fire, the one that reeks worst at their back.'],
-    // A risky camp can be broken up more than once: the second time reads
-    // differently (`marsh-camp-raided` is a tally the text reads, nothing else).
+    // A risky camp can be broken up more than once: worded for any time.
     onWin: { to: '@hub', text: [
-      { if: [{ kind: 'count', flag: 'marsh-camp-raided', below: 1 }],
-        text: 'You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.' },
-      { if: [{ kind: 'count', flag: 'marsh-camp-raided', atLeast: 1 }],
-        text: 'Five more of them go back under the black water. You sit back to back by the dead fire for a long while after, blades drawn, listening to the marsh.' },
-    ], effects: [{ kind: 'addFlag', flag: 'marsh-camp-raided', amount: 1 }] },
+      'You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.',
+    ] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },

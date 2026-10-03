@@ -1681,7 +1681,7 @@ The gorgon still grazes at the head of the valley of statues, its head down. Ste
 
 ### 3. when `wren-brief` · the first visit?
 
-The statues stand in the grass just as Wren said. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
+The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
 At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
 
@@ -1889,7 +1889,7 @@ Behind you, everything still loose in the hills turns at once and starts down to
 
 <sub>(shared with: `calling-gate-clear`)</sub>
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 2. when not `calling-peaked` · `threats-cleared` < -3? · `oni-paid`
 
@@ -1909,7 +1909,7 @@ One column on the slope below keeps step the whole way down, with a horn at its 
 
 <sub>(shared with: `calling-gate-clear`)</sub>
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 3. when not `calling-peaked` · `threats-cleared` -3–0? · not `oni-paid`
 
@@ -1925,7 +1925,7 @@ Behind you, everything still loose in the hills turns at once and starts down to
 
 <sub>(shared with: `calling-gate-clear`)</sub>
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 4. when not `calling-peaked` · `threats-cleared` -3–0? · `oni-paid`
 
@@ -1945,7 +1945,7 @@ One column on the slope below keeps step the whole way down, with a horn at its 
 
 <sub>(shared with: `calling-gate-clear`)</sub>
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 5. when not `calling-peaked` · `threats-cleared` ≥ 1? · not `oni-paid`
 
@@ -1961,7 +1961,7 @@ Behind you, everything still loose in the hills turns at once and starts down to
 
 <sub>(shared with: `calling-gate-clear`)</sub>
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 6. when not `calling-peaked` · `threats-cleared` ≥ 1? · `oni-paid`
 
@@ -1981,7 +1981,7 @@ One column on the slope below keeps step the whole way down, with a horn at its 
 
 <sub>(shared with: `calling-gate-clear`)</sub>
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 7. when `calling-peaked`
 
@@ -2157,7 +2157,6 @@ Nothing moves overhead. Old scorch marks blacken the bare rim where wyrms once p
 
 The ridge lies still, and no wings ride the wind. Below you, the bowl and the stone wait in their bruised light.
 
-- » **Go down into the bowl** <sub>**never open on any reachable route** (hidden)</sub>
 - » **Go back down into the bowl** <sub>open when `sisters-loose`; otherwise hidden</sub>
 - » **Go back down into the bowl** <sub>open when `stone-spent`; otherwise hidden</sub>
 - » **Go down into the bowl** <sub>open when not `sisters-loose` · not `stone-spent`; otherwise hidden</sub>
@@ -2425,8 +2424,6 @@ You climb back down into the bowl. The burning ground has spread while you were 
 
 The sisters wait at the foot of the stone, out of the rock where you tore them loose. Their burned hands still curl like claws. "Back again," Nettle says. "Good. The account is still open." Sedge says nothing at all.
 
-- » **Tear them out of the stone** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Tear them out of the stone** <sub>**never open on any reachable route** (hidden)</sub>
 - » **Face the sisters again** <sub>open when not `stone-spent` · not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Face the sisters again** <sub>open when not `stone-spent` · Part 2 seal-cracked; otherwise hidden</sub>
 - » **Face what the stone called up** <sub>open when `stone-spent` · not Part 2 seal-cracked; otherwise hidden</sub>
@@ -2434,7 +2431,7 @@ The sisters wait at the foot of the stone, out of the rock where you tore them l
 
 ## `answer-defiant` · story
 
-<sub>reads: flag:hollow-road:captives-freed, companion:wren, flag:sisters-loose, flag:stone-spent, flag:sunken-barrows:seal-cracked</sub>
+<sub>reads: flag:hollow-road:captives-freed, companion:wren, flag:sunken-barrows:seal-cracked</sub>
 
 **4 versions**
 
@@ -2472,10 +2469,6 @@ Sedge does not laugh. "You owe nothing?" she says, very quietly. "Then neither d
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `answer-rueful` · story
 
@@ -2500,10 +2493,6 @@ Wren lets her bowstring ease a finger's width. "That's the first time anyone's s
 - » **Ask Sedge to take up her sister's vigil** <sub>(once)</sub> <sub>open on every route here</sub>
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `answer-unknowing` · story
 
@@ -2528,10 +2517,6 @@ Sedge turns her burning face toward you, and looks at you for a long time. "No,"
 - » **Ask Sedge to take up her sister's vigil** <sub>(once)</sub> <sub>open on every route here</sub>
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `answer-sold` · story
 
@@ -2560,14 +2545,10 @@ Sedge has stopped singing. Her hands are still in the rock, but she is listening
 - » **Ask Sedge to take up her sister's vigil** <sub>(once)</sub> <sub>open on every route here</sub>
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `answer-sold-dead` · story
 
-<sub>reads: flag:sisters-loose, flag:stone-spent, flag:sunken-barrows:seal-cracked</sub>
+<sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
 Sedge turns her burning face toward you. "The reed-cutter," she says. "You killed him as well. We heard how." She turns back to the stone. "Then who is left to answer for the water? Keep your own door."
 
@@ -2575,14 +2556,10 @@ Nettle only nods. "Paid," she says, like a clerk drawing a line through a name. 
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `answer-cold` · story
 
-<sub>reads: companion:wren, flag:sisters-loose, flag:stone-spent, flag:sunken-barrows:seal-cracked</sub>
+<sub>reads: companion:wren, flag:sunken-barrows:seal-cracked</sub>
 
 **2 versions**
 
@@ -2602,10 +2579,6 @@ Beside you, Wren draws an arrow to her cheek. Her hands are shaking. She steadie
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `tear-loose` · challenge
 
@@ -4647,42 +4620,30 @@ Hask walks down at the back, the way a guard should, and says nothing the whole 
 
 ## `vigil-refused-rueful` · story
 
-<sub>reads: flag:sisters-loose, flag:stone-spent, flag:sunken-barrows:seal-cracked</sub>
+<sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
 Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `vigil-refused-unknowing` · story
 
-<sub>reads: flag:sisters-loose, flag:stone-spent, flag:sunken-barrows:seal-cracked</sub>
+<sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
 Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and none of you ever asked her name. Now you want me to do the same? No." Nettle hisses at her to hold still. "I told you. Not knowing pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `vigil-refused-sold` · story
 
-<sub>reads: flag:sisters-loose, flag:stone-spent, flag:sunken-barrows:seal-cracked</sub>
+<sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
 Sedge slowly shakes her head. "One of yours sold her the water, and the rest of you broke her for drinking it. Now you want me to sit in her dark for you? No." Nettle does not even look round. "Two names," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face the sisters again** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Face what the stone called up** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `vigil-rueful` · challenge
 
@@ -5211,10 +5172,8 @@ Rope burns again, and cold rock under your back. The pikemen who hauled you up t
 
 Vex does not crouch this time. He looks down into the bowl, and then at you. "I'm running out of men who'll go down those lines," he says. "Make the next one count."
 
-- » **Go down into the bowl** <sub>**never open on any reachable route** (hidden)</sub>
 - » **Go back down into the bowl** <sub>open when not `stone-spent`; otherwise hidden</sub>
 - » **Go back down into the bowl** <sub>open when `stone-spent`; otherwise hidden</sub>
-- » **Go down into the bowl** <sub>**never open on any reachable route** (hidden)</sub>
 - » **Climb back down to the trail**
 
 ## `calling-won` · story

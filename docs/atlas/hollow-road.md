@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-120 scenes · 184 versions · 2,532,870 states searched (with text conditions tracked).
+120 scenes · 180 versions · 2,532,870 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -260,9 +260,9 @@ The reeve's bounty still hangs on the board, a little greyer at the edges than b
 
 ## `spy-confront` · dialogue · The Peddler
 
-<sub>reads: flag:know-spy, flag:spy-slipped, return?</sub>
+<sub>reads: flag:know-spy, return?</sub>
 
-**4 versions**
+**3 versions**
 
 ### 1. when not `know-spy` · the first visit?
 
@@ -278,19 +278,11 @@ When your shadow falls across his goods he goes very still, and then he does the
 
 The peddler is back behind his stall of chipped buttons. He sees you coming this time. His fingers are at his teeth before you reach him, and the whistle brings his crew out of the crowd again.
 
-### 3. when `know-spy` · not `spy-slipped` · the first visit?
+### 3. when `know-spy` · the first visit?
 
 **The Peddler:**
 
-Up close he is younger than he looked, and he smells of the fish stall. He still hasn't looked round.
-
-When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.
-
-### 4. when `spy-slipped` · the first visit?
-
-**The Peddler:**
-
-Up close he is younger than he looked, and he smells of the fish stall. He knows your faces from yesterday, and he watches you all the way across the square.
+Up close he is younger than he looked, and he smells of the fish stall.
 
 When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.
 
@@ -852,21 +844,9 @@ The dead horse still lies across the trail. Wren walks past it without looking. 
 
 ## `scout-sent` · story
 
-<sub>reads: flag:wren-parted</sub>
-
-**2 versions**
-
-### 1. when not `wren-parted`
-
 The dead horse still lies across the trail.
 
-Wren is long gone, limping to Thornwick for the reeve's men. A line of neat round holes in the mud shows where she leaned on her bow.
-
-### 2. when `wren-parted`
-
-The dead horse still lies across the trail.
-
-Wren left you at the tree line above the hollow, running for the reeve's men. The flies have the horse to themselves.
+Wren is long gone to Thornwick for the reeve's men. The flies have the horse to themselves.
 
 - » **Keep to the trail**
 
@@ -990,11 +970,11 @@ The last toad shudders and goes still, half in the water. You scrape off the sli
 
 ## `camp-ambush` · battle
 
-<sub>reads: flag:marsh-camp-raided?, return?</sub>
+<sub>reads: return?</sub>
 
-**4 versions**
+**2 versions**
 
-### 1. when `marsh-camp-raided` < 1? · the first visit?
+### 1. when the first visit?
 
 You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are clawing up out of the mire beyond the fire. Behind them comes a fifth that reeks of something long dead. They come for the light on all fours, jaws working.
 
@@ -1004,7 +984,7 @@ You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are claw
 
 You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.
 
-### 2. when `marsh-camp-raided` < 1? · a return visit?
+### 2. when a return visit?
 
 The dragging sound comes again, out in the dark. The marsh has more dead in it than you hoped, and they are crawling toward your fire, the one that reeks worst at their back.
 
@@ -1013,26 +993,6 @@ The dragging sound comes again, out in the dark. The marsh has more dead in it t
 *Won:*
 
 You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.
-
-### 3. when `marsh-camp-raided` ≥ 1? · the first visit?
-
-You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are clawing up out of the mire beyond the fire. Behind them comes a fifth that reeks of something long dead. They come for the light on all fours, jaws working.
-
-**Battle:** The Marsh Dead
-
-*Won:*
-
-Five more of them go back under the black water. You sit back to back by the dead fire for a long while after, blades drawn, listening to the marsh.
-
-### 4. when `marsh-camp-raided` ≥ 1? · a return visit?
-
-The dragging sound comes again, out in the dark. The marsh has more dead in it than you hoped, and they are crawling toward your fire, the one that reeks worst at their back.
-
-**Battle:** The Marsh Dead
-
-*Won:*
-
-Five more of them go back under the black water. You sit back to back by the dead fire for a long while after, blades drawn, listening to the marsh.
 
 ## `ambush` · check
 

@@ -305,7 +305,7 @@ He hasn't seen you yet. Round the square, a few big men in work coats nurse thei
 
 **The Peddler**
 
-> Up close he is younger than he looked, and he smells of the fish stall. He still hasn't looked round.
+> Up close he is younger than he looked, and he smells of the fish stall.
 
 > When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.
 
@@ -847,7 +847,7 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 > He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
 
-> He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
+> He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "The whole town drank to her fall," she says.
 
 > "They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
@@ -1245,7 +1245,9 @@ Brother Halden climbs out last, blinking at the daylight. He walks the barrow-fi
 
 Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I'll know."
 
-Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet.
+Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
+
+The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
 At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
 
@@ -1607,7 +1609,7 @@ Behind you, everything still loose in the hills turns at once and starts down to
 
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
 
-At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
+Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 **» Meet the brood on the rim**
 

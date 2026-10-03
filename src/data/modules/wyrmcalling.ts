@@ -356,7 +356,7 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
  *     stone as it stands (`answer-sold-dead`).
  * Routed by scene, not by flag, so an answer costs the reach search nothing.
  * A company that cut the captives out of the {ashfang} pens (Part 1) says so
- * in its defiance (`answer-defiant`). No XP rides on the way down (see goDown),
+ * in its defiance (`answer-defiant`). No XP rides on the way down (see GO_BACK_DOWN),
  * so no level-up lands between an answer and its reply.
  */
 // The answers' weight is foreshadowed by what the sisters do in
@@ -426,14 +426,16 @@ const toStone = (id: string, label: string, to: string, requires: Requirement[])
   { id: id + CRACK, label, to: to + CRACK, hideWhenBlocked: true, requires: [...requires, { kind: 'flag', flag: CRACKED }] },
 ];
 /** On to the stone after an answer: into `tear` (the answer's own version of
- *  `tear-loose`), or back to the fight a company fell back from. */
-const stoneChoices = (tear = 'tear-loose'): Choice[] => [
-  ...toStone('on', 'Tear them out of the stone', tear,
-    [{ kind: 'notFlag', flag: 'sisters-loose' }, { kind: 'notFlag', flag: 'stone-spent' }]),
+ *  `tear-loose`). The sisters are answered once, before anything has torn
+ *  them loose or spent them, so no way back to a fight is offered here. */
+const stoneChoices = (tear = 'tear-loose'): Choice[] => toStone('on', 'Tear them out of the stone', tear, []);
+const TO_STONE = stoneChoices();
+/** Back in the bowl after falling back or a defeat (`calling-return`): straight
+ *  to the fight the company left. */
+const BACK_TO_STONE: Choice[] = [
   ...toStone('loose', 'Face the sisters again', 'sisters-battle', [{ kind: 'flag', flag: 'sisters-loose' }]),
   ...toStone('spent', 'Face what the stone called up', 'calling-battle', [{ kind: 'flag', flag: 'stone-spent' }]),
 ];
-const TO_STONE = stoneChoices();
 /** The ask for the vigil, after an answer that leaves it open (see
  *  `vigilScene`). The answers that close it offer no ask. */
 const askVigil = (to: string): Choice => ({ id: 'vigil', label: 'Ask {sedge} to take up her sister\'s vigil', to,
@@ -607,23 +609,16 @@ const tentScene = (id: string, row: string, before: string, after: string): Scen
     ...denLines()],
   next: [{ id: 'ok', label: 'Head back to the camp', to: 'warcamp' }],
 });
-/** Down into the bowl: through the council the first time, straight down after. */
-const goDown = (effects: Effect[] = []): Choice[] => {
-  const fx = effects.length ? { effects } : {};
-  return [
-    { id: 'down', label: 'Go down into the bowl', to: 'calling-approach', hideWhenBlocked: true,
-      requires: [has('rim-clear'), hasNot('sisters-loose'), hasNot('stone-spent')], ...fx },
-    // Back after falling back or a defeat: the sisters have had their say, so
-    // the party goes straight back to the fight it left (see TO_STONE).
-    { id: 'back-loose', label: 'Go back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
-      requires: [has('rim-clear'), has('sisters-loose')], ...fx },
-    { id: 'back-spent', label: 'Go back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
-      requires: [has('rim-clear'), has('stone-spent')], ...fx },
-    // The first time: through the war council (see SEATS).
-    { id: 'down-council', label: 'Go down into the bowl', to: 'war-council', hideWhenBlocked: true,
-      requires: [hasNot('rim-clear')], ...fx },
-  ];
-};
+/** Back down into the bowl after falling back or a defeat: the sisters have
+ *  had their say, so the party goes straight back to the fight it left (see
+ *  BACK_TO_STONE). A company leaves the bowl only once they are torn loose
+ *  (`sisters-loose`) or spent (`stone-spent`), so nothing else is offered. */
+const GO_BACK_DOWN: Choice[] = [
+  { id: 'back-loose', label: 'Go back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
+    requires: [has('rim-clear'), has('sisters-loose')] },
+  { id: 'back-spent', label: 'Go back down into the bowl', to: 'calling-return', hideWhenBlocked: true,
+    requires: [has('rim-clear'), has('stone-spent')] },
+];
 /** Who is owed a place beside the company, and why (`owed`: any one of these
  *  holds; they never overlap; `effects` ride on that one's way down). Wren:
  *  any company she does not hold a grudge against (her `attitude`, built over
@@ -1880,13 +1875,10 @@ const scenes: Record<string, Scene> = {
   gorgonvale: {
     id: 'gorgonvale', kind: 'story', art: { emoji: '🗿' },
     again: ['The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils. It is not looking your way.'],
-    // {wren}'s notes (`wren-brief`) already named the beast and called the
-    // statues too good; without them, the valley says both itself.
+    // {wren}'s notes (`wren-brief`) already named the beast; without them,
+    // the valley names it itself.
     text: [
-      { if: [{ kind: 'notFlag', flag: 'wren-brief' }],
-        text: 'The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.' },
-      { if: [{ kind: 'flag', flag: 'wren-brief' }],
-        text: 'The statues stand in the grass just as {wren} said. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.' },
+      'The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.',
       'At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.',
       { if: [{ kind: 'notFlag', flag: 'wren-brief' }],
         text: 'Someone has scratched one word into the rock at the shepherd\'s feet, in big, shaky letters: **GORGON**.' },
@@ -2006,8 +1998,7 @@ const scenes: Record<string, Scene> = {
   'calling-gate': {
     id: 'calling-gate', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌄' },
     text: [...RIDGE_SIGHT, ...RIDGE_NIGHT,
-      { if: [hasNot('calling-peaked')], text: 'At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.' },
-      { if: [has('calling-peaked')], text: 'Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.' },
+      'Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.',
     ],
     next: peakWays((effects, also) => broodChoices(effects, also)),
     noBack: true,
@@ -2027,7 +2018,11 @@ const scenes: Record<string, Scene> = {
   'ridge-quiet': {
     id: 'ridge-quiet', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🌄' },
     text: ['The ridge lies still, and no wings ride the wind. Below you, the bowl and the stone wait in their bruised light.'],
-    next: goDown(), noBack: true,
+    next: [...GO_BACK_DOWN,
+      // The first time (the clutch just beaten): through the war council (see SEATS).
+      { id: 'down-council', label: 'Go down into the bowl', to: 'war-council', hideWhenBlocked: true,
+        requires: [hasNot('rim-clear')] }],
+    noBack: true,
   },
   // The war council: the camp comes up behind the company, and whoever owes
   // it from Parts 1–2 comes too (see OWED / COUNCIL).
@@ -2125,7 +2120,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'stone-spent' }],
         text: 'The sisters still stand sunk to the shoulder in the stone. They do not turn to look at you. The crack across the floor glows red, and the ground heaves under your boots as the stone gets ready to spend them again.' },
     ],
-    next: TO_STONE,
+    next: BACK_TO_STONE,
   },
   'answer-defiant': {
     id: 'answer-defiant', kind: 'story', art: { imageId: 'loc-mountain', emoji: '🗿' },
@@ -2338,7 +2333,7 @@ const scenes: Record<string, Scene> = {
       'Rope burns again, and cold rock under your back. The pikemen who hauled you up this time sit in a row along the rim, getting their breath back. There are fewer of them than before.',
       '{vex} does not crouch this time. He looks down into the bowl, and then at you. "I\'m running out of men who\'ll go down those lines," he says. "Make the next one count."',
     ],
-    next: [...goDown(), { id: 'trail', label: 'Climb back down to the trail', to: 'hills' }],
+    next: [...GO_BACK_DOWN, { id: 'trail', label: 'Climb back down to the trail', to: 'hills' }],
   },
   'calling-won': {
     id: 'calling-won', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🌅' },

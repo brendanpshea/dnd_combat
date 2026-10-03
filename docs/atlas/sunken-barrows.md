@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-90 scenes · 167 versions · 124,948 states searched (with text conditions tracked).
+90 scenes · 160 versions · 124,948 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -573,11 +573,11 @@ The dead are still shuffling into their rows when the last of them falls. Halden
 
 ## `chapel-saved` · dialogue · Brother Halden
 
-<sub>reads: flag:halden-bell, flag:npc.wren.fate.saved, flag:npc.reedwife.fate.bound</sub>
+<sub>reads: flag:halden-bell, flag:npc.reedwife.fate.bound</sub>
 
-**8 versions**
+**4 versions**
 
-### 1. when not `halden-bell` · Wren not saved · Reedwife not bound
+### 1. when not `halden-bell` · Reedwife not bound
 
 **Brother Halden:**
 
@@ -591,7 +591,7 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
-### 2. when not `halden-bell` · Wren not saved · Reedwife bound
+### 2. when not `halden-bell` · Reedwife bound
 
 **Brother Halden:**
 
@@ -607,37 +607,7 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
-### 3. when not `halden-bell` · Wren saved · Reedwife not bound
-
-**Brother Halden:**
-
-You know the words Halden said over Thornwick's dead. They are cut on every old headstone in his churchyard. You say them back to him, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*
-
-The thing inside Halden lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **Marrow**, and I *thanked* him."
-
-He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
-
-He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
-
-Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
-
-### 4. when not `halden-bell` · Wren saved · Reedwife bound
-
-**Brother Halden:**
-
-You know the words Halden said over Thornwick's dead. They are cut on every old headstone in his churchyard. You say them back to him, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*
-
-The thing inside Halden lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **Marrow**, and I *thanked* him."
-
-He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
-
-He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
-
-"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
-
-Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
-
-### 5. when `halden-bell` · Wren not saved · Reedwife not bound
+### 3. when `halden-bell` · Reedwife not bound
 
 **Brother Halden:**
 
@@ -651,7 +621,7 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
-### 6. when `halden-bell` · Wren not saved · Reedwife bound
+### 4. when `halden-bell` · Reedwife bound
 
 **Brother Halden:**
 
@@ -662,36 +632,6 @@ The thing inside Halden lets go of him all at once, like a hand opening, and his
 He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
 
 He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "The whole town drank to her fall," she says.
-
-"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
-
-Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
-
-### 7. when `halden-bell` · Wren saved · Reedwife not bound
-
-**Brother Halden:**
-
-You tell him what you read in his churchyard. His dead did not claw their way out. They stepped out in ranks, oldest first, like a parish called to a service. "You rang your bell in Thornwick to lay them down, Brother," you say. "Whose bell is calling them up?"
-
-The thing inside Halden lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **Marrow**, and I *thanked* him."
-
-He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
-
-He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
-
-Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
-
-### 8. when `halden-bell` · Wren saved · Reedwife bound
-
-**Brother Halden:**
-
-You tell him what you read in his churchyard. His dead did not claw their way out. They stepped out in ranks, oldest first, like a parish called to a service. "You rang your bell in Thornwick to lay them down, Brother," you say. "Whose bell is calling them up?"
-
-The thing inside Halden lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **Marrow**, and I *thanked* him."
-
-He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."
-
-He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
 
 "They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
@@ -701,11 +641,11 @@ Halden lifts the altar cloth and hands you a healing potion. "I bought it for a 
 
 ## `chapel-won` · story
 
-<sub>reads: flag:npc.wren.fate.saved, flag:npc.reedwife.fate.bound</sub>
+<sub>reads: flag:npc.reedwife.fate.bound</sub>
 
-**4 versions**
+**2 versions**
 
-### 1. when Wren not saved · Reedwife not bound
+### 1. when Reedwife not bound
 
 Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The lamb each midwinter was never an offering. It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep.*
 
@@ -713,11 +653,11 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
-### 2. when Wren not saved · Reedwife bound
+### 2. when Reedwife bound
 
 Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The lamb each midwinter was never an offering. It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep.*
 
@@ -725,33 +665,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
-
-When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
-
-Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
-
-### 3. when Wren saved · Reedwife not bound
-
-Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The lamb each midwinter was never an offering. It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep.*
-
-The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower's bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*
-
-Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
-
-"That's the hag's brand," Wren says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the Ashfang." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
-
-Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
-
-### 4. when Wren saved · Reedwife bound
-
-Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The lamb each midwinter was never an offering. It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep.*
-
-The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower's bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*
-
-Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
-
-"That's the hag's brand," Wren says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the Ashfang." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
 
@@ -2363,16 +2277,13 @@ The whole taproom eats on your coin. Someone stands and names Thornwick's dead, 
 
 ## `sb-aftermath-hub` · story
 
-<sub>reads: gold?, flag:sb-round</sub>
-
 Thornwick goes about its burying, and its living.
 
-- » **Spend the reeve's purse on a hot supper for the whole taproom (150 gold)** <sub>**never open on any reachable route** (hidden)</sub>
 - » **Let the town sleep**
 
 ## `sb-aftermath` · story
 
-<sub>reads: companion:wren, flag:npc.halden.fate.saved, flag:npc.marrow.fate.bound, flag:grandfather-home, flag:npc.marrow.fate.sings, flag:seal-cracked, flag:npc.wren.attitude</sub>
+<sub>reads: companion:wren, flag:npc.halden.fate.saved, flag:npc.marrow.fate.bound, flag:npc.marrow.fate.sings, flag:grandfather-home, flag:seal-cracked, flag:npc.wren.attitude</sub>
 
 **108 versions** — printed once, each conditional line marked with when it shows.
 
@@ -2386,25 +2297,17 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when Halden saved]** Brother Halden climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.
 
-> **[when Marrow bound · not `grandfather-home` · Wren's regard < 0 — or — Wren not in the party · Marrow bound · not `grandfather-home`]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, then takes the rope herself.
+> **[when Marrow bound · Wren's regard < 0 — or — Wren not in the party · Marrow bound]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, and leaves his rope in your hands.
 
-> **[when Marrow bound · `grandfather-home` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · Marrow bound · `grandfather-home`]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, and leaves his rope in your hands.
-
-> **[when Wren in the party · Marrow bound · Wren's regard < 0 or Wren's regard 0–1 — or — Wren in the party · Marrow bound · not `grandfather-home`]** Marrow climbs out with his wrists tied. Wren has held the end of his rope since the door, and she does not give it up now.
-
-> **[when Wren in the party · Marrow bound · `grandfather-home`]** Marrow climbs out with his wrists tied, at the end of a rope your company has held since the door. Wren does not take her eyes off him.
+> **[when Wren in the party · Marrow bound]** Marrow climbs out with his wrists tied, at the end of a rope your company has held since the door. Wren does not take her eyes off him.
 
 > **[when Marrow sings]** Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I'll know."
 
-> **[when `grandfather-home` · not `seal-cracked` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · `grandfather-home` · not `seal-cracked`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet.
+> **[when `grandfather-home` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · `grandfather-home`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
 
-> **[when `grandfather-home` · `seal-cracked` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · `grandfather-home` · `seal-cracked`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
+> **[when Wren in the party · `grandfather-home`]** Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut.
 
-> **[when Wren in the party · `grandfather-home` · not `seal-cracked`]** Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut. The walk home is long and wet.
-
-> **[when Wren in the party · `grandfather-home` · `seal-cracked`]** Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut.
-
-> **[when not `grandfather-home` · not `seal-cracked`]** The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
+> **[when not `seal-cracked`]** The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
 > **[when `seal-cracked`]** The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.
 
@@ -2515,13 +2418,13 @@ Every night of the reburials the Wander-Inn fills with mourners, and the innkeep
 
 <sub>reads: at:fen, flag:lychgate-cleared, companion:wren, at:undercrypt, return?</sub>
 
-**8 versions**
+**7 versions**
 
-### 1. when Wren not in the party · at `undercrypt` · the first visit?
+### 1. when Wren not in the party · the first visit?
 
 The first thing you know is the smell of tallow and wet wool. You are lying on the settles in the Wander-Inn's back room, pushed together to make beds, with fen-mud dried stiff in your hair.
 
-Somebody got you up the barrow stair and across the whole fen in the dark. Mira will not say who. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.
+Mira will not say who brought you back across the fen. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.
 
 "The fen's still there," Mira says. She puts the bread where you can reach it.
 
@@ -2565,15 +2468,7 @@ The eel-catchers brought you in again, Wren with you, Mira says. They stayed onl
 
 "You know where the bread is," Mira says, and leaves you to it.
 
-### 7. when Wren not in the party · not at `undercrypt` · the first visit?
-
-The first thing you know is the smell of tallow and wet wool. You are lying on the settles in the Wander-Inn's back room, pushed together to make beds, with fen-mud dried stiff in your hair.
-
-Mira will not say who brought you back across the fen. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.
-
-"The fen's still there," Mira says. She puts the bread where you can reach it.
-
-### 8. when `lychgate-cleared` · Wren in the party · not at `undercrypt` · the first visit?
+### 7. when `lychgate-cleared` · Wren in the party · not at `undercrypt` · the first visit?
 
 The first thing you know is the smell of tallow and wet wool. You are lying on the settles in the Wander-Inn's back room, pushed together to make beds, with fen-mud dried stiff in your hair.
 

@@ -231,7 +231,7 @@ He hasn't seen you yet. Round the square, a few big men in work coats nurse thei
 
 **The Peddler**
 
-> Up close he is younger than he looked, and he smells of the fish stall. He still hasn't looked round.
+> Up close he is younger than he looked, and he smells of the fish stall.
 
 > When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.
 
@@ -479,7 +479,7 @@ The dragging sound comes again, out in the dark. The marsh has more dead in it t
 
 **» Fight — won**
 
-Five more of them go back under the black water. You sit back to back by the dead fire for a long while after, blades drawn, listening to the marsh.
+_(a paragraph shown before: “You shove the bodies back into the…”)_
 
 **↳ The Marsh Road** <sub>(map `trail`)</sub>
 
@@ -1115,7 +1115,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the Ashfang." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -1579,7 +1579,9 @@ Wren comes up behind you. At the top she stands a long moment in the barrow-fiel
 
 Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I'll know."
 
-Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut. The walk home is long and wet.
+Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut.
+
+The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
 At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
 
@@ -2117,7 +2119,7 @@ A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps 
 
 <sub>scene `gorgonvale`</sub>
 
-The statues stand in the grass just as Wren said. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
+The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
 At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
 

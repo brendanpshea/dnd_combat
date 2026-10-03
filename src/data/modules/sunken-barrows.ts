@@ -124,7 +124,7 @@ const REEVE_TAKE = [{ id: 'take', label: 'Take the reeve\'s commission', to: 'to
   effects: [{ kind: 'setFlag' as const, flag: 'reeve-task' }, { kind: 'gold' as const, amount: 60 },
     { kind: 'journal' as const, entry: { id: 'n-aldous', kind: 'npc' as const, title: 'Reeve {aldous}',
       body: '{thornwick}\'s reeve is proud and paying, and he takes this one personally. His grandfather\'s grave is among the opened. His orders are simple. Follow the dead into the fen and end what calls them.' } },
-    { kind: 'journal' as const, entry: { id: 'lead-fen', kind: 'lead' as const, resolvedBy: 'undercrypt-found',
+    { kind: 'journal' as const, entry: { id: 'lead-fen', kind: 'lead' as const, resolvedBy: 'lychgate-cleared',
       title: 'Into the Deep Fen', body: 'The dead walk one way, into the barrow-country of the deep fen. The reeve\'s scout, {wren}, waits at the fen road to guide you in. Find where the trails meet.' } }] }];
 
 const INN_CHOICES = [
@@ -614,9 +614,7 @@ const scenes: Record<string, Scene> = {
         text: 'You tell him what you read in his churchyard. His dead did not claw their way out. They stepped out in ranks, oldest first, like a parish called to a service. "You rang your bell in {thornwick} to lay them down, Brother," you say. "Whose bell is calling them up?"' },
       'The thing inside {halden} lets go of him all at once, like a hand opening, and his dead fold down into the water. He sits hard on the altar steps, shaking and himself again. Behind him his acolytes sit up in the shallows, coughing fen-water. "It came up through the *prayers*," he says. "A grey little gravedigger brought me black candles. He said his name was **{marrow}**, and I *thanked* him."',
       'He looks up at the leaning bell-tower. "I rang the drowned bell up there every night, the way I ring my own at home. *The bell will wake you.* We say it over every grave. I thought it was a promise." He swallows. "It was a summons. I rang, and they woke."',
-      // "We" only from the Wren who mapped the den for the company in Part 1.
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "We drank to her fall," she says.' },
-      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "The whole town drank to her fall," she says.' },
+      'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "The whole town drank to her fall," she says.',
       // Bound in Part 1: why the Warden stirs with his keeper alive.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
         text: '"They say you held her to her price, and she\'ll take it." {halden} shakes his head. "A keeper held by strangers\' words keeps the price, but not the watch. She will eat the {door-price} and sit by her pool. Nobody sits by his door." {wren} looks out across the water toward the far pools, and her jaw sets.' },
@@ -637,10 +635,8 @@ const scenes: Record<string, Scene> = {
       '{halden}\'s prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The {door-price} each {door-midwinter} was never an offering. It was her wage. The {reedwife} was the {warden}\'s jailer, and we paid her to keep him asleep.*',
       'The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower\'s bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*',
       'Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil\'s mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*',
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
-        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the {ashfang}." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
-      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }],
-        text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
+      // True of any {wren}: one who stood in the hollow, or one who heard.
+      '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "Every marsh-thing that ran with the {ashfang} wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."',
       // Bound in Part 1: the note read against a keeper still alive.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
         text: 'When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a {door-price} tied ready for {door-midwinter}. It makes no difference. A keeper held by strangers\' words keeps the price, not the watch.* {wren} reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."' },
@@ -855,16 +851,16 @@ const scenes: Record<string, Scene> = {
       { id: 'down', label: 'Leave {wren} the gate, and go down', to: 'undercrypt',
         requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true,
         effects: [{ kind: 'leaveParty', companion: 'wren' },
-          { kind: 'setFlag', flag: 'lychgate-cleared' }, { kind: 'setFlag', flag: 'undercrypt-found' }] },
+          { kind: 'setFlag', flag: 'lychgate-cleared' }] },
       // Asking is always the company's to do; the answer is hers (her
       // `attitude`). One of the two shows, under the same words.
       { id: 'ask', label: 'Ask {wren} to come down with you', to: 'lychgate-wren-comes',
         requires: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }], hideWhenBlocked: true,
-        effects: [{ kind: 'setFlag', flag: 'lychgate-cleared' }, { kind: 'setFlag', flag: 'undercrypt-found' }] },
+        effects: [{ kind: 'setFlag', flag: 'lychgate-cleared' }] },
       { id: 'ask-no', label: 'Ask {wren} to come down with you', to: 'lychgate-wren-stays',
         requires: [{ kind: 'companion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 2 } }], hideWhenBlocked: true,
         effects: [{ kind: 'leaveParty', companion: 'wren' },
-          { kind: 'setFlag', flag: 'lychgate-cleared' }, { kind: 'setFlag', flag: 'undercrypt-found' }] },
+          { kind: 'setFlag', flag: 'lychgate-cleared' }] },
     ],
   },
   // Asked, by a company she would follow anywhere: she comes down.
@@ -1349,7 +1345,8 @@ const scenes: Record<string, Scene> = {
   'sb-aftermath-hub': {
     id: 'sb-aftermath-hub', kind: 'story', art: { imageId: 'loc-town', emoji: '🏘️' },
     text: ['{thornwick} goes about its burying, and its living.'],
-    next: SB_CLAIMS, noBack: true,
+    // The supper is bought in the hall; it can't be bought twice.
+    next: SB_CLAIMS.filter((c) => c.id !== 'mira'), noBack: true,
   },
   // In the order it happens: up out of the barrow and the walk home here;
   // the reeve's hall that evening and the reburials after, in `sb-hall`.
@@ -1364,27 +1361,21 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }],
         text: 'Brother {halden} climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.' },
       // One job for {wren}: the old reeve's feet if he came home, else {marrow}'s rope.
-      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'noCompanion', companion: 'wren' }, { kind: 'notFlag', flag: 'grandfather-home' }],
-        text: '{marrow} climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" {wren} asks. She looks him up and down, then takes the rope herself.' },
-      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'noCompanion', companion: 'wren' }, { kind: 'flag', flag: 'grandfather-home' }],
+      // {marrow}'s rope stays in the company's hands: {wren}'s may be full of
+      // the old reeve's feet (below).
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{marrow} climbs out behind you with his wrists tied. "That\'s the one who brought the candles?" {wren} asks. She looks him up and down, and leaves his rope in your hands.' },
-      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'companion', companion: 'wren' }, { kind: 'notFlag', flag: 'grandfather-home' }],
-        text: '{marrow} climbs out with his wrists tied. {wren} has held the end of his rope since the door, and she does not give it up now.' },
-      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'companion', companion: 'wren' }, { kind: 'flag', flag: 'grandfather-home' }],
+      { if: [{ kind: 'npc', npc: 'marrow', fate: 'bound' }, { kind: 'companion', companion: 'wren' }],
         text: '{marrow} climbs out with his wrists tied, at the end of a rope your company has held since the door. {wren} does not take her eyes off him.' },
       { if: [{ kind: 'npc', npc: 'marrow', fate: 'sings' }],
         text: '{marrow} climbs out after you, and walks off alone across the barrow-field toward {saltmere}. {wren} keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I\'ll know."' },
-      // A seal shut clean: the walk home said here; cracked, below.
-      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'noCompanion', companion: 'wren' }],
-        text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the ruts." The walk home is long and wet.' },
-      { if: [{ kind: 'flag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'noCompanion', companion: 'wren' }],
+      { if: [{ kind: 'flag', flag: 'grandfather-home' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I\'ve got his feet," she says. "Mind the ruts."' },
       // She came down, and has carried him since the cut.
-      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'companion', companion: 'wren' }],
-        text: 'Since the lead cut {wren} has taken the old man\'s feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut. The walk home is long and wet.' },
-      { if: [{ kind: 'flag', flag: 'seal-cracked' }, { kind: 'flag', flag: 'grandfather-home' }, { kind: 'companion', companion: 'wren' }],
+      { if: [{ kind: 'flag', flag: 'grandfather-home' }, { kind: 'companion', companion: 'wren' }],
         text: 'Since the lead cut {wren} has taken the old man\'s feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut.' },
-      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }, { kind: 'notFlag', flag: 'grandfather-home' }],
+      // The walk home, as the door shut: clean, or cracked.
+      { if: [{ kind: 'notFlag', flag: 'seal-cracked' }],
         text: 'The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.' },
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
         text: 'The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.' },
@@ -1434,10 +1425,9 @@ const scenes: Record<string, Scene> = {
       // down in the barrows. Once the gate is passed, Wren is the one out there.
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
         text: 'Eel-catchers from the far pools found the whole company by the raised road at first light, {wren} among you, {mira} says. They brought you in on hurdles, and would not stop for so much as a cup.' },
-      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
+      // Past the gate without her, in the fen or down in the barrows.
+      { if: [{ kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
         text: '{mira} will not say who brought you back across the fen. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
-      { if: [{ kind: 'at', hub: 'undercrypt' }, { kind: 'noCompanion', companion: 'wren' }],
-        text: 'Somebody got you up the barrow stair and across the whole fen in the dark. {mira} will not say who. A pair of small, muddy boots is drying by her fire, with a bow propped in the corner beside them.' },
       // {wren} came down with the company, and fell with it: back out in the
       // fen, or down in the barrows, where she was in no state to carry anyone.
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'companion', companion: 'wren' }],
@@ -1450,9 +1440,7 @@ const scenes: Record<string, Scene> = {
       'Back on the settles in {mira}\'s back room, with fresh bruises under the old mud.',
       { if: [{ kind: 'at', hub: 'fen' }, { kind: 'notFlag', flag: 'lychgate-cleared' }],
         text: 'The eel-catchers brought you in again, {wren} with you, {mira} says. They stayed only long enough to warm their hands.' },
-      { if: [{ kind: 'at', hub: 'fen' }, { kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
-        text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
-      { if: [{ kind: 'at', hub: 'undercrypt' }, { kind: 'noCompanion', companion: 'wren' }],
+      { if: [{ kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'noCompanion', companion: 'wren' }],
         text: 'A pair of small, muddy boots is drying by the fire, with a bow propped in the corner beside them.' },
       { if: [{ kind: 'flag', flag: 'lychgate-cleared' }, { kind: 'companion', companion: 'wren' }],
         text: '{wren} is on the next settle, boots and all, and does not open her eyes.' },

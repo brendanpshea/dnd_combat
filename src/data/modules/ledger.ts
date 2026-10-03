@@ -31,9 +31,13 @@ export interface Budget { flags: number; conditional: number; states: number }
 export const LEDGER_BUDGET: Record<string, Budget> = {
   // Set just above the spend after the ledger round (Oct 2026): 39 / 94 /
   // 1.17M, 23 / 88 / 97k and 33 / 208 / 559k. Part 3 walked 3.0M before.
-  'hollow-road': { flags: 41, conditional: 100, states: 1_250_000 },
-  'sunken-barrows': { flags: 25, conditional: 95, states: 150_000 },
-  wyrmcalling: { flags: 35, conditional: 215, states: 650_000 },
+  // Lowered after the branch-trimming round (Oct 2026: dead choices out of
+  // shared lists, near-duplicate lines merged, text-only flags dropped), from
+  // 41 / 100 / 1.25M, 25 / 95 / 150k and 35 / 215 / 650k, to just above the
+  // new spend: 36 / 89 / 1.19M, 23 / 84 / 97k and 34 / 203 / 559k.
+  'hollow-road': { flags: 37, conditional: 91, states: 1_200_000 },
+  'sunken-barrows': { flags: 24, conditional: 86, states: 100_000 },
+  wyrmcalling: { flags: 35, conditional: 205, states: 575_000 },
 };
 
 /** Walk a module's data and count what the budget counts. */

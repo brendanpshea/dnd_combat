@@ -1413,7 +1413,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -2587,19 +2587,41 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
-**» "She fed on the people of this valley. We owe you nothing."**
+**» "The vigil broke on our watch. We know, and we're sorry for that part."**
 
-<sub>scene `answer-defiant`</sub>
+<sub>scene `answer-rueful`</sub>
 
-Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and not one of the dead walked. Set that against your carters."
+For one breath, the song falters. Sedge turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not undo what you did to her. But I heard it."
 
-Sedge does not laugh. "You owe nothing?" she says, very quietly. "Then neither do we. Ask your barrows what her fall bought you, and let your priest's book keep the door." She turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
+Nettle does not turn. "Then you own the debt," she says, and her hands sink deeper into the rock. "Good. Owed is owed."
+
+**» Ask Sedge to take up her sister's vigil**
+
+<sub>scene `vigil-rueful`</sub>
+
+Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+
+**» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
+
+`[Persuasion DC 15 — Elaine the Holy rolls 10 — failed]`
+
+"Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
+
+**» Tell her the door still needs a keeper**
+
+`[Persuasion DC 15 — Elaine the Holy rolls 7 — failed]`
+
+"A keeper," Sedge says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."
+
+<sub>scene `vigil-refused-rueful`</sub>
+
+Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
-<sub>scene `tear-loose-defiant-cracked`</sub>
+<sub>scene `tear-loose-rueful-cracked`</sub>
 
-Sedge has her hands sunk to the wrist in the black rock, and the stone is drinking her down. Nettle's hands are only half in it, and they shake with her temper. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
+The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
 The floor of the bowl knocks under your boots: three slow knocks. You have felt that through stone before, with your hand on the Warden's door. The stone is singing down into the ground, all the way to the cracked door under the barrows, and something down there is answering.
 
@@ -2607,33 +2629,33 @@ Grey hands push up through the cracks around the stone. They catch at your ankle
 
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
 
-**» Drag Nettle out first — She is angrier than she is careful.**
+**» Drag their hands out of the rock — Nettle has sunk her hands past the wrist now.**
 
-`[Athletics DC 11 — Arthur the Bold rolls 10 — failed]`
+`[Athletics DC 17 — Arthur the Bold rolls 12 — failed]`
 
-Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+Nettle smiles at you the whole time you pull. You let go with burned palms.
 
 **» Sing a wrong note into the Calling**
 
-`[Arcana DC 17 — Morgan Le Fey rolls 8 — failed]`
+`[Arcana DC 15 — Morgan Le Fey rolls 10 — failed]`
 
-Nettle hears your wrong note and sings right over it, louder. The Calling never misses a beat.
+Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
 **» Say Halden's rites over the stone — Its oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 7 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
 **» Let your wizard read the old letters cut into the stone — One line of them runs unbroken all the way round the stone.**
 
-`[Arcana DC 12 — Morgan Le Fey rolls 11 — failed]`
+`[Arcana DC 12 — Morgan Le Fey rolls 7 — failed]`
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
 **» Find where the stone is weakest — The song is louder on one face of the stone than the others.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 12 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 13 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 
