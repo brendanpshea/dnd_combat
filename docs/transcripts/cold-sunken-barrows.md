@@ -45,7 +45,7 @@ Draw steel, for whatever good steel does against a shadow.
 
 **» Fight — won**
 
-The last shadow tatters apart on your blade like smoke off a doused fire. The woman in the shift sinks back into her grave without a sound, and the churchyard holds its breath.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound, and the lamplight lies still on the grass.
 
 <sub>scene `grave-morning`</sub>
 
@@ -71,7 +71,7 @@ _Journal (clue): They Walk One Way_
 
 > "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You saw off the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "And that racket when the graves opened was the gate-warden on the rope. Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
+> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
 > "Eat. Then go see the reeve. He's been pacing his hall since the bells."
 
@@ -229,7 +229,7 @@ _Journal (clue): The Rites of Sealing_
 
 The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror — soft, swaying, warm as windows. Wren's face goes carefully blank. "Corpse-candles. They walk mourners into the deep pools and hold them under. Half the people the fen has taken this year are *under this water*."
 
-The lights drift nearer, hopeful as dogs. Other things move between them, further out. They are two colder shapes, still in the clothes they drowned in.
+The lights drift nearer, hopeful as dogs. Other things move between them, further out. They are two colder things, still in the clothes they drowned in.
 
 "We don't have to go through," Wren says quietly. "There's firm ground round the pools, if you can find it. Miss it, and the lights find *you*."
 
@@ -247,7 +247,7 @@ You know a lie when it sings to you. You plant your boots in the mud and stay wh
 
 <sub>scene `lights-fight`</sub>
 
-Four of the lights come in low and fast over the water, crackling with stolen life. The two cold shapes rise between them, trailing fen-mist, their mouths open on screams the water drank years ago.
+Four of the lights come in low and fast over the water, crackling with stolen life. The two drowned things rise between them, trailing fen-mist, their mouths open on screams the water drank years ago.
 
 **Battle:** The Corpse-Lights <sub>(`corpse-lights` on `bog`)</sub>
 
@@ -299,7 +299,7 @@ Wren picks up a coin and puts it back with great care. "The fen-folk fed the poo
 
 Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Two constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
 
-**Battle:** Viper Pit <sub>(`snake-pit` on `marsh`)</sub>
+**Battle:** The Serpent Pool <sub>(`snake-pit` on `marsh`)</sub>
 
 **» Fight — won**
 
@@ -447,7 +447,7 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 
 <sub>scene `diggers-chain`</sub>
 
-At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck. This is the reeve's **grandfather**.
+At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
 The call that brought him down here has let him go. He is light now, just bones in a coat.
 
@@ -503,7 +503,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 **» Fight — won**
 
-The wight comes apart at the joints, like a puppet whose strings were cut centuries too late. The cold light in its eyes gutters out, and its skeletons clatter down after it.
+The wight comes apart at the joints and lies down in its own armour. The cold light in its eyes gutters out, and its skeletons clatter down after it.
 
 Under its slab lies a guardsman's pay that no one ever came to collect, old coins gone green in a rotted pouch.
 
@@ -651,8 +651,6 @@ Line by line the great door stops *straining*, and last of all the weight behind
 
 The **Warden** sleeps. The door is shut.
 
-The vigil has a new keeper now: a book, a door, and a town that knows to watch it. It will have to do.
-
 Among the cult's packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.
 
 **» Climb the cult's rope ladder back to the light**
@@ -665,7 +663,7 @@ Wren is still holding the Barrow Gate when you come up. She is upright, knife ou
 
 Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I'll know."
 
-Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet, and the best walk any of you can remember.
+Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet.
 
 **» Go up to the reeve's hall**
 
@@ -687,7 +685,7 @@ _-10 gold (999)_
 
 <sub>scene `sb-claim-round`</sub>
 
-The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. When the last name is said, someone raises a cup to Mira, who cooked it all, and she pretends not to hear.
+The whole taproom eats on your coin. Someone stands and names Thornwick's dead, one by one, and the room goes quiet to listen. When the last name is said, someone raises a cup to Mira, who cooked it all, and she goes on scrubbing the pot.
 
 **» Go back to the square**
 
@@ -699,11 +697,11 @@ Thornwick goes about its burying, and its living.
 
 <sub>scene `sb-epilogue`</sub>
 
-The barrows sleep, and Thornwick's churchyard is quiet again.
+In Thornwick's churchyard the turf is back over every grave, and the bell-rope hangs still.
 
 In Saltmere, Marrow keeps forty graves he once left in the cold. He says the rites over them every evening.
 
-Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had his own burial words cut into it.
+Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone, and had the old burial words cut into it.
 
 Wren wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.
 
@@ -711,7 +709,7 @@ Every night since the graves opened, a lamp has burned in the window of the Wand
 
 Aldous buries his grandfather a second time, chain and all, and digs the grave himself. The gravediggers stand back with their spades and let him.
 
-Deep under the barrow-field, the Warden's door stands shut in the dark. Every lead letter in it is whole.
+Deep under the barrow-field, the Warden's door stands shut in the dark. Marrow's bone chisel lies on the bottom step, where he left it.
 
 Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.
 

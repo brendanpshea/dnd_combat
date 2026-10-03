@@ -314,9 +314,11 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   }
   const bit = (k: string) => (facts.has(k) ? 2 ** facts.get(k)! : 0);
   // A flag read only behind a cosmetic redirect is neither a fact nor
-  // settled: such a redirect is taken both ways.
-  const untracked = (r: Requirement) =>
-    (r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`) && !settled.has(r.flag);
+  // settled: such a redirect is taken both ways. So is one that reads a tally
+  // (a `count`), which no bit can hold: a marker may route on the valley's
+  // regard, and both ways are searched.
+  const untracked = (r: Requirement) => r.kind === 'count' ||
+    ((r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`) && !settled.has(r.flag));
   const factNames = [...facts.keys()];
 
   const mask = (reqs: Requirement[] | undefined): Mask => {

@@ -150,7 +150,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['giant-boar', 'giant-boar'],
   },
   'snake-pit': {
-    id: 'snake-pit', name: 'Viper Pit', suggestedLevel: 3,
+    id: 'snake-pit', name: 'The Serpent Pool', suggestedLevel: 3,
     members: ['giant-constrictor-snake', 'giant-constrictor-snake'],
   },
   'gargoyle-perch': {
