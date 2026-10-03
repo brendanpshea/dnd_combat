@@ -626,7 +626,7 @@ describe('defeat, finished locations, battle rewards', () => {
     enterNode(s, hollow, 'scout');
     expect(s.sceneId).toBe('wounded'); // first visit: the full scene
     enterScene(s, hollow, 'trail');
-    s.flags[npcFateFlag('tamsin', 'dead')] = true; // now the scout has been dealt with
+    s.flags[npcFateFlag('wren', 'lost')] = true; // now the scout has been dealt with
     enterNode(s, hollow, 'scout');
     expect(s.sceneId).toBe('scout-gone'); // revisit: the short "already done" beat
   });

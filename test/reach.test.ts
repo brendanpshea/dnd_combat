@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { checkModuleReach } from '../src/adventure/reach.js';
-import { npcFateFlag } from '../src/adventure/npcs.js';
+import { npcFateFlag, npcMetFlag } from '../src/adventure/npcs.js';
 import { validateModule } from '../src/adventure/validate.js';
 import { MODULES } from '../src/data/modules/index.js';
 import type { Module, Scene } from '../src/adventure/types.js';
@@ -31,7 +31,7 @@ describe('what it catches', () => {
     const m = clone(byId('hollow-road'));
     delete (m.scenes.aftermath as { noBack?: boolean }).noBack;
     const errors = checkModuleReach(m).errors;
-    expect(errors.some((e) => e.includes('stranded') && e.includes(npcFateFlag('reedwife', 'dead')))).toBe(true);
+    expect(errors.some((e) => e.includes('stranded') && e.includes(npcMetFlag('reedwife')))).toBe(true);
   }, SEARCH_TIMEOUT);
 
   it('Wyrmcalling: losing the opening fight and never being briefed', () => {
