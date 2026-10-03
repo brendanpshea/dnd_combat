@@ -555,11 +555,14 @@ the level the party really meets it at.
 - **A way past a fight.** A company that talks, sneaks or pays its way past
   a fight must not fall behind one that fought it. Pay it what the fight
   would have: `{ kind: 'xp', amount: avoidedFightXP('the-encounter') }`
-  (a quarter of the roster's XP, so it follows any retuning), or an
-  `xpToLevel` where the fought path would ding at that point anyway. It sits
-  on the avoidance itself: a parley's `success`, a choice offered beside the
-  way into the fight, or the outcome of a roll whose other outcome is the
-  fight.
+  (a quarter of the roster's XP, so it follows any retuning), never a level
+  floor. It sits on the avoidance itself: a parley's `success`, a choice
+  offered beside the way into the fight, or the outcome of a roll whose other
+  outcome is the fight. A way past *part* of a fight (half the flock talked
+  down, a raid that thins the hall first) pays the difference between the
+  whole fight and the part still fought. A fight that only follows a failure
+  (a failed rite, a night ambush) is a setback, not a payday: `loot: false`,
+  so the failure never pays more than the success.
 
 Never put a floor on a fight's win or on a road every company walks: that
 makes up for a chapter with too few fights, and hides it. If the curve comes
