@@ -106,7 +106,7 @@ describe('NPC state', () => {
 
   it('attitude is a signed tally that starts at 0, carries, and gates by bounds', () => {
     const m = withNpcs({ id: 'att', title: 'A', blurb: '', start: 'a', scenes: {
-      a: { id: 'a', kind: 'story', text: ['A.'], next: [
+      a: { id: 'a', kind: 'story', text: ['A.'], present: ['scout'], next: [
         { id: 'snub', label: 'Snub her', to: 'a', effects: [{ kind: 'npc', npc: 'scout', attitude: -2 }] },
         { id: 'help', label: 'Help her', to: 'a', effects: [{ kind: 'npc', npc: 'scout', attitude: 1 }] },
         { id: 'warm', label: 'She grins', to: 'won', requires: [{ kind: 'npc', npc: 'scout', attitude: { atLeast: 1 } }] },

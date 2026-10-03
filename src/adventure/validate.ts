@@ -411,6 +411,44 @@ export function validateModule(module: Module): string[] {
     }
   }
 
+  // Regard follows what an NPC saw. An attitude change must be guarded by the
+  // NPC being met or with the party (by the choice, an enclosing requirement,
+  // the scene's `assumes`, or a dialogue with them), or meet them in the same
+  // breath, or be declared `present` on the scene; a deed that reaches them
+  // by word of mouth says `hearsay`.
+  {
+    const ATT = /^npc\.(.+)\.attitude$/;
+    const present = (who: string, reqs: Requirement[]) => reqs.some((r) =>
+      ((r.kind === 'flag') && r.flag === `npc.${who}.met`) || (r.kind === 'companion' && r.companion === who));
+    const walk = (where: Id, v: unknown, reqs: Requirement[]): void => {
+      if (Array.isArray(v)) { v.forEach((x) => walk(where, x, reqs)); return; }
+      if (!v || typeof v !== 'object') return;
+      const o = v as Record<string, unknown>;
+      const here = [...reqs, ...((o.requires ?? []) as Requirement[]), ...((o.if ?? []) as Requirement[])];
+      if (Array.isArray(o.effects)) {
+        const effs = o.effects as Effect[];
+        for (const e of effs) {
+          const m = e.kind === 'addFlag' ? ATT.exec(e.flag) : null;
+          if (!m || (e as { hearsay?: true }).hearsay) continue;
+          const who = m[1]!;
+          const meets = effs.some((x) => x.kind === 'setFlag' && x.flag === `npc.${who}.met`);
+          if (!meets && !present(who, here)) at(where, `moves ${who}'s regard where ${who} may not be present: guard it on ${who} being met or with the party, or mark it hearsay`);
+        }
+      }
+      for (const [k, x] of Object.entries(o)) if (k !== 'effects' && k !== 'requires' && k !== 'if') walk(where, x, here);
+    };
+    for (const [id, sc] of Object.entries(module.scenes)) {
+      const base = [...((sc as { assumes?: Requirement[] }).assumes ?? [])];
+      const npc = (sc as { npc?: unknown }).npc;
+      // A speaker's id is the NPC's registry id with an `npc-` prefix (see `speaker`).
+      const npcId = (typeof npc === 'string' ? npc : (npc as { id?: string } | undefined)?.id)?.replace(/^npc-/, '');
+      if (npcId) base.push({ kind: 'flag', flag: `npc.${npcId}.met` });
+      for (const p of (sc as { present?: Id[] }).present ?? []) base.push({ kind: 'companion', companion: p });
+      walk(id, sc, base);
+    }
+    for (const d of module.dawns ?? []) walk(`dawn ${d.day}`, { effects: d.effects ?? [] }, []);
+  }
+
   // A night's ambush lost is a night lost: the way out of it must not be a
   // long rest or a full heal, or losing on purpose beats the camp's risk.
   for (const sc of Object.values(module.scenes)) {

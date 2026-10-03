@@ -175,13 +175,19 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   },
   'elemental-cataclysm': {
     id: 'elemental-cataclysm', name: 'Elemental Cataclysm', suggestedLevel: 6,
-    members: ['fire-elemental', 'earth-elemental'],
+    // The finale, met at 5th on every route (docs/balance.md): with the air
+    // elemental it wins about 68% fresh (never surprised: a cracked door costs
+    // only the sisters' fight), so a party that climbed to it spent feels the
+    // stone (it won 98% as two elementals).
+    members: ['fire-elemental', 'earth-elemental', 'air-elemental'],
   },
   // The Wyrmcalling's finale when the party tears the sisters out of the
-  // stone: they fight in person, with the one elemental the stone got out.
+  // stone: they fight in person, beside the last two things the stone got
+  // out, a fire elemental and an azer (the "brass thing").
   'sisters-at-stone': {
     id: 'sisters-at-stone', name: 'The Sisters at the Stone', suggestedLevel: 5,
-    members: ['green-hag', 'green-hag', 'fire-elemental'],
+    // About 83% fresh at 5th, surprised or not (100% before the azer).
+    members: ['green-hag', 'green-hag', 'fire-elemental', 'azer-forgecaller'],
   },
   'sprite-glade': {
     id: 'sprite-glade', name: 'Sprite Glade', suggestedLevel: 1,

@@ -94,10 +94,10 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | Oni's Warband | `oni` | 5 | 3450 | 1× Oni, 1× Ogre, 1× Orc Raider |
 | Tempest Eye | `tempest-eye` | 5 | 1800 | 1× Air Elemental |
 | The Raided Hall | `giants-raided` | 5 | 1200 | 1× Ettin, 1× Orc Raider |
-| The Sisters at the Stone | `sisters-at-stone` | 5 | 3200 | 2× Green Hag, 1× Fire Elemental |
+| The Sisters at the Stone | `sisters-at-stone` | 5 | 4300 | 2× Green Hag, 1× Fire Elemental, 1× Azer Forgecaller |
 | Unicorn Sanctuary | `unicorn-sanctuary` | 5 | 1800 | 1× Unicorn |
 | Water Vortex | `water-vortex` | 5 | 1800 | 1× Water Elemental |
-| Elemental Cataclysm | `elemental-cataclysm` | 6 | 3600 | 1× Fire Elemental, 1× Earth Elemental |
+| Elemental Cataclysm | `elemental-cataclysm` | 6 | 5400 | 1× Fire Elemental, 1× Earth Elemental, 1× Air Elemental |
 
 ## Maps
 
@@ -123,4 +123,4 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | The Classic Ladder | `classic` | — | 70 | — | dev only | The original fourteen-battle gauntlet, now as an adventure. |
 | The Hollow Road | `hollow-road` | 1–3 | 118 | sunken-barrows | yes | Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit. |
 | The Sunken Barrows | `sunken-barrows` | 3–4 | 90 | wyrmcalling | yes | The Reedwife's fall broke an old vigil. Follow Thornwick's walking dead into the fen — and close what your victory opened. |
-| The Wyrmcalling | `wyrmcalling` | 4–5 | 135 | — | yes | The Reedwife's sisters wake the Calling Stone, and the hills answer with wyrms, giants, and worse. Climb the passes, thin what answers, and silence the stone. |
+| The Wyrmcalling | `wyrmcalling` | 4–5 | 137 | — | yes | The Reedwife's sisters wake the Calling Stone, and the hills answer with wyrms, giants, and worse. Climb the passes, thin what answers, and silence the stone. |

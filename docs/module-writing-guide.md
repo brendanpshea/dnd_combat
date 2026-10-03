@@ -596,6 +596,22 @@ once, plainly, in the interface, because a player can silence the quasit.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
 
+## Promises and threads
+
+- **Never promise a mechanic the scene doesn't enforce.** "You won't be
+  walking back past the kennels", "there's no second try": the scene makes it
+  true (`noFlee`, `noBack`, a one-way exit, a shared `attempt`), or the line
+  says less ("don't count on coming back").
+- **Close every thread you open, on every route.** A line that sets something
+  up (two scouts went out; a debt is owed) needs a payoff that every route
+  can reach, or a wording that needs none. Check it in the atlas.
+- **Regard follows what an NPC saw.** Guard an attitude change on the NPC
+  being met or with the party, or declare them `present` on the scene; mark
+  word of mouth `hearsay`. The validator enforces it.
+
+Settled decisions (what is not reopened each round) are in
+`docs/design-decisions.md`.
+
 ## What crosses between chapters: the ledger
 
 A chapter may remember as much as it likes while it is played. What it hands
@@ -626,9 +642,58 @@ adventure's own tests, transcripts and readability included. Regenerate with
 and read the transcript diff. The full `npm test` (about two minutes, most
 of it arena simulations) is for once before a commit, not for every edit.
 
+Difficulty claims rest on `docs/balance.md`, not on the win rates in
+`src/data/encounters.ts` comments. `npm run balance` (about 30 seconds on four
+cores, two minutes with `--serial`) replays the transcript routes, reads the
+level each route really carries to each fight, and simulates every fight for a
+fresh party at that level on its own map (greedy AI both sides, 50 seeds); it
+flags fights won under 60% or met more than a level below `suggestedLevel`.
+It is too slow for `check:story` and has no staleness test, so **regenerate
+with `npm run balance` when encounters or chapters change**, and read the
+flagged rows.
+
+Before a round of fixes ships, one reviewer reads only the round's diff and
+the atlas versions of every scene it touched (and of scenes that read the
+flags it changed), looking for what the fixes themselves broke: a line false
+on some path, a promise the scene doesn't keep, a thread opened and not
+closed, regard moved where the NPC wasn't. Fixes cause the next round's bugs
+more than anything else does; this pass is what catches them.
+
 When several people (or agents) work at once, split the work by chapter: one
 owner per chapter file, so nobody edits a file someone else has open.
 Anything that spans chapters, or touches the engine, goes first, on its own.
+
+## Reading the atlas
+
+The transcripts (below) show a few fixed routes. A line that is wrong only on
+a route none of them takes — one that implies Wren remembers the party, shown
+to a party that never met her — is invisible there. `docs/atlas/<chapter>.md`
+shows every scene the other way round: each distinct version of its text that
+some reachable state can produce, carried choices from earlier chapters
+included, with when that version shows ("when Wren saved · Vargan spared").
+Under the versions come the scene's choices, approaches or map markers, each
+with when it is open.
+
+- **Writers: read every version of each scene you change**, not just the one
+  your route shows. Ask of each: is every line true for every party the
+  "when" admits? A scene with too many versions is printed once, each
+  conditional line marked with when it shows: read those lines against each
+  other.
+- **Reviewers, human or AI: read the atlas diff** of a content change, and
+  the whole chapter now and then. Report a wrong line with the scene id, the
+  version's "when" and the quoted line.
+- **"Never shown on any reachable route"** (per scene, and gathered at the
+  end of each file) is a line, choice or marker whose condition no reachable
+  state meets: dead text, or a condition that is wrong.
+- **What `?` means.** A condition marked `?` is one the search does not track
+  (a tally such as a regard, gold, an item, a class in the party, a return
+  visit): both ways are shown, though not every party can bring both. A flag
+  only text reads is checked one at a time, so two such flags in one "when"
+  may not go together.
+- **Regenerate** with `npm run atlas` after any module or runtime change;
+  `test/atlas.test.ts` (in `check:story`) fails until the committed files
+  match. It runs the reachability search once more per chapter, with every
+  text condition tracked (about ten seconds).
 
 ## Reading a route
 

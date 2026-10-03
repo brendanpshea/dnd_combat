@@ -146,3 +146,21 @@ describe('a rest straight back into a fight', () => {
     expect(validateModule(m(true)).some((e) => e.includes('give it sameDay'))).toBe(false);
   });
 });
+
+describe('regard follows what an NPC saw', () => {
+  it('wants an attitude change guarded on the NPC being there, or marked hearsay', async () => {
+    const { withNpcs } = await import('../src/adventure/npcs.js');
+    const NPCS = { scout: { id: 'scout', name: 'Wren', fates: ['saved'] } };
+    const m = (choice: object, present?: string[]): Module => withNpcs({ id: 'rg', title: 'R', blurb: '', start: 'a', scenes: {
+      a: { id: 'a', kind: 'story', text: ['A.'], noBack: true, ...(present ? { present } : {}), next: [{ id: 'go', label: 'Go', to: 'won', ...choice }] } as Scene,
+      won,
+    } }, NPCS);
+    const flagged = (mod: Module) => validateModule(mod).some((e) => e.includes("scout's regard"));
+    const att = { kind: 'npc', npc: 'scout', attitude: 1 };
+    expect(flagged(m({ effects: [att] }))).toBe(true);
+    expect(flagged(m({ effects: [att], requires: [{ kind: 'npc', npc: 'scout', met: true }] }))).toBe(false);
+    expect(flagged(m({ effects: [{ ...att, met: true }] }))).toBe(false);
+    expect(flagged(m({ effects: [att] }, ['scout']))).toBe(false);
+    expect(flagged(m({ effects: [{ ...att, hearsay: true }] }))).toBe(false);
+  });
+});

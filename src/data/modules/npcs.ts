@@ -47,8 +47,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
       'hollow-road': ['scout-saved', 'scout-fail'],
       'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-partner', 'fen-reunion'],
       // Her fire, the council on the rim, and "Wren's scouts" at the forts they took.
-      wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'war-council',
-        'onihold-done', 'steading-done'],
+      wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'war-council'],
     },
   },
   tamsin: {

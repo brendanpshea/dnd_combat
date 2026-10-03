@@ -91,10 +91,12 @@ export type Effect =
   /** Record what became of a registry NPC (`fate`, replacing any other), or
    *  that the company has met them. Compiled to flags by `withNpcs`; the state
    *  carries into every later chapter of the campaign. `attitude` adds to
-   *  how they feel about the company (signed). */
-  | { kind: 'npc'; npc: Id; fate?: string; met?: true; attitude?: number }
-  /** Add to a tally (signed; unset counts as 0). */
-  | { kind: 'addFlag'; flag: string; amount: number };
+   *  how they feel about the company (signed): only where they saw it (the
+   *  validator wants them met or with the party), unless `hearsay` says the
+   *  deed reached them by word of mouth, on purpose. */
+  | { kind: 'npc'; npc: Id; fate?: string; met?: true; attitude?: number; hearsay?: true }
+  /** Add to a tally (signed; unset counts as 0). `hearsay`: see `npc`. */
+  | { kind: 'addFlag'; flag: string; amount: number; hearsay?: true };
 
 export interface JournalEntry {
   id: Id;
@@ -352,10 +354,12 @@ export type Scene =
    *  first, so a scene the party returns to doesn't replay a first meeting. */
   /** `assumes` (story, dialogue, ending): what the whole scene takes for
    *  granted; proven on every route to it, like a paragraph's `assumes`. */
-  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[] }
-  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[] }
+  /** `present`: registry NPCs on the scene (they see what the party does here;
+   *  their regard may move). A dialogue's own `npc` is present already. */
+  | { id: Id; kind: 'story'; text: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[]; present?: Id[] }
+  | { id: Id; kind: 'dialogue'; npc: NpcRef; lines: Para[]; again?: Para[]; art?: SceneArt; next: Choice[]; noBack?: boolean; back?: true; assumes?: Requirement[]; present?: Id[] }
   | {
-      id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller;
+      id: Id; kind: 'check'; skill: SkillId; dc: number; roller?: Roller; present?: Id[];
       intro: Para[];
       /** The intro on every visit after the first (see story `again`). */
       again?: Para[];
@@ -399,7 +403,7 @@ export type Scene =
       noFlee?: boolean;
     }
   | {
-      id: Id; kind: 'challenge'; intro: Para[]; art?: SceneArt;
+      id: Id; kind: 'challenge'; intro: Para[]; art?: SceneArt; present?: Id[];
       /** The intro on every visit after the first (see story `again`). */
       again?: Para[];
       /** The lines of attack on offer — the player picks how to try. */
