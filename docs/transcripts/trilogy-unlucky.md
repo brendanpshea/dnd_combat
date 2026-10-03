@@ -2199,8 +2199,6 @@ The manticore listens with its head on one side. "Promises," it says. "The hags 
 
 **» Fight — won**
 
-_Level up: 4 → 5_
-
 The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
 _+110 gold (1110)_
@@ -2232,6 +2230,8 @@ The drumming turns into thunder. Three boars the size of hay-carts come down the
 **Battle:** The Boar-Runs <sub>(`boar-runs` on `pass`)</sub>
 
 **» Fight — won**
+
+_Level up: 4 → 5_
 
 The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. A drover's torn purse hangs from the lead boar's tusk, still half full.
 

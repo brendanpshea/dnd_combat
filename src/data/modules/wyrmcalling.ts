@@ -231,10 +231,10 @@ const GORGON_WON = { to: 'hills', text: ['The gorgon crashes onto its side with 
   effects: [{ kind: 'setFlag', flag: 'gorgon-cleared' }, ...tally(), { kind: 'gold', amount: 100 }] } satisfies Outcome;
 
 /** The ettin talked into a fight with itself: the hall empties, no loot. It
- *  pays what the fight it avoids would have (the whole hall, or the raided
- *  remnant). */
-const steadingTalked = (encounterId: string): Effect[] => [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'setFlag', flag: 'ettin-split' },
-  ...tally(), { kind: 'xp', amount: avoidedFightXP(encounterId) }];
+ *  pays what the whole hall's fight would have (raided or not: the raid was
+ *  the company's trick too, see `steading-raided`). */
+const STEADING_TALKED: Effect[] = [{ kind: 'setFlag', flag: 'steading-cleared' }, { kind: 'setFlag', flag: 'ettin-split' },
+  ...tally(), { kind: 'xp', amount: avoidedFightXP('giants-hall') }];
 
 const STEADING_INTRO = [
   'Above the tree-line stands the giants\' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.',
@@ -1958,7 +1958,7 @@ const scenes: Record<string, Scene> = {
   'steading-talked': {
     id: 'steading-talked', kind: 'story', noBack: true, art: { emoji: '🏚️' },
     text: STEADING_PARLEY,
-    next: [{ id: 'ok', label: 'Climb on past the empty hall', to: 'hills', effects: steadingTalked('giants-hall') }],
+    next: [{ id: 'ok', label: 'Climb on past the empty hall', to: 'hills', effects: STEADING_TALKED }],
   },
   // The talk spent and failed: the ettin's two heads have heard enough.
   'steading-balked': {
@@ -1984,14 +1984,18 @@ const scenes: Record<string, Scene> = {
     ],
     again: ['The giants\' hall is still burning. The ettin limps out into the yard again, its two heads still arguing about the raid. The orc runner stumbles after it.'],
     onWin: { to: 'hills', text: ['The ettin goes down still blaming itself, one head at a time. The orc runner falls across its legs. The ogre-mage\'s warband left its war-chest in the yard, and the hall holds the ettin\'s tribute too.'],
-      effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 190 }] },
+      // The raid did part of the work, and the trick that sent it was the
+      // company's: the rest of the full hall's XP is paid here, so tricking
+      // the ogre-mage pays what fighting both would.
+      effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 190 },
+        { kind: 'xp', amount: avoidedFightXP('giants-hall') - avoidedFightXP('giants-raided') }] },
     parley: {
       skill: 'deception', dc: 11, label: 'Ask each head whose fault the raid was',
       refused: ['"YOUR fault," roars the left head, and points a club at you. "YOUR fault," the right head agrees.'],
       success: { to: 'hills', text: [
         'You ask the left head whose fault the raid was, and then you ask the right head. That is all it takes.',
         'The two heads fall to brawling across the yard, through what is left of the wall, and down the back of the mountain. The orc runner limps after it, shouting.',
-      ], effects: steadingTalked('giants-raided') },
+      ], effects: STEADING_TALKED },
     },
   },
   'steading-done': {
@@ -2262,7 +2266,7 @@ const scenes: Record<string, Scene> = {
         text: '"Our sister sits by her pool on the leash you tied, and nobody sits by the door," {sedge} says. "We will sit by it, and fetch her to sit with us. Three keepers need no leash."' },
     ],
     next: walkDown(0, 'vigil-down-with', 'vigil-aftermath', 'Watch them walk down the mountain toward the fen',
-      [{ kind: 'xp', amount: 1200 }]),
+      [{ kind: 'xp', amount: avoidedFightXP('sisters-at-stone') }]),
   },
   ...walkDownScenes('vigil-down-with', 'vigil-aftermath'),
   // Every reason spent, and Sedge still says no: the stone, as the answer left it.

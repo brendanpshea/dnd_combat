@@ -1227,7 +1227,11 @@ const scenes: Record<string, Scene> = {
       'You tell him about the wall in the king\'s chamber. Hundreds of villages are cut there, with a line through every one. None of them stand together. None of them stand at all. "{thornwick} is the next name," you say. "{saltmere}\'s graves will be on the wall after that."',
       '{marrow}\'s chisel stops. His acolyte sees it stop, and screams that {marrow} has lost his faith.',
     ],
-    next: [{ id: 'on', label: 'Face what is left of his flock', to: 'seal-doubt' }],
+    // Talked round, half his flock stays on its knees: the lighter fight pays
+    // less, so the words pay the difference (a way past part of a fight pays
+    // what that part would have).
+    next: [{ id: 'on', label: 'Face what is left of his flock', to: 'seal-doubt',
+      effects: [{ kind: 'xp', amount: avoidedFightXP('cult-at-door') - avoidedFightXP('cult-wavering') }] }],
   },
   'seal-doubt': {
     id: 'seal-doubt', kind: 'battle', encounterId: 'cult-wavering', mapId: 'firepit',
@@ -1301,9 +1305,11 @@ const scenes: Record<string, Scene> = {
     next: CLIMB_HOME, noBack: true,
   },
   // The rites failed, and the Warden pushed back. Win, and the door shuts
-  // over the bodies, but not cleanly: the crack carries into Part 3.
+  // over the bodies, but not cleanly: the crack carries into Part 3. A
+  // setback, not a payday (no XP or loot, like the night ambushes): a clean
+  // reseal pays nothing, so the failure must not pay more.
   'seal-breach': {
-    id: 'seal-breach', kind: 'battle', encounterId: 'warden-dead', mapId: 'firepit',
+    id: 'seal-breach', kind: 'battle', encounterId: 'warden-dead', mapId: 'firepit', loot: false,
     noFlee: true,
     // Beaten back from a cracked door: the dead are still coming through it,
     // so the party gets up and holds it again.

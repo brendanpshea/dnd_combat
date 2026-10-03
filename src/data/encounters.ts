@@ -90,7 +90,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   // does not fight here). One of the two "ghouls" at the door is a ghast,
   // here as in `cult-at-door`. ~80% at 4th (the bare four won 100%; with the
   // soldier alone still 100%; three priests ~31%). Its XP (2,500) is a little
-  // under `cult-at-door`'s (250 less), so talking him round costs little.
+  // under `cult-at-door`'s; `seal-doubt-words` pays the difference.
   'cult-wavering': {
     id: 'cult-wavering', name: 'The Worm Without Its Shepherd', suggestedLevel: 4,
     members: ['acolyte', 'ghast', 'ghoul', 'animated-armor', 'wight', 'priest', 'priest'],

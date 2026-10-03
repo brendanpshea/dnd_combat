@@ -493,6 +493,8 @@ You are inside the wall, and no horn has sounded. Up in the gateway something ha
 
 **» Keep low and move in among the tents**
 
+_Level up: 2 → 3_
+
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
 **→ Gate** <sub>(room `gate`)</sub>
@@ -520,8 +522,6 @@ On the far side of the ring, a bare-chested raider gets up off an upturned barre
 **Battle:** The Pit-Brute and Its Champion <sub>(`den-pit` on `ruins`)</sub>
 
 **» Fight — won**
-
-_Level up: 2 → 3_
 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. The ogre's collar has worn a groove in its neck as deep as a thumb.
 
@@ -1427,6 +1427,8 @@ Higher up the rock, something else is roosting. It is a lean grey drake with lea
 
 **» Fight — won**
 
+_Level up: 4 → 5_
+
 The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
 _+110 gold (711)_
@@ -1462,8 +1464,6 @@ The kobolds scatter for their spears. Down the briar on grey threads come two sp
 **Battle:** Green Wyrmling's Thicket <sub>(`green-dragon-den` on `marsh`)</sub>
 
 **» Fight — won**
-
-_Level up: 4 → 5_
 
 The wyrmling drops in the middle of a hiss, and its poison breath thins to a harmless stink. Its small hoard lies under the bones, and you dig it out.
 

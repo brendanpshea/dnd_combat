@@ -287,7 +287,7 @@ describe('adventure runtime vocabulary', () => {
     ] } }))).toHaveLength(1);
   });
 
-  it('the trilogy\'s only level floors are its cold starts and the outriders\' parley', () => {
+  it('the trilogy\'s only level floors are its cold starts', () => {
     const sites: string[] = [];
     for (const m of MODULES) {
       for (const [id, sc] of Object.entries(m.scenes)) {
@@ -300,7 +300,7 @@ describe('adventure runtime vocabulary', () => {
         }
       }
     }
-    expect(sites.sort()).toEqual(['hollow-road:road-out:parley', 'sunken-barrows:return:go-cold', 'wyrmcalling:muster:go-cold']);
+    expect(sites.sort()).toEqual(['sunken-barrows:return:go-cold', 'wyrmcalling:muster:go-cold']);
   });
 
   const TOWN_MOD: Module = {

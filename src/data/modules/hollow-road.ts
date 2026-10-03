@@ -13,8 +13,7 @@
  * (docs/module-writing-guide.md, "Levels come from fights"). Every way past a
  * fight pays what the fight would have (`avoidedFightXP`): the spy's crew
  * shouted down or caught, the den's gate slipped, Vex turned so that Hask
- * stands aside from the chief's guard; staring down the road-out goblins carries the 2nd level a
- * company that has done the town would reach by fighting them. A company
+ * stands aside from the chief's guard, the road-out goblins stared down. A company
  * that fights its road reaches 2nd on the marsh road, and every company
  * reaches 3rd before the chief's hall: the den's
  * gate (fought or slipped) and the pit on its forced spine carry about 560 XP
@@ -754,14 +753,13 @@ const scenes: Record<string, Scene> = {
     intro: ['Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling and pointing at your boots. At his heel slinks a grey wolf the size of a pony, its lips drawn back from yellow teeth.'],
     again: ['The goblin outriders are still in the reeds a mile from the gate. Their boss lopes out in front of the pack again, scimitar bared, cackling, his great grey wolf at his heel.'],
     // No milestone on the win: the fight's own XP is the reward. Staring the
-    // pack down is the clever way past, so the parley carries the level a
-    // company that has done the town would reach by fighting (2nd).
+    // pack down is the clever way past, and pays what the fight would have.
     onWin: { to: 'trail', text: ['The goblin pack breaks and vanishes into the reeds, and ahead of you the marsh swallows the road whole. Your arms ache.'] },
     parley: {
       skill: 'intimidation', dc: 13, label: 'Stare down the goblin boss',
       refused: ['The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."'],
       success: { to: 'trail', text: ['You hold his eye and draw steel slow, and let him count your blades. The cackle dies in his throat. He barks something at his pack, and they melt back into the reeds as if they were never there. Behind you, somebody lets out a long breath. Not one blade got wet.'],
-        effects: [{ kind: 'xpToLevel', level: 2 }] },
+        effects: [{ kind: 'xp', amount: avoidedFightXP('goblin-outriders') }] },
     },
   },
   trail: {
