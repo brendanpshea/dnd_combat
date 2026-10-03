@@ -43,10 +43,7 @@ Scene ids are written `chapter:scene`; a dawn is `chapter:dawn-N`.
 - **The lamb** is paid each midwinter, at the water's edge; it is a wage, not
   an offering (Halden's notes).
 
-**Contradicts**
-- `wyrmcalling:vex-brief`: "Hold the valley through the summer, and I walk
-  free." Part 3 is autumn. (Suggested: "till the first snow".) Its journal entry
-  says no season and is fine.
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ## Places
 
@@ -94,14 +91,7 @@ old mill is just outside. Thornwick has two roads out that matter:
   Thornwick, the hollow, the fen and the high hills. If a line needs one, add it
   here first.
 
-**Contradicts**
-- `hollow-road:tavern-meet` (Mira): "Last week they took a carter off the north
-  road, and his granddaughter with him."
-- `hollow-road:dawn-4` (two versions): "the Ashfang still have the carter from
-  the north road, and his granddaughter."
-- `wyrmcalling:den-flown` (shared by all three dens): "Scorched scales litter
-  the floor, and claw-marks run up the rock to the open sky." True of the red
-  den only.
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ## People and objects
 
@@ -192,17 +182,7 @@ Reedwife's door is the Warden's door; her price is the lamb.
 **Naming.** In narration "the girl" is the carter's granddaughter. Wren is
 never "the girl".
 
-**Contradicts**
-- `hollow-road:den-pens-left`: "The girl watches you go, holding her one shoe
-  in both hands." The shoe is on her foot (`den-pens`: "one shoe, on her right
-  foot"; epilogue: "still wearing her one shoe").
-- `wyrmcalling:wagons-carter` (the carter): "Me, and a girl of about seven on
-  my back." She is his granddaughter.
-- `wyrmcalling:vigil-rueful`, `vigil-sold`, `vigil-unknowing` (Wren speaks):
-  "Sedge looks at the girl, and then at you." The girl here is Wren.
-- Loose, not banned: Nettle's "your carters" (`answer-defiant`): the pen held
-  one carter. It reads as "the people", and may stay. (`reeve-hall` now says
-  "a carter off the marsh road… and his granddaughter".)
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ## Who was where, per ledger value
 
@@ -225,10 +205,7 @@ That is chapter-local, so **Part 3 may not assume she went underground**: she
 "walked the fen with you as far as the barrows". She is at the gate when the
 company comes back up.
 
-**Contradicts**
-- `wyrmcalling:scouts-fire-old`: "Last time it was the barrows. I didn't
-  enjoy a step of it." Shown to every company that won Part 2, most of whom
-  left her at the gate.
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ### Wren in Part 3
 Chief of Scouts at the scouts' fire; at the council she comes up the last
@@ -246,12 +223,11 @@ her.
   then "the chief's guard watches her go, and then walks out into the smoke
   after her". A company that lost that fight first and bound her on its return
   did fight him, so a later line can say **he answered her whistle** or **he
-  stood for the chief**, never that he fought the company.
+  stood for the chief**, never that he fought the company. The binding can
+  also be said as a rite (Religion) before her whistle: she whistles at the
+  door as she leaves, and Hask follows her out the same way.
 
-**Contradicts**
-- `wyrmcalling:vex-brief`: "I could have stood him down, and I let him fight
-  you instead." Its journal entry: "He let the chief's guard fight you in the
-  hall". Neither holds where the Reedwife is bound.
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ### The Reedwife after Part 1 (entry 6)
 - **`dead`**: killed in the chief's hall; she dies "as a body, not a heap of
@@ -263,13 +239,7 @@ her.
   the Warden still wakes. In a vigil ending her sisters go to the door, and
   "three tall women" are seen in the shallows after.
 
-**Contradicts**
-- `wyrmcalling:vigil-kept`: "Our sister is at that door still, on the leash
-  you tied."
-- `wyrmcalling:calling-approach` (Nettle, bound): "You beat her in the chief's
-  hall and tied her back to that door with her own words." She was tied to her
-  price, not to the door. ("a leashed keeper keeps nothing" is right, and may
-  stay.)
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ### The captives (entry 5): freed or not
 The ledger has two values, and **a pen not freed means the carter, the girl
@@ -289,19 +259,7 @@ So in Part 3 the carter, his wagon and the girl in new shoes appear only where
 `hollow-road:captives-freed` is set, and "her pen is empty / everyone in it
 walked home" is said only then.
 
-**Contradicts** (the last row: both slides are shown with `captives-freed`
-unset, and Part 3 then treats the captives as lost)
-- `hollow-road:epilogue` [captives left · moon up · Wren not saved]: "The
-  reeve's men find the pens behind the kennels two days later. The carter is
-  alive. He will not say your names, and he will not drive the marsh road
-  again."
-- `hollow-road:epilogue` [never opened · met Vex · Wren not saved]: "The
-  reeve's men find the pens behind the kennels two days later. The carter
-  carries the girl out himself. She is still wearing one shoe."
-- `hollow-road:epilogue` [never opened · never met Vex; no route reaches it
-  today]: "the reeve's men find a pen you never looked in: a carter, two
-  reed-cutters and a girl with one shoe. They had been waiting for the dark of
-  the moon." It reads as found alive, with nothing freed.
+**Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
 ### Halden, Marrow, the seal, the valley (entries 7–10)
 - **Halden `saved`**: talked out of the Warden's grip in the drowned chapel.

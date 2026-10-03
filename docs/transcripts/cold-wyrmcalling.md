@@ -61,9 +61,9 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down, and I let him fight you instead. I've thought about that."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
-The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
+The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
@@ -503,7 +503,7 @@ Down in the bowl, two tall green women at the foot of the stone lift their heads
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
 
-At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
+Nothing comes over the rim all night. It is bare, and only old scorch marks show where wyrms once perched.
 
 **» Go down into the bowl**
 
@@ -539,19 +539,13 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
-**» "She fed on the people of this valley. We owe you nothing." — Nettle wants a fight. Sedge wants something else.**
+**» "She fed on the people of this valley. We owe you nothing."**
 
 <sub>scene `answer-defiant`</sub>
 
 Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and not one of the dead walked. Set that against your carters."
 
-Sedge does not laugh. "Ask your barrows what her fall bought you," she says, very quietly, and turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
-
-**» Ask Sedge to take up her sister's vigil**
-
-<sub>scene `vigil-refused-defiant`</sub>
-
-Sedge does not turn from the stone. "You owe nothing?" she says. "Then neither do we." Nettle laughs, and sings louder.
+Sedge does not laugh. "You owe nothing?" she says, very quietly. "Then neither do we. Ask your barrows what her fall bought you, and let your priest's book keep the door." She turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 

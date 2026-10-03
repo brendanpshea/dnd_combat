@@ -50,7 +50,8 @@ change. Each entry gives the decision and, briefly, why.
   `sameDay` (no night passes mid-fight).
 - **One try at the big mercies** (binding the Reedwife, saving Halden), and
   more than one skill can reach each: a party is never shut out of a mercy
-  because it lacks one particular skill.
+  because it lacks one particular skill (binding the Reedwife: Arcana as a
+  parley, or Religion as a rite; Halden: Religion, or Persuasion by his bell).
 - **Combat is meant to be a challenge.** A main-path fight wins roughly 70–90%
   for a fresh party at the level routes actually meet it (bosses and finales
   60–80%); the "worn" column of `docs/balance.md` shows real danger. Night

@@ -65,7 +65,7 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 > "Sellswords. Good. You read my note, then." **Mira** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
 
-> "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off the north road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
+> "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
 
 > "And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left."
 
@@ -155,7 +155,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
+"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -605,23 +605,17 @@ Vargan looks at the hag without a word, and turns, and swings his axe at her two
 
 The hag looks down at him a moment, and when she looks up she is smiling.
 
-**» Face the Reedwife**
+**» [Religion DC 15] Bind her to her old price as a rite: one lamb a winter, by their door — One try at binding her, whichever way the words are said.**
 
-<sub>scene `reedwife-fight-alone`</sub>
+<sub>scene `bind-hag-rite-alone`</sub>
 
-The **Reedwife** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. Hask still does not come. Two raiders stumble in from the yard instead, still fumbling with their belts, and you are on them before they find their blades.
+Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
 
-**Battle:** Green Hag and Hired Blades <sub>(`hag-coven` on `firepit`)</sub>
-
-**» [Arcana DC 15] Hold her to her old price: one lamb a winter, by their door**
-
-`[Arcana DC 15 — Morgan Le Fey rolls 24 — passed]`
-
-You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
+`[Religion DC 15 — Morgan Le Fey rolls 22 — passed]`
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard, watch her go, and then run too.
 
 <sub>scene `vargan-fate`</sub>
 
@@ -757,7 +751,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her the carters he took off the marsh road besides. And there he is. Alive, and cutting reeds in the shallows he sold."
+> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. And there he is. Alive, and cutting reeds in the shallows he sold."
 
 > He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -1023,7 +1017,7 @@ The mud is still wet. A thin grey man in a gravedigger's apron stands under the 
 
 A grey little gravedigger, Halden said. The one who brought the candles.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -1057,7 +1051,7 @@ Your cleric holds up a holy symbol, and a light that is not torch-light fills th
 
 At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
-The call that brought him down here has let him go. He is light now, just bones in a coat.
+He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
 
 The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
@@ -1265,7 +1259,7 @@ He stands at the window a long while. Then he counts your purse into your hands 
 
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.
 
-The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. Wren tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.
+The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. The last purse Wren keeps back, tucked into her coat. She will walk it out to the far edge of the fen herself.
 
 Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
@@ -1649,7 +1643,7 @@ Hask walks at Vex's shoulder: the chief's old guard, grey and scarred, the one y
 
 Two fen-folk come up behind the pikes, mud to the knees, with coils of rope over their shoulders. "The valley owes you a rope at least," one of them says.
 
-"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or two, but no more. A big party's a loud one."
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren, Brother Halden or Hask down with you, or any two of them, but no more. A big party's a loud one."
 
 **» Let them hold the rim while you go down**
 
@@ -1657,7 +1651,7 @@ Two fen-folk come up behind the pikes, mud to the knees, with coils of rope over
 
 Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen. The sisters' faces are burning down like candles, and the stone sings louder for every drop.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to that door with her own words. She takes your lamb now like a dog on a leash, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She takes your lamb now like a dog on a leash and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -1665,7 +1659,7 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
-**» "The vigil broke on our watch. We know, and we're sorry for that part." — Sedge is listening for something. So is Nettle.**
+**» "The vigil broke on our watch. We know, and we're sorry for that part."**
 
 <sub>scene `answer-rueful`</sub>
 
@@ -1693,7 +1687,7 @@ With no one feeding it, the Calling falters. The black fang cracks from top to b
 
 "We will keep the door," Sedge says. "She did not keep it all those winters for nothing. And we will take one lamb at midwinter and no more, as our sister did before she grew greedy. Do not come into our fen again." Nettle says nothing. She only looks at you, the way you look at a debt you mean to collect.
 
-"Our sister is at that door still, on the leash you tied," Sedge says. "We will stand it beside her. Three keepers need no leash."
+"Our sister sits by her pool on the leash you tied, and nobody sits by the door," Sedge says. "We will sit by it, and fetch her to sit with us. Three keepers need no leash."
 
 **» Watch them walk down the mountain toward the fen**
 

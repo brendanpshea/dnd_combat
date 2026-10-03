@@ -121,6 +121,6 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | --- | --- | --- | --- | --- | --- | --- |
 | The Bandit Hideout | `hideout` | — | 12 | — | dev only | Root out the bandits plaguing the road — by blade or by wit. |
 | The Classic Ladder | `classic` | — | 70 | — | dev only | The original fourteen-battle gauntlet, now as an adventure. |
-| The Hollow Road | `hollow-road` | 1–3 | 118 | sunken-barrows | yes | Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit. |
+| The Hollow Road | `hollow-road` | 1–3 | 120 | sunken-barrows | yes | Break the Ashfang raiders — through the village, the marsh, and their den. By blade or by wit. |
 | The Sunken Barrows | `sunken-barrows` | 3–4 | 90 | wyrmcalling | yes | The Reedwife's fall broke an old vigil. Follow Thornwick's walking dead into the fen — and close what your victory opened. |
-| The Wyrmcalling | `wyrmcalling` | 4–5 | 137 | — | yes | The Reedwife's sisters wake the Calling Stone, and the hills answer with wyrms, giants, and worse. Climb the passes, thin what answers, and silence the stone. |
+| The Wyrmcalling | `wyrmcalling` | 4–5 | 135 | — | yes | The Reedwife's sisters wake the Calling Stone, and the hills answer with wyrms, giants, and worse. Climb the passes, thin what answers, and silence the stone. |

@@ -65,7 +65,7 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 > "Sellswords. Good. You read my note, then." **Mira** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
 
-> "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off the north road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
+> "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
 
 > "And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left."
 
@@ -155,7 +155,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
+"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -561,7 +561,7 @@ Up in the hollow, the reeve's men pull down the den's timber wall one post at a 
 
 The bounty notice comes down off the board in the square. Someone tears off the bottom corner first, the line in the prouder hand, and keeps it.
 
-The reeve's men find the pens behind the kennels two days later. The carter carries the girl out himself. She is still wearing one shoe.
+The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The Ashfang who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.
 
 ### Ending: victory
 
@@ -647,7 +647,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her the carters he took off the marsh road besides. And there he is. Alive, and cutting reeds in the shallows he sold."
+> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. And there he is. Alive, and cutting reeds in the shallows he sold."
 
 > He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -941,7 +941,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -975,7 +975,7 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 
 At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
-The call that brought him down here has let him go. He is light now, just bones in a coat.
+He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
 
 The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
@@ -1213,9 +1213,9 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down, and I let him fight you instead. I've thought about that."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
-The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
+The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
@@ -1467,7 +1467,7 @@ Behind you, everything still loose in the hills turns at once and starts down to
 
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
 
-At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
+Nothing comes over the rim all night. It is bare, and only old scorch marks show where wyrms once perched.
 
 **» Go down into the bowl**
 

@@ -74,20 +74,6 @@ const ROWS: Row[] = [
 /** Contradictions in the text when this check was written. Strike each off
  *  as the fix round corrects it. */
 const KNOWN = new Set<string>([
-  'season-part3 @ wyrmcalling:vex-brief',            // "Hold the valley through the summer"
-  'north-road @ hollow-road:tavern-meet',            // Mira: "a carter off the north road"
-  'north-road @ hollow-road:dawn-4',                 // "the carter from the north road"
-  'den-scorch @ wyrmcalling:den-flown',              // one text for all three dens
-  'shoe-held @ hollow-road:den-pens-left',           // "holding her one shoe in both hands"
-  'carter-girl @ wyrmcalling:wagons-carter',         // "Me, and a girl of about seven on my back"
-  'wren-the-girl @ wyrmcalling:vigil-rueful',        // "Sedge looks at the girl" (Wren)
-  'wren-the-girl @ wyrmcalling:vigil-sold',
-  'wren-the-girl @ wyrmcalling:vigil-unknowing',
-  'wren-underground @ wyrmcalling:scouts-fire-old',  // "Last time it was the barrows"
-  'hask-fought @ wyrmcalling:vex-brief',             // "I let him fight you instead" (and its journal)
-  'bound-at-door @ wyrmcalling:vigil-kept',          // "at that door still, on the leash you tied"
-  'bound-at-door @ wyrmcalling:calling-approach',    // "tied her back to that door"
-  'unfreed-came-home @ hollow-road:epilogue',        // "The carter is alive" / "carries the girl out himself" with captives not freed
 ]);
 
 interface Line { chapter: string; scene: string; text: string; cond: string }

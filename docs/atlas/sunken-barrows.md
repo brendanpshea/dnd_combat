@@ -249,7 +249,7 @@ The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at th
 
 "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-"Those shallows were common water in my grandfather's day," Aldous says to the glass. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her the carters he took off the marsh road besides. I wrote the sale down under the bounty, and the day you killed him under that."
+"Those shallows were common water in my grandfather's day," Aldous says to the glass. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. I wrote the sale down under the bounty, and the day you killed him under that."
 
 He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -263,7 +263,7 @@ The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at th
 
 "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her the carters he took off the marsh road besides. And there he is. Alive, and cutting reeds in the shallows he sold."
+Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. And there he is. Alive, and cutting reeds in the shallows he sold."
 
 He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -737,7 +737,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the Ashfang." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -749,7 +749,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "The lizardfolk in the hollow wore it. So did every marsh-thing that ran with the Ashfang." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
 
@@ -1198,7 +1198,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 ### 2. when Halden not saved · not `door-straining` · Wren in the party
 
@@ -1210,7 +1210,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 Wren keeps an arrow on the string until his lantern is gone. "The dead don't tell you to mind the cut," she says.
 
@@ -1252,7 +1252,7 @@ The mud is still wet. A thin grey man in a gravedigger's apron stands under the 
 
 A grey little gravedigger, Halden said. The one who brought the candles.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 ### 6. when Halden saved · not `door-straining` · Wren in the party
 
@@ -1266,7 +1266,7 @@ The mud is still wet. A thin grey man in a gravedigger's apron stands under the 
 
 A grey little gravedigger, Halden said. The one who brought the candles.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 Wren keeps an arrow on the string until his lantern is gone. "The dead don't tell you to mind the cut," she says.
 
@@ -1518,7 +1518,7 @@ The last digger falls across its pick. The cut goes quiet, apart from your breat
 
 At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
-The call that brought him down here has let him go. He is light now, just bones in a coat.
+He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
 
 The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
@@ -1526,7 +1526,7 @@ The diggers stacked their grave-goods against the wall as they worked. There are
 
 At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
-The call that brought him down here has let him go. He is light now, just bones in a coat.
+He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
 
 Wren kneels and straightens the chain on his chest. "The reeve's grandfather," she says, and nothing else.
 
@@ -2432,7 +2432,7 @@ That evening, in the reeve's hall, Aldous counts your purse into your hands hims
 
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.
 
-The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. Wren tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.
+The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. The last purse Wren keeps back, tucked into her coat. She will walk it out to the far edge of the fen herself.
 
 Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
@@ -2454,7 +2454,7 @@ Thornwick reburies its dead in the following days, oldest graves first. The reev
 
 With Halden in the ground, the town has no priest. Your cleric says the burial words at every grave, and each time stops short of the line about the bell.
 
-The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. Wren tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.
+The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. The last purse Wren keeps back, tucked into her coat. She will walk it out to the far edge of the fen herself.
 
 Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
@@ -2476,7 +2476,7 @@ He stands at the window a long while. Then he counts your purse into your hands 
 
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.
 
-The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. Wren tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.
+The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. The last purse Wren keeps back, tucked into her coat. She will walk it out to the far edge of the fen herself.
 
 Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
@@ -2502,7 +2502,7 @@ Thornwick reburies its dead in the following days, oldest graves first. The reev
 
 With Halden in the ground, the town has no priest. Your cleric says the burial words at every grave, and each time stops short of the line about the bell.
 
-The fen-folk come in from the far pools for the reburials, and you hand over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. Wren tucks the last purse into her coat. She will walk it out to the far edge of the fen herself.
+The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. They pass them along, name by name. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest. The last purse Wren keeps back, tucked into her coat. She will walk it out to the far edge of the fen herself.
 
 Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
@@ -2543,7 +2543,7 @@ When no one came back up by dark, eel-catchers from the far pools went down the 
 
 Back on the settles in Mira's back room, with fresh bruises under the old mud.
 
-Wren is on the next settle again, boots and all, and does not open her eyes.
+Wren is on the next settle, boots and all, and does not open her eyes.
 
 "You know where the bread is," Mira says, and leaves you to it.
 
@@ -2551,7 +2551,7 @@ Wren is on the next settle again, boots and all, and does not open her eyes.
 
 The first thing you know is the smell of tallow and wet wool. You are lying on the settles in the Wander-Inn's back room, pushed together to make beds, with fen-mud dried stiff in your hair.
 
-Eel-catchers from the far pools found you by the raised road at first light, Mira says. They brought you in on hurdles, and would not stop for so much as a cup.
+Eel-catchers from the far pools found the whole company by the raised road at first light, Wren among you, Mira says. They brought you in on hurdles, and would not stop for so much as a cup.
 
 "The fen's still there," Mira says. She puts the bread where you can reach it.
 
@@ -2559,7 +2559,7 @@ Eel-catchers from the far pools found you by the raised road at first light, Mir
 
 Back on the settles in Mira's back room, with fresh bruises under the old mud.
 
-The eel-catchers found you this time, Mira says. They stayed only long enough to warm their hands.
+The eel-catchers brought you in again, Wren with you, Mira says. They stayed only long enough to warm their hands.
 
 "You know where the bread is," Mira says, and leaves you to it.
 

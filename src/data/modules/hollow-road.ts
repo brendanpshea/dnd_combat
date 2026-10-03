@@ -166,20 +166,43 @@ const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate:
  * fight, it holds her (a parley: one try between both fights, `bind-hag`, so
  * a miss is the fight and the kill, never a second roll). Its success pays
  * what the fight would have, and carries the fight's story effects (not her
- * purse, which she keeps). No scene of its own: the parley lands on
+ * purse, which she keeps). The parley has no scene of its own: it lands on
  * `vargan-fate`, so the reach search gains no layer.
+ *
+ * Two skills reach it (docs/design-decisions.md, "One try at the big
+ * mercies"): the parley is Arcana, the words as a spell; `vargan-turns` offers
+ * the same try as Religion, the words as a rite (`bind-hag-rite`, a check
+ * spending the same `bind-hag`). Either spends both.
  */
+const BIND_HAG_WON = (encounter: string): Effect[] =>
+  [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'pens-settled' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
+const BIND_HAG_HELD = (after: string): Para[] => [
+  'The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One {door-price}," she says at last, as if it tastes of mud. "See that they pay it."',
+  `She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. ${after}`,
+];
 const BIND_HAG = (encounter: string, after: string): NonNullable<Extract<Scene, { kind: 'battle' }>['parley']> => ({
   skill: 'arcana', dc: 15, attempt: 'bind-hag',
   label: 'Hold her to her old price: one {door-price} a winter, by their door',
   refused: ['You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.'],
   success: { to: 'vargan-fate',
-    effects: [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'pens-settled' }, { kind: 'xp', amount: avoidedFightXP(encounter) }],
+    effects: BIND_HAG_WON(encounter),
     text: [
       'You say her price back to her, in her own words. One {door-price} each {door-midwinter}, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.',
-      'The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One {door-price}," she says at last, as if it tastes of mud. "See that they pay it."',
-      `She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. ${after}`,
+      ...BIND_HAG_HELD(after),
     ] },
+});
+/** The same binding as a rite (Religion), offered before the fight, before
+ *  she whistles in her guard. A miss is that fight, the parley spent. Bound,
+ *  she whistles as she goes, so the chief's guard answers her whistle and
+ *  never fights the company, as at the fight's door (docs/canon.md, Hask). */
+const BIND_HAG_RITE_CHOICE = (to: string): Choice => ({
+  id: 'rite', label: '[Religion DC 15] Bind her to her old price as a rite: one {door-price} a winter, by their door',
+  hint: 'One try at binding her, whichever way the words are said.', to, attempt: 'bind-hag' });
+const BIND_HAG_RITE = (id: string, encounter: string, fight: string, after: string): Scene => ({
+  id, kind: 'check', skill: 'religion', dc: 15,
+  intro: ['Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one {door-price} each {door-midwinter}, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.'],
+  success: { to: 'vargan-fate', effects: BIND_HAG_WON(encounter), text: BIND_HAG_HELD(after) },
+  failure: { to: fight, text: ['One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.'] },
 });
 const REEDWIFE_LOST = [
   'The hag\'s cold fingers close over your eyes, and the hall goes dark.',
@@ -361,7 +384,7 @@ const scenes: Record<string, Scene> = {
     lines: [
       'Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you\'ll do.',
       '"Sellswords. Good. You read my note, then." **{mira}** doesn\'t smile. She hasn\'t since the raids began. "The reeve\'s too proud to beg, so I wrote it for him. Sit."',
-      '"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off the north road, and his granddaughter with him. She\'s seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."',
+      '"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She\'s seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."',
       '"And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them\'s lying hurt out there, she hasn\'t many nights left."',
       '"Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there\'s more, the kind no one says with the door open." She sets the cup down.',
     ],
@@ -419,7 +442,7 @@ const scenes: Record<string, Scene> = {
   'tavern-plain': {
     id: 'tavern-plain', kind: 'story', back: true, art: { emoji: '🍺' },
     text: ['She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."',
-      '"If you find the reeve\'s scout, she\'ll tell you she\'s fine," {mira} says. "Help her anyway. Take a healing potion with you, too. I\'d rather not bury anyone this month." She turns back to her taps.'],
+      '"If you find the reeve\'s scout, she\'ll tell you she\'s fine," {mira} says. "Help her anyway. Buy a healing potion at the market, too. I\'d rather not bury anyone this month." She turns back to her taps.'],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
   'tavern-blank': {
@@ -1396,7 +1419,7 @@ const scenes: Record<string, Scene> = {
   },
   'den-pens-left': {
     id: 'den-pens-left', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
-    text: ['"The reeve\'s men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, holding her one shoe in both hands.'],
+    text: ['"The reeve\'s men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, one bare foot tucked up in the straw.'],
     next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
   },
   'den-hyenas': {
@@ -1566,7 +1589,7 @@ const scenes: Record<string, Scene> = {
     intro: [
       { assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
         text: 'The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.' },
-      '"You\'ve cost me a good season," he says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn\'t come.',
+      '"You\'ve cost me a good season," {vargan} says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn\'t come.',
     ],
     again: [{ assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask} is nowhere in the hall. {vex}\'s word still holds.' }, '{vargan} rolls the great axe off his shoulder again. The hag watches the doorway, still counting the blades that didn\'t come.'],
     loot: { bonusTier: 'rare' },
@@ -1613,13 +1636,18 @@ const scenes: Record<string, Scene> = {
   'vargan-turns': {
     id: 'vargan-turns', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '✋' },
     text: [...VARGAN_TURNS, 'The hag looks down at him a moment, and when she looks up she is smiling.'],
-    next: [{ id: 'fight', label: 'Face the {reedwife}', to: 'reedwife-fight' }],
+    next: [{ id: 'fight', label: 'Face the {reedwife}', to: 'reedwife-fight' }, BIND_HAG_RITE_CHOICE('bind-hag-rite')],
   },
   'vargan-turns-alone': {
     id: 'vargan-turns-alone', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '✋' },
     text: [...VARGAN_TURNS, 'The hag looks down at him a moment, and when she looks up she is smiling.'],
-    next: [{ id: 'fight', label: 'Face the {reedwife}', to: 'reedwife-fight-alone' }],
+    next: [{ id: 'fight', label: 'Face the {reedwife}', to: 'reedwife-fight-alone' }, BIND_HAG_RITE_CHOICE('bind-hag-rite-alone')],
   },
+  // The binding as a rite (BIND_HAG_RITE), split on Vex's bargain like the fight.
+  'bind-hag-rite': BIND_HAG_RITE('bind-hag-rite', 'hag-guarded', 'reedwife-fight',
+    'At the door she whistles for the chief\'s guard. He comes out of the smoke at her call, and watches her go, and then walks out into the smoke after her.'),
+  'bind-hag-rite-alone': BIND_HAG_RITE('bind-hag-rite-alone', 'hag-coven', 'reedwife-fight-alone',
+    'At the door she whistles for {hask}, and he does not come. Two raiders stumble in from the yard, watch her go, and then run too.'),
   // The hag fights on without him, with the chief's guard and one more raider.
   'reedwife-fight': {
     id: 'reedwife-fight', kind: 'battle', encounterId: 'hag-guarded', mapId: 'firepit',
@@ -1898,17 +1926,11 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'flag', flag: 'captives-taken' }],
         text: 'The reeve\'s men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child\'s shoe in the straw.' },
       // Left, or never opened, the moon still up, and no {wren} to send
-      // anyone: the reeve's men come late.
-      { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'notFlag', flag: 'captives-taken' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }],
-        text: 'The reeve\'s men find the pens behind the kennels two days later. The carter is alive. He will not say your names, and he will not drive the marsh road again.' },
-      // Never opened. {vex} tells every company that reaches the hall of the
-      // pen, so this one knew.
-      { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }, { kind: 'npc', npc: 'vex', met: true }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }],
-        text: 'The reeve\'s men find the pens behind the kennels two days later. The carter carries the girl out himself. She is still wearing one shoe.' },
-      // Never heard of it. (No victory gets here today, since every road to
-      // the hall passes {vex}'s fire; kept for the day his word on it moves.)
-      { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'notFlag', flag: 'captives-left' }, { kind: 'npc', npc: 'vex', met: false }],
-        text: 'Behind the kennels, the reeve\'s men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.' },
+      // anyone (a {wren} pulled out from under the horse would have made it
+      // `captives-freed` by now): the reeve's men come late, and the pen is
+      // empty. Those captives never came home (docs/canon.md, the captives).
+      { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }],
+        text: 'The reeve\'s men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The {ashfang} who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.' },
     ],
   },
 
@@ -1968,9 +1990,9 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       // den), or in the den itself, or on {mira}'s cot after falling there.
       ...(['square', 'trail'] as const).map((hub) => ({
         if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub }],
-        text: 'Somewhere out there the {ashfang} still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' })),
+        text: 'Somewhere out there the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' })),
       { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner' }],
-        text: 'Somewhere in the den the {ashfang} still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },
+        text: 'Somewhere in the den the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },
       // The scout's deadline (the next dawn's `scout-bled-out`), while she is
       // still out there unfound: neither met nor stepped round.
       { if: [{ kind: 'npc', npc: 'wren', met: false }, { kind: 'notFlag', flag: 'scout-walked-past' }],

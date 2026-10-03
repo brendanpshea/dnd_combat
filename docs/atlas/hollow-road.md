@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-118 scenes · 182 versions · 2,504,070 states searched (with text conditions tracked).
+120 scenes · 184 versions · 2,532,870 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -34,15 +34,19 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S9** “Vargan looks from the brand to the hag, and turns, …”
   - **S10** “Vargan looks at the hag without a word, and turns, …”
   - **S11** “The hag looks down at him a moment, and when …”
+- `bind-hag-rite`, `bind-hag-rite-alone`:
+  - **S12** “Before she can whistle for anyone, you speak her price …”
+  - **S14** “One word comes out wrong, and the rite falls apart …”
+- `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`, `reedwife-fight-alone`:
+  - **S13** “The words catch in her like a hook. She hisses …”
 - `reedwife-fight`, `reedwife-fight-alone`:
-  - **S12** “The Reedwife staggers back into the fire-pit and goes down …”
-  - **S13** “A sodden purse hangs at her belt on a cord …”
-  - **S14** “You say her price back to her, in her own …”
-  - **S15** “The words catch in her like a hook. She hisses …”
-  - **S16** “You start the words, and she hears the place where …”
+  - **S15** “The Reedwife staggers back into the fire-pit and goes down …”
+  - **S16** “A sodden purse hangs at her belt on a cord …”
+  - **S17** “You say her price back to her, in her own …”
+  - **S18** “You start the words, and she hears the place where …”
 - `reedwife-lost`, `reedwife-lost-alone`:
-  - **S17** “The hag's cold fingers close over your eyes, and the …”
-  - **S18** “You wake behind the throne, where somebody dragged you. Vargan …”
+  - **S19** “The hag's cold fingers close over your eyes, and the …”
+  - **S20** “You wake behind the throne, where somebody dragged you. Vargan …”
 
 ## `road` · story
 
@@ -104,7 +108,7 @@ Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with
 
 "Sellswords. Good. You read my note, then." **Mira** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
 
-"The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off the north road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
+"The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
 
 "And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left."
 
@@ -153,7 +157,7 @@ A round on your coin loosens the whole room. An old trapper drags a finger throu
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
+"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 - » **Back to your table**
 
@@ -1394,7 +1398,7 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 ## `den-pens-left` · story
 
-"The reeve's men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, holding her one shoe in both hands.
+"The reeve's men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, one bare foot tucked up in the straw.
 
 - » **Back to the den**
 
@@ -1661,7 +1665,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 The chief bellows for Hask, his guard. Hask stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. Vex has kept his word.
 
-"You've cost me a good season," he says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
+"You've cost me a good season," Vargan says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
 
 **Battle:** The Ashfang Chief, Unguarded
 
@@ -1788,6 +1792,7 @@ The hag looks down at him a moment, and when she looks up she is smiling.
 <sub>(shared with: `vargan-turns-alone`)</sub>
 
 - » **Face the Reedwife**
+- » **[Religion DC 15] Bind her to her old price as a rite: one lamb a winter, by their door** — _One try at binding her, whichever way the words are said._
 
 ## `vargan-turns-alone` · story
 
@@ -1816,6 +1821,51 @@ The hag looks down at him a moment, and when she looks up she is smiling.
 <sub>(shared with: `vargan-turns`)</sub>
 
 - » **Face the Reedwife**
+- » **[Religion DC 15] Bind her to her old price as a rite: one lamb a winter, by their door** — _One try at binding her, whichever way the words are said._
+
+## `bind-hag-rite` · check
+
+Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
+
+<sub>(shared with: `bind-hag-rite-alone`)</sub>
+
+**Check:** [Religion DC 15]
+
+*Pass:*
+
+The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `bind-hag-rite-alone`, `reedwife-fight`, `reedwife-fight-alone`)</sub>
+
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for the chief's guard. He comes out of the smoke at her call, and watches her go, and then walks out into the smoke after her.
+
+*Fail:*
+
+One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.
+
+<sub>(shared with: `bind-hag-rite-alone`)</sub>
+
+## `bind-hag-rite-alone` · check
+
+Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+**Check:** [Religion DC 15]
+
+*Pass:*
+
+The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `bind-hag-rite`, `reedwife-fight`, `reedwife-fight-alone`)</sub>
+
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard, watch her go, and then run too.
+
+*Fail:*
+
+One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
 
 ## `reedwife-fight` · battle
 
@@ -1847,7 +1897,7 @@ You say her price back to her, in her own words. One lamb each midwinter, for si
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `reedwife-fight-alone`)</sub>
+<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight-alone`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her.
 
@@ -1881,7 +1931,7 @@ You say her price back to her, in her own words. One lamb each midwinter, for si
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `reedwife-fight-alone`)</sub>
+<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight-alone`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her.
 
@@ -1921,7 +1971,7 @@ You say her price back to her, in her own words. One lamb each midwinter, for si
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `reedwife-fight`)</sub>
+<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too.
 
@@ -1955,7 +2005,7 @@ You say her price back to her, in her own words. One lamb each midwinter, for si
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `reedwife-fight`)</sub>
+<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too.
 
@@ -2345,11 +2395,7 @@ Up in the hollow, the reeve's men pull down the den's timber wall one post at a 
 
 > **[when `captives-taken` · `captives-left`]** The reeve's men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child's shoe in the straw.
 
-> **[when Wren not saved · not `captives-taken` · `captives-left`]** The reeve's men find the pens behind the kennels two days later. The carter is alive. He will not say your names, and he will not drive the marsh road again.
-
-> **[when met Vex · not `captives-freed` · not `captives-taken` · not `captives-left`]** The reeve's men find the pens behind the kennels two days later. The carter carries the girl out himself. She is still wearing one shoe.
-
-> **[when never met Vex · not `captives-freed` · not `captives-taken` · not `captives-left`]** Behind the kennels, the reeve's men find a pen you never looked in: a carter, two reed-cutters and a girl with one shoe. They had been waiting for the dark of the moon.
+> **[when not `captives-freed` · not `captives-taken`]** The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The Ashfang who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.
 
 ## Dawns
 
@@ -2365,7 +2411,7 @@ There is still no word of the reeve's scouts. If one of them is lying hurt out o
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Somewhere in the den the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+Somewhere in the den the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
@@ -2373,13 +2419,13 @@ There is still no word of the reeve's scouts. If one of them is lying hurt out o
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Somewhere in the den the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+Somewhere in the den the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
 
 #### when not `pens-settled` · never met Vex · at `trail` · never met Wren · not `scout-walked-past` — or — not `pens-settled` · never met Vex · at `square` · never met Wren · not `scout-walked-past`
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Somewhere out there the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+Somewhere out there the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
@@ -2387,7 +2433,7 @@ There is still no word of the reeve's scouts. If one of them is lying hurt out o
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Somewhere out there the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+Somewhere out there the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
 
 #### when not `pens-settled` · met Vex · never met Wren · not `scout-walked-past`
 

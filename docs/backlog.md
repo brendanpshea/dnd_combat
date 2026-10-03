@@ -5,6 +5,23 @@ a round. They are not bugs (see "Process" in `docs/design-decisions.md`): the
 user chooses which, if any, to do. Newest first. Each says what it would
 cost in state.
 
+## Prose taste from round 15 (not bugs)
+
+- Part 1: `dawn-4` says "marsh road" twice where the scout line also shows;
+  `den-pens-empty` opens on an explaining sentence; the day-4 dawn repeats
+  Vex's pen line; the den-wall slide sits just before the empty-pen slide.
+- Part 2: `reeve-hall` narrates "It is Vargan." before Aldous's reveal;
+  `lychgate-open` "against more than the chill"; the epilogue's sisters
+  slide explains rather than shows; "looks at the steps, then at you".
+- Part 3: the `-flown` scenes end on explanations; "turns her burning face"
+  ×4; "bruised light" ×5; "looks at X, then at you" / "without looking up"
+  clusters; "Something…" openers; "pull" repeated; "Nobody asks" / "Nobody
+  makes a speech"; the war council's escort labels are glosses; hints that
+  restate labels (the pen, the ropes, Halden's rites); "join the collection";
+  the epilogue's `peak-held` < 1 slide; the ettin and ogre-mage named in
+  narration; the vigil epilogue's opening; a gesture for the cold Wren's
+  "nothing extra" line.
+
 ## From round 15
 
 - **Every route ends in a fight.** On the vigil path, Sedge takes the vigil

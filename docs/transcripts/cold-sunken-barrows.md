@@ -385,7 +385,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -449,7 +449,7 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 
 At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
-The call that brought him down here has let him go. He is light now, just bones in a coat.
+He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
 
 The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 

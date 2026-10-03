@@ -63,7 +63,7 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 > "Sellswords. Good. You read my note, then." **Mira** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
 
-> "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off the north road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
+> "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
 
 > "And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left."
 
@@ -149,7 +149,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Take a healing potion with you, too. I'd rather not bury anyone this month." She turns back to her taps.
+"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -363,7 +363,7 @@ A reed-cutter found you face-down in the reeds and poled you home on his raft. H
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Somewhere out there the Ashfang still have the carter from the north road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+Somewhere out there the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
@@ -1137,7 +1137,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 > "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her the carters he took off the marsh road besides. And there he is. Alive, and cutting reeds in the shallows he sold."
+> Out past the glass, at the edge of the water-meadows, a man is cutting reeds. It is Vargan. "Those shallows were common water in my grandfather's day," Aldous says. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. And there he is. Alive, and cutting reeds in the shallows he sold."
 
 > He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
 
@@ -1335,7 +1335,7 @@ Wren creeps round to the far bank and rattles her bow in the reeds there, the wa
 
 The first thing you know is the smell of tallow and wet wool. You are lying on the settles in the Wander-Inn's back room, pushed together to make beds, with fen-mud dried stiff in your hair.
 
-Eel-catchers from the far pools found you by the raised road at first light, Mira says. They brought you in on hurdles, and would not stop for so much as a cup.
+Eel-catchers from the far pools found the whole company by the raised road at first light, Wren among you, Mira says. They brought you in on hurdles, and would not stop for so much as a cup.
 
 "The fen's still there," Mira says. She puts the bread where you can reach it.
 
@@ -1507,7 +1507,7 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Another night or two, and the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
 
 **» Go deeper in**
 
@@ -1927,9 +1927,9 @@ The command tent stands open. Maps cover a table, and the grey-haired captain si
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down, and I let him fight you instead. I've thought about that."
+You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
-The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley through the summer, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
+The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
@@ -2111,7 +2111,7 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 > She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
-> She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere with a sky over it this time."
+> She pauses. "Last time it was the fen. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere drier this time."
 
 **» Take her map-notes**
 
@@ -2419,7 +2419,7 @@ By noon its warband is marching down the other side of the mountain, away from t
 
 <sub>scene `den-flown`</sub>
 
-The den is empty. Scorched scales litter the floor, and claw-marks run up the rock to the open sky. Its owner went up to the stone when the Calling peaked, and it took its hoard in its belly. It will be waiting on the rim.
+The den is empty, and fresh claw-marks lead out toward the open sky. Its owner went up to the stone when the Calling peaked, and it took its hoard in its belly. It will be waiting on the rim.
 
 **» Back to the trail**
 
@@ -2473,7 +2473,7 @@ You think better of it and fall back the way you came.
 
 <sub>scene `den-flown` (again)</sub>
 
-_(a paragraph shown before: “The den is empty. Scorched scales litter…”)_
+_(a paragraph shown before: “The den is empty, and fresh claw-marks…”)_
 
 **» Back to the trail**
 
@@ -2483,7 +2483,7 @@ _(a paragraph shown before: “The den is empty. Scorched scales litter…”)_
 
 <sub>scene `den-flown` (again)</sub>
 
-_(a paragraph shown before: “The den is empty. Scorched scales litter…”)_
+_(a paragraph shown before: “The den is empty, and fresh claw-marks…”)_
 
 **» Back to the trail**
 
@@ -2583,19 +2583,13 @@ The light around the stone thickens, and the ground beneath it begins, gently, t
 
 Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
-**» "She fed on the people of this valley. We owe you nothing." — Nettle wants a fight. Sedge wants something else.**
+**» "She fed on the people of this valley. We owe you nothing."**
 
 <sub>scene `answer-defiant`</sub>
 
 Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and not one of the dead walked. Set that against your carters."
 
-Sedge does not laugh. "Ask your barrows what her fall bought you," she says, very quietly, and turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
-
-**» Ask Sedge to take up her sister's vigil**
-
-<sub>scene `vigil-refused-defiant`</sub>
-
-Sedge does not turn from the stone. "You owe nothing?" she says. "Then neither do we." Nettle laughs, and sings louder.
+Sedge does not laugh. "You owe nothing?" she says, very quietly. "Then neither do we. Ask your barrows what her fall bought you, and let your priest's book keep the door." She turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
