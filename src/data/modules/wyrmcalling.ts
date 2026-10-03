@@ -35,9 +35,9 @@
  * (`avoidedFightXP`), the toll paid after the peak (`pay-late`) included
  * (docs/design-decisions.md, "Levels come from fights"). A continuing
  * company (~4,700–6,150 XP from Part 2) reaches 5th at the camp or partway
- * up the hills (the most thorough route meets the near side at 5th); the
- * most thorough route ends just short of 6th, which Part 3 never reaches
- * (docs/design-decisions.md); a cold start opens at 4th (its one floor, on the
+ * up the hills (the most thorough route meets the near side at 5th). No
+ * fight is met at 6th: the XP ceiling in `npm run check:story` proves it
+ * over every path (at most 13,786 at the stone's door, 214 short); a cold start opens at 4th (its one floor, on the
  * cold-start choice) and gets there at the boar-runs. The stone is fought at 5th.
  *
  * CARRIED CHOICES: only the ledger (docs/state-ledger.md). Vex's briefing

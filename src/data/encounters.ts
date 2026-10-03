@@ -263,7 +263,7 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   // old bull, a younger one grazing out of sight among the statues, and two
   // gargoyles posing as statues. Met at 5th on every route: ~86% fresh, ~10%
   // worn (the gorgon alone, or two, won 100%; three gorgons ~70%, but paid
-  // enough XP to lift the most thorough route to 6th).
+  // enough XP for some route to meet the stone at 6th: the XP ceiling).
   'gorgon-vale': {
     id: 'gorgon-vale', name: 'The Valley of Statues', suggestedLevel: 5,
     members: ['gorgon', 'gorgon', 'gargoyle', 'gargoyle'],
@@ -355,9 +355,9 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   // spearmen and two emberlings tend the hoard, a whirlwind the stone's song
   // has torn loose spins between the lightning-rods, and two gargoyles keep
   // the watchtower. ~90–96% fresh, ~20% worn at 5th (the kobolds alone won
-  // 100%). Two whirlwinds and one gargoyle won ~74%, but paid enough XP to
-  // lift the most thorough route to 6th on the sisters' fall: Part 3 tops
-  // out at 5th (docs/design-decisions.md).
+  // 100%). Two whirlwinds and one gargoyle won ~74%, but paid enough XP for
+  // some route to meet the stone at 6th (the XP ceiling, `npm run
+  // check:story`; docs/design-decisions.md).
   'blue-dragon-den': {
     id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 5,
     members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling', 'air-elemental', 'gargoyle', 'gargoyle'],

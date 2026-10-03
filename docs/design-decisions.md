@@ -44,7 +44,10 @@ change. Each entry gives the decision and, briefly, why.
 - **Levels come from fights** (and from walking past a fight, which pays the
   same). No level floors except cold starts. The level curve is the same on
   every route by design: optional fights pay in story and gold, not levels.
-  Part 3 tops out at 5th.
+  No fight is met above its chapter's band: Part 1 tops out at 3rd, Part 2
+  at 4th, Part 3 at 5th. A level gained on a chapter's last blow is never
+  played and is allowed. `npm run check:story` proves it over every
+  reachable path (the XP ceiling), and fails on XP that can be farmed.
 - **No fail state beyond a chapter's own defeat ending.** Losses cost time
   and position, never a soft-lock. A rest straight back into a fight is
   `sameDay` (no night passes mid-fight).
