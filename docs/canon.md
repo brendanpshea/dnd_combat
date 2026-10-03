@@ -184,6 +184,15 @@ never "the girl".
 
 **Contradicts:** none. (The lines listed here were fixed in round 15; `test/canon-phrases.test.ts` keeps them out.)
 
+### Foes the fights rely on
+
+- **The chief's hall:** beside the chief and the hag, a raider or two and, where
+  the hag stands, her branded marsh snake (the reed-mark on its scales).
+- **The Warden's door:** two soldiers of the old kings, in bronze, stand with
+  the cult (not one).
+- **The toll-cliff:** the manticore keeps a wyvern on its ledge; its goblins
+  stay hidden in the rocks.
+
 ## Who was where, per ledger value
 
 ### Wren in Part 1 (entry 1)

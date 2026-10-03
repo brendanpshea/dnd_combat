@@ -39,13 +39,15 @@ The churchyard gate hangs off its hinge. Between the headstones the darkness has
 
 Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
 
+On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.
+
 Draw steel, for whatever good steel does against a shadow.
 
 **Battle:** Shadow Ambush <sub>(`shadow-ambush` on `corridor`)</sub>
 
 **» Fight — won**
 
-The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound, and the lamplight lies still on the grass.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that clawed their way out lie still across their own graves, and the lamplight lies still on the grass.
 
 <sub>scene `grave-morning`</sub>
 
@@ -297,9 +299,9 @@ Wren picks up a coin and puts it back with great care. "The fen-folk fed the poo
 
 <sub>scene `pool-drawn`</sub>
 
-Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Two constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
+Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Three constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
 
-**Battle:** The Serpent Pool <sub>(`snake-pit` on `marsh`)</sub>
+**Battle:** The Serpent Pool <sub>(`serpent-pool` on `marsh`)</sub>
 
 **» Fight — won**
 
@@ -328,6 +330,8 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 **Battle:** The Watchers at the Barrow Gate <sub>(`barrow-watchers` on `ruins`)</sub>
 
 **» Fight — won**
+
+_Level up: 3 → 4_
 
 The second gargoyle shatters mid-dive and rains down as plain gravel, over the green-bronze plates scattered across the road. The Barrow Gate stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.
 
@@ -485,8 +489,6 @@ A black candle burns on the floor of the passage. A man kneels beside it, robed 
 
 **» Fight — won**
 
-_Level up: 3 → 4_
-
 The man in the robe dies still holding his candle. It smells of the fen.
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
@@ -529,13 +531,13 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore.
 
-The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
+The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best. Beside the throne, a barrow-soldier in green bronze draws its sword.
 
 **Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
 **» Fight — won**
 
-The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
+The king crumbles, his grave-cloths sagging around nothing but dust and old spice, his servants drop mid-lurch, and his soldier folds down in its bronze. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
 You pick his gold rings out of the dust where his hands fell.
 
@@ -575,7 +577,7 @@ The lowest stair ends at the door the paintings promised. It is a slab of stone 
 
 The chanting comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms, like the drowned stranger among the corpse-lights. "The Worm goes before the Warden," they chant, over and over. Their leader is the thin grey man from the painted hall, in his gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone, while an acolyte holds a candle for him.
 
-A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sits a soldier of the old kings in green bronze, its sword point-down between its feet. Its eyes are two points of cold light. It watches the stair, and waits for an order.
+A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sit two soldiers of the old kings in green bronze, their swords point-down between their feet. Their eyes are points of cold light. They watch the stair, and wait for an order.
 
 The grey man leans in to his work. "Faster," he tells the chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
@@ -599,7 +601,7 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the soldier of the old kings does not stir from the door. It waits for an order, and Marrow gives none.
+Beside him, the two soldiers of the old kings do not stir from the door. They wait for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 

@@ -83,13 +83,15 @@ The churchyard gate hangs off its hinge. Between the headstones the darkness has
 
 Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
 
+On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.
+
 Draw steel, for whatever good steel does against a shadow.
 
 **Battle:** Shadow Ambush
 
 *Won:*
 
-The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound, and the lamplight lies still on the grass.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that clawed their way out lie still across their own graves, and the lamplight lies still on the grass.
 
 ## `lychyard-lost` · rest
 
@@ -458,13 +460,13 @@ The old road's stones stretch on into the fog. The files of footprints are still
 
 ## `fen-night` · battle
 
-You wake to a hand on your shoulder and a blade already drawn beside you. Two shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. They do not hurry. They have done this before.
+You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
 
-**Battle:** The Marsh Dead
+**Battle:** The Fen Dead
 
 *Won:*
 
-The ghouls lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
+The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
 
 ## `chapel` · dialogue · Brother Halden
 
@@ -944,7 +946,7 @@ The serpent pool lies still again, and the offerings on its rim gleam. The water
 
 ### 1. when the first visit?
 
-The pool empties itself at you. Two snakes the girth of roof-beams pour over the rim in oiled coils. A century of offerings fed them to that size, and lately so has anyone who walked too close.
+The pool empties itself at you. Three snakes the girth of roof-beams pour over the rim in oiled coils. A century of offerings fed them to that size, and lately so has anyone who walked too close.
 
 **Battle:** The Serpent Pool
 
@@ -956,7 +958,7 @@ The serpents lie in loops like dropped rope. Your boots turn up everything the f
 
 ### 2. when a return visit?
 
-The pool empties itself at you again. The two fen-serpents pour over the rim in their oiled coils, as hungry as before.
+The pool empties itself at you again. The three fen-serpents pour over the rim in their oiled coils, as hungry as before.
 
 **Battle:** The Serpent Pool
 
@@ -974,7 +976,7 @@ The serpents lie in loops like dropped rope. Your boots turn up everything the f
 
 ### 1. when the first visit?
 
-Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Two constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
+Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Three constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
 
 **Battle:** The Serpent Pool
 
@@ -1304,7 +1306,7 @@ Wren keeps an arrow on the string until his lantern is gone. "The dead don't tel
 
 ## `crypt-night` · battle
 
-You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on the far wall begins to move. Two of the painted dead peel loose from it, grey and flat and cold, and slide toward your fire.
+You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on the far wall begins to move. Two of the painted soldiers peel loose from it, grey and flat and cold, with green-bronze swords in their hands, and step down toward your fire.
 
 **Battle:** The Painted Dead
 
@@ -1314,13 +1316,13 @@ The painted dead fall flat to the floor and crumble into flakes of grey paint. W
 
 ## `stair-night` · battle
 
-You try to sleep at the shaft's foot, under the black candles. One by one the candle-flames on the stair lean toward you, in a wind you cannot feel. Two cold grey shapes step out of the wall behind them.
+You try to sleep at the shaft's foot, under the black candles. One by one the candle-flames on the stair lean toward you, in a wind you cannot feel. Two cold grey shapes step out of the wall behind them. After them comes a dead soldier in green bronze, with cold light where its eyes should be.
 
-**Battle:** Specter Haunt
+**Battle:** The Stair Haunt
 
 *Won:*
 
-The specters come apart like breath on a frosty morning, and the candle-flames stand straight again. Below you, the chanting has not stopped once.
+The grey shapes come apart like breath on a frosty morning, the soldier falls in a heap of green bronze, and the candle-flames stand straight again. Below you, the chanting has not stopped once.
 
 ## `stair-night-lost` · story
 
@@ -1490,9 +1492,9 @@ The oath rings off the stone, and the dead do not hear it. The call from below i
 
 ### 1. when the first visit?
 
-The dead come down the cut with their picks raised. Two are bare bones in grave-rags. Three are fresh, and still wear the faces Thornwick buried. Hit hard, and try not to look.
+The dead come down the cut with their picks raised. Two are bare bones in grave-rags. Three are fresh, and still wear the faces Thornwick buried. Two more, grey and gnawing, have no picks and want none. Hit hard, and try not to look.
 
-**Battle:** Restless Dead
+**Battle:** The Diggers
 
 *Won:*
 
@@ -1502,7 +1504,7 @@ The last digger falls across its pick. The cut goes quiet, apart from your breat
 
 The dead are waiting in the cut this time, picks raised. Hit hard, and try not to look.
 
-**Battle:** Restless Dead
+**Battle:** The Diggers
 
 *Won:*
 
@@ -1636,13 +1638,13 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore.
 
-The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
+The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best. Beside the throne, a barrow-soldier in green bronze draws its sword.
 
 **Battle:** The Embalmed King
 
 *Won:*
 
-The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
+The king crumbles, his grave-cloths sagging around nothing but dust and old spice, his servants drop mid-lurch, and his soldier folds down in its bronze. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
 You pick his gold rings out of the dust where his hands fell.
 
@@ -1650,13 +1652,13 @@ Behind the king's throne, a burial shaft drops into the dark. The chanting comes
 
 ### 2. when a return visit?
 
-The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light. His two household dead lurch out of the corners again, and his soldier draws its sword beside the throne.
 
 **Battle:** The Embalmed King
 
 *Won:*
 
-The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
+The king crumbles, his grave-cloths sagging around nothing but dust and old spice, his servants drop mid-lurch, and his soldier folds down in its bronze. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
 You pick his gold rings out of the dust where his hands fell.
 
@@ -1674,7 +1676,7 @@ The lowest stair ends at the door the paintings promised. It is a slab of stone 
 
 The chanting comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms, like the drowned stranger among the corpse-lights. "The Worm goes before the Warden," they chant, over and over. Their leader is the thin grey man from the painted hall, in his gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone, while an acolyte holds a candle for him.
 
-A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sits a soldier of the old kings in green bronze, its sword point-down between its feet. Its eyes are two points of cold light. It watches the stair, and waits for an order.
+A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sit two soldiers of the old kings in green bronze, their swords point-down between their feet. Their eyes are points of cold light. They watch the stair, and wait for an order.
 
 The grey man leans in to his work. "Faster," he tells the chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
@@ -1690,7 +1692,7 @@ The lowest stair ends at the door the paintings promised. It is a slab of stone 
 
 The chanting comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms, like the drowned stranger among the corpse-lights. "The Worm goes before the Warden," they chant, over and over. Their leader is the thin grey man from the painted hall, in his gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone, while an acolyte holds a candle for him.
 
-A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sits a soldier of the old kings in green bronze, its sword point-down between its feet. Its eyes are two points of cold light. It watches the stair, and waits for an order.
+A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sit two soldiers of the old kings in green bronze, their swords point-down between their feet. Their eyes are points of cold light. They watch the stair, and wait for an order.
 
 The grey man leans in to his work. "Faster," he tells the chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
@@ -1721,7 +1723,7 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the soldier of the old kings does not stir from the door. It waits for an order, and Marrow gives none.
+Beside him, the two soldiers of the old kings do not stir from the door. They wait for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd
 
@@ -1752,7 +1754,7 @@ Marrow looks up at the door, and at the letters he pried loose. "Forty graves," 
 
 Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.
 
-Against the door, the soldier of the old kings gets to its feet in its green bronze. Marrow woke it to keep his door, and it draws its sword.
+Against the door, the two soldiers of the old kings get to their feet in their green bronze. Marrow woke them to keep his door, and they draw their swords.
 
 **Battle:** The Worm at the Door
 
@@ -1764,7 +1766,7 @@ Coins lie thick on the bottom step, where the faithful threw them at the door. Y
 
 ### 2. when a return visit?
 
-Marrow turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the soldier in green bronze come for you once more.
+Marrow turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the two soldiers in green bronze come for you once more.
 
 **Battle:** The Worm at the Door
 
@@ -2309,9 +2311,9 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 
 ### 1. when the first visit?
 
-The Warden's own dead squeeze out through the split in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and more grey fingers wait behind them. If they get past you, Thornwick is next.
+The Warden's own dead squeeze out through the split in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and two tall dead soldiers stoop through the split after them with their swords drawn. More grey fingers wait behind them. If they get past you, Thornwick is next.
 
-**Battle:** Restless Dead
+**Battle:** The Warden's Dead
 
 *Won:*
 
@@ -2321,7 +2323,7 @@ The last of them falls across the doorstep. All of you put your shoulders to the
 
 The Warden's dead are still coming, a few at a time. If they get past you, Thornwick is next.
 
-**Battle:** Restless Dead
+**Battle:** The Warden's Dead
 
 *Won:*
 

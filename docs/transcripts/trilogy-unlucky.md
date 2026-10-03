@@ -27,9 +27,9 @@ The hedges shift on both sides at once, and it is already too late to run.
 
 <sub>scene `road-ambush`</sub>
 
-Raiders scramble out of the ditch, an orc with a notched axe and a lean scout with an arrow on the string. A bandit in a stolen carter's coat climbs out after them, picking his teeth.
+Raiders scramble out of the ditches on both sides: two orcs with notched axes, and two lean scouts with arrows on the string. Two bandits climb out after them, one of them in a stolen carter's coat, picking his teeth.
 
-"The road's the **Ashfang's** now!" the bandit crows. "Chief takes his cut of every throat on it — and yours'll do just fine."
+"The road's the **Ashfang's** now!" the bandit in the coat crows. "Chief takes his cut of every throat on it — and yours'll do just fine."
 
 **Battle:** Ashfang Outriders <sub>(`raiders-forward` on `open`)</sub>
 
@@ -259,7 +259,7 @@ You search the crowd for his crew, and you look in all the wrong places. By the 
 
 <sub>scene `spy-bolts`</sub>
 
-His crew shoulders out of the market crowd: a fixer and two hired knives, blades held low and level. They come straight for you.
+His crew shoulders out of the market crowd: a fixer and two hired knives, blades held low and level. Up on the stall-roofs three more of them kneel with crossbows. They come straight for you.
 
 **Battle:** Cutpurse Crew <sub>(`cutpurses` on `village`)</sub>
 
@@ -303,7 +303,7 @@ Somewhere out in that maze the Ashfang keep their den. Somewhere a good deal clo
 
 <sub>scene `road-out`</sub>
 
-Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling and pointing at your boots.
+Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the road, yelling as if they had been waiting for you all day. Their boss lopes out in front with his scimitar bared, cackling and pointing at your boots. At his heel slinks a grey wolf the size of a pony, its lips drawn back from yellow teeth.
 
 **Battle:** Goblin Outriders <sub>(`goblin-outriders` on `open`)</sub>
 
@@ -343,9 +343,9 @@ The wet way is slow and loud. You will come at the hollow splashing from one tus
 
 <sub>scene `bog-toads`</sub>
 
-The black water bulges, then heaves. A pair of giant toads haul themselves onto the mud bank. Each is wider than a shield. A tongue lashes out for the nearest of you.
+The black water bulges, then heaves. Four giant toads haul themselves onto the mud bank, one after another. Each is wider than a shield. A tongue lashes out for the nearest of you.
 
-**Battle:** Festering Swamp <sub>(`toad-swamp` on `bog`)</sub>
+**Battle:** The Bog Toads <sub>(`bog-toads` on `bog`)</sub>
 
 **» Fight — lost**
 
@@ -413,9 +413,9 @@ The barrow-mound still breathes cold air through its cracked capstone. Down in t
 
 <sub>scene `barrow-fight`</sub>
 
-The cold answers you. Two figures pour up out of the grave-earth. They wear the forms of men, but they are nothing now but spite and winter air. They pass *through* the barrow stones to reach you.
+The cold answers you. Two figures rise out of the grave-earth. One wears the form of a man, but it is nothing now but spite and winter air. It passes *through* the barrow stones to reach you. The other climbs up out of the grave-goods in rotten mail. It holds a green-bronze sword in its grey hand, and a cold light burns where its eyes should be.
 
-**Battle:** Specter Haunt <sub>(`specter-haunt` on `corridor`)</sub>
+**Battle:** The Barrow Haunt <sub>(`barrow-haunt` on `corridor`)</sub>
 
 **» Fall back to The Marsh Road**
 
@@ -479,11 +479,13 @@ The reeds ahead are too still, and cold where the marsh should be warm. You see 
 
 <sub>scene `ambush-sprung`</sub>
 
-The reeds burst apart around you, and scaled shapes rush in with hooked spears, a giant toad heaving up through the muck behind them. They move together, too well, as if one hand worked them all.
+The reeds burst apart around you, and scaled shapes rush in with hooked spears, two giant toads heaving up through the muck behind them. They move together, too well, as if one hand worked them all.
 
 **Battle:** The Hag's Thralls <sub>(`hag-thralls` on `bog`)</sub>
 
 **» Fight — won**
+
+_Level up: 1 → 2_
 
 Bloodied, you break them at last. The last of the lizardfolk drags itself into the water and does not come up.
 
@@ -711,8 +713,6 @@ The silk trembles over your heads. Four giant spiders drop from the high webbing
 
 **» Fight — won**
 
-_Level up: 1 → 2_
-
 The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
 
 _+60 gold (205)_
@@ -737,7 +737,7 @@ _(a paragraph shown before: “A wall of lashed timber rings the…”)_
 
 <sub>scene `gate-fight`</sub>
 
-A horn brays from the watch-post, and the gate-runners answer. Something hairy and twice a man's size ducks through the gateway. Behind him three gnolls come yammering their high, laughing bark, and a fourth, hung with bone charms, howls them on. The narrow timber run hems them all in.
+A horn brays from the watch-post, and the gate-runners answer. Something hairy and twice a man's size ducks through the gateway. Behind him three gnolls come yammering their high, laughing bark, and a fourth, hung with bone charms, howls them on. A spotted hyena as big as a pony lopes at their heels. The narrow timber run hems them all in.
 
 **Battle:** Gate Enforcers <sub>(`den-gate` on `corridor`)</sub>
 
@@ -763,7 +763,7 @@ _(2 paragraphs shown before: “You wake on Mira's cot again, under…” / “"
 
 <sub>scene `camp-ambush`</sub>
 
-You wake to a wet, dragging sound in the dark. Two grey, sodden bodies are clawing up out of the mire beyond the fire. They come for the light on all fours, jaws working.
+You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are clawing up out of the mire beyond the fire. Behind them comes a fifth that reeks of something long dead. They come for the light on all fours, jaws working.
 
 **Battle:** The Marsh Dead <sub>(`marsh-dead` on `bog`)</sub>
 
@@ -847,6 +847,8 @@ _(a paragraph shown before: “Halfway over the wall, a stake shifts…”)_
 
 **» Fight — won**
 
+_Level up: 2 → 3_
+
 The big one goes down last, face-first in the mud at the foot of the wall.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
@@ -876,8 +878,6 @@ On the far side of the ring, a bare-chested raider gets up off an upturned barre
 **Battle:** The Pit-Brute and Its Champion <sub>(`den-pit` on `ruins`)</sub>
 
 **» Fight — won**
-
-_Level up: 2 → 3_
 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. The ogre's collar has worn a groove in its neck as deep as a thumb.
 
@@ -939,7 +939,7 @@ The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sittin
 
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
-The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word.
+The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.
 
 **Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
 
@@ -975,7 +975,7 @@ His axe hand stays wrapped in its rag, and his face gives you nothing at all. Be
 
 <sub>scene `boss` (again)</sub>
 
-The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder.
+The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 
 **Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
 
@@ -1068,6 +1068,8 @@ _Journal (quest): The Opened Graves_
 The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
 
 Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
+
+On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -1325,9 +1327,9 @@ The serpent pool lies still again, too still. Wren watches the rim for ripples, 
 
 <sub>scene `pool-drawn`</sub>
 
-Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Two constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
+Wren creeps round to the far bank and rattles her bow in the reeds there, the way fen-folk hunt eels. The water bulges on her side of the pool. Three constrictors the girth of roof-beams rise toward the noise, and they have their backs to you.
 
-**Battle:** The Serpent Pool <sub>(`snake-pit` on `marsh`)</sub>
+**Battle:** The Serpent Pool <sub>(`serpent-pool` on `marsh`)</sub>
 
 **» Fight — lost**
 
@@ -1447,6 +1449,8 @@ You hold up Halden's book, but you cannot find the builders' mark on the gate in
 
 **» Fight — won**
 
+_Level up: 3 → 4_
+
 The second gargoyle shatters mid-dive and rains down as plain gravel, over the green-bronze plates scattered across the road. The Barrow Gate stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.
 
 <sub>scene `lychgate-won`</sub>
@@ -1559,9 +1563,9 @@ The rhythm of the picks breaks. The dead turn, all together, and come for you.
 
 <sub>scene `diggers-fight`</sub>
 
-The dead come down the cut with their picks raised. Two are bare bones in grave-rags. Three are fresh, and still wear the faces Thornwick buried. Hit hard, and try not to look.
+The dead come down the cut with their picks raised. Two are bare bones in grave-rags. Three are fresh, and still wear the faces Thornwick buried. Two more, grey and gnawing, have no picks and want none. Hit hard, and try not to look.
 
-**Battle:** Restless Dead <sub>(`undead` on `corridor`)</sub>
+**Battle:** The Diggers <sub>(`diggers` on `corridor`)</sub>
 
 **» Fight — won**
 
@@ -1635,8 +1639,6 @@ The old guardsman stands before its slab again, sword drawn, cold light in its e
 
 **» Fight — won**
 
-_Level up: 3 → 4_
-
 The wight comes apart at the joints and lies down in its own armour. The cold light in its eyes gutters out, and its skeletons clatter down after it.
 
 Under its slab lies a guardsman's pay that no one ever came to collect, old coins gone green in a rotted pouch.
@@ -1659,7 +1661,7 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore.
 
-The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best.
+The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best. Beside the throne, a barrow-soldier in green bronze draws its sword.
 
 **Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
@@ -1675,13 +1677,13 @@ _(a paragraph shown before: “You think better of it and fall…”)_
 
 <sub>scene `king` (again)</sub>
 
-The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light, and his two household dead lurch out of the corners again.
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light. His two household dead lurch out of the corners again, and his soldier draws its sword beside the throne.
 
 **Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
 **» Fight — won**
 
-The king crumbles, his grave-cloths sagging around nothing but dust and old spice, and his servants drop mid-lurch. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
+The king crumbles, his grave-cloths sagging around nothing but dust and old spice, his servants drop mid-lurch, and his soldier folds down in its bronze. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
 You pick his gold rings out of the dust where his hands fell.
 
@@ -1713,7 +1715,7 @@ The lowest stair ends at the door the paintings promised. It is a slab of stone 
 
 The chanting comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms, like the drowned stranger among the corpse-lights. "The Worm goes before the Warden," they chant, over and over. Their leader is the thin grey man from the painted hall, in his gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone, while an acolyte holds a candle for him.
 
-A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sits a soldier of the old kings in green bronze, its sword point-down between its feet. Its eyes are two points of cold light. It watches the stair, and waits for an order.
+A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sit two soldiers of the old kings in green bronze, their swords point-down between their feet. Their eyes are points of cold light. They watch the stair, and wait for an order.
 
 The grey man leans in to his work. "Faster," he tells the chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
 
@@ -1727,7 +1729,7 @@ The door has shifted in its frame since the ground shook. A line of dark, a fing
 
 Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.
 
-Against the door, the soldier of the old kings gets to its feet in its green bronze. Marrow woke it to keep his door, and it draws its sword.
+Against the door, the two soldiers of the old kings get to their feet in their green bronze. Marrow woke them to keep his door, and they draw their swords.
 
 **Battle:** The Worm at the Door <sub>(`cult-at-door` on `firepit`)</sub>
 
@@ -1741,7 +1743,7 @@ _Long rest._
 
 <sub>scene `seal-battle` (again)</sub>
 
-Marrow turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the soldier in green bronze come for you once more.
+Marrow turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the two soldiers in green bronze come for you once more.
 
 **Battle:** The Worm at the Door <sub>(`cult-at-door` on `firepit`)</sub>
 
@@ -1793,9 +1795,9 @@ The last word dies in the dark, and for a moment nothing happens. The great door
 
 <sub>scene `seal-breach`</sub>
 
-The Warden's own dead squeeze out through the split in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and more grey fingers wait behind them. If they get past you, Thornwick is next.
+The Warden's own dead squeeze out through the split in his door. Skeletons in green barrow-bronze come first, then three swollen fen-dead, and two tall dead soldiers stoop through the split after them with their swords drawn. More grey fingers wait behind them. If they get past you, Thornwick is next.
 
-**Battle:** Restless Dead <sub>(`undead` on `firepit`)</sub>
+**Battle:** The Warden's Dead <sub>(`warden-dead` on `firepit`)</sub>
 
 **» Fight — lost**
 
@@ -1811,7 +1813,7 @@ _Long rest._
 
 The Warden's dead are still coming, a few at a time. If they get past you, Thornwick is next.
 
-**Battle:** Restless Dead <sub>(`undead` on `firepit`)</sub>
+**Battle:** The Warden's Dead <sub>(`warden-dead` on `firepit`)</sub>
 
 **» Fight — won**
 
@@ -1897,7 +1899,7 @@ _Journal (clue): Thornwick's Watch_
 
 <sub>scene `envoys`</sub>
 
-You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with duckweed braided into her hair. Five hired swords stand behind her: a knight in dented black plate, a grey old sellsword with a scarred face, and three archers. They watch you with bored, empty eyes.
+You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with duckweed braided into her hair. Seven hired swords stand behind her. There is a knight in dented black plate, a grey old sellsword with a scarred face, three archers, and two cutthroats with long knives. They watch you with bored, empty eyes.
 
 "The famous company." She smiles without opening her mouth. "I am **Nettle**, elder sister to the one you called the Reedwife. You beat her in the chief's hall, and you cost this family its living. That debt is written down, and it will be paid."
 
@@ -1975,7 +1977,7 @@ Water has cut fresh channels across the path, though no stream runs anywhere up 
 
 Under it all runs that steady pull. The mud is full of tracks, and none of them come back down.
 
-Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.
+Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, five of them, and you are standing on their road. The lead one folds its wings and drops.
 
 **» Stand and meet them**
 
@@ -2000,6 +2002,8 @@ The trail narrows under an overhang, and something lies along the ledge above it
 It lifts its head, and the face is a man's, smiling.
 
 "Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with human lips, and the teeth behind them are a lion's. "You will pay in meat. I have decided."
+
+Higher up the rock, something else is roosting. It is a lean grey drake with leathery wings and a sting on its tail, and it is watching you too.
 
 **» Leave it on its ledge**
 
@@ -2029,7 +2033,7 @@ Something green slides out of the briar on its belly. It is no longer than a pon
 
 <sub>scene `greenden-fight`</sub>
 
-The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.
+The kobolds scatter for their spears. Down the briar on grey threads come two spindly, pale-eyed things with spiders' mouths, and two spiders the size of dogs scuttle after them. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.
 
 **Battle:** Green Wyrmling's Thicket <sub>(`green-dragon-den` on `marsh`)</sub>
 
@@ -2055,7 +2059,7 @@ A crack runs down the rock behind the pool, thin as a knife cut, and cold air br
 
 <sub>scene `seam-fight`</sub>
 
-The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.
+The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it. Last of all a white wolf the size of a pony pads out, breathing frost.
 
 **Battle:** The Flooded Pass <sub>(`flooded-seam` on `bog`)</sub>
 
@@ -2181,7 +2185,7 @@ You take the high trail again, past the saluted marker. Above you, the Calling h
 
 <sub>scene `tollcliff` (again)</sub>
 
-The manticore still lies along its ledge under the overhang. It opens one eye. "Back with my toll?" it purrs. "Good. I was getting hungry."
+The manticore still lies along its ledge under the overhang. It opens one eye. "Back with my toll?" it purrs. "Good. I was getting hungry." Above it, the grey drake shifts on its roost.
 
 **» [Persuasion DC 11] "Have the hags paid you yet?"**
 
@@ -2189,13 +2193,15 @@ The manticore still lies along its ledge under the overhang. It opens one eye. "
 
 <sub>scene `tollcliff-stung`</sub>
 
-The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and two goblins scramble up from the rocks behind it.
+The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and the grey drake drops off the rock above it.
 
-**Battle:** Manticore Cliff <sub>(`manticore-cliff` on `cliff`)</sub>
+**Battle:** The Toll-Cliff <sub>(`manticore-toll` on `cliff`)</sub>
 
 **» Fight — won**
 
-The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
+_Level up: 4 → 5_
+
+The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
 _+110 gold (1110)_
 
@@ -2221,9 +2227,9 @@ You run too soon. The herd comes back over the rise while you are still in the o
 
 <sub>scene `boarruns-fight`</sub>
 
-The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Too late, you see that the gully narrows behind you as well.
+The drumming turns into thunder. Three boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Too late, you see that the gully narrows behind you as well.
 
-**Battle:** Boar Stampede <sub>(`boar-stampede` on `pass`)</sub>
+**Battle:** The Boar-Runs <sub>(`boar-runs` on `pass`)</sub>
 
 **» Fight — won**
 
@@ -2263,7 +2269,7 @@ The brook still runs uphill into its pool, and the pool still has shoulders. It 
 
 <sub>scene `seam-fight` (again)</sub>
 
-The pool stands up again into its rough giant's shape. It pours itself at you, as cold as the crack it came through, and the ice-things come shrieking after it.
+The pool stands up again into its rough giant's shape. It pours itself at you, as cold as the crack it came through, and the ice-things and the white wolf come after it.
 
 **Battle:** The Flooded Pass <sub>(`flooded-seam` on `bog`)</sub>
 
@@ -2441,7 +2447,7 @@ The statues still stand in their crooked rows, but nothing grazes between them. 
 
 Above the tree-line stands the giants' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.
 
-At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.
+At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and two skinny orc runners trot at their heels.
 
 "THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Both heads notice you at the same moment, and both of them stop talking.
 
@@ -2449,7 +2455,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 6 — failed]`
+`[Deception DC 11 — Ash the Sneaky rolls 7 — failed]`
 
 <sub>scene `steading-balked`</sub>
 
@@ -2459,7 +2465,7 @@ You tell the left head the valley is its own. The right head hears you say it, a
 
 <sub>scene `steading-roused`</sub>
 
-The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orc ducks behind them all.
+The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orcs duck behind them all.
 
 **Battle:** The Giants' Hall <sub>(`giants-hall` on `ruins`)</sub>
 
@@ -2519,15 +2525,13 @@ The ettin is back in the yard of its hall, both heads still arguing about the va
 
 <sub>scene `steading-roused` (again)</sub>
 
-The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and their orc is already behind them all.
+The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and their orcs are already behind them all.
 
 **Battle:** The Giants' Hall <sub>(`giants-hall` on `ruins`)</sub>
 
 **» Fight — won**
 
-_Level up: 4 → 5_
-
-The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
+The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
 _+140 gold (710)_
 

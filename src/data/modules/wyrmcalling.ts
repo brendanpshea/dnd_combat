@@ -25,17 +25,18 @@
  * XP budget (trilogy-plan.md), and no level floor: the hills' fights carry a
  * company from 4th to 5th before the stone (docs/module-writing-guide.md,
  * "Levels come from fights"). On every road up: the envoy's hired swords
- * 1,700, the griffons on the switchbacks 1,800, the flooded seam 2,100, the
- * three dens 2,625 (or the brood on the rim), the ogre-mage's hold 3,100 and
- * the giants' hall 2,100; the manticore, the boar-runs and the gorgon add
- * 3,500 more. The near side is fought at 4th and tuned for it (the hold is
- * the hardest, 73% won at 4th). Every way past a fight (talking, tricking,
+ * 1,750, the griffons on the switchbacks 2,250, the flooded seam 2,800, the
+ * three dens 3,775 (or the brood on the rim), the ogre-mage's hold 3,200 and
+ * the giants' hall 2,200; the manticore and its wyvern, the boar-runs and
+ * the gorgon add 6,150 more. The near side is fought at 4th and tuned for it
+ * (docs/balance.md: the flooded seam and the toll-cliff are the hardest,
+ * about 75% won at 4th). Every way past a fight (talking, tricking,
  * paying, scattering the herd) pays what the fight would have
  * (`avoidedFightXP`), the toll paid after the peak (`pay-late`) included
  * (docs/design-decisions.md, "Levels come from fights"). A continuing
- * company (~3,450–4,300 XP from Part 2) reaches 5th partway up the hills on
+ * company (~4,300–5,750 XP from Part 2) reaches 5th partway up the hills on
  * every transcript route; a cold start opens at 4th (its one floor, on the
- * cold-start choice) and gets there after its last hill fight. The stone is fought at 5th.
+ * cold-start choice) and gets there at the boar-runs. The stone is fought at 5th.
  *
  * CARRIED CHOICES: only the ledger (docs/state-ledger.md). Vex's briefing
  * reads whether he was `turned` (took the party's offer in Part 1), and is
@@ -219,7 +220,7 @@ const PEAK_SNAPSHOT: Effect[] = [
  */
 /** The herd got past without a fight: it lives, and it turns away. */
 const HERD_SPARED: Effect[] = [{ kind: 'setFlag', flag: 'boarruns-cleared' },
-  ...tally(), { kind: 'xp', amount: avoidedFightXP('boar-stampede') }];
+  ...tally(), { kind: 'xp', amount: avoidedFightXP('boar-runs') }];
 
 /** A missed run across the boar-runs: a pack bursts under the herd. */
 const SCATTERED: Effect[] = [{ kind: 'gold', amount: -30 }];
@@ -233,15 +234,15 @@ const STEADING_TALKED: Effect[] = [{ kind: 'setFlag', flag: 'steading-cleared' }
 
 const STEADING_INTRO = [
   'Above the tree-line stands the giants\' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.',
-  'At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** {vex} warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.',
+  'At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** {vex} warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and two skinny orc runners trot at their heels.',
   '"THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Both heads notice you at the same moment, and both of them stop talking.',
 ];
-const STEADING_WON = { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, taken from the valley one cart at a time.'],
+const STEADING_WON = { to: 'hills', text: ['The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard\'s worth of pickled fruit, taken from the valley one cart at a time.'],
   effects: [{ kind: 'setFlag', flag: 'steading-cleared' }, ...tally(), { kind: 'gold', amount: 140 }] } satisfies Outcome;
 /** Wren's clue: the two heads never agree. Agree with both. */
 const STEADING_PARLEY = [
   '"The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.',
-  'The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runner and all. You can hear it halfway down the mountain.',
+  'The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runners and all. You can hear it halfway down the mountain.',
 ];
 
 const TO_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue' }];
@@ -1097,7 +1098,7 @@ const scenes: Record<string, Scene> = {
     // The sister is only a seeming (see onWin); her hired swords are real.
     id: 'envoys', kind: 'battle', encounterId: 'hired-swords', mapId: 'open',
     intro: [
-      'You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with duckweed braided into her hair. Five hired swords stand behind her: a knight in dented black plate, a grey old sellsword with a scarred face, and three archers. They watch you with bored, empty eyes.',
+      'You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with duckweed braided into her hair. Seven hired swords stand behind her. There is a knight in dented black plate, a grey old sellsword with a scarred face, three archers, and two cutthroats with long knives. They watch you with bored, empty eyes.',
       '"The famous company." She smiles without opening her mouth. "I am **{nettle}**, elder sister to the one you called the {reedwife}. You beat her in the chief\'s hall, and you cost this family its living. That debt is written down, and it will be paid."',
       'She flexes her green fingers. "The rest of the collectors are gathering up on the mountain. Think of this as the first notice."',
     ],
@@ -1311,8 +1312,8 @@ const scenes: Record<string, Scene> = {
     id: 'peak-battle', kind: 'battle', encounterId: 'harpy-roost', mapId: 'open',
     // The night's last stragglers: a setback to survive, not a payday.
     loot: false, noFlee: true,
-    intro: ['Two harpies sit on the broken line with their wings spread, singing. Three pikemen have dropped their pikes and walk toward them, smiling. The harpies see you coming, and they turn their song on you.'],
-    onWin: { to: 'warcamp', text: ['The second harpy drops into the mud between the pikes, and the singing stops. The pikemen shake their heads and stare at their empty hands. {vex} comes down the line behind you, counting the wounded under his breath.'] },
+    intro: ['Four harpies sit on the broken line with their wings spread, singing. A lean grey drake with leathery wings and a sting on its tail crouches among them. Three pikemen have dropped their pikes and walk toward them, smiling. The harpies see you coming, and they turn their song on you.'],
+    onWin: { to: 'warcamp', text: ['The last harpy drops into the mud between the pikes, beside the drake, and the singing stops. The pikemen shake their heads and stare at their empty hands. {vex} comes down the line behind you, counting the wounded under his breath.'] },
     // Lost in the camp itself, not on the mountain: its own wake-up.
     onLoss: { to: 'peak-line-lost', text: ['The harpies\' song closes over your heads, and you go down in the mud of the east line.'] },
   },
@@ -1522,7 +1523,7 @@ const scenes: Record<string, Scene> = {
       'A boulder sits beside the trail with a handprint pressed into it. The hand was wider than a door.',
       'Water has cut fresh channels across the path, though no stream runs anywhere up here.',
       'Under it all runs that steady pull. The mud is full of tracks, and none of them come back down.',
-      'Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.',
+      'Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, five of them, and you are standing on their road. The lead one folds its wings and drops.',
     ],
     again: ['The griffons still wheel over the switchbacks, riding the pull up the mountain, and they have seen you.'],
     next: [{ id: 'on', label: 'Stand and meet them', to: 'switchbacks-fight' }],
@@ -1548,21 +1549,22 @@ const scenes: Record<string, Scene> = {
     id: 'hills-night', kind: 'battle',
     // A night attack is a setback, not a payday: no XP or loot, so a
     // risky camp can't be farmed by resting over and over.
-    loot: false, encounterId: 'harpy-roost', mapId: 'open',
+    loot: false, encounterId: 'crag-harpies', mapId: 'open',
     intro: [
       'In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, {nettle}, does not turn. "So we will take the valley from you," she says. "It is only fair."',
-      'The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women\'s faces come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.',
+      'The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women\'s faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.',
     ],
-    again: ['The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women\'s faces come riding the night wind down from the crags. You wake in time, because the sentry is shouting.'],
-    onWin: { to: '@hub', text: ['The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.'] },
+    again: ['The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women\'s faces come riding the night wind down from the crags, the grey drake behind them. You wake in time, because the sentry is shouting.'],
+    onWin: { to: '@hub', text: ['The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.'] },
   },
   tollcliff: {
     id: 'tollcliff', kind: 'story', art: { emoji: '🦁' },
-    again: ['The manticore still lies along its ledge under the overhang. It opens one eye. "Back with my toll?" it purrs. "Good. I was getting hungry."'],
+    again: ['The manticore still lies along its ledge under the overhang. It opens one eye. "Back with my toll?" it purrs. "Good. I was getting hungry." Above it, the grey drake shifts on its roost.'],
     text: [
       'The trail narrows under an overhang, and something lies along the ledge above it like a lord at his dinner table. You see a lion\'s body first, then folded bat\'s wings, then a tail bristling with black spikes.',
       'It lifts its head, and the face is a man\'s, smiling.',
       '"Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with human lips, and the teeth behind them are a lion\'s. "You will pay in meat. I have decided."',
+      'Higher up the rock, something else is roosting. It is a lean grey drake with leathery wings and a sting on its tail, and it is watching you too.',
     ],
     next: [
       // Wren's clue: it is greedy, so point it at a bigger meal. One try, and
@@ -1582,25 +1584,25 @@ const scenes: Record<string, Scene> = {
     id: 'tollcliff-talked', kind: 'story', art: { emoji: '🦁' },
     text: [
       'You tell it the truth, more or less. "The hags promised you a valley full of meat. They\'re up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn\'t wait on a ledge for scraps."',
-      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the {calling} Stone. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.',
+      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the {calling} Stone, and the grey drake flaps after it. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.',
     ],
     next: [{ id: 'ok', label: 'Walk the open trail', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'setFlag', flag: 'manticore-sent' },
-        ...tally(), { kind: 'xp', amount: avoidedFightXP('manticore-cliff') }] }],
+        ...tally(), { kind: 'xp', amount: avoidedFightXP('manticore-toll') }] }],
     noBack: true,
   },
   'tollcliff-fight': {
-    id: 'tollcliff-fight', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'cliff',
-    intro: ['"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Two goblins scramble up from the rocks behind it with spears.'],
-    onWin: { to: 'hills', text: ['The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.'],
+    id: 'tollcliff-fight', kind: 'battle', encounterId: 'manticore-toll', mapId: 'cliff',
+    intro: ['"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Above it the grey drake launches itself off the rock.'],
+    onWin: { to: 'hills', text: ['The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.'],
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, ...tally(), { kind: 'gold', amount: 110 }] },
   },
   // Talked at too long: its tail was cocked the whole time.
   'tollcliff-stung': {
-    id: 'tollcliff-stung', kind: 'battle', encounterId: 'manticore-cliff', mapId: 'cliff',
+    id: 'tollcliff-stung', kind: 'battle', encounterId: 'manticore-toll', mapId: 'cliff',
     surprise: 'party',
-    intro: ['The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and two goblins scramble up from the rocks behind it.'],
-    onWin: { to: 'hills', text: ['The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.'],
+    intro: ['The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and the grey drake drops off the rock above it.'],
+    onWin: { to: 'hills', text: ['The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.'],
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, ...tally(), { kind: 'gold', amount: 110 }] },
   },
   'tollcliff-done': {
@@ -1633,9 +1635,9 @@ const scenes: Record<string, Scene> = {
     ],
   },
   'boarruns-fight': {
-    id: 'boarruns-fight', kind: 'battle', encounterId: 'boar-stampede', mapId: 'pass',
-    intro: ['The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the {calling}. Too late, you see that the gully narrows behind you as well.'],
-    again: ['The drumming turns into thunder again. The two great boars come down the narrows shoulder to shoulder, and this time you know the gully closes behind you.'],
+    id: 'boarruns-fight', kind: 'battle', encounterId: 'boar-runs', mapId: 'pass',
+    intro: ['The drumming turns into thunder. Three boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the {calling}. Too late, you see that the gully narrows behind you as well.'],
+    again: ['The drumming turns into thunder again. The three great boars come down the narrows shoulder to shoulder, and this time you know the gully closes behind you.'],
     onWin: { to: 'hills', text: ['The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. A drover\'s torn purse hangs from the lead boar\'s tusk, still half full.'],
       effects: [{ kind: 'setFlag', flag: 'boarruns-cleared' }, ...tally(), { kind: 'gold', amount: 40 }] },
   },
@@ -1685,7 +1687,7 @@ const scenes: Record<string, Scene> = {
   },
   'greenden-fight': {
     id: 'greenden-fight', kind: 'battle', encounterId: 'green-dragon-den', mapId: 'marsh',
-    intro: ['The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.'],
+    intro: ['The kobolds scatter for their spears. Down the briar on grey threads come two spindly, pale-eyed things with spiders\' mouths, and two spiders the size of dogs scuttle after them. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.'],
     onWin: { to: 'hills', text: ['The wyrmling drops in the middle of a hiss, and its poison breath thins to a harmless stink. Its small hoard lies under the bones, and you dig it out.',
       'Up the mountain, the {calling}\'s note bends. {nettle}\'s voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."'],
       effects: [{ kind: 'setFlag', flag: 'green-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 75 }] },
@@ -1744,8 +1746,8 @@ const scenes: Record<string, Scene> = {
   },
   'seam-fight': {
     id: 'seam-fight', kind: 'battle', encounterId: 'flooded-seam', mapId: 'bog',
-    intro: ['The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.'],
-    again: ['The pool stands up again into its rough giant\'s shape. It pours itself at you, as cold as the crack it came through, and the ice-things come shrieking after it.'],
+    intro: ['The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it. Last of all a white wolf the size of a pony pads out, breathing frost.'],
+    again: ['The pool stands up again into its rough giant\'s shape. It pours itself at you, as cold as the crack it came through, and the ice-things and the white wolf come after it.'],
     onWin: { to: 'hills', text: ['The water-giant falls apart all at once. A hundred gallons of plain water run away downhill like any other brook, and leave the purses of the travellers it drowned lying in the mud.',
       'Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.'],
       effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, ...tally(), { kind: 'gold', amount: 50 }] },
@@ -1850,7 +1852,7 @@ const scenes: Record<string, Scene> = {
   },
   'onihold-fight': {
     id: 'onihold-fight', kind: 'battle', encounterId: 'oni-hold', mapId: 'open',
-    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders. The elder of the two, scarred to the eyebrows, calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.'],
+    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. Three orcs in stolen mail march out onto the open ground before it with their spears on their shoulders. The eldest, scarred to the eyebrows, calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.'],
     onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate, and the fort\'s war-chest sits unguarded in the yard.'],
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, ...tally(), { kind: 'gold', amount: 130 }] },
   },
@@ -1964,8 +1966,8 @@ const scenes: Record<string, Scene> = {
   },
   'steading-roused': {
     id: 'steading-roused', kind: 'battle', encounterId: 'giants-hall', mapId: 'ruins',
-    intro: ['The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orc ducks behind them all.'],
-    again: ['The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and their orc is already behind them all.'],
+    intro: ['The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orcs duck behind them all.'],
+    again: ['The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and their orcs are already behind them all.'],
     onWin: STEADING_WON,
   },
   // The ogre-mage took the bait: its warband hit the hall first, and the
@@ -2214,16 +2216,16 @@ const scenes: Record<string, Scene> = {
       [id + CRACK, tearLoose(id + CRACK, [open, ...TEAR_CRACKED, TEAR_STAKES], 'sisters-battle' + CRACK, 'calling-battle' + CRACK, mood || undefined)],
     ];
   })),
-  // Torn loose: the sisters fall fighting, beside the last two things the
-  // stone still had the strength to raise: a fire elemental and an azer (the
-  // brass thing).
+  // Torn loose: the sisters fall fighting, beside the last things the stone
+  // still had the strength to raise: a fire elemental and an azer (the brass
+  // thing), with two magma mephits at its heels.
   'sisters-battle': {
     id: 'sisters-battle', kind: 'battle', encounterId: 'sisters-at-stone', mapId: 'firepit',
     loot: { bonusTier: 'rare' },
-    intro: ['The sisters come at you with green claws and burning faces. "Then we collect by hand," {nettle} says. {sedge} says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last things the stone has the strength to raise. A pillar of living fire climbs out. After it comes a squat thing of red brass, with a beard of flame and a hammer in its fist. Both turn toward you.'],
-    again: ['"Then we collect by hand," {nettle} says again, and the sisters come at you with their burned claws. {sedge} is still weeping. Behind them, the pillar of living fire and the brass thing turn toward you once more.'],
+    intro: ['The sisters come at you with green claws and burning faces. "Then we collect by hand," {nettle} says. {sedge} says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last things the stone has the strength to raise. A pillar of living fire climbs out. After it comes a squat thing of red brass, with a beard of flame and a hammer in its fist. Two little things of dripping magma scuttle out at its heels. All of them turn toward you.'],
+    again: ['"Then we collect by hand," {nettle} says again, and the sisters come at you with their burned claws. {sedge} is still weeping. Behind them, the pillar of living fire and the brass thing turn toward you once more, the magma-things at its heels.'],
     onLoss: STONE_LOST_SISTERS,
-    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.',
+    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.',
       'The black fang has no one left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
   },
@@ -2232,10 +2234,10 @@ const scenes: Record<string, Scene> = {
   'sisters-battle-cracked': {
     id: 'sisters-battle-cracked', kind: 'battle', encounterId: 'sisters-at-stone', mapId: 'firepit',
     loot: { bonusTier: 'rare' }, surprise: 'party',
-    intro: ['The sisters come at you with green claws and burning faces. Grey hands still hold your ankles, and you are still kicking free when the sisters reach you. "Then we collect by hand," {nettle} says. {sedge} is weeping, and she comes at you all the same. Behind them, a pillar of living fire climbs out of the crack. After it comes a squat thing of red brass with a beard of flame. Both turn toward you.'],
-    again: ['Grey hands catch at your ankles again as the sisters come at you, claws out. {sedge} is still weeping, and behind them the pillar of living fire and the brass thing turn toward you once more.'],
+    intro: ['The sisters come at you with green claws and burning faces. Grey hands still hold your ankles, and you are still kicking free when the sisters reach you. "Then we collect by hand," {nettle} says. {sedge} is weeping, and she comes at you all the same. Behind them, a pillar of living fire climbs out of the crack. After it comes a squat thing of red brass with a beard of flame. Two little things of dripping magma scuttle out at its heels. All of them turn toward you.'],
+    again: ['Grey hands catch at your ankles again as the sisters come at you, claws out. {sedge} is still weeping, and behind them the pillar of living fire and the brass thing turn toward you once more, the magma-things at its heels.'],
     onLoss: STONE_LOST_SISTERS,
-    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.',
+    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.',
       'The black fang has no one left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
   },

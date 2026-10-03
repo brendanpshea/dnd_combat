@@ -49,7 +49,7 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S27** “The notes are complete and correct, the same as she …”
   - **S28** “Wren looks up from the map board. "My notes are …”
 - `tollcliff-fight`, `tollcliff-stung`:
-  - **S29** “The manticore drops onto the trail with one last offended …”
+  - **S29** “The grey drake falls off the rock, and the manticore …”
 - `gorgonvale-fight`, `gorgonvale-woken`:
   - **S30** “The gorgon crashes onto its side with its iron plates …”
 - `calling-gate`, `calling-gate-clear`:
@@ -212,7 +212,7 @@ Twenty men in Thornwick's colours fall in behind you, and their sergeant hands y
 
 ## `envoys` · battle
 
-You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with duckweed braided into her hair. Five hired swords stand behind her: a knight in dented black plate, a grey old sellsword with a scarred face, and three archers. They watch you with bored, empty eyes.
+You are ten paces from the command tent when the whole camp stops talking at once. A woman stands in your way who was not there a moment ago. She is a head taller than anyone in the camp, with duckweed braided into her hair. Seven hired swords stand behind her. There is a knight in dented black plate, a grey old sellsword with a scarred face, three archers, and two cutthroats with long knives. They watch you with bored, empty eyes.
 
 "The famous company." She smiles without opening her mouth. "I am **Nettle**, elder sister to the one you called the Reedwife. You beat her in the chief's hall, and you cost this family its living. That debt is written down, and it will be paid."
 
@@ -777,13 +777,13 @@ Thornwick's watch is the only part of the line still standing in good order. The
 
 ## `peak-battle` · battle
 
-Two harpies sit on the broken line with their wings spread, singing. Three pikemen have dropped their pikes and walk toward them, smiling. The harpies see you coming, and they turn their song on you.
+Four harpies sit on the broken line with their wings spread, singing. A lean grey drake with leathery wings and a sting on its tail crouches among them. Three pikemen have dropped their pikes and walk toward them, smiling. The harpies see you coming, and they turn their song on you.
 
 **Battle:** Harpy Roost
 
 *Won:*
 
-The second harpy drops into the mud between the pikes, and the singing stops. The pikemen shake their heads and stare at their empty hands. Vex comes down the line behind you, counting the wounded under his breath.
+The last harpy drops into the mud between the pikes, beside the drake, and the singing stops. The pikemen shake their heads and stare at their empty hands. Vex comes down the line behind you, counting the wounded under his breath.
 
 *Lost:*
 
@@ -1163,7 +1163,7 @@ Water has cut fresh channels across the path, though no stream runs anywhere up 
 
 Under it all runs that steady pull. The mud is full of tracks, and none of them come back down.
 
-Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, four of them, and you are standing on their road. The lead one folds its wings and drops.
+Halfway up, the sky over the trail fills with wings. A flight of **griffons** is riding that pull up the mountain, five of them, and you are standing on their road. The lead one folds its wings and drops.
 
 ### 2. when a return visit?
 
@@ -1213,23 +1213,23 @@ The switchbacks wind away below you, familiar now. Up ahead, the Calling still p
 
 In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
 
-The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
+The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
 
-**Battle:** Harpy Roost
+**Battle:** Harpies of the Crags
 
 *Won:*
 
-The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
+The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
 
 ### 2. when a return visit?
 
-The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women's faces come riding the night wind down from the crags. You wake in time, because the sentry is shouting.
+The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women's faces come riding the night wind down from the crags, the grey drake behind them. You wake in time, because the sentry is shouting.
 
-**Battle:** Harpy Roost
+**Battle:** Harpies of the Crags
 
 *Won:*
 
-The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
+The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
 
 ## `tollcliff` · story
 
@@ -1245,9 +1245,11 @@ It lifts its head, and the face is a man's, smiling.
 
 "Toll," it says. Its voice is a purr dragged over gravel. "Everything that walks my cliff pays. The goblins paid in sheep. The hags paid in promises." It grins with human lips, and the teeth behind them are a lion's. "You will pay in meat. I have decided."
 
+Higher up the rock, something else is roosting. It is a lean grey drake with leathery wings and a sting on its tail, and it is watching you too.
+
 ### 2. when a return visit?
 
-The manticore still lies along its ledge under the overhang. It opens one eye. "Back with my toll?" it purrs. "Good. I was getting hungry."
+The manticore still lies along its ledge under the overhang. It opens one eye. "Back with my toll?" it purrs. "Good. I was getting hungry." Above it, the grey drake shifts on its roost.
 
 - » **[Persuasion DC 11] "Have the hags paid you yet?"** [Persuasion DC 11] <sub>open when `wren-brief`; otherwise hidden</sub>
 - » **[Persuasion DC 14] "Have the hags paid you yet?"** [Persuasion DC 14] <sub>open when not `wren-brief`; otherwise hidden</sub>
@@ -1258,31 +1260,31 @@ The manticore still lies along its ledge under the overhang. It opens one eye. "
 
 You tell it the truth, more or less. "The hags promised you a valley full of meat. They're up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn't wait on a ledge for scraps."
 
-The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.
+The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone, and the grey drake flaps after it. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.
 
 - » **Walk the open trail**
 
 ## `tollcliff-fight` · battle
 
-"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Two goblins scramble up from the rocks behind it with spears.
+"Steel, then," the manticore sighs, sounding genuinely put out. Its tail curves over its shoulder like a drawn bow. Above it the grey drake launches itself off the rock.
 
-**Battle:** Manticore Cliff
+**Battle:** The Toll-Cliff
 
 *Won:*
 
-The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
+The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
 <sub>(shared with: `tollcliff-stung`)</sub>
 
 ## `tollcliff-stung` · battle
 
-The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and two goblins scramble up from the rocks behind it.
+The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and the grey drake drops off the rock above it.
 
-**Battle:** Manticore Cliff
+**Battle:** The Toll-Cliff
 
 *Won:*
 
-The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
+The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
 <sub>(shared with: `tollcliff-fight`)</sub>
 
@@ -1330,9 +1332,9 @@ Far up the gully, a haze of dust hangs where the herd last ran.
 
 ### 1. when the first visit?
 
-The drumming turns into thunder. Two boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Too late, you see that the gully narrows behind you as well.
+The drumming turns into thunder. Three boars the size of hay-carts come down the narrows shoulder to shoulder. Their tusks are as long as plough blades and their eyes are mad with the Calling. Too late, you see that the gully narrows behind you as well.
 
-**Battle:** Boar Stampede
+**Battle:** The Boar-Runs
 
 *Won:*
 
@@ -1340,9 +1342,9 @@ The stampede breaks around its fallen leaders. The rest of the herd scatters ove
 
 ### 2. when a return visit?
 
-The drumming turns into thunder again. The two great boars come down the narrows shoulder to shoulder, and this time you know the gully closes behind you.
+The drumming turns into thunder again. The three great boars come down the narrows shoulder to shoulder, and this time you know the gully closes behind you.
 
-**Battle:** Boar Stampede
+**Battle:** The Boar-Runs
 
 *Won:*
 
@@ -1397,7 +1399,7 @@ The briar tunnel still stinks of cut grass gone bad. The green wyrmling slides o
 
 ## `greenden-fight` · battle
 
-The kobolds scatter for their spears. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.
+The kobolds scatter for their spears. Down the briar on grey threads come two spindly, pale-eyed things with spiders' mouths, and two spiders the size of dogs scuttle after them. The wyrmling coils back into the briar and sucks in a long breath. A green haze leaks out between its teeth.
 
 **Battle:** Green Wyrmling's Thicket
 
@@ -1471,7 +1473,7 @@ The brook still runs uphill into its pool, and the pool still has shoulders. It 
 
 ### 1. when the first visit?
 
-The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.
+The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it. Last of all a white wolf the size of a pony pads out, breathing frost.
 
 **Battle:** The Flooded Pass
 
@@ -1483,7 +1485,7 @@ Behind it, the crack in the rock is closing. Just before it shuts, cold air sigh
 
 ### 2. when a return visit?
 
-The pool stands up again into its rough giant's shape. It pours itself at you, as cold as the crack it came through, and the ice-things come shrieking after it.
+The pool stands up again into its rough giant's shape. It pours itself at you, as cold as the crack it came through, and the ice-things and the white wolf come after it.
 
 **Battle:** The Flooded Pass
 
@@ -1605,7 +1607,7 @@ Its warband files out of the gate and down the near side of the pass, toward the
 
 ## `onihold-fight` · battle
 
-The horn sounds twice, and the gate opens on the ogre-mage's guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders. The elder of the two, scarred to the eyebrows, calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.
+The horn sounds twice, and the gate opens on the ogre-mage's guard. Three orcs in stolen mail march out onto the open ground before it with their spears on their shoulders. The eldest, scarred to the eyebrows, calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.
 
 **Battle:** The Ogre-Mage's Hold
 
@@ -1751,7 +1753,7 @@ The statues stand silent in their crooked rows. Nothing grazes between them now.
 
 Above the tree-line stands the giants' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.
 
-At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.
+At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and two skinny orc runners trot at their heels.
 
 "THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Both heads notice you at the same moment, and both of them stop talking.
 
@@ -1763,7 +1765,7 @@ The ettin is back in the yard of its hall, both heads still arguing about the va
 
 Above the tree-line stands the giants' hall. Something built it in one season, out of whole pine trees and stone blocks as big as wagons.
 
-At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and a skinny orc runner trots at their heels.
+At the first scrape of your boots, one huge body ducks out of the door with two heads on top, arguing. It is the **ettin** Vex warned you about. Two shaggy ogres in sheepskins stumble out behind it, still chewing, and two skinny orc runners trot at their heels.
 
 "THE STONE PROMISED US THE VALLEY," booms the left head. "The stone promised ME the valley," the right head corrects. Both heads notice you at the same moment, and both of them stop talking.
 
@@ -1777,7 +1779,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 "The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.
 
-The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runner and all. You can hear it halfway down the mountain.
+The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runners and all. You can hear it halfway down the mountain.
 
 - » **Climb on past the empty hall**
 
@@ -1795,23 +1797,23 @@ You tell the left head the valley is its own. The right head hears you say it, a
 
 ### 1. when the first visit?
 
-The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orc ducks behind them all.
+The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orcs duck behind them all.
 
 **Battle:** The Giants' Hall
 
 *Won:*
 
-The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
+The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
 ### 2. when a return visit?
 
-The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and their orc is already behind them all.
+The ettin lifts both its clubs again, and both heads still want the same thing. The ogres are on their feet this time, and their orcs are already behind them all.
 
 **Battle:** The Giants' Hall
 
 *Won:*
 
-The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
+The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
 ## `steading-raided` · battle
 
@@ -4477,13 +4479,13 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 ### 1. when the first visit?
 
-The sisters come at you with green claws and burning faces. "Then we collect by hand," Nettle says. Sedge says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last things the stone has the strength to raise. A pillar of living fire climbs out. After it comes a squat thing of red brass, with a beard of flame and a hammer in its fist. Both turn toward you.
+The sisters come at you with green claws and burning faces. "Then we collect by hand," Nettle says. Sedge says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last things the stone has the strength to raise. A pillar of living fire climbs out. After it comes a squat thing of red brass, with a beard of flame and a hammer in its fist. Two little things of dripping magma scuttle out at its heels. All of them turn toward you.
 
 **Battle:** The Sisters at the Stone
 
 *Won:*
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.
 
 <sub>(shared with: `sisters-battle-cracked`)</sub>
 
@@ -4499,13 +4501,13 @@ Green claws close over you, and the last thing you hear is Nettle adding it to t
 
 ### 2. when a return visit?
 
-"Then we collect by hand," Nettle says again, and the sisters come at you with their burned claws. Sedge is still weeping. Behind them, the pillar of living fire and the brass thing turn toward you once more.
+"Then we collect by hand," Nettle says again, and the sisters come at you with their burned claws. Sedge is still weeping. Behind them, the pillar of living fire and the brass thing turn toward you once more, the magma-things at its heels.
 
 **Battle:** The Sisters at the Stone
 
 *Won:*
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.
 
 <sub>(shared with: `sisters-battle-cracked`)</sub>
 
@@ -4527,13 +4529,13 @@ Green claws close over you, and the last thing you hear is Nettle adding it to t
 
 ### 1. when the first visit?
 
-The sisters come at you with green claws and burning faces. Grey hands still hold your ankles, and you are still kicking free when the sisters reach you. "Then we collect by hand," Nettle says. Sedge is weeping, and she comes at you all the same. Behind them, a pillar of living fire climbs out of the crack. After it comes a squat thing of red brass with a beard of flame. Both turn toward you.
+The sisters come at you with green claws and burning faces. Grey hands still hold your ankles, and you are still kicking free when the sisters reach you. "Then we collect by hand," Nettle says. Sedge is weeping, and she comes at you all the same. Behind them, a pillar of living fire climbs out of the crack. After it comes a squat thing of red brass with a beard of flame. Two little things of dripping magma scuttle out at its heels. All of them turn toward you.
 
 **Battle:** The Sisters at the Stone
 
 *Won:*
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.
 
 <sub>(shared with: `sisters-battle`)</sub>
 
@@ -4549,13 +4551,13 @@ Green claws close over you, and the last thing you hear is Nettle adding it to t
 
 ### 2. when a return visit?
 
-Grey hands catch at your ankles again as the sisters come at you, claws out. Sedge is still weeping, and behind them the pillar of living fire and the brass thing turn toward you once more.
+Grey hands catch at your ankles again as the sisters come at you, claws out. Sedge is still weeping, and behind them the pillar of living fire and the brass thing turn toward you once more, the magma-things at its heels.
 
 **Battle:** The Sisters at the Stone
 
 *Won:*
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.
 
 <sub>(shared with: `sisters-battle`)</sub>
 
