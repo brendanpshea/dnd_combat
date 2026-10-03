@@ -63,8 +63,8 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | The Kennels | `kennel-hyenas` | 3 | 400 | 2× Giant Hyena |
 | The Pit-Brute | `den-muster` | 3 | 650 | 1× Ogre, 2× Orc Raider |
 | The Reedwife and the Chief's Guard | `hag-guarded` | 3 | 1425 | 1× Green Hag, 1× Warrior Veteran, 1× Bandit |
+| The Serpent Pool | `snake-pit` | 3 | 900 | 2× Giant Constrictor Snake |
 | The Watchers at the Barrow Gate | `barrow-watchers` | 3 | 1100 | 2× Gargoyle, 1× Animated Armor |
-| Viper Pit | `snake-pit` | 3 | 900 | 2× Giant Constrictor Snake |
 | Wight Tomb | `wight-tomb` | 3 | 800 | 1× Wight, 2× Skeleton |
 | Chromatic Clutch | `chromatic-clutch` | 4 | 1350 | 1× Black Dragon Wyrmling, 1× Green Dragon Wyrmling, 1× White Dragon Wyrmling |
 | Green Hag and Hired Blades | `hag-coven` | 4 | 750 | 1× Green Hag, 2× Bandit |

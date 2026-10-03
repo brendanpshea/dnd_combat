@@ -234,7 +234,6 @@ const STEADING_WON = { to: 'hills', text: ['The ettin goes down still arguing ab
 const STEADING_PARLEY = [
   '"The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.',
   'The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runner and all. You can hear it halfway down the mountain.',
-  'The road to the stone stands open.',
 ];
 
 const TO_EPILOGUE: Choice[] = [{ id: 'done', label: 'Let the valley celebrate', to: 'wc-epilogue' }];
@@ -313,7 +312,7 @@ const broodScenes = (): Record<string, Scene> => Object.fromEntries(BROODS.map((
   const id = `clutch-${k}`;
   return [id, {
     id, kind: 'battle', encounterId: `den-clutch-${k}`, mapId: 'open', intro: [intro],
-    onWin: { to: 'ridge-quiet', text: ['The last wyrmling drops out of the bruised light and does not get up. The rim is yours. The stone\'s note wavers, as if it has just counted how few voices are still answering it.'],
+    onWin: { to: 'ridge-quiet', text: ['The last wyrmling drops out of the bruised light and does not get up. The stone\'s note wavers, as if it has just counted how few voices are still answering it.'],
       // Each wyrmling killed on the rim is no longer waiting in its den to be
       // killed again. No tally: the night is already judged (see PEAK_NOW).
       effects: [...k].map((c) => ({ kind: 'setFlag' as const, flag: DENS[c as keyof typeof DENS].flag })) },
@@ -515,7 +514,7 @@ const peakWays = (ways: (effects: Effect[], also: Requirement[]) => Choice[]): C
 const RIDGE_SIGHT: Para[] = [
   'You reach the last ridge. The {calling} is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a light that hurts to look at.',
   { if: [hasNot('calling-peaked')],
-    text: 'Down in the bowl, two green shapes at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The {calling} is peaking.' },
+    text: 'Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The {calling} is peaking.' },
 ];
 const NIGHT_FALLS = 'Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch.';
 const RIDGE_NIGHT: Para[] = [
@@ -548,7 +547,7 @@ const denLines = (): Para[] => {
     const many = standing.length > 1;
     const dens = DEN_LIST.map((c) => (standing.includes(c) ? hasNot(DENS[c].flag) : has(DENS[c].flag)));
     lines.push({ if: [...dens, hasNot('calling-peaked')],
-      text: `His finger moves to the dens. "The ${list} ${many ? 'dens are' : 'den is'} still standing. Burn ${many ? 'them' : 'it'} out, and that's ${['one more wyrm', 'two more wyrms', 'three more wyrms'][standing.length - 1]} that never ${many ? 'reach' : 'reaches'} the rim."` });
+      text: `His finger moves to the dens. "The ${list} ${many ? 'dens' : 'den'}. Still standing."` });
     lines.push({ if: [...dens, has('calling-peaked')],
       text: `His finger moves to the dens. "The ${list} ${many ? 'dens are' : 'den is'} empty now. ${many ? 'Those wyrms' : 'That wyrm'} flew up to the rim when the {calling} peaked. You'll meet ${many ? 'them' : 'it'} there."` });
   }
@@ -737,7 +736,7 @@ const SLIDES_HILLS: Slide[] = [
   // (it stayed up, or fast-travelled past every marker) did not see the night.
   // Its slide is judged by the same snapshot the morning would have shown.
   { if: [{ kind: 'flag', flag: 'calling-peaked' }, { kind: 'notFlag', flag: 'peak-seen' }, peakAtLeast(TALLY_HIGH)],
-    text: 'The war-camp fought its long night while you were still up in the hills. The sentries still keep the arrows they never had to loose.' },
+    text: 'While you were still up in the hills, the {calling} had its last night, and hardly anything came down to the war-camp. {bram} tried to sell the army back its own arrows.' },
   { if: [{ kind: 'flag', flag: 'calling-peaked' }, { kind: 'notFlag', flag: 'peak-seen' }, { kind: 'flag', flag: PEAK_HELD }, { kind: 'notFlag', flag: PEAK_TALLY }],
     text: 'The war-camp fought its long night while you were still up in the hills. The pikes held, but it cost. The pikemen still keep the list of names.' },
   { if: [{ kind: 'flag', flag: 'calling-peaked' }, { kind: 'notFlag', flag: 'peak-seen' }, { kind: 'notFlag', flag: PEAK_HELD }],
@@ -820,10 +819,10 @@ const DRAG: Record<TearMood | 'plain', Drag> = {
   plain: { id: 'drag', label: 'Drag their hands out of the rock', dc: 15,
     lost: 'The rock holds them fast. You let go with burned palms, and the stone keeps drinking.' },
   // You owned the debt, and {nettle} means to collect it.
-  rueful: { id: 'drag', label: 'Drag their hands out of the rock', hint: '{nettle} has dug in deeper since you owned the debt.', dc: 17,
-    lost: '{nettle} has her hands sunk past the wrist, and she smiles at you the whole time you pull. You let go with burned palms.' },
+  rueful: { id: 'drag', label: 'Drag their hands out of the rock', hint: 'Her hands are sunk past the wrist now.', dc: 17,
+    lost: '{nettle} smiles at you the whole time you pull. You let go with burned palms.' },
   // The defiant answer: {nettle} rages, and her grip slips.
-  defiant: { id: 'drag-nettle', label: 'Drag {nettle} out while she rages', hint: 'Her hands keep coming out of the rock when she shouts.', dc: 11,
+  defiant: { id: 'drag-nettle', label: 'Drag {nettle} out while she rages', hint: 'She is angrier than she is careful.', dc: 11,
     won: '{nettle} is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. {sedge} will not leave her sister alone with you, and she pulls free after her.',
     lost: '{nettle} stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.' },
   // The sale named: {nettle} only sings louder, and the haul is the plain one.
@@ -858,12 +857,12 @@ const tearLoose = (id: string, intro: string[], sisters: string, calling: string
         failure: { to: id, text: ['The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.'] } },
       mood === 'defiant'
         // The defiant answer: Nettle sings louder, out of spite.
-        ? { id: 'song', label: 'Sing a wrong note into the {calling}', hint: '{nettle} has sung louder since you answered her.',
+        ? { id: 'song', label: 'Sing a wrong note into the {calling}',
           skill: 'arcana', dc: 17,
           failure: { to: id, text: ['{nettle} hears your wrong note and sings right over it, louder. The {calling} never misses a beat.'] } }
         : mood === 'sold'
         // The sale named: Nettle has a second name to collect from.
-        ? { id: 'song', label: 'Sing a wrong note into the {calling}', hint: '{nettle} has sung louder since you gave her a second name.',
+        ? { id: 'song', label: 'Sing a wrong note into the {calling}',
           skill: 'arcana', dc: 17,
           failure: { to: id, text: ['{nettle} hums your wrong note back at you, pleased, and folds it into the song.'] } }
         : { id: 'song', label: 'Sing a wrong note into the {calling}',
@@ -891,13 +890,13 @@ const tearLoose = (id: string, intro: string[], sisters: string, calling: string
         failure: { to: id, text: ['{halden} gets halfway before the song finds the place in him the {warden} once held, and his voice shakes. "Not here," he whispers. "It\'s too loud here."'] } },
       // A wizard can read the old letters cut into the stone: easier than
       // breaking the song (Arcana DC 15), but still a real roll at the climax.
-      { id: 'letters', label: '[Wizard] Read the old letters cut into the stone', hint: 'The letters are cut deeper than any prayer needs.',
+      { id: 'letters', label: 'Let your wizard read the old letters cut into the stone', hint: 'One line of them runs unbroken all the way round the stone.',
         skill: 'arcana', dc: 12,
         requires: [{ kind: 'classInParty', classId: 'wizard' }], hideWhenBlocked: true,
         success: { to: sisters, effects: LOOSE, text: ['Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.'] },
         failure: { to: id, text: ['The letters crawl and shift under your wizard\'s eyes. They will not hold still long enough to read.'] } },
       // A warlock knows how a pact is built, and how one breaks.
-      { id: 'pact', label: '[Warlock] Offer the stone a better bargain', hint: 'Every pact has a way out.',
+      { id: 'pact', label: 'Let your warlock offer the stone a better bargain', hint: 'Every pact has a way out.',
         skill: 'deception', dc: 13,
         requires: [{ kind: 'classInParty', classId: 'warlock' }], hideWhenBlocked: true,
         success: { to: sisters, effects: LOOSE, text: ['Your warlock speaks to the stone in a patron\'s voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.'] },
@@ -960,7 +959,7 @@ const vigilScene = (mood: VigilMood): Scene => ({
       skill: 'persuasion', dc: 15, requires: [OWED('hollow-road:captives-freed')], hideWhenBlocked: true,
       success: { to: 'vigil-kept', text: ['"We opened her pen," you tell {sedge}. "The carter walked home, and the girl with one shoe. Whatever your sister grew greedy for at the end is given back." {sedge} is quiet for a long breath. "Then only the door is owed," she says.'] },
       failure: { to: `vigil-${mood}`, text: ['"One pen," {sedge} says. "She sat in the dark for {door-kept}. A pen does not weigh much against that."'] } },
-    { id: 'fen', label: 'Promise her the fen will pay the old price again', hint: 'The fen-folk on the rim climbed the mountain for you. Ask them, and they would do it.',
+    { id: 'fen', label: 'Promise her the fen will pay the old price again',
       skill: 'persuasion', dc: 15, requires: [regard({ atLeast: 2 })], hideWhenBlocked: true,
       success: { to: 'vigil-kept', text: ['"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a {door-price} at the water\'s edge each {door-midwinter} again, the way their grandparents left it." {sedge} turns her burning face up toward the rim, where the fen-folk stand with their ropes.'] },
       failure: { to: `vigil-${mood}`, text: ['"Their grandparents forgot," {sedge} says. "So will they."'] } },
@@ -1342,7 +1341,7 @@ const scenes: Record<string, Scene> = {
   'scouts-with-you': {
     id: 'scouts-with-you', kind: 'story', art: { emoji: '🏹' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
-    text: ['The scouts\' fire crackles on without its chief. Her three young riders look up as you come over, then past you, at {wren}. She is still at your shoulder. "Map\'s on the board," she tells them. "Keep it straight till I\'m back." They grin, and go back to work.'],
+    text: ['The scouts\' fire crackles on without its chief. Her three young riders look up as you come over, then past you, at {wren}. She is still at your shoulder. "Map\'s on the board," she tells them. "Keep it straight till I\'m back." They nod, and go back to work.'],
     next: [{ id: 'ok', label: 'Head back to the camp', to: 'warcamp' }], noBack: true,
   },
   // The carter Part 1's company cut out of the Ashfang pens (`captives-freed`).
@@ -1350,7 +1349,7 @@ const scenes: Record<string, Scene> = {
     id: 'wagons-carter', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🐴' },
     text: [
       'A grey-bearded carter is backing a supply wagon up to {bram}\'s stores, and he stops halfway when he sees you. You last saw him in a stake pen behind the {ashfang} kennels, with a girl of about seven on his back.',
-      '"I drive for the army now. The pay\'s bad, and nobody locks me in at night." He reaches under the wagon-seat and comes up with a crate. "The best of the stores. Two flasks of greater healing, and one against fire for up where the dragons are. I took it off the top before {bram} could price it. Don\'t tell him."',
+      '"I drive for the army now. The pay\'s bad, and nobody locks me in at night." He reaches under the wagon-seat and comes up with a crate. "The best of the stores. Two flasks of the strong healing, and one that keeps fire off you up where the dragons are. I took it off the top before {bram} could price it. Don\'t tell him."',
     ],
     next: [{ id: 'take', label: 'Take the carter\'s crate', to: 'warcamp',
       effects: [{ kind: 'setFlag', flag: 'mules-unloaded' },
@@ -1392,7 +1391,7 @@ const scenes: Record<string, Scene> = {
       'For a moment there is a voice on the wind, too. It is a woman\'s voice, raw from crying. "She kept it alone," it says. "In the dark, all those winters. And no one ever came." The wind turns, and the voice is gone.'],
     // No level floor on the climb: the hills' near side is tuned for 4th,
     // and its fights carry the company to 5th.
-    next: [{ id: 'up', label: 'Climb', to: 'hills' }],
+    next: [{ id: 'up', label: 'Start up the high trail', to: 'hills' }],
   },
 
   // === ACT 2 — THE HIGH HILLS ===========================================
@@ -1483,13 +1482,13 @@ const scenes: Record<string, Scene> = {
     noFlee: true,
     intro: ['The griffons come down on the switchbacks screaming, all beak and talon, and the loose rock goes out from under your boots. There is nowhere to run on a trail this narrow, and nothing to do but fight.'],
     again: ['The griffons drop on the switchbacks again, screaming. Their talons rake the loose rock where you stand.'],
-    onWin: { to: 'hills', text: ['The last griffon tumbles away down the loose rock, and the trail is yours. Above you the whole mountain is still climbing toward the stone.'],
+    onWin: { to: 'hills', text: ['The last griffon tumbles away down the loose rock. Above you the whole mountain is still climbing toward the stone.'],
       effects: [{ kind: 'setFlag', flag: 'hills-read' }] },
   },
   'switchbacks-done': {
     id: 'switchbacks-done', kind: 'story', art: { emoji: '👣' },
     text: ['The switchbacks wind away below you, familiar now. Up ahead, the {calling} still pulls at the edge of hearing.'],
-    next: [{ id: 'ok', label: 'Climb on', to: 'hills' }], noBack: true,
+    next: [{ id: 'ok', label: 'Follow the pull uphill', to: 'hills' }], noBack: true,
   },
   'hills-night': {
     id: 'hills-night', kind: 'battle',
@@ -1498,9 +1497,9 @@ const scenes: Record<string, Scene> = {
     loot: false, encounterId: 'harpy-roost', mapId: 'open',
     intro: [
       'In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, {nettle}, does not turn. "So we will take the valley from you," she says. "It is only fair."',
-      'The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Harpies come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.',
+      'The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women\'s faces come riding the night wind down from the crags. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.',
     ],
-    again: ['The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and harpies come riding the night wind down from the crags. You wake in time, because the sentry is shouting.'],
+    again: ['The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women\'s faces come riding the night wind down from the crags. You wake in time, because the sentry is shouting.'],
     onWin: { to: '@hub', text: ['The last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.'] },
   },
   tollcliff: {
@@ -1561,7 +1560,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'A dry gully crosses the trail. Hooves have churned its floor to mud and left coarse hair snagged on every thorn. The hoofprints are as wide as wash-basins, and the newest are still filling with water.',
       'Under your boots, the ground has begun to drum.',
-      { if: [{ kind: 'flag', flag: 'wren-brief' }], text: 'Far up the gully, a haze of dust hangs where the herd last ran. You know what to watch for now.' },
+      { if: [{ kind: 'flag', flag: 'wren-brief' }], text: 'Far up the gully, a haze of dust hangs where the herd last ran.' },
     ],
     next: [
       // Timing it: easier with Wren's notes. A miss puts you in the open
@@ -1599,7 +1598,7 @@ const scenes: Record<string, Scene> = {
       'You lie flat on the lip of the gully and watch the dust. The herd thunders past below you and away over the next rise. You count to twenty, and then you run.',
       'Across the gully you pile dry brush in the narrows and set it alight. When the herd comes back, it smells the smoke and swings away over the far ridge, away from the valley. Every boar lives, and not one of them will come near the camp.',
     ],
-    next: [{ id: 'ok', label: 'Climb on', to: 'hills', effects: HERD_SPARED }], noBack: true,
+    next: [{ id: 'ok', label: 'Leave the herd to the smoke and climb', to: 'hills', effects: HERD_SPARED }], noBack: true,
   },
   // A druid's way: the herd is frightened, not angry.
   'boarruns-calmed': {
@@ -1618,10 +1617,10 @@ const scenes: Record<string, Scene> = {
   // The den's mouth: a dragonborn can order the wyrmling home in the dragon tongue.
   greenden: {
     id: 'greenden', kind: 'story', art: { emoji: '🐉' },
-    again: ['The briar tunnel still stinks of cut grass gone bad. The green wyrmling slides out of the briar again, grinning its small dragon\'s grin, and its kobolds shriek the alarm.'],
+    again: ['The briar tunnel still stinks of cut grass gone bad. The green wyrmling slides out of the briar again, showing its small dragon\'s teeth, and its kobolds shriek the alarm.'],
     text: [
       'The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.',
-      'A green **wyrmling** slides out of the briar on its belly. It is no longer than a pony, but its grin is a dragon\'s grin. Every bone on the tunnel floor came from something bigger than it is.',
+      'A green **wyrmling** slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon\'s teeth. Every bone on the tunnel floor came from something bigger than it is.',
     ],
     next: [
       { id: 'roar', label: '[Intimidation DC 13] Order it home in the dragon tongue', to: 'greenden-cowed',
@@ -1691,9 +1690,9 @@ const scenes: Record<string, Scene> = {
   },
   'seam-fight': {
     id: 'seam-fight', kind: 'battle', encounterId: 'flooded-seam', mapId: 'bog',
-    intro: ['The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The **water elemental** does not roar. It simply pours itself at you, and it hits like a flood. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.'],
+    intro: ['The pool stands up into twelve feet of mountain water, in the rough shape of a giant and as cold as the crack it came through. The thing does not roar. It simply pours itself at you, and it knocks you off your feet. Behind it, three little ice-things with frost for wings scrabble out of the crack and come shrieking after it.'],
     again: ['The pool stands up again into its rough giant\'s shape. It pours itself at you, as cold as the crack it came through, and the ice-things come shrieking after it.'],
-    onWin: { to: 'hills', text: ['The elemental falls apart all at once. A hundred gallons of plain water run away downhill like any other brook.',
+    onWin: { to: 'hills', text: ['The water-giant falls apart all at once. A hundred gallons of plain water run away downhill like any other brook.',
       'Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.'],
       effects: [{ kind: 'setFlag', flag: 'seam-cleared' }, ...tally(), { kind: 'gold', amount: 50 }] },
   },
@@ -1722,7 +1721,7 @@ const scenes: Record<string, Scene> = {
     again: ['The ogre-mage still stands above the gate of its fort. "Back again," it calls down, pleasantly. "The toll is still {ogre-toll}. Or try us. We are still bored."'],
     text: [
       'Someone holds the middle pass, and holds it the way a soldier would. A stone fort stands across it, rebuilt in a week by hands that lift boulders like loaves of bread. Guard posts of sharpened pine ring its walls, and a horn hangs by the gate. It has sounded once today.',
-      'Above the gate stands the **ogre-mage** {vex} marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums. Everything else in these hills came at you hungry. This one has stopped to think.',
+      'Above the gate stands the **ogre-mage** {vex} marked on his map, blue-skinned and wearing scraps of old lacquered armour. It looks you over slowly, from boots to blades, and does its sums.',
       { if: [has('calling-peaked')],
         text: 'Its orcs went down against the war-camp in the night, and the ones who came back wear bandages. The ogre-mage stayed behind to hold the pass. The stone promised it something, and it means to collect.' },
       // What the toll buys, said before it is paid: the pass, not the
@@ -1754,7 +1753,7 @@ const scenes: Record<string, Scene> = {
       { id: 'trick', label: '[Deception DC 15] "The ettin is coming for your pass tonight."', to: 'onihold-tricked',
         requires: [{ kind: 'notFlag', flag: 'wren-brief' }], hideWhenBlocked: true,
         attempt: 'oni', check: { skill: 'deception', dc: 15, failTo: 'onihold-driven' } },
-      { id: 'fight', label: 'Try them', to: 'onihold-fight' },
+      { id: 'fight', label: 'Take the pass by force', to: 'onihold-fight' },
     ],
   },
   // Lied to: the ogre-mage marches on the giants' hall (see `steading-raided`).
@@ -1786,15 +1785,15 @@ const scenes: Record<string, Scene> = {
     id: 'onihold-paid', kind: 'story', art: { imageId: 'loc-keep', emoji: '🏯' },
     text: ['The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times.',
       { if: [has('oni-paid')],
-        text: 'By noon its warband is marching down the long road toward the meadows, where the war-camp\'s smoke goes up. The middle pass is open behind it.' },
+        text: 'By noon its warband is marching down the long road toward the meadows, where the war-camp\'s smoke goes up.' },
       { if: [hasNot('oni-paid')],
-        text: 'By noon its warband is marching down the other side of the mountain, away from the valley. The middle pass is open.' }],
+        text: 'By noon its warband is marching down the other side of the mountain, away from the valley.' }],
     next: [{ id: 'ok', label: 'Walk through the open pass', to: 'hills' }], noBack: true,
   },
   'onihold-fight': {
     id: 'onihold-fight', kind: 'battle', encounterId: 'oni-hold', mapId: 'open',
-    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders, like drilled soldiers. The scarred old one calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air darkens around it like ink spreading through water.'],
-    onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate. The middle pass stands open, and beyond it lies the road to the giants\' hall and the stone. The fort\'s war-chest is yours.'],
+    intro: ['The horn sounds twice, and the gate opens on the ogre-mage\'s guard. Two orcs in stolen mail march out onto the open ground before it with their spears on their shoulders, like drilled soldiers. A scarred old orc calls the step. Last of all, the ogre-mage itself rises off the wall on a cold wind with its blade drawn. The air goes dark around it.'],
+    onWin: { to: 'hills', text: ['The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate, and the fort\'s war-chest sits unguarded in the yard.'],
       effects: [{ kind: 'setFlag', flag: 'oni-cleared' }, ...tally(), { kind: 'gold', amount: 130 }] },
   },
   'onihold-done': {
@@ -1810,7 +1809,7 @@ const scenes: Record<string, Scene> = {
     ],
     again: ['The forge-hall still smokes in its scorched bowl. The red wyrmling rises off its heap again, burning with its own light, and its kobolds run for cover.'],
     onWin: { to: 'hills', text: ['The wyrmling\'s fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and {bram} will weigh every one twice before he pays.',
-      'The stone\'s song dips, and {nettle}\'s voice comes down the wind with it. "That one was promised a war. Never mind." She says it like a clerk striking out a line.'],
+      'The stone\'s song dips, and {nettle}\'s voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.'],
       effects: [{ kind: 'setFlag', flag: 'red-cleared' }, ...tally(DEN_TICKS), { kind: 'gold', amount: 120 }] },
   },
   'redden-done': {
@@ -1930,7 +1929,7 @@ const scenes: Record<string, Scene> = {
       refused: ['"YOUR fault," roars the left head, and points a club at you. "YOUR fault," the right head agrees.'],
       success: { to: 'hills', text: [
         'You ask the left head whose fault the raid was, and then you ask the right head. That is all it takes.',
-        'The two heads fall to brawling across the yard, through what is left of the wall, and down the back of the mountain. The orc runner limps after it, shouting. The road to the stone stands open.',
+        'The two heads fall to brawling across the yard, through what is left of the wall, and down the back of the mountain. The orc runner limps after it, shouting.',
       ], effects: STEADING_TALKED },
     },
   },
@@ -1982,7 +1981,7 @@ const scenes: Record<string, Scene> = {
       // The night at the camp, as he tells it, unless the company went down
       // and saw the morning after for itself (PEAK_WHEN).
       { if: [{ kind: 'count', flag: 'peak-seen', below: 1 }, peakAtLeast(TALLY_HIGH)],
-        text: '{vex} has had some sleep, by the look of him. "The night went our way," he says. "I didn\'t bury anyone."' },
+        text: '{vex} is breathing hard from the climb, but his eyes are clear. "The night went our way," he says. "I didn\'t bury anyone."' },
       { if: [{ kind: 'count', flag: 'peak-seen', below: 1 }, has(PEAK_HELD), hasNot(PEAK_TALLY)],
         text: '{vex} has not slept, and there is a bandage round one hand. "We held," he says. "It cost. I have a list of names in my coat."' },
       { if: [{ kind: 'count', flag: 'peak-seen', below: 1 }, hasNot(PEAK_HELD)],
@@ -2000,7 +1999,7 @@ const scenes: Record<string, Scene> = {
         text: 'She reports to {vex} first. You get a nod, later. When {vex} asks who is going down with you, she says the rim needs its scout more than you do.' },
       { if: [{ kind: 'npc', npc: 'halden', fate: 'saved' }], text: 'Brother {halden} climbs with his prayer book under his arm, red in the face and still praying.' },
       { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask} walks at {vex}\'s shoulder. He is a grey, scarred soldier, the chief\'s old guard. The night you came for {vargan}, he found somewhere else to be.' },
-      { if: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }], text: 'No guard walks at {vex}\'s shoulder. The chief\'s guard answered to him once, and {vex} let that man stand against you at the end. Now {vex} holds this column on the reeve\'s terms, and two of the reeve\'s pikemen walk behind him.' },
+      { if: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }], text: '{vex} holds this column on the reeve\'s terms. Two of the reeve\'s pikemen walk behind him, close enough to count his steps.' },
       // People from the valley, if its regard sent any (see REGARD).
       { if: [regard({ atLeast: 2 })], text: '{^rope-bearers} come up behind the pikes, out of breath and mud to the knees, with coils of rope over their shoulders. "The valley owes you a rope at least," one of them says.' },
       // Vex's send-off, by how many are owed a seat (see SEATS): one, two or
@@ -2040,9 +2039,9 @@ const scenes: Record<string, Scene> = {
       // was killed, or bound back to her door (Part 1's BIND_HAG). A cold
       // start has neither fate, and hears the first.
       { if: [{ kind: 'npc', npc: 'reedwife', notFate: ['bound'] }],
-        text: 'They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," {nettle} says, without turning around. "Our sister kept the door under the fen since before your grandmothers\' grandmothers. One {door-price} at the water\'s edge each {door-midwinter}, and the {warden} slept. That was the price, and it was paid. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."' },
+        text: 'The sisters are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Sister-killers," {nettle} says, without turning around. "Our sister had kept the door under the fen since before your grandmothers\' grandmothers. One {door-price} at the water\'s edge each {door-midwinter}, and the {warden} slept. That was the price, and it was paid. You cut her down in the chief\'s hall, and you left that door to a priest\'s book."' },
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
-        text: 'They are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Binders," {nettle} says, without turning around. "Our sister kept the door under the fen since before your grandmothers\' grandmothers. One {door-price} each {door-midwinter}, and the {warden} slept. You beat her in the chief\'s hall and put her back at that door on a leash. No valley, no {door-price}. No {door-price}, no bargain. So we take the valley, and she walks free."' },
+        text: 'The sisters are pouring their own lives into the stone to keep it singing, and their faces are burning down like candles. "Binders," {nettle} says, without turning around. "Our sister had kept the door under the fen since before your grandmothers\' grandmothers. One {door-price} each {door-midwinter}, and the {warden} slept. You beat her in the chief\'s hall and put her back at that door on a leash. No valley, no {door-price}. No {door-price}, no bargain. So we take the valley, and she walks free."' },
       '{sedge} does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." {nettle} goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."',
       'The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," {nettle} says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."',
       // The sisters' tells, said before the answer (see REPLIES): {nettle}'s
@@ -2167,7 +2166,7 @@ const scenes: Record<string, Scene> = {
     intro: ['The sisters come at you with green claws and burning faces. "Then we collect by hand," {nettle} says. {sedge} says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last thing the stone has the strength to raise. A pillar of living fire climbs out and turns toward you.'],
     again: ['"Then we collect by hand," {nettle} says again, and the sisters come at you with their burned claws. {sedge} is still weeping. Behind them, the pillar of living fire turns toward you once more.'],
     onLoss: STONE_LOST_SISTERS,
-    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling her sister\'s name, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.',
+    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.',
       'The black fang has no one left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
   },
@@ -2179,7 +2178,7 @@ const scenes: Record<string, Scene> = {
     intro: ['The sisters come at you with green claws and burning faces. Grey hands still hold your ankles, and you are still kicking free when the sisters reach you. "Then we collect by hand," {nettle} says. {sedge} is weeping, and she comes at you all the same. Behind them, a pillar of living fire climbs out of the crack and turns toward you.'],
     again: ['Grey hands catch at your ankles again as the sisters come at you, claws out. {sedge} is still weeping, and behind them the pillar of living fire turns toward you once more.'],
     onLoss: STONE_LOST_SISTERS,
-    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling her sister\'s name, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.',
+    onWin: { to: 'calling-won', text: ['{nettle} falls first, clawing at your boots, still telling you what you owe. {sedge} falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the fire gutters out of the air.',
       'The black fang has no one left to spend. It cracks from top to bottom, and the {calling} stops: not with thunder, but with the huge, ringing quiet of a held note let go.'],
       effects: [{ kind: 'gold', amount: 200 }] },
   },
@@ -2297,9 +2296,9 @@ const scenes: Record<string, Scene> = {
       'You reach the war-camp with {vex}\'s column at your back. The camp has stopped being an army and started being the biggest festival the valley has ever thrown.',
       'At the camp gate {vex} shakes your hand, once. "The {calling}\'s broken," he says. "Tomorrow this camp packs up and everybody goes home. Do stop now, before your luck notices you."',
       { if: [{ kind: 'noCompanion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { atLeast: 0 } }],
-        text: '**{wren}** walks in at the head of the column, with every pass on the way down marked on her map. At the camp gate she looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.' },
+        text: '**{wren}** walks in beside you, with every pass on the way down marked on her map. She looks at your company, then up at the hills, and grins her whole age for once. She catches herself and goes back to giving orders.' },
       { if: [{ kind: 'noCompanion', companion: 'wren' }, { kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
-        text: '**{wren}** walks in at the head of the column, with every pass on the way down marked on her map. At the camp gate she nods to your company, once, and goes straight to {vex} with her report.' },
+        text: '**{wren}** comes in behind the column, with every pass on the way down marked on her map. She nods to your company, once, and goes straight to {vex} with her report.' },
       // A Wren below 0 stayed on the rim (see SEATS).
       { if: [{ kind: 'companion', companion: 'wren' }],
         text: '{wren} hands {vex} her route report before she has even sat down. She looks back up at the hills and grins her whole age for once, and then she coughs and goes off to give orders.' },
@@ -2342,7 +2341,7 @@ const scenes: Record<string, Scene> = {
     slides: [
       ...SLIDES_HILLS,
       { if: [{ kind: 'flag', flag: 'sunken-barrows:seal-cracked' }],
-        text: 'Deep under the fen, the {undercrypt}\'s door still holds, though on still nights the fen-folk swear they hear something knock.' },
+        text: 'The reeve has the {warden}\'s door checked each spring. The crack is a hair wider every time.' },
       // A clean seal (a cold start sealed the barrows too).
       { if: [{ kind: 'notFlag', flag: 'sunken-barrows:seal-cracked' }],
         text: 'A fen-boy dares his friends to knock on the barrow stair. None of them do.' },
