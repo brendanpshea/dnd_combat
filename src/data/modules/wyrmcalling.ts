@@ -849,7 +849,7 @@ type TearMood = 'rueful' | 'defiant' | 'cold' | 'sold';
 type Drag = { id: string; label: string; hint?: string; dc: number; won?: string; lost: string };
 const DRAG: Record<TearMood | 'plain', Drag> = {
   plain: { id: 'drag', label: 'Drag their hands out of the rock', dc: 15,
-    lost: 'The rock holds them fast. You let go with burned palms, and the stone keeps drinking.' },
+    lost: 'The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.' },
   // You owned the debt, and {nettle} means to collect it.
   rueful: { id: 'drag', label: 'Drag their hands out of the rock', hint: '{nettle} has sunk her hands past the wrist now.', dc: 17,
     lost: '{nettle} smiles at you the whole time you pull. You let go with burned palms.' },
@@ -859,11 +859,11 @@ const DRAG: Record<TearMood | 'plain', Drag> = {
     lost: '{nettle} stops laughing just in time. She drives her hands back into the rock, and her song climbs over your grunting.' },
   // The sale named: {nettle} only sings louder, and the haul is the plain one.
   sold: { id: 'drag', label: 'Drag their hands out of the rock', dc: 15,
-    lost: 'The rock holds them fast. You let go with burned palms, and the stone keeps drinking.' },
+    lost: 'The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.' },
   // The cold answer: {sedge} flinched at the drawn blade. Take her first.
   cold: { id: 'drag-sedge', label: 'Drag {sedge} out first', hint: 'She flinched when you drew steel. Take her wrists before she finds her nerve again.', dc: 12,
     won: '{sedge} does not pull back, not at first. By the time she does, her hands are out of the rock. {nettle} will not let her sister go alone, and she tears free after her, screaming.',
-    lost: '{sedge} finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.' },
+    lost: '{sedge} finds her nerve a moment too soon. She drives her hands back into the rock, and it closes round her wrists again.' },
 };
 const tearLoose = (id: string, intro: string[], sisters: string, calling: string, mood?: TearMood): Scene => {
   const drag = DRAG[mood ?? 'plain'];
@@ -932,7 +932,7 @@ const tearLoose = (id: string, intro: string[], sisters: string, calling: string
         skill: 'deception', dc: 13,
         requires: [{ kind: 'classInParty', classId: 'warlock' }], hideWhenBlocked: true,
         success: { to: sisters, effects: LOOSE, text: ['Your warlock speaks to the stone in a patron\'s voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.'] },
-        failure: { to: id, text: ['The stone has heard better offers. It keeps the sisters and goes on drinking.'] } },
+        failure: { to: id, text: ['The stone has heard better offers. It keeps the sisters.'] } },
       // Wren's way: a scout's eye finds the weak line for you. A Wren who
       // would follow the company anywhere found it already (WREN_FOLLOWS).
       { id: 'wren-chalk', label: 'Strike the seam {wren} chalked', hint: 'She walked round this stone alone and marked where the song leaks out.',
@@ -1027,7 +1027,13 @@ const vigilScene = (mood: VigilMood): Scene => ({
       success: { to: 'vigil-kept', text: ['{wren} lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells {sedge}. "They keep their word. If they say the fen will pay, it will." {sedge} looks at {wren}, and then at you.'] },
       failure: { to: `vigil-${mood}`, text: [WREN_REBUFFED] } },
     // The plain ask, open to every company: the answer sets how hard it is.
-    { id: 'ask', label: 'Tell her the door still needs a keeper', skill: 'persuasion', dc: VIGIL_ASK_DC[mood],
+    // Or by the old words instead of plain talk (one try shared with `ask`),
+    // so a company without a talker is not shut out of the mercy.
+    { id: 'ask-rite', label: 'Name her sister a keeper, in the old words', hint: 'The valley had words for the keepers of doors, once.',
+      skill: 'religion', dc: VIGIL_ASK_DC[mood], attempt: 'vigil-ask',
+      success: { to: 'vigil-kept', text: ['You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. {sedge} listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."'] },
+      failure: { to: `vigil-${mood}`, text: ['You stumble over the old words. "Even the words are forgotten," {sedge} says, and turns back to the stone.'] } },
+    { id: 'ask', label: 'Tell her the door still needs a keeper', skill: 'persuasion', dc: VIGIL_ASK_DC[mood], attempt: 'vigil-ask',
       success: { to: 'vigil-kept', text: ['"The door under the fen still needs a keeper," you tell her. "A priest\'s book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."'] },
       failure: { to: `vigil-${mood}`, text: ['"A keeper," {sedge} says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."'] } },
   ],
@@ -1712,7 +1718,7 @@ const scenes: Record<string, Scene> = {
   'tollcliff-flown': {
     id: 'tollcliff-flown', kind: 'story', art: { emoji: '🦁' },
     assumes: [{ kind: 'flag', flag: 'calling-peaked' }],
-    text: ['The overhang is empty. Deep claw-marks run down the cliff toward the valley, and snapped black tail-spikes lie on the trail. The manticore went down at the war-camp when the {calling} peaked, and it has not come back to its ledge.'],
+    text: ['The overhang is empty. Deep claw-marks run down the cliff toward the valley, and snapped black tail-spikes lie on the trail. The manticore flew down at the war-camp when the {calling} peaked, and it has not come back to its ledge.'],
     next: [{ id: 'ok', label: 'Back to the trail', to: 'hills' }], noBack: true,
   },
   'boarruns-flown': {
@@ -2067,7 +2073,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }, { kind: 'npc', npc: 'halden', notFate: ['saved'] }, { kind: 'npc', npc: 'vex', notFate: ['turned'] }, regard({ atLeast: 2 })],
         text: '"We hold the ridge. You go down," {vex} says. "Take the fen-folk\'s rope. No one else up here is going down with you, and a small party\'s a quiet one."' },
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }, { kind: 'npc', npc: 'halden', notFate: ['saved'] }, { kind: 'npc', npc: 'vex', notFate: ['turned'] }, regard({ below: 2 })],
-        text: '"We hold the ridge. You go down," {vex} says. He looks along the rim, where no one from the valley has come to see you off. "That\'s the whole plan. A small party\'s a quiet one."' },
+        text: '"We hold the ridge. You go down," {vex} says. He looks along the rim. No one steps forward. "That\'s the whole plan. A small party\'s a quiet one."' },
     ],
     next: COUNCIL,
   },
@@ -2142,7 +2148,7 @@ const scenes: Record<string, Scene> = {
     text: ['For one breath, the song falters. {sedge} turns her burning face toward you. "Sorry," she says slowly, as if no one has ever said the word to her before. "Sorry does not put the dead back to sleep. It does not undo what you did to her. But I heard it."',
       '{nettle} does not turn. "Then you own the debt," she says, and her hands sink deeper into the rock. "Good. Owed is owed."',
       { if: [{ kind: 'companion', companion: 'wren' }],
-        text: '{wren} lets her bowstring ease a finger\'s width. "That\'s the first time anyone\'s said it," she murmurs. "Somebody should have."' }],
+        text: '{wren} lets her bowstring ease a finger\'s width. "Somebody should have," she murmurs.' }],
     // An answer that owns the wrong opens the vigil (see vigilScene): ask
     // Sedge to keep the door. One try at the whole of it; or face the stone,
     // with Nettle dug in to collect (`tear-loose-rueful`).

@@ -5,6 +5,27 @@ a round. They are not bugs (see "Process" in `docs/design-decisions.md`): the
 user chooses which, if any, to do. Newest first. Each says what it would
 cost in state.
 
+## From round 16
+
+- **Rest before the sisters.** A company that left a den standing goes from
+  the clutch fight straight to the sisters (every scene `noBack`; with the
+  seal cracked the sisters' fight opens surprised, 68% fresh, 7% worn). A
+  "Fall back below the ridge" choice at `ridge-quiet` would allow a rest. A
+  loss already lands at `stone-lost`, so it is not a soft-lock. *No flags.*
+- **An Intimidation twin for turning Vargan** (shared `attempt: 'turn'`), so
+  the gate to binding the Reedwife is also two skills. *Six choices, no flags.*
+
+## Prose taste from round 16 (not bugs)
+
+- Part 1: "as if" ×11 (`road-out` "as if they were never there");
+  `thicket`'s "those cocoons will have purses" (show a purse-string instead);
+  the Vargan-dead aftermath's "on his knees" against the `vargan-fate` throne.
+- Part 2: "slow and plain" twice for the burial words (`chapel-saved`,
+  `diggers`); `lights-won` "a stoppered healing potion against the
+  fen-fever"; the wight is "it" in narration, "him" in the parley.
+- Part 3: `calling-gate` sees the circling brood after the night watch (out
+  of time order).
+
 ## Prose taste from round 15 (not bugs)
 
 - Part 1: `dawn-4` says "marsh road" twice where the scout line also shows;

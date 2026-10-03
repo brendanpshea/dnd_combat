@@ -667,7 +667,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc and t
 
 **» Fight — won**
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -807,7 +807,7 @@ The chief bellows for Hask, his guard. Hask stands by the door with his spear gr
 
 "You've cost me a good season," Vargan says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
 
-Then she whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
+She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 
 **Battle:** The Ashfang Chief, Unguarded <sub>(`ashfang-warlord-alone` on `firepit`)</sub>
 
@@ -1115,7 +1115,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 

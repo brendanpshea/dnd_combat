@@ -543,7 +543,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc and t
 
 **» Fight — won**
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
