@@ -153,7 +153,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
+"Buy a healing potion at the market before you go," Mira says. "I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -1487,7 +1487,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (1326)_
 
@@ -1539,7 +1539,7 @@ On the largest heap lies a red **wyrmling** with one eye open. It rises to meet 
 
 **» Fight — won**
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and kobolds lie dead among the heaps. The half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -1585,7 +1585,7 @@ The gorgon's head comes up, and its breath comes with it. A rolling green vapour
 
 **» Fight — won**
 
-The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, and the young bull lies among the broken statues near it. Two of those statues were never people. The green vapour thins away to nothing. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 _+100 gold (1676)_
 
@@ -1699,7 +1699,7 @@ The rock holds them fast. You let go with burned palms, and the stone pulls them
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
-**» Say Halden's rites over the stone — Its oldest words are for shutting doors.**
+**» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
 
 `[Religion DC 11 — Morgan Le Fey rolls 13 — passed]`
 

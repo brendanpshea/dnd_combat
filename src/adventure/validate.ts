@@ -32,49 +32,38 @@ function encounterExists(id: Id): boolean {
 
 /**
  * Levels come from fights (docs/module-writing-guide.md, "Levels come from
- * fights"). An `xpToLevel` floor may stand in only two kinds of place, where it
- * cannot stand in for a chapter's missing fights:
- * - the opening: a choice of the module's `start` scene, which sets a fresh
- *   company's level (a cold start, a generated delve);
- * - a way past a fight: a battle's `parley` success, a choice offered beside a
- *   way into a battle that does not itself lead into one (not even on a
- *   failed roll, since a choice's effects apply before its roll), or the
- *   outcome of a check or challenge whose other outcome is a battle.
- * Anywhere else (a fight's win, a road every company walks, a dawn) it is a
- * progression floor, and an error.
+ * fights"). An `xpToLevel` floor may stand in one place only: the opening, a
+ * choice of the module's `start` scene, which sets a fresh company's level (a
+ * cold start, a generated delve). A way past a fight pays the fight's XP
+ * (`avoidedFightXP`), never a floor; anywhere else (a fight's win, a road
+ * every company walks, a dawn) a floor would make up for missing fights, and
+ * is an error.
  */
 function misplacedLevelFloors(module: Module): string[] {
   const errors: string[] = [];
-  const isBattle = (ref: SceneRef | undefined) => !!ref && module.scenes[ref]?.kind === 'battle';
   const floors = (effs?: Effect[]) => (effs ?? []).some((e) => e.kind === 'xpToLevel');
-  const bad = (id: Id, where: string) => errors.push(`[${id}] ${where} tops XP up to a level (xpToLevel): a floor belongs only on the opening or on a way past a fight; let fights carry the levels`);
-  /** One outcome of a roll: a floor on it is fine if the other outcome is the fight it avoids. */
-  const outcome = (id: Id, what: string, mine: Outcome | undefined, other: Outcome | undefined) => {
-    if (floors(mine?.effects) && !(isBattle(other?.to) && !isBattle(mine?.to))) bad(id, what);
-  };
+  const bad = (id: Id, where: string) => errors.push(`[${id}] ${where} tops XP up to a level (xpToLevel): a floor belongs only on the opening; a way past a fight pays its XP (avoidedFightXP); let fights carry the levels`);
+  const outcome = (id: Id, what: string, o: Outcome | undefined) => { if (floors(o?.effects)) bad(id, what); };
   for (const [id, scene] of Object.entries(module.scenes)) {
     switch (scene.kind) {
-      case 'story': case 'dialogue': {
-        const leadsToFight = (c: (typeof scene.next)[number]) => isBattle(c.to) || isBattle(c.check?.failTo);
-        const besideFight = scene.next.some(leadsToFight);
+      case 'story': case 'dialogue':
         for (const c of scene.next) {
           if (floors(c.check?.failEffects)) bad(id, `choice '${c.id}' (on a failed roll)`);
-          if (!floors(c.effects) || id === module.start) continue;
-          if (!besideFight || leadsToFight(c)) bad(id, `choice '${c.id}'`);
+          if (floors(c.effects) && id !== module.start) bad(id, `choice '${c.id}'`);
         }
         break;
-      }
       case 'battle':
-        if (floors(scene.onWin.effects)) bad(id, 'the win');
-        if (floors(scene.onLoss?.effects)) bad(id, 'the loss');
-        if (floors(scene.parley?.failure?.effects)) bad(id, 'a refused parley');
+        outcome(id, 'the win', scene.onWin);
+        outcome(id, 'the loss', scene.onLoss);
+        outcome(id, 'a parley', scene.parley?.success);
+        outcome(id, 'a refused parley', scene.parley?.failure);
         break;
       case 'check': case 'challenge':
-        outcome(id, 'success', scene.success, scene.failure);
-        outcome(id, 'failure', scene.failure, scene.success);
+        outcome(id, 'success', scene.success);
+        outcome(id, 'failure', scene.failure);
         if (scene.kind === 'challenge') for (const a of scene.approaches) {
-          outcome(id, `approach '${a.id}' success`, a.success, a.failure ?? scene.failure);
-          outcome(id, `approach '${a.id}' failure`, a.failure, a.success ?? scene.success);
+          outcome(id, `approach '${a.id}' success`, a.success);
+          outcome(id, `approach '${a.id}' failure`, a.failure);
         }
         break;
       default: break;

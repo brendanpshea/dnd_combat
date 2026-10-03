@@ -546,7 +546,8 @@ the encounter XP first (each of four characters earns a quarter of it), then
 check the curve on the transcript routes, not on paper. Tune each fight for
 the level the party really meets it at.
 
-`xpToLevel` is **not** a progression mechanism. It stands in two places only:
+`xpToLevel` is **not** a progression mechanism. It stands in one place only,
+the opening; a way past a fight pays the fight's XP instead:
 
 - **The opening.** A chapter's start scene can set a fresh company's level (a
   cold start begins Part 2 at 3rd). Only the cold-start choice carries it; a
@@ -555,11 +556,14 @@ the level the party really meets it at.
 - **A way past a fight.** A company that talks, sneaks or pays its way past
   a fight must not fall behind one that fought it. Pay it what the fight
   would have: `{ kind: 'xp', amount: avoidedFightXP('the-encounter') }`
-  (a quarter of the roster's XP, so it follows any retuning), or an
-  `xpToLevel` where the fought path would ding at that point anyway. It sits
-  on the avoidance itself: a parley's `success`, a choice offered beside the
-  way into the fight, or the outcome of a roll whose other outcome is the
-  fight.
+  (a quarter of the roster's XP, so it follows any retuning), never a level
+  floor. It sits on the avoidance itself: a parley's `success`, a choice
+  offered beside the way into the fight, or the outcome of a roll whose other
+  outcome is the fight. A way past *part* of a fight (half the flock talked
+  down, a raid that thins the hall first) pays the difference between the
+  whole fight and the part still fought. A fight that only follows a failure
+  (a failed rite, a night ambush) is a setback, not a payday: `loot: false`,
+  so the failure never pays more than the success.
 
 Never put a floor on a fight's win or on a road every company walks: that
 makes up for a chapter with too few fights, and hides it. If the curve comes
@@ -569,6 +573,23 @@ and add a fight only where the story has room for one (an empty marker, a
 wandering encounter). A company that walks past optional fights may arrive a
 level lower; that is its choice, and no floor makes it up. The validator
 rejects an `xpToLevel` anywhere else.
+
+The transcripts show seven routes; the **XP ceiling** checks all of them.
+`maxXpReport` (src/adventure/xp-reach.ts) tags every edge of the
+reachability search with what it pays (a won fight's encounter XP unless
+`loot: false`, and every `xp`/`xpToLevel` effect, wherever effects run) and
+takes the longest path through it: the most XP any route can meet each fight
+with, and end the chapter with, starting each chapter where the one before
+can end. A won fight, a `once` choice, a shared `attempt`, a parley or a
+spent approach pays once; a marker's side trip (an optional fight behind a
+"done" redirect on a flag its payment sets) pays once in all. Something that
+pays every time and can be come back to is reported as farmable. It is an
+upper bound (every roll goes the way that pays), so a fight it puts over the
+band comes with the path that does it. `npm run check:story` prints each
+chapter's ceiling and the headroom to the next level, and fails on farmable
+XP or a fight met above the chapter's `levelBand`; `test/xp-ceiling.test.ts`
+asserts the same. An ending may level (the trilogy's last blow can bring
+6th); a fight may not be met above the band.
 
 ## The arena's voice
 
@@ -612,7 +633,16 @@ once, plainly, in the interface, because a player can silence the quasit.
 Settled decisions (what is not reopened each round) are in
 `docs/design-decisions.md`.
 
-### The world bible
+### Late visits
+
+An optional NPC at a hub can be met first at any point: after a defeat sends
+the company back to town, or after the world has moved on (a peak, a fight
+won, a companion found). Advice and briefings in such a scene must hold at
+every point it can be reached. Guard what goes stale on the flag that makes
+it stale (`calling-peaked`, a scene `visited`), or say less. Check it in the
+atlas: a scene with no `reads` shows one version everywhere.
+
+## The world bible
 
 The facts the prose relies on and no rule reads live in `docs/canon.md`:
 which season each part happens in, which road, where the places lie, who looks

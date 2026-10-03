@@ -149,7 +149,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
 
-"If you find the reeve's scout, she'll tell you she's fine," Mira says. "Help her anyway. Buy a healing potion at the market, too. I'd rather not bury anyone this month." She turns back to her taps.
+"Buy a healing potion at the market before you go," Mira says. "I'd rather not bury anyone this month." She turns back to her taps.
 
 **» Back to your table**
 
@@ -2199,8 +2199,6 @@ The manticore listens with its head on one side. "Promises," it says. "The hags 
 
 **» Fight — won**
 
-_Level up: 4 → 5_
-
 The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
 _+110 gold (1110)_
@@ -2232,6 +2230,8 @@ The drumming turns into thunder. Three boars the size of hay-carts come down the
 **Battle:** The Boar-Runs <sub>(`boar-runs` on `pass`)</sub>
 
 **» Fight — won**
+
+_Level up: 4 → 5_
 
 The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. A drover's torn purse hangs from the lead boar's tusk, still half full.
 
@@ -2615,7 +2615,7 @@ You stumble over the old words. "Even the words are forgotten," Sedge says, and 
 
 <sub>scene `vigil-refused-rueful`</sub>
 
-Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The light round the stone thickens, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
 
@@ -2641,7 +2641,7 @@ Nettle smiles at you the whole time you pull. You let go with burned palms.
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
-**» Say Halden's rites over the stone — Its oldest words are for shutting doors.**
+**» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
 
 `[Religion DC 11 — Morgan Le Fey rolls 7 — failed]`
 
@@ -2729,7 +2729,7 @@ Your fighter sits down on the first barrel inside the gate, and does not get up 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says, and moves on down the line before you can thank her.
 
 The pikemen still keep the list of names from the Calling's last night. Once a year they stand where the torches went out, and read it aloud.
 

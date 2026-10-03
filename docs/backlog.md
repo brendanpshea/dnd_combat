@@ -5,6 +5,26 @@ a round. They are not bugs (see "Process" in `docs/design-decisions.md`): the
 user chooses which, if any, to do. Newest first. Each says what it would
 cost in state.
 
+## From round 17
+
+- **Vex turned and Vargan turned pays 49 XP a head less** than fighting Hask
+  and the hag's whistled guard (63 + 338 against 450): retune the
+  `hag-whistled` roster, or accept. *No flags.*
+- **Part 3 sits 214 XP under 6th at the stone's door** (the XP ceiling):
+  any further XP in Part 3 needs a matching cut. *No flags.*
+
+## Prose taste from round 17 (not bugs)
+
+- Part 3: "sink" piles up around the stone (`answer-rueful`, the refused
+  scenes, the rueful drag hint); `vex-brief`'s "He gives his name as" for a
+  company that bargained with him ("The captain is Vex" holds for both);
+  the gorgon valley's "drifts" and "statues" repeats, and "plinths" for
+  petrified people; `answer-sold`'s "song climbs" before the vigil intro's
+  "sings louder".
+- Part 1: `boss-approach`'s "His eyes keep going back to it" then
+  `boss-shaken`'s "eyes go to his shut fist again"; the day-4/5 dawn counts
+  ("Three more nights of this one", "A few more nights").
+
 ## From round 16
 
 - **Rest before the sisters.** A company that left a den standing goes from

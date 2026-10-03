@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-135 scenes · 221 versions · 558,616 states searched (with text conditions tracked).
+136 scenes · 222 versions · 558,616 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -320,6 +320,7 @@ You know this man. It is **Vex**, with a captain's sash across the same coat he 
   - goes to `scouts-with-you` instead when Wren in the party
   - goes to `scouts-rim` instead when `rim-clear`
   - goes to `scouts-done` instead when `wren-brief`
+  - goes to `scouts-late` instead when `calling-peaked`
   - goes to `scouts-fire-saved` instead when Wren saved
 - **The Supply Wagons** → `wagons-carter`
   - goes to `peak-night` instead when `calling-peaked` · `peak-seen` < 1? · not `rim-clear` · `peak-held` ≥ 1?
@@ -1041,6 +1042,12 @@ She walks you to the edge of the firelight, which she does not do for the captai
 
 - » **Take her map-notes**
 
+## `scouts-late` · story
+
+The scouts' fire has burned down to coals. Its riders sleep in a heap beside it, still in their boots. Only **Wren**, who runs the fire, is awake, scraping mud off a map. "Nothing up there I could warn you about now that you haven't seen for yourselves," she says.
+
+- » **Head back to the camp**
+
 ## `scouts-done` · story
 
 The scouts' fire crackles through another change of shift. Wren's riders come and go with the brisk urgency she has drilled into them, and her map grows more arrowheads by the hour. She flicks you a two-finger salute without looking up.
@@ -1519,7 +1526,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 *Won:*
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 ### 2. when a return visit?
 
@@ -1529,7 +1536,7 @@ The copper rods still hum on the mesa's broken walls. The blue wyrmling uncoils 
 
 *Won:*
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 ## `blueden-done` · story
 
@@ -1639,7 +1646,7 @@ On the largest heap lies a red **wyrmling** with one eye open. It rises to meet 
 
 *Won:*
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and kobolds lie dead among the heaps. The half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -1651,7 +1658,7 @@ The forge-hall still smokes in its scorched bowl. The red wyrmling rises off its
 
 *Won:*
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and kobolds lie dead among the heaps. The half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -1723,7 +1730,7 @@ The gorgon's head comes up, and its breath comes with it. A rolling green vapour
 
 *Won:*
 
-The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, and the young bull lies among the broken statues near it. Two of those statues were never people. The green vapour thins away to nothing. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 <sub>(shared with: `gorgonvale-woken`)</sub>
 
@@ -1735,7 +1742,7 @@ The gorgon swings round, and its breath comes rolling down the rows. The green v
 
 *Won:*
 
-The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, and the young bull lies among the broken statues near it. Two of those statues were never people. The green vapour thins away to nothing. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 <sub>(shared with: `gorgonvale-fight`)</sub>
 
@@ -2365,7 +2372,7 @@ Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can 
 
 Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen. The sisters' faces are burning down like candles, and the stone sings louder for every drop.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She sits by her pool and waits for your lamb like a dog on a leash. A leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -2393,7 +2400,7 @@ Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her
 
 On a ledge above the bowl crouches the manticore from the toll-cliff. It came up here to collect its meal from the hags. It watches the sisters, and licks its lips, and waits to see who wins.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She sits by her pool and waits for your lamb like a dog on a leash. A leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -2752,7 +2759,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 15]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -2940,7 +2947,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 15]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -3120,7 +3127,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 15]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -3308,7 +3315,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 15]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -3494,7 +3501,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 17]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -3688,7 +3695,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 17]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -3874,7 +3881,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 15]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -4068,7 +4075,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 15]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -4248,7 +4255,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 17]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -4436,7 +4443,7 @@ Every face of the stone looks the same to you, smooth and black and singing.
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Haul them out with the fen-folk's ropes** [Athletics DC 11] — _The fen-folk showed you the loop._ <sub>open when `fen-ropes`; otherwise hidden</sub>
 - » **Sing a wrong note into the Calling** [Arcana DC 17]
-- » **Say Halden's rites over the stone** [Religion DC 11] — _Its oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
+- » **Say Halden's rites over the stone** [Religion DC 11] — _Their oldest words are for shutting doors._ <sub>open when Halden not saved; otherwise hidden</sub>
 - » **Say Halden's rites over the stone** [Religion DC 11] — _You heard them said at the Warden's door. Their oldest words are for shutting doors._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Halden say his rites over the stone** [Religion DC 8] — _He climbed the whole mountain to say them here._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Let your wizard read the old letters cut into the stone** [Arcana DC 12] — _One line of them runs unbroken all the way round the stone._ <sub>open when a wizard in the party?; otherwise hidden</sub>
@@ -4624,7 +4631,7 @@ Hask walks down at the back, the way a guard should, and says nothing the whole 
 
 <sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
-Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and you broke her for it. Now you want me to do the same? No." Nettle's hands sink another inch into the rock. "I could have told you," she says. The light round the stone thickens, and the burning ground creeps toward your boots.
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
@@ -4633,7 +4640,7 @@ Sedge slowly shakes her head. "She kept that door so that you could sleep soundl
 
 <sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
-Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and none of you ever asked her name. Now you want me to do the same? No." Nettle hisses at her to hold still. "I told you. Not knowing pays nothing." The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge slowly shakes her head. "She kept that door so that you could sleep soundly, and none of you ever asked her name. Now you want me to do the same? No." Nettle hisses at her to hold still. "I told you. Not knowing pays nothing." The light round the stone thickens, and the burning ground creeps toward your boots.
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
@@ -4642,7 +4649,7 @@ Sedge slowly shakes her head. "She kept that door so that you could sleep soundl
 
 <sub>reads: flag:sunken-barrows:seal-cracked</sub>
 
-Sedge slowly shakes her head. "One of yours sold her the water, and the rest of you broke her for drinking it. Now you want me to sit in her dark for you? No." Nettle does not even look round. "Two names," she says. The stone drinks deeper, and the burning ground creeps toward your boots.
+Sedge slowly shakes her head. "One of yours sold her the water, and the rest of you broke her for taking it. Now you want me to sit in her dark for you? No." Nettle does not even look round. "Two names," she says. The light round the stone thickens, and the burning ground creeps toward your boots.
 
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
 - » **Tear them out of the stone** <sub>open when Part 2 seal-cracked; otherwise hidden</sub>
@@ -4729,7 +4736,7 @@ Halden starts the rites, and Nettle sings over him until no one can hear the wor
 
 *Let Wren speak for you, passed:*
 
-Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at Wren, and then at you.
+Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they give you their word, it holds." Sedge looks at Wren, and then at you.
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4741,7 +4748,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 *Let Wren speak for you, passed:*
 
-Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at Wren, and then at you.
+Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they give you their word, it holds." Sedge looks at Wren, and then at you.
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4753,7 +4760,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 *Name her sister a keeper, in the old words, passed:*
 
-You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "No one has called her that in a long time," she says. "Someone kept the words, at least."
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4868,7 +4875,7 @@ Halden starts the rites, and Nettle sings over him until no one can hear the wor
 
 *Let Wren speak for you, passed:*
 
-Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at Wren, and then at you.
+Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they give you their word, it holds." Sedge looks at Wren, and then at you.
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -4880,7 +4887,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 *Let Wren speak for you, passed:*
 
-Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at Wren, and then at you.
+Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they give you their word, it holds." Sedge looks at Wren, and then at you.
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -4892,7 +4899,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 *Name her sister a keeper, in the old words, passed:*
 
-You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "No one has called her that in a long time," she says. "Someone kept the words, at least."
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -5007,7 +5014,7 @@ Halden starts the rites, and Nettle sings over him until no one can hear the wor
 
 *Let Wren speak for you, passed:*
 
-Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at Wren, and then at you.
+Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they give you their word, it holds." Sedge looks at Wren, and then at you.
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -5019,7 +5026,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 *Let Wren speak for you, passed:*
 
-Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at Wren, and then at you.
+Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they give you their word, it holds." Sedge looks at Wren, and then at you.
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -5031,7 +5038,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 *Name her sister a keeper, in the old words, passed:*
 
-You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "No one has called her that in a long time," she says. "Someone kept the words, at least."
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -5386,7 +5393,7 @@ Vex's clerk looks in, sees that you are breathing, and sets your kit at the foot
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says, and moves on down the line before you can thank her.
 
 <sub>(shared with: `wc-epilogue-vigil`)</sub>
 
@@ -5500,7 +5507,7 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says, and moves on down the line before you can thank her.
 
 <sub>(shared with: `wc-epilogue`)</sub>
 
