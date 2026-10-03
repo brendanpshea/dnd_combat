@@ -81,7 +81,7 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
         const npc = npcOf(e.npc, e.fate);
         return [
           ...(e.met ? [{ kind: 'setFlag' as const, flag: npcMetFlag(e.npc) }] : []),
-          ...(e.attitude ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(e.npc), amount: e.attitude }] : []),
+          ...(e.attitude ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(e.npc), amount: e.attitude, ...(e.hearsay ? { hearsay: true as const } : {}) }] : []),
           // A new fate replaces the old: one at a time.
           ...(e.fate !== undefined ? [
             ...(npc.fates ?? []).filter((f) => f !== e.fate).map((f) => ({ kind: 'clearFlag' as const, flag: npcFateFlag(e.npc, f) })),
