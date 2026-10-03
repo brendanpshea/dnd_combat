@@ -1481,13 +1481,13 @@ _+50 gold (1231)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (1326)_
 
@@ -1569,7 +1569,7 @@ The drake goes down thrashing, and the last harpy drops into the dark with its s
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 Someone has scratched one word into the rock at the shepherd's feet, in big, shaky letters: **GORGON**.
 
@@ -1579,13 +1579,13 @@ None of them has noticed you yet.
 
 <sub>scene `gorgonvale-fight`</sub>
 
-The gorgon's head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering. Two younger bulls come crashing out of the rows after it, and the valley becomes a maze of stone people with you inside it.
+The gorgon's head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering. A younger bull comes crashing out of the rows after it. Two of the statues spread stone wings and drop from their plinths, and the valley becomes a maze of stone people with you inside it.
 
 **Battle:** The Valley of Statues <sub>(`gorgon-vale` on `corridor`)</sub>
 
 **» Fight — won**
 
-The gorgon crashes onto its side with its iron plates ringing, beside the two young bulls already down among the broken statues. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 _+100 gold (1676)_
 
@@ -1712,8 +1712,6 @@ The sisters come at you with green claws and burning faces. "Then we collect by 
 **Battle:** The Sisters at the Stone <sub>(`sisters-at-stone` on `firepit`)</sub>
 
 **» Fight — won**
-
-_Level up: 5 → 6_
 
 Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the magma-things harden into lumps of black rock. The brass thing cools where it stands, a statue with a hammer.
 

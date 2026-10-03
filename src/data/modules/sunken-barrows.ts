@@ -1239,7 +1239,7 @@ const scenes: Record<string, Scene> = {
       '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. {marrow} only watches, the chisel loose in his lap.',
       'At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and {marrow} gives none.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred from the door. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.

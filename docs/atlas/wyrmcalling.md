@@ -1439,7 +1439,7 @@ The boar-runs are empty. The herd has churned the gully to soup, and every hoofp
 
 ## `gorgonvale-flown` · story
 
-The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its two young bulls have gone down to the war-camp.
+The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its young bull have gone down to the war-camp, and two of the statues have left their plinths with them.
 
 - » **Back to the trail**
 
@@ -1513,23 +1513,23 @@ The brook runs downhill now, chattering over the stones with no shape in it at a
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa
 
 *Won:*
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 ### 2. when a return visit?
 
-The copper rods still hum on the mesa's broken walls. The blue wyrmling uncoils along its wall again, crackling, and the air turns sharp and metallic. The two whirlwinds spin up between the rods, and the stone thing unfolds on the tower.
+The copper rods still hum on the mesa's broken walls. The blue wyrmling uncoils along its wall again, crackling, and the air turns sharp and metallic. The whirlwind spins up between the rods, and the stone things unfold on the tower.
 
 **Battle:** Blue Wyrmling's Mesa
 
 *Won:*
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 ## `blueden-done` · story
 
@@ -1671,7 +1671,7 @@ The burning den has gone cold. Rain has found the scorched bowl, and green shoot
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 Someone has scratched one word into the rock at the shepherd's feet, in big, shaky letters: **GORGON**.
 
@@ -1679,13 +1679,13 @@ None of them has noticed you yet.
 
 ### 2. when a return visit?
 
-The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils, and two more plumes rise further down the rows. It is not looking your way.
+The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils, and another plume rises further down the rows. It is not looking your way.
 
 ### 3. when `wren-brief` · the first visit?
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 None of them has noticed you yet.
 
@@ -1697,7 +1697,7 @@ None of them has noticed you yet.
 
 <sub>reads: flag:wren-brief</sub>
 
-The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. Two younger bulls doze among the statues halfway down the rows.
+The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. A younger bull dozes among the statues halfway down the rows. Two of the statues have wings folded on their backs.
 
 One wrong step on the loose rock, and you join the collection.
 
@@ -1717,25 +1717,25 @@ A stone arm snaps off under your elbow and hits the rock like a dropped bell. Ac
 
 ## `gorgonvale-fight` · battle
 
-The gorgon's head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering. Two younger bulls come crashing out of the rows after it, and the valley becomes a maze of stone people with you inside it.
+The gorgon's head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering. A younger bull comes crashing out of the rows after it. Two of the statues spread stone wings and drop from their plinths, and the valley becomes a maze of stone people with you inside it.
 
 **Battle:** The Valley of Statues
 
 *Won:*
 
-The gorgon crashes onto its side with its iron plates ringing, beside the two young bulls already down among the broken statues. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 <sub>(shared with: `gorgonvale-woken`)</sub>
 
 ## `gorgonvale-woken` · battle
 
-The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues. Two younger bulls come snorting out of the rows behind you, and the maze closes in around you.
+The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues. A younger bull comes snorting out of the rows behind you, two winged statues drop from their plinths, and the maze closes in around you.
 
 **Battle:** The Valley of Statues
 
 *Won:*
 
-The gorgon crashes onto its side with its iron plates ringing, beside the two young bulls already down among the broken statues. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 <sub>(shared with: `gorgonvale-fight`)</sub>
 
@@ -2490,7 +2490,7 @@ For one breath, the song falters. Sedge turns her burning face toward you. "Sorr
 
 Nettle does not turn. "Then you own the debt," she says, and her hands sink deeper into the rock. "Good. Owed is owed."
 
-Wren lets her bowstring ease a finger's width. "Somebody should have," she murmurs.
+Wren lets her bowstring ease a finger's width. "Somebody should have said it," she murmurs.
 
 - » **Ask Sedge to take up her sister's vigil** <sub>(once)</sub> <sub>open on every route here</sub>
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>

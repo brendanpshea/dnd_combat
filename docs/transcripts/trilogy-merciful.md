@@ -1183,7 +1183,7 @@ At the scream, one of the two bronze soldiers gets to its feet and draws its swo
 
 **» Fight — won**
 
-The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred from the door. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1513,13 +1513,13 @@ _+50 gold (836)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (931)_
 
@@ -1563,7 +1563,7 @@ Its warband files out of the gate and down the near side of the pass, toward the
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 Someone has scratched one word into the rock at the shepherd's feet, in big, shaky letters: **GORGON**.
 

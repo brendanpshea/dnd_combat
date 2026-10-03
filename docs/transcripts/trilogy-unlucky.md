@@ -2289,7 +2289,7 @@ _+50 gold (1170)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
@@ -2435,7 +2435,7 @@ The den is empty, and fresh claw-marks lead out toward the open sky. Its owner w
 
 <sub>scene `gorgonvale-flown`</sub>
 
-The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its two young bulls have gone down to the war-camp.
+The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its young bull have gone down to the war-camp, and two of the statues have left their plinths with them.
 
 **» Back to the trail**
 

@@ -99,7 +99,7 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | The Worm at the Door | `cult-at-door` | 4 | 2750 | 1× Cult Fanatic, 1× Priest Acolyte, 1× Ghast, 1× Ghoul, 1× Animated Armor, 2× Wight |
 | The Worm Without Its Shepherd | `cult-wavering` | 4 | 2500 | 1× Priest Acolyte, 1× Ghast, 1× Ghoul, 1× Animated Armor, 1× Wight, 2× Priest |
 | Wisp Bog | `wisp-bog` | 4 | 1100 | 2× Will-o'-Wisp, 1× Specter |
-| Blue Wyrmling's Mesa | `blue-dragon-den` | 5 | 4900 | 1× Blue Dragon Wyrmling, 2× Kobold Warrior, 2× Kobold Emberling, 2× Air Elemental, 1× Gargoyle |
+| Blue Wyrmling's Mesa | `blue-dragon-den` | 5 | 3550 | 1× Blue Dragon Wyrmling, 2× Kobold Warrior, 2× Kobold Emberling, 1× Air Elemental, 2× Gargoyle |
 | Earth Tremor | `earth-tremor` | 5 | 1800 | 1× Earth Elemental |
 | Fire Nexus | `fire-nexus` | 5 | 2250 | 1× Fire Elemental, 1× Cult Fanatic |
 | Giant's Stronghold | `giants` | 5 | 1650 | 1× Ettin, 1× Ogre, 1× Orc Raider |
@@ -109,7 +109,7 @@ Hand-built fights. The arena generates its own from an XP budget instead — see
 | Tempest Eye | `tempest-eye` | 5 | 1800 | 1× Air Elemental |
 | The Raided Hall | `giants-raided` | 5 | 1200 | 1× Ettin, 1× Orc Raider |
 | The Sisters at the Stone | `sisters-at-stone` | 5 | 4500 | 2× Green Hag, 1× Fire Elemental, 1× Azer Forgecaller, 2× Magma Mephit |
-| The Valley of Statues | `gorgon-vale` | 5 | 5400 | 3× Gorgon |
+| The Valley of Statues | `gorgon-vale` | 5 | 4500 | 2× Gorgon, 2× Gargoyle |
 | Unicorn Sanctuary | `unicorn-sanctuary` | 5 | 1800 | 1× Unicorn |
 | Water Vortex | `water-vortex` | 5 | 1800 | 1× Water Elemental |
 | Elemental Cataclysm | `elemental-cataclysm` | 6 | 5400 | 1× Fire Elemental, 1× Earth Elemental, 1× Air Elemental |

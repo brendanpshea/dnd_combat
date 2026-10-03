@@ -202,10 +202,11 @@ never "the girl".
   ghouls, two that stink worse: ghasts).
 - **The toll-cliff:** the manticore keeps a wyvern on its ledge; its goblins
   stay hidden in the rocks.
-- **The valley of statues:** the gorgon (the old bull) and two younger bulls.
+- **The valley of statues:** the gorgon (the old bull), a younger bull, and
+  two winged statues that are not statues (gargoyles).
 - **The dens:** the red forge keeps three hounds and two kobolds; the blue
-  mesa two kobolds, two emberlings, two whirlwinds and a winged stone thing on
-  its tower. The brood on the rim is the wyrmlings alone.
+  mesa two kobolds, two emberlings, a whirlwind and two winged stone things
+  on its tower. The brood on the rim is the wyrmlings alone.
 
 ## Who was where, per ledger value
 
