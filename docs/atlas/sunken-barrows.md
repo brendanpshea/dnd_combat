@@ -5,11 +5,46 @@
 Every version of every scene that some reachable state can produce — every route, carried choices from earlier chapters included — with when each version shows. Read every version of a scene you change; see "Reading the atlas" in docs/module-writing-guide.md.
 
 - **when …** names what the version needs, in as few words as hold over the reachable states (the rest can go either way). "— or —" joins alternatives.
-- A condition ending in **?** is one the search does not track (a tally such as a regard, gold, an item, a class in the party, a return visit): both ways are shown, though not every party can bring both.
+- A condition ending in **?** is one the search does not track (gold, an item, a class in the party, a return visit, a tally the ledger does not band): both ways are shown, though not every party can bring both. Wren's regard and the valley's regard are tracked exactly.
 - A flag only text reads is checked one at a time: each value shown is reachable, but two such flags together may not be.
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
+- <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
 90 scenes · 167 versions · 124,948 states searched (with text conditions tracked).
+
+## Shared paragraphs
+
+Paragraphs whose exact text shows in more than one scene (a reused constant), grouped by the scenes that share them. Each is marked where it shows. **Change one, and read it in every scene listed**: a line written for one of them may be wrong in another.
+
+- `fen-out`, `fen-partner`:
+  - **S1** “The cart-road ends where the old raised road begins. A …”
+  - **S2** “"I was out on the near fen at first light, …”
+- `fen-out`, `fen-partner`, `fen-reunion`:
+  - **S3** “Wren is still sitting on the milestone where the raised …”
+- `lights-won`, `lights-skirted`:
+  - **S4** “She looks at the purses, then at you. "Those belonged …”
+- `pool-fight`, `pool-drawn`:
+  - **S5** “The serpents lie in loops like dropped rope. Your boots …”
+- `resealing`, `resealing-shifted`:
+  - **S6** “The great door still bulges outward, and half the lead …”
+  - **S7** “Marrow has laid his chisel down on the step. He …”
+  - **S8** “Halden's book lies open in your hands. The rites fill …”
+  - **S9** “The last word dies in the dark, and for a …”
+  - **S10** “You read the old rites by black candle-light. You stumble …”
+  - **S11** “At the back of the stair, Marrow's kneelers chant every …”
+  - **S12** “Your voice cracks on the oldest word, and the rest …”
+  - **S13** “The letters are not a prayer at all. They are …”
+  - **S14** “You trace the wrong line first. A letter spits its …”
+  - **S15** “You hold the book up where the kneelers can see …”
+  - **S16** “The kneelers look at the book, then at the door. …”
+  - **S17** “Your wizard has read about wards like this in dusty …”
+  - **S18** “No book your wizard has read goes back as far …”
+  - **S19** “Marrow takes the book in both hands and turns to …”
+  - **S20** “Marrow's voice breaks on the first line. He was never …”
+  - **S21** “Halden takes the book and finds his place without looking. …”
+  - **S22** “Halden opens his mouth, and the voice that comes out …”
+- `seal-clean`, `seal-shut`:
+  - **S23** “Among the cult's packs you find how they came down: …”
 
 ## `return` · story
 
@@ -268,15 +303,17 @@ The churchyard lies quiet, its open graves still gaping at the sky. Nothing more
 
 ## `fen-out` · dialogue · Wren, the Reeve's Scout
 
-<sub>reads: flag:npc.wren.attitude?, return?</sub>
+<sub>reads: flag:npc.wren.attitude, return?</sub>
 
 **3 versions**
 
-### 1. when Wren's regard < 0? · the first visit?
+### 1. when Wren's regard < 0 · the first visit?
 
 **Wren, the Reeve's Scout:**
 
 The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
+
+<sub>(shared with: `fen-partner`)</sub>
 
 She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
 
@@ -284,21 +321,29 @@ She looks at you a beat too long, and leaves it there.
 
 "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
+<sub>(shared with: `fen-partner`)</sub>
+
 ### 2. when a return visit?
 
 **Wren, the Reeve's Scout:**
 
 Wren is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"
 
-### 3. when Wren's regard ≥ 0? · the first visit?
+<sub>(shared with: `fen-partner`, `fen-reunion`)</sub>
+
+### 3. when Wren's regard ≥ 0 · the first visit?
 
 **Wren, the Reeve's Scout:**
 
 The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
+<sub>(shared with: `fen-partner`)</sub>
+
 She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
 
 "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+
+<sub>(shared with: `fen-partner`)</sub>
 
 - » **Follow her onto the raised road**
 
@@ -314,15 +359,21 @@ She favours one leg when she stands, and pretends she doesn't. "**Wren**. The re
 
 The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
+<sub>(shared with: `fen-out`)</sub>
+
 "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "My partner was Tamsin. A dead horse came down on her on the marsh road, the week you went for the den. She died out there in the night, alone." She tests her bowstring and does not look up.
 
 "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+
+<sub>(shared with: `fen-out`)</sub>
 
 ### 2. when a return visit?
 
 **Wren, the Reeve's Scout:**
 
 Wren is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"
+
+<sub>(shared with: `fen-out`, `fen-reunion`)</sub>
 
 - » **Follow her onto the raised road**
 
@@ -345,6 +396,8 @@ The cart-road ends where the old raised road begins. **Wren** sits on a mileston
 **Wren, the Reeve's Scout:**
 
 Wren is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"
+
+<sub>(shared with: `fen-out`, `fen-partner`)</sub>
 
 - » **Follow her onto the raised road**
 
@@ -800,6 +853,8 @@ One body is not like the others. It wears long robes the colour of grave-worms, 
 
 She looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
 
+<sub>(shared with: `lights-skirted`)</sub>
+
 - » **Keep the purses. The dead won't spend them**
 - » **Carry the purses home for the families**
 
@@ -824,6 +879,8 @@ Halfway round, Wren grabs your sleeve and points. The drowned lie in the reeds a
 One body is not like the others. It wears long robes the colour of grave-worms. "That's no fen-folk," Wren whispers. "Not in those robes." The lights drift closer.
 
 She looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
+
+<sub>(shared with: `lights-won`)</sub>
 
 - » **Keep the purses. The dead won't spend them**
 - » **Carry the purses home for the families**
@@ -895,6 +952,8 @@ The pool empties itself at you. Two snakes the girth of roof-beams pour over the
 
 The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion. The pool is plain water now.
 
+<sub>(shared with: `pool-drawn`)</sub>
+
 ### 2. when a return visit?
 
 The pool empties itself at you again. The two fen-serpents pour over the rim in their oiled coils, as hungry as before.
@@ -904,6 +963,8 @@ The pool empties itself at you again. The two fen-serpents pour over the rim in 
 *Won:*
 
 The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion. The pool is plain water now.
+
+<sub>(shared with: `pool-drawn`)</sub>
 
 ## `pool-drawn` · battle
 
@@ -921,6 +982,8 @@ Wren creeps round to the far bank and rattles her bow in the reeds there, the wa
 
 The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion. The pool is plain water now.
 
+<sub>(shared with: `pool-fight`)</sub>
+
 ### 2. when a return visit?
 
 Wren creeps round to the far bank again and rattles the reeds. The serpents fall for it twice. They rise toward her with their backs to you.
@@ -930,6 +993,8 @@ Wren creeps round to the far bank again and rattles the reeds. The serpents fall
 *Won:*
 
 The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion. The pool is plain water now.
+
+<sub>(shared with: `pool-fight`)</sub>
 
 ## `pool-done` · story
 
@@ -977,11 +1042,11 @@ You hold up Halden's book, but you cannot find the builders' mark on the gate in
 
 ## `lychgate-won` · story
 
-<sub>reads: companion:wren, flag:npc.wren.attitude?</sub>
+<sub>reads: companion:wren, flag:npc.wren.attitude</sub>
 
 **3 versions**
 
-### 1. when Wren's regard < 0?
+### 1. when Wren's regard < 0
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
@@ -993,7 +1058,7 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
-### 2. when Wren's regard 0–1?
+### 2. when Wren's regard 0–1
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
@@ -1005,7 +1070,7 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 "Shout if it goes bad. I'll hear you from up here."
 
-### 3. when Wren's regard ≥ 2?
+### 3. when Wren's regard ≥ 2
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
@@ -1020,8 +1085,8 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 She ties a strip of the reeve's colours round your arm, quick and tight, and does not explain it.
 
 - » **Leave Wren the gate, and go down** <sub>open on every route here</sub>
-- » **Ask Wren to come down with you** <sub>open when Wren's regard ≥ 2?; otherwise hidden</sub>
-- » **Ask Wren to come down with you** <sub>open when Wren's regard < 0 or Wren's regard 0–1?; otherwise hidden</sub>
+- » **Ask Wren to come down with you** <sub>open when Wren's regard ≥ 2; otherwise hidden</sub>
+- » **Ask Wren to come down with you** <sub>open when Wren's regard < 0 or Wren's regard 0–1; otherwise hidden</sub>
 
 ## `lychgate-wren-comes` · story
 
@@ -1033,17 +1098,17 @@ She lights a second torch from yours and takes the first step down before anyone
 
 ## `lychgate-wren-stays` · story
 
-<sub>reads: flag:npc.wren.attitude?</sub>
+<sub>reads: flag:npc.wren.attitude</sub>
 
 **2 versions**
 
-### 1. when Wren's regard < 0?
+### 1. when Wren's regard < 0
 
 "No," Wren says. "I said I'd get you to the barrow-country, and I have."
 
 She sits down on the nearest stone with her bow strung beside her, facing the fen. You leave her at her post and start down the worked steps.
 
-### 2. when Wren's regard ≥ 0?
+### 2. when Wren's regard ≥ 0
 
 Wren shakes her head. "Down there I'm one more thing for you to watch. Up here I'm some use."
 
@@ -1766,143 +1831,221 @@ Boots scrape in the shaft above. Brother Halden drops down it, skinning his palm
 
 The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Failed:*
 
 The last word dies in the dark, and for a moment nothing happens. The great door splits down its middle with a crack like river ice, and grey hands push out through the gap. The Warden has stopped waiting for his servants.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Speak the rites aloud, passed:*
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Speak the rites aloud, failed:*
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Read the lead letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Read the lead letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
-*Turn the kneeling cultists to the words, passed:*
-
-You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
-
-*Turn the kneeling cultists to the words, failed:*
-
-The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Turn the kneeling cultists to the words, passed:*
 
 You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Turn the kneeling cultists to the words, failed:*
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing-shifted`)</sub>
+
+*Turn the kneeling cultists to the words, passed:*
+
+You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
+
+<sub>(shared with: `resealing-shifted`)</sub>
+
+*Turn the kneeling cultists to the words, failed:*
+
+The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Let your wizard pick the lock the old masons cut, passed:*
 
 Your wizard has read about wards like this in dusty books. This one is a lock, and the rites are its key. Letter by letter, your wizard finds where Marrow's chisel broke it and mends it with the line that belongs there. The lead glows, and sets hard.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Let your wizard pick the lock the old masons cut, failed:*
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Let Marrow lead his faithful in the rites, passed:*
 
 Marrow takes the book in both hands and turns to his kneelers. "We had the words wrong," he tells them. He reads, and every kneeler on the stair follows him, and one by one the lead letters fill with light.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Let Marrow lead his faithful in the rites, failed:*
 
 Marrow's voice breaks on the first line. He was never a priest. The kneelers wait for him, and the door groans.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Give Halden the book, passed:*
 
 Halden takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead sets hard under every word.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Give Halden the book, failed:*
 
 Halden opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 ### 2. when Marrow sings
 
 The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 Marrow has laid his chisel down on the step. He watches the book now, not the door.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Failed:*
 
 The last word dies in the dark, and for a moment nothing happens. The great door splits down its middle with a crack like river ice, and grey hands push out through the gap. The Warden has stopped waiting for his servants.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Speak the rites aloud, passed:*
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Speak the rites aloud, failed:*
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Read the lead letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Read the lead letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
-*Turn the kneeling cultists to the words, passed:*
-
-You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
-
-*Turn the kneeling cultists to the words, failed:*
-
-The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Turn the kneeling cultists to the words, passed:*
 
 You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Turn the kneeling cultists to the words, failed:*
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing-shifted`)</sub>
+
+*Turn the kneeling cultists to the words, passed:*
+
+You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
+
+<sub>(shared with: `resealing-shifted`)</sub>
+
+*Turn the kneeling cultists to the words, failed:*
+
+The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Let your wizard pick the lock the old masons cut, passed:*
 
 Your wizard has read about wards like this in dusty books. This one is a lock, and the rites are its key. Letter by letter, your wizard finds where Marrow's chisel broke it and mends it with the line that belongs there. The lead glows, and sets hard.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Let your wizard pick the lock the old masons cut, failed:*
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Let Marrow lead his faithful in the rites, passed:*
 
 Marrow takes the book in both hands and turns to his kneelers. "We had the words wrong," he tells them. He reads, and every kneeler on the stair follows him, and one by one the lead letters fill with light.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Let Marrow lead his faithful in the rites, failed:*
 
 Marrow's voice breaks on the first line. He was never a priest. The kneelers wait for him, and the door groans.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 *Give Halden the book, passed:*
 
 Halden takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead sets hard under every word.
 
+<sub>(shared with: `resealing-shifted`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 *Give Halden the book, failed:*
 
 Halden opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."
+
+<sub>(shared with: `resealing-shifted`)</sub>
 
 - » **Speak the rites aloud** [Religion DC 13]
 - » **Read the lead letters as a spell** [Arcana DC 14] — _They are cut deeper than any prayer needs._
@@ -1922,143 +2065,221 @@ Halden opens his mouth, and the voice that comes out is not quite his. He shuts 
 
 The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
 
+<sub>(shared with: `resealing`)</sub>
+
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Failed:*
 
 The last word dies in the dark, and for a moment nothing happens. The great door splits down its middle with a crack like river ice, and grey hands push out through the gap. The Warden has stopped waiting for his servants.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Speak the rites aloud, passed:*
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Speak the rites aloud, failed:*
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Read the lead letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Read the lead letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
-*Turn the kneeling cultists to the words, passed:*
-
-You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
-
-*Turn the kneeling cultists to the words, failed:*
-
-The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+<sub>(shared with: `resealing`)</sub>
 
 *Turn the kneeling cultists to the words, passed:*
 
 You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Turn the kneeling cultists to the words, failed:*
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing`)</sub>
+
+*Turn the kneeling cultists to the words, passed:*
+
+You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
+
+<sub>(shared with: `resealing`)</sub>
+
+*Turn the kneeling cultists to the words, failed:*
+
+The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Let your wizard pick the lock the old masons cut, passed:*
 
 Your wizard has read about wards like this in dusty books. This one is a lock, and the rites are its key. Letter by letter, your wizard finds where Marrow's chisel broke it and mends it with the line that belongs there. The lead glows, and sets hard.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Let your wizard pick the lock the old masons cut, failed:*
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Let Marrow lead his faithful in the rites, passed:*
 
 Marrow takes the book in both hands and turns to his kneelers. "We had the words wrong," he tells them. He reads, and every kneeler on the stair follows him, and one by one the lead letters fill with light.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Let Marrow lead his faithful in the rites, failed:*
 
 Marrow's voice breaks on the first line. He was never a priest. The kneelers wait for him, and the door groans.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Give Halden the book, passed:*
 
 Halden takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead sets hard under every word.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Give Halden the book, failed:*
 
 Halden opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."
+
+<sub>(shared with: `resealing`)</sub>
 
 ### 2. when Marrow sings
 
 The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
 
+<sub>(shared with: `resealing`)</sub>
+
 Marrow has laid his chisel down on the step. He watches the book now, not the door.
 
+<sub>(shared with: `resealing`)</sub>
+
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Failed:*
 
 The last word dies in the dark, and for a moment nothing happens. The great door splits down its middle with a crack like river ice, and grey hands push out through the gap. The Warden has stopped waiting for his servants.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Speak the rites aloud, passed:*
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
 
+<sub>(shared with: `resealing`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Speak the rites aloud, failed:*
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Read the lead letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.
 
+<sub>(shared with: `resealing`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Read the lead letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
-*Turn the kneeling cultists to the words, passed:*
-
-You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
-
-*Turn the kneeling cultists to the words, failed:*
-
-The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+<sub>(shared with: `resealing`)</sub>
 
 *Turn the kneeling cultists to the words, passed:*
 
 You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Turn the kneeling cultists to the words, failed:*
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing`)</sub>
+
+*Turn the kneeling cultists to the words, passed:*
+
+You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
+
+<sub>(shared with: `resealing`)</sub>
+
+*Turn the kneeling cultists to the words, failed:*
+
+The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Let your wizard pick the lock the old masons cut, passed:*
 
 Your wizard has read about wards like this in dusty books. This one is a lock, and the rites are its key. Letter by letter, your wizard finds where Marrow's chisel broke it and mends it with the line that belongs there. The lead glows, and sets hard.
 
+<sub>(shared with: `resealing`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Let your wizard pick the lock the old masons cut, failed:*
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Let Marrow lead his faithful in the rites, passed:*
 
 Marrow takes the book in both hands and turns to his kneelers. "We had the words wrong," he tells them. He reads, and every kneeler on the stair follows him, and one by one the lead letters fill with light.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Let Marrow lead his faithful in the rites, failed:*
 
 Marrow's voice breaks on the first line. He was never a priest. The kneelers wait for him, and the door groans.
 
+<sub>(shared with: `resealing`)</sub>
+
 *Give Halden the book, passed:*
 
 Halden takes the book and finds his place without looking. He reads in the same calm voice that led the drowned congregation. This time the voice is his own, and the lead sets hard under every word.
 
+<sub>(shared with: `resealing`)</sub>
+
 At the back of the stair, Marrow's kneelers chant every line back. The whole stair keeps time, low and steady.
+
+<sub>(shared with: `resealing`)</sub>
 
 *Give Halden the book, failed:*
 
 Halden opens his mouth, and the voice that comes out is not quite his. He shuts the book fast and hands it back, white to the lips. "Not me," he whispers. "It still knows me."
+
+<sub>(shared with: `resealing`)</sub>
 
 - » **Speak the rites aloud** [Religion DC 15]
 - » **Read the lead letters as a spell** [Arcana DC 16] — _They are cut deeper than any prayer needs, and the door has shifted in its frame since._
@@ -2075,6 +2296,8 @@ Line by line the great door stops *straining*, and last of all the weight behind
 The **Warden** sleeps. The door is shut.
 
 Among the cult's packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.
+
+<sub>(shared with: `seal-shut`)</sub>
 
 - » **Climb the cult's rope ladder back to the light**
 
@@ -2126,6 +2349,8 @@ Far above you, across the barrow-field, the walking dead lie down where they sta
 
 Among the cult's packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.
 
+<sub>(shared with: `seal-clean`)</sub>
+
 - » **Climb the cult's rope ladder back to the light**
 
 ## `sb-claim-round` · story
@@ -2145,33 +2370,33 @@ Thornwick goes about its burying, and its living.
 
 ## `sb-aftermath` · story
 
-<sub>reads: companion:wren, flag:npc.halden.fate.saved, flag:npc.marrow.fate.bound, flag:grandfather-home, flag:npc.marrow.fate.sings, flag:seal-cracked, flag:npc.wren.attitude?</sub>
+<sub>reads: companion:wren, flag:npc.halden.fate.saved, flag:npc.marrow.fate.bound, flag:grandfather-home, flag:npc.marrow.fate.sings, flag:seal-cracked, flag:npc.wren.attitude</sub>
 
-**144 versions** — printed once, each conditional line marked with when it shows.
+**108 versions** — printed once, each conditional line marked with when it shows.
 
 *text:*
 
 The rope ladder brings you up out of the great barrow and into the open air.
 
-> **[when Wren not in the party]** Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
+> **[when Wren's regard < 0 — or — Wren not in the party]** Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 > **[when Wren in the party]** Wren comes up behind you. At the top she stands a long moment in the barrow-field, among dead who have finally stopped moving, and then she unstrings her bow.
 
 > **[when Halden saved]** Brother Halden climbs out last, blinking at the daylight. He walks the barrow-field with his book open, and says the burial words over every one of the dead lying still in the grass.
 
-> **[when Wren not in the party · Marrow bound · not `grandfather-home`]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, then takes the rope herself.
+> **[when Marrow bound · not `grandfather-home` · Wren's regard < 0 — or — Wren not in the party · Marrow bound · not `grandfather-home`]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, then takes the rope herself.
 
-> **[when Wren not in the party · Marrow bound · `grandfather-home`]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, and leaves his rope in your hands.
+> **[when Marrow bound · `grandfather-home` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · Marrow bound · `grandfather-home`]** Marrow climbs out behind you with his wrists tied. "That's the one who brought the candles?" Wren asks. She looks him up and down, and leaves his rope in your hands.
 
-> **[when Wren in the party · Marrow bound · not `grandfather-home`]** Marrow climbs out with his wrists tied. Wren has held the end of his rope since the door, and she does not give it up now.
+> **[when Wren in the party · Marrow bound · Wren's regard < 0 or Wren's regard 0–1 — or — Wren in the party · Marrow bound · not `grandfather-home`]** Marrow climbs out with his wrists tied. Wren has held the end of his rope since the door, and she does not give it up now.
 
 > **[when Wren in the party · Marrow bound · `grandfather-home`]** Marrow climbs out with his wrists tied, at the end of a rope your company has held since the door. Wren does not take her eyes off him.
 
 > **[when Marrow sings]** Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I'll know."
 
-> **[when Wren not in the party · `grandfather-home` · not `seal-cracked`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet.
+> **[when `grandfather-home` · not `seal-cracked` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · `grandfather-home` · not `seal-cracked`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts." The walk home is long and wet.
 
-> **[when Wren not in the party · `grandfather-home` · `seal-cracked`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
+> **[when `grandfather-home` · `seal-cracked` · Wren's regard < 0 or Wren's regard 0–1 — or — Wren not in the party · `grandfather-home` · `seal-cracked`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
 
 > **[when Wren in the party · `grandfather-home` · not `seal-cracked`]** Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut. The walk home is long and wet.
 
@@ -2181,9 +2406,9 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when `seal-cracked`]** The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.
 
-> **[when Wren's regard ≥ 2?]** At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
+> **[when Wren's regard ≥ 2]** At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
 
-> **[when Wren's regard < 0?]** Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
+> **[when Wren's regard < 0]** Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
 
 - » **Go up to the reeve's hall**
 

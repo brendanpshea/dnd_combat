@@ -703,15 +703,29 @@ with when it is open.
 - **"Never shown on any reachable route"** (per scene, and gathered at the
   end of each file) is a line, choice or marker whose condition no reachable
   state meets: dead text, or a condition that is wrong.
+- **Shared paragraphs.** Many paragraphs are one constant reused in several
+  scenes (one "den flown" for three dens, one Wren briefing in several
+  scenes). Each is marked where it shows, `(shared with: scene-a, scene-b)`,
+  or `(shared ×7, see index S12)` when many scenes use it; the index at the
+  top of each chapter file lists every shared paragraph by its first words,
+  grouped by the scenes that share it. **Writers: when you change a shared
+  paragraph, read it in every scene it appears in**, not just the one you
+  were editing. A line written for one context goes wrong in another: the
+  den the party never entered, the briefing given to a party that already
+  knows.
 - **What `?` means.** A condition marked `?` is one the search does not track
-  (a tally such as a regard, gold, an item, a class in the party, a return
-  visit): both ways are shown, though not every party can bring both. A flag
-  only text reads is checked one at a time, so two such flags in one "when"
-  may not go together.
+  (gold, an item, a class in the party, a return visit, a tally the ledger
+  does not band): both ways are shown, though not every party can bring
+  both. A flag only text reads is checked one at a time, so two such flags
+  in one "when" may not go together. The tallies the ledger bands
+  (`LEDGER_BANDS`: Wren's regard, the valley's regard) are tracked exactly,
+  across chapters: "when Wren's regard ≥ 2" with no `?` means some party
+  really arrives there with her warm, and a version that is missing is one
+  no party can see.
 - **Regenerate** with `npm run atlas` after any module or runtime change;
   `test/atlas.test.ts` (in `check:story`) fails until the committed files
   match. It runs the reachability search once more per chapter, with every
-  text condition tracked (about ten seconds).
+  text condition tracked (about twenty seconds).
 
 ## Reading a route
 

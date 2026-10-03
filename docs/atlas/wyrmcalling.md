@@ -5,15 +5,172 @@
 Every version of every scene that some reachable state can produce — every route, carried choices from earlier chapters included — with when each version shows. Read every version of a scene you change; see "Reading the atlas" in docs/module-writing-guide.md.
 
 - **when …** names what the version needs, in as few words as hold over the reachable states (the rest can go either way). "— or —" joins alternatives.
-- A condition ending in **?** is one the search does not track (a tally such as a regard, gold, an item, a class in the party, a return visit): both ways are shown, though not every party can bring both.
+- A condition ending in **?** is one the search does not track (gold, an item, a class in the party, a return visit, a tally the ledger does not band): both ways are shown, though not every party can bring both. Wren's regard and the valley's regard are tracked exactly.
 - A flag only text reads is checked one at a time: each value shown is reachable, but two such flags together may not be.
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
+- <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-137 scenes · 224 versions · 563,416 states searched (with text conditions tracked).
+137 scenes · 223 versions · 563,416 states searched (with text conditions tracked).
+
+## Shared paragraphs
+
+Paragraphs whose exact text shows in more than one scene (a reused constant), grouped by the scenes that share them. Each is marked where it shows. **Change one, and read it in every scene listed**: a line written for one of them may be wrong in another.
+
+- `vex-brief`, `vex-brief-turned`:
+  - **S1** “"Here's the problem." He taps the map, where fires mark …”
+  - **S2** “"Nettle and her sister are holding the peak back, and …”
+- `fenfolk-fire`, `fenfolk-fire-cracked`:
+  - **S3** “The fen-folk keep their own small fire at the edge …”
+  - **S4** “"Those poor souls the Ashfang penned up for her? That …”
+- `command-done`, `command-half`, `command-thin`:
+  - **S5** “The command tent works on. Guard posts, rations, and the …”
+  - **S6** “He taps the east line. "And the night went our …”
+  - **S7** “He taps the east line. "We got through the night. …”
+  - **S8** “He taps the east line. "We nearly didn't get through …”
+  - **S9** “"And all three dens stand empty," Vex says. "No wyrm …”
+  - **S10** “His finger moves to the dens. "The green den. Still …”
+  - **S11** “His finger moves to the dens. "The green den is …”
+  - **S12** “His finger moves to the dens. "The blue den. Still …”
+  - **S13** “His finger moves to the dens. "The blue den is …”
+  - **S14** “His finger moves to the dens. "The green and blue dens. …”
+  - **S15** “His finger moves to the dens. "The green and blue dens …”
+  - **S16** “His finger moves to the dens. "The red den. Still …”
+  - **S17** “His finger moves to the dens. "The red den is …”
+  - **S18** “His finger moves to the dens. "The green and red dens. …”
+  - **S19** “His finger moves to the dens. "The green and red dens …”
+  - **S20** “His finger moves to the dens. "The blue and red dens. …”
+  - **S21** “His finger moves to the dens. "The blue and red dens …”
+  - **S22** “His finger moves to the dens. "The green, blue and red dens. …”
+  - **S23** “His finger moves to the dens. "The green, blue and red dens …”
+- `scouts-fire-old`, `scouts-fire-saved`:
+  - **S24** “"Right. Listen." She jabs a finger at the map. "The …”
+  - **S25** “"Past the middle pass there's a valley full of statues, …”
+  - **S26** “She walks you to the edge of the firelight, which …”
+  - **S27** “The notes are complete and correct, the same as she …”
+  - **S28** “Wren looks up from the map board. "My notes are …”
+- `tollcliff-fight`, `tollcliff-stung`:
+  - **S29** “The manticore drops onto the trail with one last offended …”
+- `gorgonvale-fight`, `gorgonvale-woken`:
+  - **S30** “The gorgon crashes onto its side with its iron plates …”
+- `calling-gate`, `calling-gate-clear`:
+  - **S31** “You reach the last ridge. The Calling is not a …”
+  - **S32** “Down in the bowl, two tall green women at the …”
+  - **S33** “Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not …”
+  - **S34** “Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It …”
+  - **S35** “Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. There …”
+  - **S36** “One column on the slope below keeps step the whole …”
+- `clutch-g`, `clutch-b`, `clutch-r`:
+  - **S37** “The wyrmling drops out of the bruised light and does …”
+- `clutch-gb`, `clutch-gr`, `clutch-br`, `clutch-gbr`:
+  - **S38** “The last wyrmling drops out of the bruised light and …”
+- `tear-loose`, `tear-loose-cracked`, `tear-loose-rueful`, `tear-loose-rueful-cracked`, `tear-loose-cold`, `tear-loose-cold-cracked`, `tear-loose-sold`, `tear-loose-sold-cracked`:
+  - **S39** “The sisters have sunk their hands to the wrist in …”
+- `tear-loose`, `tear-loose-cracked`, `tear-loose-rueful`, `tear-loose-rueful-cracked`, `tear-loose-defiant`, `tear-loose-defiant-cracked`, `tear-loose-cold`, `tear-loose-cold-cracked`, `tear-loose-sold`, `tear-loose-sold-cracked`:
+  - **S40** “Nettle sees you looking at her wrists, and she laughs. …”
+  - **S41** “The stone gives a crack like a snapped bone and …”
+  - **S42** “Nothing you try reaches them. The sisters sink into the …”
+  - **S44** “Hask plants his feet and counts the way a sergeant …”
+  - **S45** “Hask counts, and you all pull on the word. The …”
+  - **S46** “The ropes bite, and the whole company hauls together. The …”
+  - **S47** “The ropes smoke and part where they touch the stone. …”
+  - **S49** “Halden's old words fall on the stone like cold water …”
+  - **S50** “You lose the words halfway through. The book says to …”
+  - **S51** “You say Halden's old words from memory, the whole of …”
+  - **S52** “You lose the words halfway through, and the book that …”
+  - **S53** “Brother Halden steps up to the stone and opens his …”
+  - **S54** “Halden gets halfway before the song finds the place in …”
+  - **S55** “Your wizard finds the line of old letters that binds …”
+  - **S56** “The letters crawl and shift under your wizard's eyes. They …”
+  - **S57** “Your warlock speaks to the stone in a patron's voice, …”
+  - **S58** “The stone has heard better offers. It keeps the sisters …”
+  - **S59** “Wren puts her hand flat on the stone, over a …”
+  - **S60** “Your blow lands a hand's width off the chalk. The …”
+  - **S61** “Wren walks round the stone twice, slowly, the way she …”
+  - **S62** “Wren points, and you strike, but the crack has closed …”
+  - **S63** “"They're paying now!" you shout up at the ledge. "Come …”
+  - **S64** “The manticore meets two sets of green claws at once …”
+  - **S65** “The manticore only grins down at you with its man's …”
+  - **S66** “Every face of the stone looks the same to you, …”
+- `tear-loose`, `tear-loose-cracked`, `tear-loose-sold`, `tear-loose-sold-cracked`:
+  - **S43** “The rock holds them fast. You let go with burned …”
+- `tear-loose`, `tear-loose-cracked`, `tear-loose-rueful`, `tear-loose-rueful-cracked`, `tear-loose-cold`, `tear-loose-cold-cracked`:
+  - **S48** “Your wrong note goes into the song and vanishes. The …”
+- `tear-loose-cracked`, `tear-loose-rueful-cracked`, `tear-loose-defiant-cracked`, `tear-loose-cold-cracked`, `tear-loose-sold-cracked`:
+  - **S67** “The floor of the bowl knocks under your boots: three …”
+  - **S68** “Grey hands push up through the cracks around the stone. …”
+- `tear-loose-rueful`, `tear-loose-rueful-cracked`:
+  - **S69** “Nettle smiles at you the whole time you pull. You …”
+- `tear-loose-defiant`, `tear-loose-defiant-cracked`:
+  - **S70** “Sedge has her hands sunk to the wrist in the …”
+  - **S71** “Nettle is still shouting when you take her wrists, and …”
+  - **S72** “Nettle stops shouting just in time. She drives her hands …”
+  - **S73** “Nettle hears your wrong note and sings right over it, …”
+- `tear-loose-cold`, `tear-loose-cold-cracked`:
+  - **S74** “Sedge does not pull back, not at first. By the …”
+  - **S75** “Sedge finds her nerve a moment too soon. She drives …”
+- `tear-loose-sold`, `tear-loose-sold-cracked`:
+  - **S76** “Nettle hums your wrong note back at you, pleased, and …”
+- `sisters-battle`, `sisters-battle-cracked`:
+  - **S77** “Nettle falls first, clawing at your boots, still telling you …”
+  - **S78** “The black fang has no one left to spend. It …”
+  - **S79** “Green claws close over you, and the last thing you …”
+- `vigil-down-with-wren`, `down-with-wren`:
+  - **S80** “Wren walks down beside you, counting the passes under her …”
+  - **S81** “She does not say she is glad you are all …”
+- `vigil-down-with-halden`, `down-with-halden`:
+  - **S82** “Brother Halden walks down with his prayer book shut under …”
+- `vigil-down-with-hask`, `down-with-hask`:
+  - **S83** “Hask walks down at the back, the way a guard …”
+- `vigil-rueful`, `vigil-unknowing`, `vigil-sold`:
+  - **S84** “Sedge keeps her hands in the rock, but she is …”
+  - **S85** “"Her pen is empty," you tell Sedge. "The carter walked …”
+  - **S86** “"One pen," Sedge says. "She sat in the dark for …”
+  - **S87** “"The fen-folk on the rim came up this mountain for …”
+  - **S88** “"The fen-folk pay when they are frightened," Sedge says. "They …”
+  - **S89** “"The reeve owes us," you tell her. "He will write …”
+  - **S90** “"Ink," Sedge says. "Your Thornwick had ink before, and it …”
+  - **S91** “"The man who took a chisel to that door was …”
+  - **S92** “"One old man with a lamp," Sedge says. "She kept …”
+  - **S93** “Brother Halden opens his book at the oldest rites in …”
+  - **S94** “Halden starts the rites, and Nettle sings over him until …”
+  - **S95** “"Brother Halden is up on the rim," you tell her. …”
+  - **S96** “"A priest's words," Sedge says. "She had a thousand winters …”
+  - **S97** “Wren lowers her bow and steps up beside you. "I owe …”
+  - **S98** “Sedge hardly looks at her. "Your scout loves you," she …”
+  - **S99** “Wren lowers her bow and steps up beside you. "I walked …”
+  - **S100** “"The door under the fen still needs a keeper," you …”
+  - **S101** “"A keeper," Sedge says. "She was a keeper for an …”
+- `calling-battle`, `calling-battle-cracked`:
+  - **S102** “The stone takes the last of the sisters. Nettle goes …”
+  - **S103** “The fire gutters out of the air, and the shape …”
+  - **S104** “The rock bucks under you like a struck bell, and …”
+- `wc-epilogue`, `wc-epilogue-vigil`:
+  - **S105** “Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She …”
+  - **S106** “Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The …”
+  - **S107** “Somewhere past the far hills, a green dragon is growing …”
+  - **S108** “The manticore never came back to its cliff. Shepherds say …”
+  - **S109** “Hunters still hear the ettin some nights, far off in …”
+  - **S110** “After the Calling's last night, Bram tried to sell the …”
+  - **S111** “The beasts you left in the hills nearly broke the …”
+  - **S112** “The reed-cutters are back in the shallows Vargan sold, cutting …”
+  - **S113** “Vargan still cuts reeds in the shallows he sold. During …”
+  - **S114** “In Saltmere, a lamp burns all night among forty graves, …”
+  - **S115** “Marrow still mends Thornwick's churchyard on the reeve's orders. While …”
+  - **S116** “Brother Halden climbs to the bowl each spring to bless …”
+  - **S117** “Down in Thornwick, the reeve orders a plaque for the …”
+  - **S118** “Thornwick's watch stood at the thin end of the east …”
+  - **S119** “Hask went back to Vex's side with a new scar …”
+  - **S120** “Wren's route report of the climb to the stone runs …”
+  - **S121** “The carter from the Ashfang pens drives the last wagon …”
+  - **S122** “Wren still limps on cold mornings, and she tells every …”
+  - **S123** “Wren tells every new scout how she walked the fen …”
+  - **S124** “Wren draws the road to the stone for every new …”
+  - **S125** “Wren keeps a list of the people she would follow …”
+  - **S126** “Wren keeps a short list folded in her bracer. It …”
 
 ## `muster` · story
 
-<sub>reads: flag:sunken-barrows:won, flag:sunken-barrows:regard?</sub>
+<sub>reads: flag:sunken-barrows:won, flag:sunken-barrows:regard</sub>
 
 **3 versions**
 
@@ -31,7 +188,7 @@ He looks sideways at you, and then away. "There's talk round the fires that it's
 
 Your purse still holds two seasons of the reeve's pay: the bounty for the Ashfang, and the commission for the barrows. Thornwick keeps its word.
 
-### 2. when Part 2 won · Part 2 regard < 1?
+### 2. when Part 2 won · Part 2 regard < 1
 
 The valley has raised an army at last. A **war-camp** spreads across the wet meadows below the high hills, where Thornwick's recruits drill: fen-folk with boar-spears, and carters holding pikes. This time everyone can see the trouble coming. Fires burn every night up in the high passes, and no shepherd lit them.
 
@@ -39,7 +196,7 @@ A fen-folk recruit with a boar-spear falls into step beside you. "It's the **Cal
 
 He looks sideways at you, and then away. "There's talk round the fires that it's on you, for what you did to the hag. I lit a bonfire the night the den fell, same as everyone. None of us knew what she was sitting on." The crowd opens a path for you all the way to the command tent.
 
-### 3. when Part 2 regard ≥ 1?
+### 3. when Part 2 regard ≥ 1
 
 The valley has raised an army at last. A **war-camp** spreads across the wet meadows below the high hills, where Thornwick's recruits drill: fen-folk with boar-spears, and carters holding pikes. This time everyone can see the trouble coming. Fires burn every night up in the high passes, and no shepherd lit them.
 
@@ -49,8 +206,8 @@ He looks sideways at you, and then away. "There's talk round the fires that it's
 
 Twenty men in Thornwick's colours fall in behind you, and their sergeant hands you a folded note in the reeve's stiff handwriting. *Thornwick is in your debt, and I keep its accounts. The watch is yours until the Calling is broken. — Aldous* "We'll take the weakest stretch of the line," the sergeant says.
 
-- » **Report to the command tent** <sub>open when Part 2 won · Part 2 regard < 1?; otherwise hidden</sub>
-- » **Report to the command tent** <sub>open when Part 2 regard ≥ 1?; otherwise hidden</sub>
+- » **Report to the command tent** <sub>open when Part 2 won · Part 2 regard < 1; otherwise hidden</sub>
+- » **Report to the command tent** <sub>open when Part 2 regard ≥ 1; otherwise hidden</sub>
 - » **Report to the command tent** <sub>open when not Part 2 won; otherwise hidden</sub>
 
 ## `envoys` · battle
@@ -111,7 +268,11 @@ The morning after the den fell, he walked into the reeve's hall and gave himself
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
+<sub>(shared with: `vex-brief-turned`)</sub>
+
 "Nettle and her sister are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
+
+<sub>(shared with: `vex-brief-turned`)</sub>
 
 "So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. The reeve likes his prisoners where he can count them, and that isn't out in front."
 
@@ -125,7 +286,11 @@ You know this man. It is **Vex**, with a captain's sash across the same coat he 
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
+<sub>(shared with: `vex-brief`)</sub>
+
 "Nettle and her sister are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
+
+<sub>(shared with: `vex-brief`)</sub>
 
 "So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. Apparently I'm respectable now, and respectable men don't go up first."
 
@@ -181,7 +346,11 @@ You know this man. It is **Vex**, with a captain's sash across the same coat he 
 
 The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. By it sits the old hedge-witch from the regulars' table at Mira's inn, with river-stones in her hair. She knits while she talks, and she does not look up.
 
+<sub>(shared with: `fenfolk-fire-cracked`)</sub>
+
 "Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed, and their chief was glad to sell them to her," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
+
+<sub>(shared with: `fenfolk-fire-cracked`)</sub>
 
 "And the stone sings into the ground as well as the sky. We feel it in our feet. The dead under the barrows are turning in their sleep." She pulls her yarn tight. "Break that stone before they wake up properly."
 
@@ -201,7 +370,11 @@ The hedge-witch is still knitting by the fen-folk's fire. "Break that stone," sh
 
 The fen-folk keep their own small fire at the edge of the camp, with their boar-spears stacked beside it. By it sits the old hedge-witch from the regulars' table at Mira's inn, with river-stones in her hair. She knits while she talks, and she does not look up.
 
+<sub>(shared with: `fenfolk-fire`)</sub>
+
 "Those poor souls the Ashfang penned up for her? That was the Reedwife's own greed, and their chief was glad to sell them to her," she says. "The door never asked for them. Now her sisters want feeding too, and they want the whole valley."
+
+<sub>(shared with: `fenfolk-fire`)</sub>
 
 "You know the door under the barrows. You shut it, near enough. Well, it knocks now, every night the stone sings, and louder each time." She pulls her yarn tight. "If the Calling runs much longer, that crack'll open. The sisters know it. I think they're counting on it."
 
@@ -221,45 +394,83 @@ The hedge-witch is still knitting by the fen-folk's fire. "Hear it knock?" she s
 
 The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when not `calling-peaked`]** The row is longer than the list of fires now. "More than half of it's pinned," Vex says. "If it all came down tonight, we'd hold. Easily. I might even get some sleep."
 
 > **[when `calling-peaked`]** The row is longer than the list of fires now. "More than half of it's pinned," Vex says. "Now go and finish the rest."
 
 > **[when `peak-easy`]** He taps the east line. "And the night went our way. I didn't bury anyone."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `peak-cost`]** He taps the east line. "We got through the night. It cost us more than I like."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when `peak-broke`]** He taps the east line. "We nearly didn't get through it. You saw what was left."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `green-cleared` · `blue-cleared` · `red-cleared`]** "And all three dens stand empty," Vex says. "No wyrm is coming down this slope. I never thought I'd get to say that."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green den. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The blue den. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The blue den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green and blue dens. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green and blue dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The red den. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The red den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green and red dens. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The blue and red dens. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The blue and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green, blue and red dens. Still standing."
 
+<sub>(shared with: `command-half`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green, blue and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-half`, `command-thin`)</sub>
 
 - » **Head back to the camp**
 
@@ -273,45 +484,83 @@ The command tent works on. Guard posts, rations, and the slow business of keepin
 
 The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when not `calling-peaked`]** The row reaches about halfway down the edge of the map. "We're getting there," Vex says. "If it all came down tonight, we'd hold. But I'd be writing a lot of names in the morning."
 
 > **[when `calling-peaked`]** The row reaches about halfway down the edge of the map. "The rest came down the slope at us," Vex says, "the night the Calling peaked."
 
 > **[when `peak-easy`]** He taps the east line. "And the night went our way. I didn't bury anyone."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `peak-cost`]** He taps the east line. "We got through the night. It cost us more than I like."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when `peak-broke`]** He taps the east line. "We nearly didn't get through it. You saw what was left."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `green-cleared` · `blue-cleared` · `red-cleared`]** "And all three dens stand empty," Vex says. "No wyrm is coming down this slope. I never thought I'd get to say that."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green den. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The blue den. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The blue den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green and blue dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green and blue dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The red den. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The red den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green and red dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The blue and red dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The blue and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green, blue and red dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-thin`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green, blue and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-thin`)</sub>
 
 - » **Head back to the camp**
 
@@ -325,45 +574,83 @@ The command tent works on. Guard posts, rations, and the slow business of keepin
 
 The command tent works on. Guard posts, rations, and the slow business of keeping frightened people pointed the right way. Captain Vex puts a pin on his map for every threat you deal with up in the hills. He keeps them in a neat little row.
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when not `calling-peaked`]** It is a short row. "Not enough yet," Vex says, and he taps the fires still burning in the passes. "If all of that came down tonight, it would go through this camp like a flood."
 
 > **[when `calling-peaked`]** It is a short row. "Not enough," Vex says, and he taps the passes where the fires burned. "Most of it was still up there when the Calling peaked, and it all came down on us."
 
 > **[when `peak-easy`]** He taps the east line. "And the night went our way. I didn't bury anyone."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `peak-cost`]** He taps the east line. "We got through the night. It cost us more than I like."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when `peak-broke`]** He taps the east line. "We nearly didn't get through it. You saw what was left."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `green-cleared` · `blue-cleared` · `red-cleared`]** "And all three dens stand empty," Vex says. "No wyrm is coming down this slope. I never thought I'd get to say that."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green den. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The blue den. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The blue den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green and blue dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · not `blue-cleared` · `red-cleared`]** His finger moves to the dens. "The green and blue dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The red den. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The red den is empty now. That wyrm flew up to the rim when the Calling peaked. You'll meet it there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green and red dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The blue and red dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The blue and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 > **[when not `calling-peaked` · not `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green, blue and red dens. Still standing."
 
+<sub>(shared with: `command-done`, `command-half`)</sub>
+
 > **[when `calling-peaked` · not `green-cleared` · not `blue-cleared` · not `red-cleared`]** His finger moves to the dens. "The green, blue and red dens are empty now. Those wyrms flew up to the rim when the Calling peaked. You'll meet them there."
+
+<sub>(shared with: `command-done`, `command-half`)</sub>
 
 - » **Head back to the camp**
 
@@ -516,11 +803,11 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 ## `scouts-fire-old` · dialogue · Wren, Chief of Scouts
 
-<sub>reads: flag:npc.wren.fate.lost, flag:sunken-barrows:won, flag:npc.wren.attitude?, return?</sub>
+<sub>reads: flag:npc.wren.fate.lost, flag:sunken-barrows:won, flag:npc.wren.attitude, return?</sub>
 
-**9 versions**
+**8 versions**
 
-### 1. when not Part 2 won · Wren's regard < 0? · the first visit?
+### 1. when not Part 2 won · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -528,11 +815,13 @@ Bram has taken over a supply wagon and, by the look of things, every pricing dec
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
 
-She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
-The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
+She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
 ### 2. when a return visit?
 
@@ -540,7 +829,9 @@ The notes are complete and correct, the same as she would give anyone, and there
 
 Wren looks up from the map board. "My notes are still here when you want them," she says. "The passes won't read themselves."
 
-### 3. when not Part 2 won · Wren's regard 0–1 or Wren's regard ≥ 2? · the first visit?
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 3. when Wren not lost · Wren's regard < 0 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -548,19 +839,11 @@ Wren looks up from the map board. "My notes are still here when you want them," 
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
-"Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
-
-She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
-
-### 4. when Wren not lost · Part 2 won · Wren's regard < 0? · the first visit?
-
-**Wren, Chief of Scouts:**
-
-**Wren** runs the scouts' fire now. Three young riders hang on her every word, and a map of the passes lies weighted down with arrowheads. She made Chief of Scouts young, and still goes pink when the riders say it.
-
-"Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
@@ -568,7 +851,9 @@ She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rol
 
 The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
 
-### 5. when Wren not lost · Part 2 won · Wren's regard 0–1? · the first visit?
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 4. when Wren not lost · Part 2 won · Wren's regard 0–1 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -576,13 +861,17 @@ The notes are complete and correct, the same as she would give anyone, and there
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
 She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere with a sky over it this time."
 
-### 6. when Wren not lost · Part 2 won · Wren's regard ≥ 2? · the first visit?
+### 5. when Wren not lost · Wren's regard ≥ 2 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -590,7 +879,11 @@ She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rol
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
@@ -598,7 +891,9 @@ She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rol
 
 She walks you to the edge of the firelight, which she does not do for the captain.
 
-### 7. when Wren lost · Wren's regard < 0? · the first visit?
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 6. when Wren lost · Wren's regard < 0 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -608,7 +903,11 @@ A second bow hangs unstrung from the post behind her, with Tamsin's name burned 
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
@@ -616,7 +915,9 @@ She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rol
 
 The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
 
-### 8. when Wren lost · Wren's regard 0–1? · the first visit?
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
+### 7. when Wren lost · Wren's regard 0–1 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -626,13 +927,17 @@ A second bow hangs unstrung from the post behind her, with Tamsin's name burned 
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
 She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere with a sky over it this time."
 
-### 9. when Wren lost · Wren's regard ≥ 2? · the first visit?
+### 8. when Wren lost · Wren's regard ≥ 2 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -642,23 +947,29 @@ A second bow hangs unstrung from the post behind her, with Tamsin's name burned 
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-saved`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She frowns. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it."
 
 She pauses. "Last time it was the barrows. I didn't enjoy a step of it." She rolls the map up tight. "Pick somewhere with a sky over it this time."
 
 She walks you to the edge of the firelight, which she does not do for the captain.
+
+<sub>(shared with: `scouts-fire-saved`)</sub>
 
 - » **Take her map-notes**
 
 ## `scouts-fire-saved` · dialogue · Wren, Chief of Scouts
 
-<sub>reads: flag:npc.wren.attitude?, return?</sub>
+<sub>reads: flag:npc.wren.attitude, return?</sub>
 
 **4 versions**
 
-### 1. when Wren's regard < 0? · the first visit?
+### 1. when Wren's regard < 0 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -666,11 +977,17 @@ She walks you to the edge of the firelight, which she does not do for the captai
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-old`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-old`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it. I counted watch-posts for you once. This is a better map." She hands it over. "Come down off that mountain on your own feet. All of you."
 
 The notes are complete and correct, the same as she would give anyone, and there is nothing extra in them.
+
+<sub>(shared with: `scouts-fire-old`)</sub>
 
 ### 2. when a return visit?
 
@@ -678,7 +995,9 @@ The notes are complete and correct, the same as she would give anyone, and there
 
 Wren looks up from the map board. "My notes are still here when you want them," she says. "The passes won't read themselves."
 
-### 3. when Wren's regard 0–1? · the first visit?
+<sub>(shared with: `scouts-fire-old`)</sub>
+
+### 3. when Wren's regard 0–1 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -686,11 +1005,15 @@ Wren looks up from the map board. "My notes are still here when you want them," 
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-old`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-old`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it. I counted watch-posts for you once. This is a better map." She hands it over. "Come down off that mountain on your own feet. All of you."
 
-### 4. when Wren's regard ≥ 2? · the first visit?
+### 4. when Wren's regard ≥ 2 · the first visit?
 
 **Wren, Chief of Scouts:**
 
@@ -698,11 +1021,17 @@ She looks up. "The ogre-mage and the ettin both want the valley, and neither one
 
 "Right. Listen." She jabs a finger at the map. "The **manticore** on the toll-cliff talks. It'll ask you for a toll, and what it really wants is you. But it's greedy, and greedy things can be pointed somewhere else. The **boar-runs** flood with a stampede twice a day. Watch the dust."
 
+<sub>(shared with: `scouts-fire-old`)</sub>
+
 "Past the middle pass there's a valley full of statues, and they're far too good. **Gorgon.** Don't let it breathe on you. Their purses are still lying at their feet, if you can go in quietly."
+
+<sub>(shared with: `scouts-fire-old`)</sub>
 
 She looks up. "The ogre-mage and the ettin both want the valley, and neither one trusts the other." She taps a blue line on the map. "And the streams are walking uphill. I don't know what that means yet, but I'm watching it. I counted watch-posts for you once. This is a better map." She hands it over. "Come down off that mountain on your own feet. All of you."
 
 She walks you to the edge of the firelight, which she does not do for the captain.
+
+<sub>(shared with: `scouts-fire-old`)</sub>
 
 - » **Take her map-notes**
 
@@ -939,6 +1268,8 @@ The manticore's human face goes thoughtful. "Promises," it says, tasting the wor
 
 The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
+<sub>(shared with: `tollcliff-stung`)</sub>
+
 ## `tollcliff-stung` · battle
 
 The manticore listens with its head on one side. "Promises," it says. "The hags gave me promises. I have eaten better." Its tail has stayed cocked over its shoulder the whole time you talked. It looses a volley of spikes before you can raise a shield, and two goblins scramble up from the rocks behind it.
@@ -948,6 +1279,8 @@ The manticore listens with its head on one side. "Promises," it says. "The hags 
 *Won:*
 
 The manticore drops onto the trail with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
+
+<sub>(shared with: `tollcliff-fight`)</sub>
 
 ## `tollcliff-done` · story
 
@@ -1384,6 +1717,8 @@ The gorgon's head comes up, and its breath comes with it. A rolling green vapour
 
 The gorgon crashes onto its side with its iron plates ringing, and the green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
+<sub>(shared with: `gorgonvale-woken`)</sub>
+
 ## `gorgonvale-woken` · battle
 
 The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues, and the maze closes in around you.
@@ -1393,6 +1728,8 @@ The gorgon swings round, and its breath comes rolling down the rows. The green v
 *Won:*
 
 The gorgon crashes onto its side with its iron plates ringing, and the green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+
+<sub>(shared with: `gorgonvale-fight`)</sub>
 
 ## `gorgonvale-done` · story
 
@@ -1536,9 +1873,15 @@ The giants' hall stands hollow, its doorway a bright rectangle of sky. Vex will 
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. There is too much of it. The torches on the east line go out one after another, and stay out. The horns sound until long after midnight, and then they stop.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
@@ -1546,11 +1889,19 @@ At first light, wingbeats ride the wind. Something is circling over the far rim 
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. There is too much of it. The torches on the east line go out one after another, and stay out. The horns sound until long after midnight, and then they stop.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
@@ -1558,9 +1909,15 @@ At first light, wingbeats ride the wind. Something is circling over the far rim 
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
@@ -1568,11 +1925,19 @@ At first light, wingbeats ride the wind. Something is circling over the far rim 
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
@@ -1580,9 +1945,15 @@ At first light, wingbeats ride the wind. Something is circling over the far rim 
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
@@ -1590,17 +1961,27 @@ At first light, wingbeats ride the wind. Something is circling over the far rim 
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
 
+<sub>(shared with: `calling-gate-clear`)</sub>
+
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 At first light, wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
 ### 7. when `calling-peaked`
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
+
+<sub>(shared with: `calling-gate-clear`)</sub>
 
 Wingbeats ride the wind. Something is circling over the far rim of the bowl, shrieking, and it has seen you.
 
@@ -1643,9 +2024,15 @@ Wingbeats ride the wind. Something is circling over the far rim of the bowl, shr
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. There is too much of it. The torches on the east line go out one after another, and stay out. The horns sound until long after midnight, and then they stop.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
@@ -1657,11 +2044,19 @@ You come back over the last ridge. Below you the bowl and the stone wait in thei
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. There is too much of it. The torches on the east line go out one after another, and stay out. The horns sound until long after midnight, and then they stop.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
@@ -1669,9 +2064,15 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
@@ -1679,11 +2080,19 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. It reaches the camp in a wave, and the horns sound until dawn. Torches go out along the east line one at a time. Someone runs to light them again.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
@@ -1691,9 +2100,15 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
@@ -1701,17 +2116,27 @@ At first light, nothing moves overhead. The rim is bare, and only old scorch mar
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
 
+<sub>(shared with: `calling-gate`)</sub>
+
 One column on the slope below keeps step the whole way down, with a horn at its head. It is the ogre-mage's warband, out of the pass you paid for, and it goes straight at the east line.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 At first light, nothing moves overhead. The rim is bare, and only old scorch marks show where wyrms once perched.
 
 ### 8. when `calling-peaked` · the first visit?
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
+
+<sub>(shared with: `calling-gate`)</sub>
 
 Nothing moves overhead. Old scorch marks blacken the bare rim where wyrms once perched, and you cross the ridge with the wind for company.
 
@@ -1733,7 +2158,7 @@ The ridge lies still, and no wings ride the wind. Below you, the bowl and the st
 
 ## `war-council` · story
 
-<sub>reads: flag:peak-seen?, flag:tally-at-peak?, flag:peak-held?, flag:npc.wren.attitude?, companion:wren, flag:npc.halden.fate.saved, flag:npc.vex.fate.turned, flag:sunken-barrows:regard?</sub>
+<sub>reads: flag:peak-seen?, flag:tally-at-peak?, flag:peak-held?, flag:npc.wren.attitude, companion:wren, flag:npc.halden.fate.saved, flag:npc.vex.fate.turned, flag:sunken-barrows:regard</sub>
 
 **136 versions** — printed once, each conditional line marked with when it shows.
 
@@ -1749,11 +2174,11 @@ Before you start down, horns sound behind you. Vex has marched the forward colum
 
 **Wren**, the Chief of Scouts, is first up the last slope, bow on her back and map under her arm.
 
-> **[when `tally-at-peak` ≥ 1? · Wren's regard 0–1 or Wren's regard ≥ 2?]** "My riders were on the east line all night," Wren says. "Every one of them came back."
+> **[when `tally-at-peak` ≥ 1? · Wren's regard 0–1 or Wren's regard ≥ 2]** "My riders were on the east line all night," Wren says. "Every one of them came back."
 
-> **[when Wren's regard ≥ 2?]** While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
+> **[when Wren's regard ≥ 2]** While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
 
-> **[when Wren's regard < 0?]** She reports to Vex first. You get a nod, later. When Vex asks who is going down with you, she says the rim needs its scout more than you do.
+> **[when Wren's regard < 0]** She reports to Vex first. You get a nod, later. When Vex asks who is going down with you, she says the rim needs its scout more than you do.
 
 > **[when Halden saved]** Brother Halden climbs with his prayer book under his arm, red in the face and still praying.
 
@@ -1761,56 +2186,56 @@ Before you start down, horns sound behind you. Vex has marched the forward colum
 
 > **[when Vex not turned]** Vex holds this column on the reeve's terms. Two of the reeve's pikemen walk behind him, close enough to count his steps.
 
-> **[when Part 2 regard ≥ 2?]** Two fen-folk come up behind the pikes, mud to the knees, with coils of rope over their shoulders. "The valley owes you a rope at least," one of them says.
+> **[when Part 2 regard ≥ 2]** Two fen-folk come up behind the pikes, mud to the knees, with coils of rope over their shoulders. "The valley owes you a rope at least," one of them says.
 
-> **[when Wren's regard 0–1 or Wren's regard ≥ 2? · Halden not saved · Vex not turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
+> **[when Wren's regard 0–1 or Wren's regard ≥ 2 · Halden not saved · Vex not turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
 
-> **[when Wren's regard < 0? · Halden saved · Vex not turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Brother Halden down with you, if he'll go. A big party's a loud one, so no one else."
+> **[when Wren's regard < 0 · Halden saved · Vex not turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Brother Halden down with you, if he'll go. A big party's a loud one, so no one else."
 
-> **[when Wren's regard 0–1 or Wren's regard ≥ 2? · Halden saved · Vex not turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
+> **[when Wren's regard 0–1 or Wren's regard ≥ 2 · Halden saved · Vex not turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
 
-> **[when Wren's regard < 0? · Halden not saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Hask down with you. I can spare him for a morning. A big party's a loud one, so no one else."
+> **[when Wren's regard < 0 · Halden not saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Hask down with you. I can spare him for a morning. A big party's a loud one, so no one else."
 
-> **[when Wren's regard 0–1 or Wren's regard ≥ 2? · Halden not saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
+> **[when Wren's regard 0–1 or Wren's regard ≥ 2 · Halden not saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
 
-> **[when Wren's regard < 0? · Halden saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
+> **[when Wren's regard < 0 · Halden saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or both. A big party's a loud one."
 
-> **[when Wren's regard 0–1 or Wren's regard ≥ 2? · Halden saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or two, but no more. A big party's a loud one."
+> **[when Wren's regard 0–1 or Wren's regard ≥ 2 · Halden saved · Vex turned]** "We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take one of them down with you, or two, but no more. A big party's a loud one."
 
-> **[when Wren's regard < 0? · Halden not saved · Vex not turned · Part 2 regard ≥ 2?]** "We hold the ridge. You go down," Vex says. "Take the fen-folk's rope. No one else up here is going down with you, and a small party's a quiet one."
+> **[when Wren's regard < 0 · Halden not saved · Vex not turned · Part 2 regard ≥ 2]** "We hold the ridge. You go down," Vex says. "Take the fen-folk's rope. No one else up here is going down with you, and a small party's a quiet one."
 
-> **[when Wren's regard < 0? · Halden not saved · Vex not turned · Part 2 regard < 2?]** "We hold the ridge. You go down," Vex says. He looks along the rim, where no one from the valley has come to see you off. "That's the whole plan. A small party's a quiet one."
+> **[when Wren's regard < 0 · Halden not saved · Vex not turned · Part 2 regard < 2]** "We hold the ridge. You go down," Vex says. He looks along the rim, where no one from the valley has come to see you off. "That's the whole plan. A small party's a quiet one."
 
-- » **Take the fen-folk's drowning-ropes** <sub>open when Part 2 regard ≥ 2?; otherwise hidden</sub>
+- » **Take the fen-folk's drowning-ropes** <sub>open when Part 2 regard ≥ 2; otherwise hidden</sub>
 - » **Let them hold the rim while you go down**
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard 0–1?; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard ≥ 2?; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard 0–1; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard ≥ 2; otherwise hidden</sub>
 - » **Go down into the bowl with Brother Halden, his prayer book under his arm** <sub>open when Halden saved; otherwise hidden</sub>
 - » **Go down into the bowl with Hask, the chief's old guard, who answers to Vex** <sub>open when Vex turned; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard 0–1? · Halden saved; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard ≥ 2? · Halden saved; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard 0–1? · Vex turned; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard ≥ 2? · Vex turned; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard 0–1 · Halden saved; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard ≥ 2 · Halden saved; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard 0–1 · Vex turned; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard ≥ 2 · Vex turned; otherwise hidden</sub>
 - » **Go down into the bowl with Brother Halden, his prayer book under his arm, and Hask, the chief's old guard, who answers to Vex** <sub>open when Halden saved · Vex turned; otherwise hidden</sub>
 
 ## `war-council-table` · story
 
-<sub>reads: flag:fen-ropes, flag:sunken-barrows:regard?, flag:npc.wren.attitude?, flag:npc.halden.fate.saved, flag:npc.vex.fate.turned</sub>
+<sub>reads: flag:fen-ropes, flag:sunken-barrows:regard, flag:npc.wren.attitude, flag:npc.halden.fate.saved, flag:npc.vex.fate.turned</sub>
 
 The fen-folk show you how a drowning-rope loops under the arms. "It pulls the drowned out of deep water," one says. "It will pull a hag out of a rock."
 
 The column digs in along the rim. Vex waits at the edge of the bowl, and the faces from the valley wait to hear what else you need.
 
-- » **Take the fen-folk's drowning-ropes** <sub>open when Part 2 regard ≥ 2?; otherwise hidden</sub>
+- » **Take the fen-folk's drowning-ropes** <sub>open on every route here</sub>
 - » **Let them hold the rim while you go down**
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard 0–1?; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard ≥ 2?; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard 0–1; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared** <sub>open when Wren's regard ≥ 2; otherwise hidden</sub>
 - » **Go down into the bowl with Brother Halden, his prayer book under his arm** <sub>open when Halden saved; otherwise hidden</sub>
 - » **Go down into the bowl with Hask, the chief's old guard, who answers to Vex** <sub>open when Vex turned; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard 0–1? · Halden saved; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard ≥ 2? · Halden saved; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard 0–1? · Vex turned; otherwise hidden</sub>
-- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard ≥ 2? · Vex turned; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard 0–1 · Halden saved; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Brother Halden, his prayer book under his arm** <sub>open when Wren's regard ≥ 2 · Halden saved; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard 0–1 · Vex turned; otherwise hidden</sub>
+- » **Go down into the bowl with Wren, who has mapped every pass you cleared, and Hask, the chief's old guard, who answers to Vex** <sub>open when Wren's regard ≥ 2 · Vex turned; otherwise hidden</sub>
 - » **Go down into the bowl with Brother Halden, his prayer book under his arm, and Hask, the chief's old guard, who answers to Vex** <sub>open when Halden saved · Vex turned; otherwise hidden</sub>
 
 ## `clutch-again` · story
@@ -1837,6 +2262,8 @@ One wyrmling comes over the rim alone: the green out of the thicket, from the on
 
 The wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
 
+<sub>(shared with: `clutch-b`, `clutch-r`)</sub>
+
 ## `clutch-b` · battle
 
 One wyrmling comes over the rim alone: the blue off the mesa, from the one den you left standing. It is all the brood the stone has left, and it is furious about it.
@@ -1846,6 +2273,8 @@ One wyrmling comes over the rim alone: the blue off the mesa, from the one den y
 *Won:*
 
 The wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
+
+<sub>(shared with: `clutch-g`, `clutch-r`)</sub>
 
 ## `clutch-r` · battle
 
@@ -1857,6 +2286,8 @@ One wyrmling comes over the rim alone: the red up from the burning den, from the
 
 The wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
 
+<sub>(shared with: `clutch-g`, `clutch-b`)</sub>
+
 ## `clutch-gb` · battle
 
 Two wyrmlings come over the rim together: the green out of the thicket and the blue off the mesa. Every den you left standing has answered the stone.
@@ -1866,6 +2297,8 @@ Two wyrmlings come over the rim together: the green out of the thicket and the b
 *Won:*
 
 The last wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
+
+<sub>(shared with: `clutch-gr`, `clutch-br`, `clutch-gbr`)</sub>
 
 ## `clutch-gr` · battle
 
@@ -1877,6 +2310,8 @@ Two wyrmlings come over the rim together: the green out of the thicket and the r
 
 The last wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
 
+<sub>(shared with: `clutch-gb`, `clutch-br`, `clutch-gbr`)</sub>
+
 ## `clutch-br` · battle
 
 Two wyrmlings come over the rim together: the blue off the mesa and the red up from the burning den. Every den you left standing has answered the stone.
@@ -1887,6 +2322,8 @@ Two wyrmlings come over the rim together: the blue off the mesa and the red up f
 
 The last wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
 
+<sub>(shared with: `clutch-gb`, `clutch-gr`, `clutch-gbr`)</sub>
+
 ## `clutch-gbr` · battle
 
 Three wyrmlings come over the rim together: the green out of the thicket, the blue off the mesa and the red up from the burning den. Every den you left standing has answered the stone.
@@ -1896,6 +2333,8 @@ Three wyrmlings come over the rim together: the green out of the thicket, the bl
 *Won:*
 
 The last wyrmling drops out of the bruised light and does not get up. The stone's note wavers, as if it has just counted how few voices are still answering it.
+
+<sub>(shared with: `clutch-gb`, `clutch-gr`, `clutch-br`)</sub>
 
 ## `calling-approach` · story
 
@@ -2196,109 +2635,165 @@ Sedge looks at the blade in your hand, not at you. "You answered me with that," 
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag their hands out of the rock, failed:*
 
 The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
 
+<sub>(shared with: `tear-loose-cracked`, `tear-loose-sold`, `tear-loose-sold-cracked`)</sub>
+
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
+
+<sub>(shared ×10, see index S44)</sub>
 
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
 
+<sub>(shared ×10, see index S45)</sub>
+
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
+
+<sub>(shared ×10, see index S46)</sub>
 
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
 
+<sub>(shared ×10, see index S47)</sub>
+
 *Sing a wrong note into the Calling, failed:*
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
+
+<sub>(shared ×6, see index S48)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S49)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
+
+<sub>(shared ×10, see index S50)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S51)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
+
+<sub>(shared ×10, see index S52)</sub>
 
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
 
+<sub>(shared ×10, see index S53)</sub>
+
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
+
+<sub>(shared ×10, see index S54)</sub>
 
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
 
+<sub>(shared ×10, see index S55)</sub>
+
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
+
+<sub>(shared ×10, see index S56)</sub>
 
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
 
+<sub>(shared ×10, see index S57)</sub>
+
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
+
+<sub>(shared ×10, see index S58)</sub>
 
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S59)</sub>
+
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
+
+<sub>(shared ×10, see index S60)</sub>
 
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S61)</sub>
+
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
+
+<sub>(shared ×10, see index S62)</sub>
 
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag their hands out of the rock** [Athletics DC 15] <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -2320,113 +2815,173 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 The floor of the bowl knocks under your boots: three slow knocks. You have felt that through stone before, with your hand on the Warden's door. The stone is singing down into the ground, all the way to the cracked door under the barrows, and something down there is answering.
+
+<sub>(shared ×5, see index S67)</sub>
 
 Grey hands push up through the cracks around the stone. They catch at your ankles and hold on. The Warden's dead have come up to hear the song.
 
+<sub>(shared ×5, see index S68)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag their hands out of the rock, failed:*
 
 The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
 
+<sub>(shared with: `tear-loose`, `tear-loose-sold`, `tear-loose-sold-cracked`)</sub>
+
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
+
+<sub>(shared ×10, see index S44)</sub>
 
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
 
+<sub>(shared ×10, see index S45)</sub>
+
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
+
+<sub>(shared ×10, see index S46)</sub>
 
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
 
+<sub>(shared ×10, see index S47)</sub>
+
 *Sing a wrong note into the Calling, failed:*
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
+
+<sub>(shared ×6, see index S48)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S49)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
+
+<sub>(shared ×10, see index S50)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S51)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
+
+<sub>(shared ×10, see index S52)</sub>
 
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
 
+<sub>(shared ×10, see index S53)</sub>
+
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
+
+<sub>(shared ×10, see index S54)</sub>
 
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
 
+<sub>(shared ×10, see index S55)</sub>
+
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
+
+<sub>(shared ×10, see index S56)</sub>
 
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
 
+<sub>(shared ×10, see index S57)</sub>
+
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
+
+<sub>(shared ×10, see index S58)</sub>
 
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S59)</sub>
+
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
+
+<sub>(shared ×10, see index S60)</sub>
 
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S61)</sub>
+
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
+
+<sub>(shared ×10, see index S62)</sub>
 
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag their hands out of the rock** [Athletics DC 15] <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -2448,109 +3003,165 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag their hands out of the rock, failed:*
 
 Nettle smiles at you the whole time you pull. You let go with burned palms.
 
+<sub>(shared with: `tear-loose-rueful-cracked`)</sub>
+
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
+
+<sub>(shared ×10, see index S44)</sub>
 
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
 
+<sub>(shared ×10, see index S45)</sub>
+
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
+
+<sub>(shared ×10, see index S46)</sub>
 
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
 
+<sub>(shared ×10, see index S47)</sub>
+
 *Sing a wrong note into the Calling, failed:*
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
+
+<sub>(shared ×6, see index S48)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S49)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
+
+<sub>(shared ×10, see index S50)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S51)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
+
+<sub>(shared ×10, see index S52)</sub>
 
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
 
+<sub>(shared ×10, see index S53)</sub>
+
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
+
+<sub>(shared ×10, see index S54)</sub>
 
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
 
+<sub>(shared ×10, see index S55)</sub>
+
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
+
+<sub>(shared ×10, see index S56)</sub>
 
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
 
+<sub>(shared ×10, see index S57)</sub>
+
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
+
+<sub>(shared ×10, see index S58)</sub>
 
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S59)</sub>
+
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
+
+<sub>(shared ×10, see index S60)</sub>
 
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S61)</sub>
+
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
+
+<sub>(shared ×10, see index S62)</sub>
 
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag their hands out of the rock** [Athletics DC 17] — _Nettle has sunk her hands past the wrist now._ <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -2572,113 +3183,173 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 The floor of the bowl knocks under your boots: three slow knocks. You have felt that through stone before, with your hand on the Warden's door. The stone is singing down into the ground, all the way to the cracked door under the barrows, and something down there is answering.
+
+<sub>(shared ×5, see index S67)</sub>
 
 Grey hands push up through the cracks around the stone. They catch at your ankles and hold on. The Warden's dead have come up to hear the song.
 
+<sub>(shared ×5, see index S68)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag their hands out of the rock, failed:*
 
 Nettle smiles at you the whole time you pull. You let go with burned palms.
 
+<sub>(shared with: `tear-loose-rueful`)</sub>
+
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
+
+<sub>(shared ×10, see index S44)</sub>
 
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
 
+<sub>(shared ×10, see index S45)</sub>
+
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
+
+<sub>(shared ×10, see index S46)</sub>
 
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
 
+<sub>(shared ×10, see index S47)</sub>
+
 *Sing a wrong note into the Calling, failed:*
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
+
+<sub>(shared ×6, see index S48)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S49)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
+
+<sub>(shared ×10, see index S50)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S51)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
+
+<sub>(shared ×10, see index S52)</sub>
 
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
 
+<sub>(shared ×10, see index S53)</sub>
+
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
+
+<sub>(shared ×10, see index S54)</sub>
 
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
 
+<sub>(shared ×10, see index S55)</sub>
+
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
+
+<sub>(shared ×10, see index S56)</sub>
 
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
 
+<sub>(shared ×10, see index S57)</sub>
+
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
+
+<sub>(shared ×10, see index S58)</sub>
 
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S59)</sub>
+
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
+
+<sub>(shared ×10, see index S60)</sub>
 
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S61)</sub>
+
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
+
+<sub>(shared ×10, see index S62)</sub>
 
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag their hands out of the rock** [Athletics DC 17] — _Nettle has sunk her hands past the wrist now._ <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -2700,113 +3371,171 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 Sedge has her hands sunk to the wrist in the black rock, and the stone is drinking her down. Nettle's hands are only half in it, and they shake with her temper. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared with: `tear-loose-defiant-cracked`)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag Nettle out first, passed:*
 
 Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
+<sub>(shared with: `tear-loose-defiant-cracked`)</sub>
+
 *Drag Nettle out first, failed:*
 
 Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+
+<sub>(shared with: `tear-loose-defiant-cracked`)</sub>
 
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
 
+<sub>(shared ×10, see index S44)</sub>
+
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
+
+<sub>(shared ×10, see index S45)</sub>
 
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
 
+<sub>(shared ×10, see index S46)</sub>
+
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
+
+<sub>(shared ×10, see index S47)</sub>
 
 *Sing a wrong note into the Calling, failed:*
 
 Nettle hears your wrong note and sings right over it, louder. The Calling never misses a beat.
 
+<sub>(shared with: `tear-loose-defiant-cracked`)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S49)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
+<sub>(shared ×10, see index S50)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S51)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
 
+<sub>(shared ×10, see index S52)</sub>
+
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
+
+<sub>(shared ×10, see index S53)</sub>
 
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
 
+<sub>(shared ×10, see index S54)</sub>
+
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
+
+<sub>(shared ×10, see index S55)</sub>
 
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
+<sub>(shared ×10, see index S56)</sub>
+
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
+
+<sub>(shared ×10, see index S57)</sub>
 
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
 
+<sub>(shared ×10, see index S58)</sub>
+
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S59)</sub>
 
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
 
+<sub>(shared ×10, see index S60)</sub>
+
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S61)</sub>
 
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
 
+<sub>(shared ×10, see index S62)</sub>
+
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag Nettle out first** [Athletics DC 11] — _She is angrier than she is careful._ <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -2828,117 +3557,179 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 Sedge has her hands sunk to the wrist in the black rock, and the stone is drinking her down. Nettle's hands are only half in it, and they shake with her temper. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared with: `tear-loose-defiant`)</sub>
+
 The floor of the bowl knocks under your boots: three slow knocks. You have felt that through stone before, with your hand on the Warden's door. The stone is singing down into the ground, all the way to the cracked door under the barrows, and something down there is answering.
+
+<sub>(shared ×5, see index S67)</sub>
 
 Grey hands push up through the cracks around the stone. They catch at your ankles and hold on. The Warden's dead have come up to hear the song.
 
+<sub>(shared ×5, see index S68)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag Nettle out first, passed:*
 
 Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
+<sub>(shared with: `tear-loose-defiant`)</sub>
+
 *Drag Nettle out first, failed:*
 
 Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+
+<sub>(shared with: `tear-loose-defiant`)</sub>
 
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
 
+<sub>(shared ×10, see index S44)</sub>
+
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
+
+<sub>(shared ×10, see index S45)</sub>
 
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
 
+<sub>(shared ×10, see index S46)</sub>
+
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
+
+<sub>(shared ×10, see index S47)</sub>
 
 *Sing a wrong note into the Calling, failed:*
 
 Nettle hears your wrong note and sings right over it, louder. The Calling never misses a beat.
 
+<sub>(shared with: `tear-loose-defiant`)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S49)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
+<sub>(shared ×10, see index S50)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S51)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
 
+<sub>(shared ×10, see index S52)</sub>
+
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
+
+<sub>(shared ×10, see index S53)</sub>
 
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
 
+<sub>(shared ×10, see index S54)</sub>
+
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
+
+<sub>(shared ×10, see index S55)</sub>
 
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
+<sub>(shared ×10, see index S56)</sub>
+
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
+
+<sub>(shared ×10, see index S57)</sub>
 
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
 
+<sub>(shared ×10, see index S58)</sub>
+
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S59)</sub>
 
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
 
+<sub>(shared ×10, see index S60)</sub>
+
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S61)</sub>
 
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
 
+<sub>(shared ×10, see index S62)</sub>
+
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag Nettle out first** [Athletics DC 11] — _She is angrier than she is careful._ <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -2960,113 +3751,171 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag Sedge out first, passed:*
 
 Sedge does not pull back, not at first. By the time she does, her hands are out of the rock. Nettle will not let her sister go alone, and she tears free after her, screaming.
 
+<sub>(shared with: `tear-loose-cold-cracked`)</sub>
+
 *Drag Sedge out first, failed:*
 
 Sedge finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.
+
+<sub>(shared with: `tear-loose-cold-cracked`)</sub>
 
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
 
+<sub>(shared ×10, see index S44)</sub>
+
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
+
+<sub>(shared ×10, see index S45)</sub>
 
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
 
+<sub>(shared ×10, see index S46)</sub>
+
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
+
+<sub>(shared ×10, see index S47)</sub>
 
 *Sing a wrong note into the Calling, failed:*
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
+<sub>(shared ×6, see index S48)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S49)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
+<sub>(shared ×10, see index S50)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S51)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
 
+<sub>(shared ×10, see index S52)</sub>
+
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
+
+<sub>(shared ×10, see index S53)</sub>
 
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
 
+<sub>(shared ×10, see index S54)</sub>
+
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
+
+<sub>(shared ×10, see index S55)</sub>
 
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
+<sub>(shared ×10, see index S56)</sub>
+
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
+
+<sub>(shared ×10, see index S57)</sub>
 
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
 
+<sub>(shared ×10, see index S58)</sub>
+
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S59)</sub>
 
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
 
+<sub>(shared ×10, see index S60)</sub>
+
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S61)</sub>
 
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
 
+<sub>(shared ×10, see index S62)</sub>
+
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag Sedge out first** [Athletics DC 12] — _She flinched when you drew steel. Take her wrists before she finds her nerve again._ <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -3088,117 +3937,179 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 The floor of the bowl knocks under your boots: three slow knocks. You have felt that through stone before, with your hand on the Warden's door. The stone is singing down into the ground, all the way to the cracked door under the barrows, and something down there is answering.
+
+<sub>(shared ×5, see index S67)</sub>
 
 Grey hands push up through the cracks around the stone. They catch at your ankles and hold on. The Warden's dead have come up to hear the song.
 
+<sub>(shared ×5, see index S68)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag Sedge out first, passed:*
 
 Sedge does not pull back, not at first. By the time she does, her hands are out of the rock. Nettle will not let her sister go alone, and she tears free after her, screaming.
 
+<sub>(shared with: `tear-loose-cold`)</sub>
+
 *Drag Sedge out first, failed:*
 
 Sedge finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.
+
+<sub>(shared with: `tear-loose-cold`)</sub>
 
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
 
+<sub>(shared ×10, see index S44)</sub>
+
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
+
+<sub>(shared ×10, see index S45)</sub>
 
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
 
+<sub>(shared ×10, see index S46)</sub>
+
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
+
+<sub>(shared ×10, see index S47)</sub>
 
 *Sing a wrong note into the Calling, failed:*
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
+<sub>(shared ×6, see index S48)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S49)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
+<sub>(shared ×10, see index S50)</sub>
+
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+
+<sub>(shared ×10, see index S51)</sub>
 
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
 
+<sub>(shared ×10, see index S52)</sub>
+
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
+
+<sub>(shared ×10, see index S53)</sub>
 
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
 
+<sub>(shared ×10, see index S54)</sub>
+
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
+
+<sub>(shared ×10, see index S55)</sub>
 
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
+<sub>(shared ×10, see index S56)</sub>
+
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
+
+<sub>(shared ×10, see index S57)</sub>
 
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
 
+<sub>(shared ×10, see index S58)</sub>
+
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S59)</sub>
 
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
 
+<sub>(shared ×10, see index S60)</sub>
+
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
+
+<sub>(shared ×10, see index S61)</sub>
 
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
 
+<sub>(shared ×10, see index S62)</sub>
+
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag Sedge out first** [Athletics DC 12] — _She flinched when you drew steel. Take her wrists before she finds her nerve again._ <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -3220,109 +4131,165 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag their hands out of the rock, failed:*
 
 The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
 
+<sub>(shared with: `tear-loose`, `tear-loose-cracked`, `tear-loose-sold-cracked`)</sub>
+
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
+
+<sub>(shared ×10, see index S44)</sub>
 
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
 
+<sub>(shared ×10, see index S45)</sub>
+
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
+
+<sub>(shared ×10, see index S46)</sub>
 
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
 
+<sub>(shared ×10, see index S47)</sub>
+
 *Sing a wrong note into the Calling, failed:*
 
 Nettle hums your wrong note back at you, pleased, and folds it into the song.
+
+<sub>(shared with: `tear-loose-sold-cracked`)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S49)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
+
+<sub>(shared ×10, see index S50)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S51)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
+
+<sub>(shared ×10, see index S52)</sub>
 
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
 
+<sub>(shared ×10, see index S53)</sub>
+
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
+
+<sub>(shared ×10, see index S54)</sub>
 
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
 
+<sub>(shared ×10, see index S55)</sub>
+
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
+
+<sub>(shared ×10, see index S56)</sub>
 
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
 
+<sub>(shared ×10, see index S57)</sub>
+
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
+
+<sub>(shared ×10, see index S58)</sub>
 
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S59)</sub>
+
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
+
+<sub>(shared ×10, see index S60)</sub>
 
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S61)</sub>
+
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
+
+<sub>(shared ×10, see index S62)</sub>
 
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag their hands out of the rock** [Athletics DC 15] <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -3344,113 +4311,173 @@ Every face of the stone looks the same to you, smooth and black and singing.
 
 The sisters have sunk their hands to the wrist in the black rock, and the stone is drinking them down. A crack of fire opens across the floor of the bowl. Something huge is climbing up out of it.
 
+<sub>(shared ×8, see index S39)</sub>
+
 The floor of the bowl knocks under your boots: three slow knocks. You have felt that through stone before, with your hand on the Warden's door. The stone is singing down into the ground, all the way to the cracked door under the barrows, and something down there is answering.
+
+<sub>(shared ×5, see index S67)</sub>
 
 Grey hands push up through the cracks around the stone. They catch at your ankles and hold on. The Warden's dead have come up to hear the song.
 
+<sub>(shared ×5, see index S68)</sub>
+
 Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain has more of us than you have hands."
+
+<sub>(shared ×10, see index S40)</sub>
 
 *Got past:*
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
+<sub>(shared ×10, see index S41)</sub>
+
 *Failed:*
 
 Nothing you try reaches them. The sisters sink into the stone to the elbow, and the stone takes everything they have left.
+
+<sub>(shared ×10, see index S42)</sub>
 
 *Drag their hands out of the rock, failed:*
 
 The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
 
+<sub>(shared with: `tear-loose`, `tear-loose-cracked`, `tear-loose-sold`)</sub>
+
 *Haul them out on Hask's count, passed:*
 
 Hask plants his feet and counts the way a sergeant counts a drill. "Ready. Ready. *Pull.*" Everyone pulls on the same word, again and again. On the fifth pull the stone lets go. Both sisters tumble out across the rock, their burned hands curled like claws.
+
+<sub>(shared ×10, see index S44)</sub>
 
 *Haul them out on Hask's count, failed:*
 
 Hask counts, and you all pull on the word. The stone pulls back harder. Hask spits on his burned palms. "It's got better footing than we have."
 
+<sub>(shared ×10, see index S45)</sub>
+
 *Haul them out with the fen-folk's ropes, passed:*
 
 The ropes bite, and the whole company hauls together. The stone can hold against hands. It cannot hold against a rope the fen-folk braided to pull the drowned out of deep water. Both sisters come free with a sound like a boot pulled out of mud. They lie tangled in the wet rope, hissing.
+
+<sub>(shared ×10, see index S46)</sub>
 
 *Haul them out with the fen-folk's ropes, failed:*
 
 The ropes smoke and part where they touch the stone. Two scorched ends hang from your hands.
 
+<sub>(shared ×10, see index S47)</sub>
+
 *Sing a wrong note into the Calling, failed:*
 
 Nettle hums your wrong note back at you, pleased, and folds it into the song.
+
+<sub>(shared with: `tear-loose-sold`)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S49)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through. The book says to say them whole, and you did not.
+
+<sub>(shared ×10, see index S50)</sub>
 
 *Say Halden's rites over the stone, passed:*
 
 You say Halden's old words from memory, the whole of them. They fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
 
+<sub>(shared ×10, see index S51)</sub>
+
 *Say Halden's rites over the stone, failed:*
 
 You lose the words halfway through, and the book that holds them is up on the rim.
+
+<sub>(shared ×10, see index S52)</sub>
 
 *Let Halden say his rites over the stone, passed:*
 
 Brother Halden steps up to the stone and opens his book. He does not need it. He says the old words for shutting a door, the whole of them, in his own calm voice. The black rock hisses like a doused fire and lets go. Both sisters fall free at his feet, and Nettle is already reaching for his throat.
 
+<sub>(shared ×10, see index S53)</sub>
+
 *Let Halden say his rites over the stone, failed:*
 
 Halden gets halfway before the song finds the place in him the Warden once held, and his voice shakes. "Not here," he whispers. "It's too loud here."
+
+<sub>(shared ×10, see index S54)</sub>
 
 *Let your wizard read the old letters cut into the stone, passed:*
 
 Your wizard finds the line of old letters that binds the sisters in. One scratch of a knife point through the last letter, and the stone spits them both out.
 
+<sub>(shared ×10, see index S55)</sub>
+
 *Let your wizard read the old letters cut into the stone, failed:*
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
+
+<sub>(shared ×10, see index S56)</sub>
 
 *Let your warlock offer the stone a better bargain, passed:*
 
 Your warlock speaks to the stone in a patron's voice, and promises it something better than two old hags. The stone believes it for one breath. That is long enough. It lets go of the sisters to reach for the new prize.
 
+<sub>(shared ×10, see index S57)</sub>
+
 *Let your warlock offer the stone a better bargain, failed:*
 
 The stone has heard better offers. It keeps the sisters and goes on drinking.
+
+<sub>(shared ×10, see index S58)</sub>
 
 *Strike the seam Wren chalked, passed:*
 
 Wren puts her hand flat on the stone, over a white chalk mark no wider than a thumb. "Here." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S59)</sub>
+
 *Strike the seam Wren chalked, failed:*
 
 Your blow lands a hand's width off the chalk. The stone shrugs it off. Wren swears, and wipes the mark clean with her sleeve.
+
+<sub>(shared ×10, see index S60)</sub>
 
 *Let Wren find the stone's weak seam, passed:*
 
 Wren walks round the stone twice, slowly, the way she walks a pass, and lays her knife-point on a crack as thin as a thread. "There." You hit it with everything you have. The stone rings like a cracked bell and spits the sisters out onto the rock. Sedge is up first, with her claws out.
 
+<sub>(shared ×10, see index S61)</sub>
+
 *Let Wren find the stone's weak seam, failed:*
 
 Wren points, and you strike, but the crack has closed by the time your blow lands. "It moved," she says. She does not sound as if she believes it.
+
+<sub>(shared ×10, see index S62)</sub>
 
 *Shout up to the manticore that its dinner is ready, passed:*
 
 "They're paying now!" you shout up at the ledge. "Come and collect!" The manticore is off its ledge before you finish. It drops onto Nettle's back and drags her out of the rock by the hair. Sedge tears her own hands free to go after her sister.
 
+<sub>(shared ×10, see index S63)</sub>
+
 The manticore meets two sets of green claws at once and decides the meal is not worth it. It beats away over the rim with a mouthful of green hair, shouting about promises.
+
+<sub>(shared ×10, see index S64)</sub>
 
 *Shout up to the manticore that its dinner is ready, failed:*
 
 The manticore only grins down at you with its man's face. "When they are out of the rock," it purrs. "I do not dig for my dinner."
 
+<sub>(shared ×10, see index S65)</sub>
+
 *Find where the stone is weakest, failed:*
 
 Every face of the stone looks the same to you, smooth and black and singing.
+
+<sub>(shared ×10, see index S66)</sub>
 
 - » **Drag their hands out of the rock** [Athletics DC 15] <sub>open when Hask not in the party; otherwise hidden</sub>
 - » **Haul them out on Hask's count** [Athletics DC 11] — _He has called the step for twenty years. Pull when he says pull, and not before._ <sub>open when Hask in the party; otherwise hidden</sub>
@@ -3482,11 +4509,17 @@ The sisters come at you with green claws and burning faces. "Then we collect by 
 
 Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
 
+<sub>(shared with: `sisters-battle-cracked`)</sub>
+
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `sisters-battle-cracked`)</sub>
 
 *Lost:*
 
 Green claws close over you, and the last thing you hear is Nettle adding it to the account.
+
+<sub>(shared with: `sisters-battle-cracked`)</sub>
 
 ### 2. when a return visit?
 
@@ -3498,11 +4531,17 @@ Green claws close over you, and the last thing you hear is Nettle adding it to t
 
 Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
 
+<sub>(shared with: `sisters-battle-cracked`)</sub>
+
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `sisters-battle-cracked`)</sub>
 
 *Lost:*
 
 Green claws close over you, and the last thing you hear is Nettle adding it to the account.
+
+<sub>(shared with: `sisters-battle-cracked`)</sub>
 
 ## `sisters-battle-cracked` · battle
 
@@ -3520,11 +4559,17 @@ The sisters come at you with green claws and burning faces. Grey hands still hol
 
 Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
 
+<sub>(shared with: `sisters-battle`)</sub>
+
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `sisters-battle`)</sub>
 
 *Lost:*
 
 Green claws close over you, and the last thing you hear is Nettle adding it to the account.
+
+<sub>(shared with: `sisters-battle`)</sub>
 
 ### 2. when a return visit?
 
@@ -3536,11 +4581,17 @@ Grey hands catch at your ankles again as the sisters come at you, claws out. Sed
 
 Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
 
+<sub>(shared with: `sisters-battle`)</sub>
+
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `sisters-battle`)</sub>
 
 *Lost:*
 
 Green claws close over you, and the last thing you hear is Nettle adding it to the account.
+
+<sub>(shared with: `sisters-battle`)</sub>
 
 ## `vigil-kept` · story
 
@@ -3573,19 +4624,25 @@ With no one feeding it, the Calling falters. The black fang cracks from top to b
 
 ## `vigil-down-with-wren` · story
 
-<sub>reads: flag:npc.wren.attitude?, companion:halden, companion:hask</sub>
+<sub>reads: flag:npc.wren.attitude, companion:halden, companion:hask</sub>
 
 **2 versions**
 
-### 1. when Wren's regard < 2?
+### 1. when Wren's regard < 2
 
 Wren walks down beside you, counting the passes under her breath. At each one she stops and marks the map. "For the report," she says.
 
-### 2. when Wren's regard ≥ 2?
+<sub>(shared with: `down-with-wren`)</sub>
+
+### 2. when Wren's regard ≥ 2
 
 Wren walks down beside you, counting the passes under her breath. At each one she stops and marks the map. "For the report," she says.
+
+<sub>(shared with: `down-with-wren`)</sub>
 
 She does not say she is glad you are all alive, but she keeps checking that you are.
+
+<sub>(shared with: `down-with-wren`)</sub>
 
 - » **Walk on down** <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Walk on down** <sub>open when Hask in the party; otherwise hidden</sub>
@@ -3597,12 +4654,16 @@ She does not say she is glad you are all alive, but she keeps checking that you 
 
 Brother Halden walks down with his prayer book shut under his arm. Halfway down he stops, holds out his hands, and looks at them. They have shaken since the drowned chapel. Now they are still.
 
+<sub>(shared with: `down-with-halden`)</sub>
+
 - » **Walk on down** <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Walk on down** <sub>open when Hask not in the party; otherwise hidden</sub>
 
 ## `vigil-down-with-hask` · story
 
 Hask walks down at the back, the way a guard should, and says nothing the whole way. At the last bend he looks back up at the broken stone. "Tell Vex I kept my feet," he says.
+
+<sub>(shared with: `down-with-hask`)</sub>
 
 - » **Walk on down**
 
@@ -3647,85 +4708,123 @@ Sedge slowly shakes her head. "One of yours sold her the water, and the rest of 
 
 ## `vigil-rueful` · challenge
 
-<sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard?, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
+<sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
 Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Tell her the pen behind the kennels stands empty, passed:*
 
 "Her pen is empty," you tell Sedge. "The carter walked home, and the girl with one shoe. What your sister grew greedy for at the end is given back." Sedge is quiet for a long breath. "Then only the door is owed," she says.
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Tell her the pen behind the kennels stands empty, failed:*
 
 "One pen," Sedge says. "She sat in the dark for a thousand winters. A pen does not weigh much against that."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Promise her the fen will pay the old price, passed:*
 
 "The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Promise her the fen will pay the old price, failed:*
 
 "The fen-folk pay when they are frightened," Sedge says. "They stop when they are not."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Promise her Thornwick will remember her this time, passed:*
 
 "The reeve owes us," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Promise her Thornwick will remember her this time, failed:*
 
 "Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Tell her who keeps Saltmere's graves now, passed:*
 
 "The man who took a chisel to that door was Marrow," you tell her. "We let him live, and he went home to keep Saltmere's graves with the rites, so that nothing there wakes." Sedge looks at you, and for once there is no anger in it. "A gravedigger keeping watch," she says. "She would have laughed."
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Tell her who keeps Saltmere's graves now, failed:*
 
 "One old man with a lamp," Sedge says. "She kept the whole fen."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Let Halden say the rites for her sister, passed:*
 
 Brother Halden opens his book at the oldest rites in it, the ones for keepers of a door. He says them slowly, all the way through, for a hag whose name he does not know. When he finishes, Sedge is weeping. "No one ever said them for her," she says.
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Let Halden say the rites for her sister, failed:*
 
 Halden starts the rites, and Nettle sings over him until no one can hear the words. Sedge turns her face back to the stone.
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Promise her Halden will say the rites for her sister, passed:*
 
 "Brother Halden is up on the rim," you tell her. "He has never refused anyone the rites. He will say them for your sister." Sedge says nothing for a breath. "No one ever said them for her," she says.
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Promise her Halden will say the rites for her sister, failed:*
 
 "A priest's words," Sedge says. "She had a thousand winters of silence. Words come late."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Let Wren speak for you, passed:*
 
 Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at the girl, and then at you.
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Let Wren speak for you, failed:*
 
 Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Let Wren speak for you, passed:*
 
 Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at the girl, and then at you.
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Let Wren speak for you, failed:*
 
 Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
 *Tell her the door still needs a keeper, passed:*
 
 "The door under the fen still needs a keeper," you tell her. "A priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Tell her the door still needs a keeper, failed:*
 
 "A keeper," Sedge says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."
 
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 - » **Tell her the pen behind the kennels stands empty** [Persuasion DC 15] — _The carter and his girl walked home from her sister's pen._ <sub>open when Part 1 captives-freed; otherwise hidden</sub>
-- » **Promise her the fen will pay the old price** [Persuasion DC 15] <sub>open when Part 2 regard ≥ 2?; otherwise hidden</sub>
-- » **Promise her Thornwick will remember her this time** [Persuasion DC 15] — _The reeve owes you, and he keeps the town's ledger._ <sub>open when Part 2 regard 1 or Part 2 regard ≥ 2?; otherwise hidden</sub>
+- » **Promise her the fen will pay the old price** [Persuasion DC 15] <sub>open when Part 2 regard ≥ 2; otherwise hidden</sub>
+- » **Promise her Thornwick will remember her this time** [Persuasion DC 15] — _The reeve owes you, and he keeps the town's ledger._ <sub>open when Part 2 regard 1 or Part 2 regard ≥ 2; otherwise hidden</sub>
 - » **Tell her who keeps Saltmere's graves now** [Persuasion DC 16] — _Marrow took a chisel to the Warden's door. You let him go home to his dead._ <sub>open when Marrow sings; otherwise hidden</sub>
 - » **Let Halden say the rites for her sister** [Religion DC 13] — _He has said them for everyone in Thornwick. No one has ever said them for her._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Promise her Halden will say the rites for her sister** [Persuasion DC 15] — _He is up on the rim, alive because of you. He has never refused anyone the rites._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
@@ -3735,85 +4834,123 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 ## `vigil-unknowing` · challenge
 
-<sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard?, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
+<sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
 Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Tell her the pen behind the kennels stands empty, passed:*
 
 "Her pen is empty," you tell Sedge. "The carter walked home, and the girl with one shoe. What your sister grew greedy for at the end is given back." Sedge is quiet for a long breath. "Then only the door is owed," she says.
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Tell her the pen behind the kennels stands empty, failed:*
 
 "One pen," Sedge says. "She sat in the dark for a thousand winters. A pen does not weigh much against that."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Promise her the fen will pay the old price, passed:*
 
 "The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Promise her the fen will pay the old price, failed:*
 
 "The fen-folk pay when they are frightened," Sedge says. "They stop when they are not."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Promise her Thornwick will remember her this time, passed:*
 
 "The reeve owes us," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Promise her Thornwick will remember her this time, failed:*
 
 "Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Tell her who keeps Saltmere's graves now, passed:*
 
 "The man who took a chisel to that door was Marrow," you tell her. "We let him live, and he went home to keep Saltmere's graves with the rites, so that nothing there wakes." Sedge looks at you, and for once there is no anger in it. "A gravedigger keeping watch," she says. "She would have laughed."
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Tell her who keeps Saltmere's graves now, failed:*
 
 "One old man with a lamp," Sedge says. "She kept the whole fen."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Let Halden say the rites for her sister, passed:*
 
 Brother Halden opens his book at the oldest rites in it, the ones for keepers of a door. He says them slowly, all the way through, for a hag whose name he does not know. When he finishes, Sedge is weeping. "No one ever said them for her," she says.
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Let Halden say the rites for her sister, failed:*
 
 Halden starts the rites, and Nettle sings over him until no one can hear the words. Sedge turns her face back to the stone.
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Promise her Halden will say the rites for her sister, passed:*
 
 "Brother Halden is up on the rim," you tell her. "He has never refused anyone the rites. He will say them for your sister." Sedge says nothing for a breath. "No one ever said them for her," she says.
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Promise her Halden will say the rites for her sister, failed:*
 
 "A priest's words," Sedge says. "She had a thousand winters of silence. Words come late."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Let Wren speak for you, passed:*
 
 Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at the girl, and then at you.
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Let Wren speak for you, failed:*
 
 Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Let Wren speak for you, passed:*
 
 Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at the girl, and then at you.
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Let Wren speak for you, failed:*
 
 Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
 *Tell her the door still needs a keeper, passed:*
 
 "The door under the fen still needs a keeper," you tell her. "A priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Tell her the door still needs a keeper, failed:*
 
 "A keeper," Sedge says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."
 
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 - » **Tell her the pen behind the kennels stands empty** [Persuasion DC 15] — _The carter and his girl walked home from her sister's pen._ <sub>open when Part 1 captives-freed; otherwise hidden</sub>
-- » **Promise her the fen will pay the old price** [Persuasion DC 15] <sub>open when Part 2 regard ≥ 2?; otherwise hidden</sub>
-- » **Promise her Thornwick will remember her this time** [Persuasion DC 15] — _The reeve owes you, and he keeps the town's ledger._ <sub>open when Part 2 regard 1 or Part 2 regard ≥ 2?; otherwise hidden</sub>
+- » **Promise her the fen will pay the old price** [Persuasion DC 15] <sub>open when Part 2 regard ≥ 2; otherwise hidden</sub>
+- » **Promise her Thornwick will remember her this time** [Persuasion DC 15] — _The reeve owes you, and he keeps the town's ledger._ <sub>open when Part 2 regard 1 or Part 2 regard ≥ 2; otherwise hidden</sub>
 - » **Tell her who keeps Saltmere's graves now** [Persuasion DC 16] — _Marrow took a chisel to the Warden's door. You let him go home to his dead._ <sub>open when Marrow sings; otherwise hidden</sub>
 - » **Let Halden say the rites for her sister** [Religion DC 13] — _He has said them for everyone in Thornwick. No one has ever said them for her._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Promise her Halden will say the rites for her sister** [Persuasion DC 15] — _He is up on the rim, alive because of you. He has never refused anyone the rites._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
@@ -3823,85 +4960,123 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 ## `vigil-sold` · challenge
 
-<sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard?, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
+<sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
 Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Tell her the pen behind the kennels stands empty, passed:*
 
 "Her pen is empty," you tell Sedge. "The carter walked home, and the girl with one shoe. What your sister grew greedy for at the end is given back." Sedge is quiet for a long breath. "Then only the door is owed," she says.
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Tell her the pen behind the kennels stands empty, failed:*
 
 "One pen," Sedge says. "She sat in the dark for a thousand winters. A pen does not weigh much against that."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Promise her the fen will pay the old price, passed:*
 
 "The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Promise her the fen will pay the old price, failed:*
 
 "The fen-folk pay when they are frightened," Sedge says. "They stop when they are not."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Promise her Thornwick will remember her this time, passed:*
 
 "The reeve owes us," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Promise her Thornwick will remember her this time, failed:*
 
 "Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Tell her who keeps Saltmere's graves now, passed:*
 
 "The man who took a chisel to that door was Marrow," you tell her. "We let him live, and he went home to keep Saltmere's graves with the rites, so that nothing there wakes." Sedge looks at you, and for once there is no anger in it. "A gravedigger keeping watch," she says. "She would have laughed."
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Tell her who keeps Saltmere's graves now, failed:*
 
 "One old man with a lamp," Sedge says. "She kept the whole fen."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Let Halden say the rites for her sister, passed:*
 
 Brother Halden opens his book at the oldest rites in it, the ones for keepers of a door. He says them slowly, all the way through, for a hag whose name he does not know. When he finishes, Sedge is weeping. "No one ever said them for her," she says.
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Let Halden say the rites for her sister, failed:*
 
 Halden starts the rites, and Nettle sings over him until no one can hear the words. Sedge turns her face back to the stone.
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Promise her Halden will say the rites for her sister, passed:*
 
 "Brother Halden is up on the rim," you tell her. "He has never refused anyone the rites. He will say them for your sister." Sedge says nothing for a breath. "No one ever said them for her," she says.
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Promise her Halden will say the rites for her sister, failed:*
 
 "A priest's words," Sedge says. "She had a thousand winters of silence. Words come late."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Let Wren speak for you, passed:*
 
 Wren lowers her bow and steps up beside you. "I owe them my leg, and I've watched them ever since," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at the girl, and then at you.
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Let Wren speak for you, failed:*
 
 Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Let Wren speak for you, passed:*
 
 Wren lowers her bow and steps up beside you. "I walked the fen with them, as far as the barrows," she tells Sedge. "They keep their word. If they say the fen will pay, it will." Sedge looks at the girl, and then at you.
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Let Wren speak for you, failed:*
 
 Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no one, and she kept the door anyway."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
 *Tell her the door still needs a keeper, passed:*
 
 "The door under the fen still needs a keeper," you tell her. "A priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Tell her the door still needs a keeper, failed:*
 
 "A keeper," Sedge says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."
 
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 - » **Tell her the pen behind the kennels stands empty** [Persuasion DC 15] — _The carter and his girl walked home from her sister's pen._ <sub>open when Part 1 captives-freed; otherwise hidden</sub>
-- » **Promise her the fen will pay the old price** [Persuasion DC 15] <sub>open when Part 2 regard ≥ 2?; otherwise hidden</sub>
-- » **Promise her Thornwick will remember her this time** [Persuasion DC 15] — _The reeve owes you, and he keeps the town's ledger._ <sub>open when Part 2 regard 1 or Part 2 regard ≥ 2?; otherwise hidden</sub>
+- » **Promise her the fen will pay the old price** [Persuasion DC 15] <sub>open when Part 2 regard ≥ 2; otherwise hidden</sub>
+- » **Promise her Thornwick will remember her this time** [Persuasion DC 15] — _The reeve owes you, and he keeps the town's ledger._ <sub>open when Part 2 regard 1 or Part 2 regard ≥ 2; otherwise hidden</sub>
 - » **Tell her who keeps Saltmere's graves now** [Persuasion DC 16] — _Marrow took a chisel to the Warden's door. You let him go home to his dead._ <sub>open when Marrow sings; otherwise hidden</sub>
 - » **Let Halden say the rites for her sister** [Religion DC 13] — _He has said them for everyone in Thornwick. No one has ever said them for her._ <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Promise her Halden will say the rites for her sister** [Persuasion DC 15] — _He is up on the rim, alive because of you. He has never refused anyone the rites._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
@@ -3956,11 +5131,17 @@ The sisters pour the last of themselves into the stone, and the stone spends it 
 
 The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes with her sister's name still on her lips. A few dry reeds are all that is left of them, and the coin of a hundred old bargains, green with fen-water.
 
+<sub>(shared with: `calling-battle-cracked`)</sub>
+
 The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The howling wind blows itself out to a breeze off the peak. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `calling-battle-cracked`)</sub>
 
 *Lost:*
 
 The rock bucks under you like a struck bell, and the Calling's note goes on singing after the light goes out.
+
+<sub>(shared with: `calling-battle-cracked`)</sub>
 
 ### 2. when a return visit?
 
@@ -3972,11 +5153,17 @@ The stone spends the sisters again. The pillar of fire and the shape of mountain
 
 The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes with her sister's name still on her lips. A few dry reeds are all that is left of them, and the coin of a hundred old bargains, green with fen-water.
 
+<sub>(shared with: `calling-battle-cracked`)</sub>
+
 The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The howling wind blows itself out to a breeze off the peak. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `calling-battle-cracked`)</sub>
 
 *Lost:*
 
 The rock bucks under you like a struck bell, and the Calling's note goes on singing after the light goes out.
+
+<sub>(shared with: `calling-battle-cracked`)</sub>
 
 ## `calling-battle-cracked` · battle
 
@@ -3994,11 +5181,17 @@ The sisters pour the last of themselves into the stone, and the stone spends it 
 
 The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes with her sister's name still on her lips. A few dry reeds are all that is left of them, and the coin of a hundred old bargains, green with fen-water.
 
+<sub>(shared with: `calling-battle`)</sub>
+
 The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The howling wind blows itself out to a breeze off the peak. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `calling-battle`)</sub>
 
 *Lost:*
 
 The rock bucks under you like a struck bell, and the Calling's note goes on singing after the light goes out.
+
+<sub>(shared with: `calling-battle`)</sub>
 
 ### 2. when a return visit?
 
@@ -4010,11 +5203,17 @@ The stone spends the sisters again. The pillar of fire and the shape of mountain
 
 The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes with her sister's name still on her lips. A few dry reeds are all that is left of them, and the coin of a hundred old bargains, green with fen-water.
 
+<sub>(shared with: `calling-battle`)</sub>
+
 The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The howling wind blows itself out to a breeze off the peak. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+
+<sub>(shared with: `calling-battle`)</sub>
 
 *Lost:*
 
 The rock bucks under you like a struck bell, and the Calling's note goes on singing after the light goes out.
+
+<sub>(shared with: `calling-battle`)</sub>
 
 ## `stone-lost` · story
 
@@ -4085,19 +5284,25 @@ Up on the rim, Vex's pikes raise a ragged cheer. Far down the slope, faint and d
 
 ## `down-with-wren` · story
 
-<sub>reads: flag:npc.wren.attitude?, companion:halden, companion:hask</sub>
+<sub>reads: flag:npc.wren.attitude, companion:halden, companion:hask</sub>
 
 **2 versions**
 
-### 1. when Wren's regard < 2?
+### 1. when Wren's regard < 2
 
 Wren walks down beside you, counting the passes under her breath. At each one she stops and marks the map. "For the report," she says.
 
-### 2. when Wren's regard ≥ 2?
+<sub>(shared with: `vigil-down-with-wren`)</sub>
+
+### 2. when Wren's regard ≥ 2
 
 Wren walks down beside you, counting the passes under her breath. At each one she stops and marks the map. "For the report," she says.
+
+<sub>(shared with: `vigil-down-with-wren`)</sub>
 
 She does not say she is glad you are all alive, but she keeps checking that you are.
+
+<sub>(shared with: `vigil-down-with-wren`)</sub>
 
 - » **Walk on down** <sub>open when Halden in the party; otherwise hidden</sub>
 - » **Walk on down** <sub>open when Hask in the party; otherwise hidden</sub>
@@ -4109,12 +5314,16 @@ She does not say she is glad you are all alive, but she keeps checking that you 
 
 Brother Halden walks down with his prayer book shut under his arm. Halfway down he stops, holds out his hands, and looks at them. They have shaken since the drowned chapel. Now they are still.
 
+<sub>(shared with: `vigil-down-with-halden`)</sub>
+
 - » **Walk on down** <sub>open when Hask in the party; otherwise hidden</sub>
 - » **Walk on down** <sub>open when Hask not in the party; otherwise hidden</sub>
 
 ## `down-with-hask` · story
 
 Hask walks down at the back, the way a guard should, and says nothing the whole way. At the last bend he looks back up at the broken stone. "Tell Vex I kept my feet," he says.
+
+<sub>(shared with: `vigil-down-with-hask`)</sub>
 
 - » **Walk on down**
 
@@ -4191,7 +5400,7 @@ Vex's clerk looks in, sees that you are breathing, and sets your kit at the foot
 
 ## `wc-epilogue` · ending
 
-<sub>reads: flag:sunken-barrows:regard?, flag:green-sent, flag:manticore-sent?, flag:ettin-split, flag:calling-peaked, flag:tally-at-peak?, flag:peak-held?, flag:npc.vargan.fate.dead, flag:npc.vargan.fate.spared, flag:sunken-barrows:seal-cracked, flag:rim-dead?, flag:npc.vex.fate.turned, flag:npc.marrow.fate.sings, flag:npc.marrow.fate.bound, flag:npc.halden.fate.saved, companion:halden, flag:watch-holds, companion:hask, companion:wren, flag:mules-unloaded, flag:npc.wren.fate.saved, flag:npc.wren.attitude?, flag:sunken-barrows:won</sub>
+<sub>reads: flag:sunken-barrows:regard, flag:green-sent, flag:manticore-sent?, flag:ettin-split, flag:calling-peaked, flag:tally-at-peak?, flag:peak-held?, flag:npc.vargan.fate.dead, flag:npc.vargan.fate.spared, flag:sunken-barrows:seal-cracked, flag:rim-dead?, flag:npc.vex.fate.turned, flag:npc.marrow.fate.sings, flag:npc.marrow.fate.bound, flag:npc.halden.fate.saved, companion:halden, flag:watch-holds, companion:hask, companion:wren, flag:mules-unloaded, flag:npc.wren.fate.saved, flag:npc.wren.attitude, flag:sunken-barrows:won</sub>
 
 **Too many combinations** — printed once, each conditional line marked with when it shows.
 
@@ -4199,27 +5408,45 @@ Vex's clerk looks in, sees that you are breathing, and sets your kit at the foot
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-> **[when Part 2 regard ≥ 1?]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
 
-> **[when Part 2 regard < 1?]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
+> **[when Part 2 regard < 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 *slides:*
 
 > **[when `green-sent`]** Somewhere past the far hills, a green dragon is growing up. It still flinches at the sound of the dragon tongue.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when `manticore-sent`?]** The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting for the meal the hags swore to give it.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 > **[when `ettin-split`]** Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when `tally-at-peak` ≥ 1?]** After the Calling's last night, Bram tried to sell the army back its own arrows. Hardly anyone had loosed one.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 > **[when `tally-at-peak` < 1? · `peak-held` ≥ 1?]** The pikemen still keep the list of names from the Calling's last night. Once a year they stand where the torches went out, and read it aloud.
 
 > **[when `peak-held` < 1?]** The beasts you left in the hills nearly broke the war-camp. The funeral fires burned in a long row the next morning, and the camp-clerk wrote down every name.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when Vargan dead]** The reed-cutters are back in the shallows Vargan sold, cutting reeds for a copper a bundle. They never say his name.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when Vargan spared]** Vargan still cuts reeds in the shallows he sold. During the Calling's last week, a sack of reed-arrows turned up at the war-camp gate, and nobody saw who left it.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 > **[when Part 2 seal-cracked]** The reeve has the Warden's door checked each spring. The crack is a hair wider every time.
 
@@ -4233,35 +5460,61 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 
 > **[when Marrow sings]** In Saltmere, a lamp burns all night among forty graves, every one of them mended. No one in the valley has seen who fills it.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when Marrow bound]** Marrow still mends Thornwick's churchyard on the reeve's orders. While the stone sang, he sat up among the graves every night with a lamp, in case anyone woke.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 > **[when Halden saved · Halden not in the party]** Brother Halden climbs to the bowl each spring to bless the broken stone, and then he walks home to his little chapel.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when not `watch-holds`]** Down in Thornwick, the reeve orders a plaque for the square, for the war-camp on the meadows. He has the wording changed twice.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when `watch-holds`]** Thornwick's watch stood at the thin end of the east line on the Calling's last night. Reeve Aldous has every man's name cut into a plaque for the square, and he has the wording changed twice.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 > **[when Halden in the party]** At the broken stone, Halden said the rites for the sisters too. No one else would have.
 
 > **[when Hask in the party]** Hask went back to Vex's side with a new scar and a better story, and Vex pretends to be tired of hearing it.
 
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
 > **[when Wren in the party]** Wren's route report of the climb to the stone runs to eleven pages. It is the only report in the camp that admits anybody felt afraid.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 > **[when `mules-unloaded`]** The carter from the Ashfang pens drives the last wagon home to Thornwick. The girl in her new shoes rides on top.
 
-> **[when Wren saved · Wren's regard 0–1?]** Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
-> **[when Wren not saved · Wren's regard 0–1? · Part 2 won]** Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
+> **[when Wren saved · Wren's regard 0–1]** Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.
 
-> **[when Wren's regard 0–1? · not Part 2 won]** Wren draws the road to the stone for every new scout. She marks the place where your company went down into the bowl, and the place it came back up.
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
-> **[when Wren's regard < 0?]** Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
+> **[when Wren not saved · Wren's regard 0–1 · Part 2 won]** Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
 
-> **[when Wren's regard ≥ 2?]** Wren keeps a short list folded in her bracer. It is the people she would follow anywhere. Your names are at the top, in her best hand.
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
+> **[when not Part 2 won]** Wren draws the road to the stone for every new scout. She marks the place where your company went down into the bowl, and the place it came back up.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
+> **[when Wren's regard < 0]** Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
+
+> **[when Wren's regard ≥ 2]** Wren keeps a short list folded in her bracer. It is the people she would follow anywhere. Your names are at the top, in her best hand.
+
+<sub>(shared with: `wc-epilogue-vigil`)</sub>
 
 ## `wc-epilogue-vigil` · ending
 
-<sub>reads: flag:sunken-barrows:regard?, flag:green-sent, flag:manticore-sent?, flag:ettin-split, flag:calling-peaked, flag:tally-at-peak?, flag:peak-held?, flag:npc.vargan.fate.dead, flag:npc.vargan.fate.spared, flag:sunken-barrows:seal-cracked, flag:npc.reedwife.fate.bound, flag:npc.marrow.fate.sings, flag:npc.marrow.fate.bound, flag:npc.halden.fate.saved, companion:halden, flag:watch-holds, companion:hask, companion:wren, flag:mules-unloaded, flag:npc.wren.fate.saved, flag:npc.wren.attitude?, flag:sunken-barrows:won</sub>
+<sub>reads: flag:sunken-barrows:regard, flag:green-sent, flag:manticore-sent?, flag:ettin-split, flag:calling-peaked, flag:tally-at-peak?, flag:peak-held?, flag:npc.vargan.fate.dead, flag:npc.vargan.fate.spared, flag:sunken-barrows:seal-cracked, flag:npc.reedwife.fate.bound, flag:npc.marrow.fate.sings, flag:npc.marrow.fate.bound, flag:npc.halden.fate.saved, companion:halden, flag:watch-holds, companion:hask, companion:wren, flag:mules-unloaded, flag:npc.wren.fate.saved, flag:npc.wren.attitude, flag:sunken-barrows:won</sub>
 
 **Too many combinations** — printed once, each conditional line marked with when it shows.
 
@@ -4269,9 +5522,13 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-> **[when Part 2 regard ≥ 1?]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
 
-> **[when Part 2 regard < 1?]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
+<sub>(shared with: `wc-epilogue`)</sub>
+
+> **[when Part 2 regard < 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The whole camp drinks from it tonight. She fills your cups as she fills everyone's, and she nods to you as she passes.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 
@@ -4279,19 +5536,33 @@ Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's
 
 > **[when `green-sent`]** Somewhere past the far hills, a green dragon is growing up. It still flinches at the sound of the dragon tongue.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when `manticore-sent`?]** The manticore never came back to its cliff. Shepherds say it circled the broken stone for a week, shouting for the meal the hags swore to give it.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 > **[when `ettin-split`]** Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when `tally-at-peak` ≥ 1?]** After the Calling's last night, Bram tried to sell the army back its own arrows. Hardly anyone had loosed one.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 > **[when `tally-at-peak` < 1? · `peak-held` ≥ 1?]** Once a year the pikemen stand where the torches went out on the Calling's last night. Nobody makes a speech. They stand there until the light goes, and then they walk back down together.
 
 > **[when `peak-held` < 1?]** The beasts you left in the hills nearly broke the war-camp. The funeral fires burned in a long row the next morning, and the camp-clerk wrote down every name.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when Vargan dead]** The reed-cutters are back in the shallows Vargan sold, cutting reeds for a copper a bundle. They never say his name.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when Vargan spared]** Vargan still cuts reeds in the shallows he sold. During the Calling's last week, a sack of reed-arrows turned up at the war-camp gate, and nobody saw who left it.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 > **[when Part 2 seal-cracked]** Deep under the fen, the knocking at the Undercrypt's door stops for good. The fen-folk leave a lamb at the water's edge each midwinter, the way their grandparents did.
 
@@ -4301,31 +5572,57 @@ Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's
 
 > **[when Marrow sings]** In Saltmere, a lamp burns all night among forty graves, every one of them mended. No one in the valley has seen who fills it.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when Marrow bound]** Marrow still mends Thornwick's churchyard on the reeve's orders. While the stone sang, he sat up among the graves every night with a lamp, in case anyone woke.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 > **[when Halden saved · Halden not in the party]** Brother Halden climbs to the bowl each spring to bless the broken stone, and then he walks home to his little chapel.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when not `watch-holds`]** Down in Thornwick, the reeve orders a plaque for the square, for the war-camp on the meadows. He has the wording changed twice.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when `watch-holds`]** Thornwick's watch stood at the thin end of the east line on the Calling's last night. Reeve Aldous has every man's name cut into a plaque for the square, and he has the wording changed twice.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 > **[when Halden in the party]** Halden walks down to the edge of the deep fen each spring and reads the rites aloud. Something out in the reeds always waits until he has finished.
 
 > **[when Hask in the party]** Hask went back to Vex's side with a new scar and a better story, and Vex pretends to be tired of hearing it.
 
+<sub>(shared with: `wc-epilogue`)</sub>
+
 > **[when Wren in the party]** Wren's route report of the climb to the stone runs to eleven pages. It is the only report in the camp that admits anybody felt afraid.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 > **[when `mules-unloaded`]** The carter from the Ashfang pens drives the last wagon home to Thornwick. The girl in her new shoes rides on top.
 
-> **[when Wren saved · Wren's regard 0–1?]** Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.
+<sub>(shared with: `wc-epilogue`)</sub>
 
-> **[when Wren not saved · Wren's regard 0–1? · Part 2 won]** Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
+> **[when Wren saved · Wren's regard 0–1]** Wren still limps on cold mornings, and she tells every new scout how you lifted a dead horse off her leg.
 
-> **[when Wren's regard 0–1? · not Part 2 won]** Wren draws the road to the stone for every new scout. She marks the place where your company went down into the bowl, and the place it came back up.
+<sub>(shared with: `wc-epilogue`)</sub>
 
-> **[when Wren's regard < 0?]** Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
+> **[when Wren not saved · Wren's regard 0–1 · Part 2 won]** Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
 
-> **[when Wren's regard ≥ 2?]** Wren keeps a short list folded in her bracer. It is the people she would follow anywhere. Your names are at the top, in her best hand.
+<sub>(shared with: `wc-epilogue`)</sub>
+
+> **[when not Part 2 won]** Wren draws the road to the stone for every new scout. She marks the place where your company went down into the bowl, and the place it came back up.
+
+<sub>(shared with: `wc-epilogue`)</sub>
+
+> **[when Wren's regard < 0]** Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
+
+<sub>(shared with: `wc-epilogue`)</sub>
+
+> **[when Wren's regard ≥ 2]** Wren keeps a short list folded in her bracer. It is the people she would follow anywhere. Your names are at the top, in her best hand.
+
+<sub>(shared with: `wc-epilogue`)</sub>
 
 ## Dawns
 

@@ -5,11 +5,44 @@
 Every version of every scene that some reachable state can produce — every route, carried choices from earlier chapters included — with when each version shows. Read every version of a scene you change; see "Reading the atlas" in docs/module-writing-guide.md.
 
 - **when …** names what the version needs, in as few words as hold over the reachable states (the rest can go either way). "— or —" joins alternatives.
-- A condition ending in **?** is one the search does not track (a tally such as a regard, gold, an item, a class in the party, a return visit): both ways are shown, though not every party can bring both.
+- A condition ending in **?** is one the search does not track (gold, an item, a class in the party, a return visit, a tally the ledger does not band): both ways are shown, though not every party can bring both. Wren's regard and the valley's regard are tracked exactly.
 - A flag only text reads is checked one at a time: each value shown is reachable, but two such flags together may not be.
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
+- <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
 118 scenes · 182 versions · 2,504,070 states searched (with text conditions tracked).
+
+## Shared paragraphs
+
+Paragraphs whose exact text shows in more than one scene (a reused constant), grouped by the scenes that share them. Each is marked where it shows. **Change one, and read it in every scene listed**: a line written for one of them may be wrong in another.
+
+- `spy-caught`, `spy-caught-loud`:
+  - **S1** “Under a loose board at the back of his stall …”
+- `scout-saved`, `scout-fail`:
+  - **S2** “"You got the horse off me. Let me pay some of that back." She catches …”
+  - **S3** “"You got the horse off me. Let me pay some of that back." She looks …”
+- `boss`, `boss-unguarded`:
+  - **S4** “The chief's axe goes spinning out of his hand, and …”
+- `boss`, `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`:
+  - **S5** “Behind the throne stands the chief's strongbox, its lid forced …”
+- `boss-shaken`, `boss-unguarded-shaken`:
+  - **S6** “Vargan fights with one eye on his own shut fist. …”
+- `vargan-brand`, `vargan-brand-alone`:
+  - **S7** “The rag on his axe hand has slipped. Burned into …”
+  - **S8** “He stares down at his own hand as if it …”
+- `vargan-turns`, `vargan-turns-alone`:
+  - **S9** “Vargan looks from the brand to the hag, and turns, …”
+  - **S10** “Vargan looks at the hag without a word, and turns, …”
+  - **S11** “The hag looks down at him a moment, and when …”
+- `reedwife-fight`, `reedwife-fight-alone`:
+  - **S12** “The Reedwife staggers back into the fire-pit and goes down …”
+  - **S13** “A sodden purse hangs at her belt on a cord …”
+  - **S14** “You say her price back to her, in her own …”
+  - **S15** “The words catch in her like a hook. She hisses …”
+  - **S16** “You start the words, and she hears the place where …”
+- `reedwife-lost`, `reedwife-lost-alone`:
+  - **S17** “The hag's cold fingers close over your eyes, and the …”
+  - **S18** “You wake behind the throne, where somebody dragged you. Vargan …”
 
 ## `road` · story
 
@@ -267,6 +300,8 @@ His crew is down or gone, one way or another, and the peddler knows it. He sits 
 
 Under a loose board at the back of his stall lies a list of every caravan that has left Thornwick this month. Someone has ticked off each one. The ticks are his. The names are in another man's writing. "The chief sends the names," he babbles. "He knows every carter in this town. I only tick them off."
 
+<sub>(shared with: `spy-caught-loud`)</sub>
+
 The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own. None of mine went out the gate," he adds, bitterly. "It's still good."
 
 The reeve pays a purse for the town's leak. The gate-warden is already waving you over.
@@ -278,6 +313,8 @@ The reeve pays a purse for the town's leak. The gate-warden is already waving yo
 It is over, and half the square watched it happen. The peddler sits in the dirt by his stall with his hands up. "I only carried word! I never lifted a blade!"
 
 Under a loose board at the back of his stall lies a list of every caravan that has left Thornwick this month. Someone has ticked off each one. The ticks are his. The names are in another man's writing. "The chief sends the names," he babbles. "He knows every carter in this town. I only tick them off."
+
+<sub>(shared with: `spy-caught`)</sub>
 
 You ask him for the raiders' gate-signal. He laughs, shakily, and points past the gate. Out on the marsh road, one of his knives is still running. "He'll be at the den by dark. They'll change the signal the minute he tells them. It's no good to anybody now."
 
@@ -720,11 +757,15 @@ The horse comes off and the bleeding stops, and the scout lets out a breath she 
 
 "You got the horse off me. Let me pay some of that back." She catches your wrist. "There's a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."
 
+<sub>(shared with: `scout-fail`)</sub>
+
 ### 2. when met Vex
 
 The horse comes off and the bleeding stops, and the scout lets out a breath she has been holding for hours. "**Wren**," she offers, as if admitting to a name costs her something. She scratches the den's watch-posts into the mud, quick and exact.
 
 "You got the horse off me. Let me pay some of that back." She looks at the den-mud on your boots. "You've been inside already, so you've met Vex at his fire. He hates the chief worse than you do. Whatever you said to him, he'll remember it when the chief calls for his guards."
+
+<sub>(shared with: `scout-fail`)</sub>
 
 - » **Send Wren back to Thornwick**
 - » **Ask Wren to come with you through the marsh** <sub>open when not `den-entered`; otherwise hidden</sub>
@@ -755,6 +796,8 @@ The bleeding stops at last, with the light already going. "**Wren**," she says, 
 
 "You got the horse off me. Let me pay some of that back." She catches your wrist. "There's a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."
 
+<sub>(shared with: `scout-saved`)</sub>
+
 ### 2. when met Vex
 
 It goes wrong. As the horse comes off her the arrowhead shifts, and the blood comes fast and dark. She fumbles at her belt for the healing potion she could never reach with the horse on top of her. You get it down her, and press on the wound until your arms shake.
@@ -762,6 +805,8 @@ It goes wrong. As the horse comes off her the arrowhead shifts, and the blood co
 The bleeding stops at last, with the light already going. "**Wren**," she says, grey to the lips. "In case you have to tell someone." She scratches the den's watch-posts into the mud, slower than she wants to. She is in no state to guide anyone anywhere today.
 
 "You got the horse off me. Let me pay some of that back." She looks at the den-mud on your boots. "You've been inside already, so you've met Vex at his fire. He hates the chief worse than you do. Whatever you said to him, he'll remember it when the chief calls for his guards."
+
+<sub>(shared with: `scout-saved`)</sub>
 
 - » **Send Wren limping back to Thornwick**
 
@@ -1544,7 +1589,11 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss-unguarded`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
 
 ### 2. when a return visit?
 
@@ -1556,7 +1605,11 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss-unguarded`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
 
 ## `boss-shaken` · battle
 
@@ -1576,7 +1629,11 @@ By the door, the chief's guard, a grey and scarred old soldier, is still reachin
 
 Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss-unguarded-shaken`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
 
 ### 2. when a return visit?
 
@@ -1588,7 +1645,11 @@ Vargan's eyes go to his shut fist again. Behind him the hag says nothing. By the
 
 Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss-unguarded-shaken`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
 
 ## `boss-unguarded` · battle
 
@@ -1608,7 +1669,11 @@ The chief bellows for Hask, his guard. Hask stands by the door with his spear gr
 
 The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded-shaken`)</sub>
 
 ### 2. when a return visit?
 
@@ -1622,7 +1687,11 @@ Vargan rolls the great axe off his shoulder again. The hag watches the doorway, 
 
 The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded-shaken`)</sub>
 
 ## `boss-unguarded-shaken` · battle
 
@@ -1642,7 +1711,11 @@ Vargan closes his fist over the brand and bellows for Hask. By the door, Hask gr
 
 Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss-shaken`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded`)</sub>
 
 ### 2. when a return visit?
 
@@ -1656,13 +1729,21 @@ Hask is still gone, and Vargan still keeps his branded hand shut in a fist.
 
 Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
+<sub>(shared with: `boss-shaken`)</sub>
+
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
+
+<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded`)</sub>
 
 ## `vargan-brand` · story
 
 The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand, the same brand the lizardfolk wore in the hollow.
 
+<sub>(shared with: `vargan-brand-alone`)</sub>
+
 He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.
+
+<sub>(shared with: `vargan-brand-alone`)</sub>
 
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10]
 - » **Strike while he stares**
@@ -1671,7 +1752,11 @@ He stares down at his own hand as if it belongs to someone else. Behind him the 
 
 The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand, the same brand the lizardfolk wore in the hollow.
 
+<sub>(shared with: `vargan-brand`)</sub>
+
 He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.
+
+<sub>(shared with: `vargan-brand`)</sub>
 
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10]
 - » **Strike while he stares**
@@ -1686,13 +1771,21 @@ He stares down at his own hand as if it belongs to someone else. Behind him the 
 
 Vargan looks at the hag without a word, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers. Through the rag on his axe hand a brand burns white, a mark of reeds and a reaching hand, and he drops to the floor, screaming.
 
+<sub>(shared with: `vargan-turns-alone`)</sub>
+
 The hag looks down at him a moment, and when she looks up she is smiling.
+
+<sub>(shared with: `vargan-turns-alone`)</sub>
 
 ### 2. when `vargan-shaken`
 
 Vargan looks from the brand to the hag, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers, and the brand on his hand burns white. He drops to the floor, screaming.
 
+<sub>(shared with: `vargan-turns-alone`)</sub>
+
 The hag looks down at him a moment, and when she looks up she is smiling.
+
+<sub>(shared with: `vargan-turns-alone`)</sub>
 
 - » **Face the Reedwife**
 
@@ -1706,13 +1799,21 @@ The hag looks down at him a moment, and when she looks up she is smiling.
 
 Vargan looks at the hag without a word, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers. Through the rag on his axe hand a brand burns white, a mark of reeds and a reaching hand, and he drops to the floor, screaming.
 
+<sub>(shared with: `vargan-turns`)</sub>
+
 The hag looks down at him a moment, and when she looks up she is smiling.
+
+<sub>(shared with: `vargan-turns`)</sub>
 
 ### 2. when `vargan-shaken`
 
 Vargan looks from the brand to the hag, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers, and the brand on his hand burns white. He drops to the floor, screaming.
 
+<sub>(shared with: `vargan-turns`)</sub>
+
 The hag looks down at him a moment, and when she looks up she is smiling.
+
+<sub>(shared with: `vargan-turns`)</sub>
 
 - » **Face the Reedwife**
 
@@ -1732,19 +1833,29 @@ The **Reedwife** stands by the fire-pit with marsh water dripping from her finge
 
 The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
 
+<sub>(shared with: `reedwife-fight-alone`)</sub>
+
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
+
+<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
+<sub>(shared with: `reedwife-fight-alone`)</sub>
+
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her.
 
 *Talk refused:*
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
+
+<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 ### 2. when a return visit?
 
@@ -1756,19 +1867,29 @@ The Reedwife is still by the fire-pit. "Up again, sweetlings?" She whistles, and
 
 The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
 
+<sub>(shared with: `reedwife-fight-alone`)</sub>
+
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
+
+<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
+<sub>(shared with: `reedwife-fight-alone`)</sub>
+
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her.
 
 *Talk refused:*
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
+
+<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 ## `reedwife-fight-alone` · battle
 
@@ -1786,19 +1907,29 @@ The **Reedwife** stands by the fire-pit with marsh water dripping from her finge
 
 The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
 
+<sub>(shared with: `reedwife-fight`)</sub>
+
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
+<sub>(shared with: `reedwife-fight`)</sub>
+
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too.
 
 *Talk refused:*
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 ### 2. when a return visit?
 
@@ -1810,13 +1941,21 @@ The Reedwife is still by the fire-pit. She whistles for Hask once more, and he s
 
 The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
 
+<sub>(shared with: `reedwife-fight`)</sub>
+
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
+<sub>(shared with: `reedwife-fight`)</sub>
+
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too.
 
@@ -1824,17 +1963,27 @@ She goes out of the hall into the night, toward the marsh, and the earth floor s
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
 
+<sub>(shared with: `reedwife-fight`)</sub>
+
 ## `reedwife-lost` · rest
 
 The hag's cold fingers close over your eyes, and the hall goes dark.
 
+<sub>(shared with: `reedwife-lost-alone`)</sub>
+
 You wake behind the throne, where somebody dragged you. Vargan sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."
+
+<sub>(shared with: `reedwife-lost-alone`)</sub>
 
 ## `reedwife-lost-alone` · rest
 
 The hag's cold fingers close over your eyes, and the hall goes dark.
 
+<sub>(shared with: `reedwife-lost`)</sub>
+
 You wake behind the throne, where somebody dragged you. Vargan sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."
+
+<sub>(shared with: `reedwife-lost`)</sub>
 
 ## `vargan-beaten` · story
 
@@ -2068,17 +2217,17 @@ You unroll the Ashfang banner across the well for the crowd to see, and the chee
 
 ## `claim-scout` · story
 
-<sub>reads: flag:npc.wren.attitude?</sub>
+<sub>reads: flag:npc.wren.attitude</sub>
 
 **2 versions**
 
-### 1. when Wren's regard < 0?
+### 1. when Wren's regard < 0
 
 Wren pushes through the crowd on a crutch and hands you the reeve's purse of fifty gold, and then she just stands there.
 
 "You came back," she says at last, and looks at you a moment longer, as if she is still making up her mind about it.
 
-### 2. when Wren's regard ≥ 0?
+### 2. when Wren's regard ≥ 0
 
 Wren pushes through the crowd on a crutch and hands you the reeve's purse of fifty gold, and then she just stands there.
 

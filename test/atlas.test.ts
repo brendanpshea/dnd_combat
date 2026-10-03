@@ -18,7 +18,8 @@ const FIX = 'Run `npm run atlas` and commit the result (then read the diff for t
 
 describe('scene atlas', () => {
   // The reachability search runs once per chapter with text conditions
-  // tracked (about ten seconds in all); the budget is an explicit 60 s.
+  // tracked, and the ledger's tallies followed exactly (about twenty
+  // seconds in all); the budget is an explicit 60 s.
   let files: Record<string, string> = {};
   beforeAll(() => { files = buildAtlas(); }, 60000);
 
@@ -49,5 +50,20 @@ describe('scene atlas', () => {
       expect(body, `${name} has an unresolved {token}`).not.toMatch(/\{\^?[a-z][a-z0-9-]*\}/);
       expect(body.length, `${name} is over 1 MB — the generator should have split it`).toBeLessThan(1024 * 1024);
     }
+  });
+
+  it('tracks the ledger\'s tallies exactly, and marks shared paragraphs', () => {
+    const all = Object.values(files).join('\n');
+    // Wren's regard and the valley's regard are followed value by value:
+    // never shown as a guess.
+    expect(all).not.toMatch(/regard (?:< |≥ )?-?\d+(?:–\d+)?\?/);
+    expect(all).toContain('flag:npc.wren.attitude');
+    expect(all).not.toContain('flag:npc.wren.attitude?');
+    // Every shared-paragraph note points to scenes, or to an index entry that exists.
+    for (const [name, body] of Object.entries(files)) {
+      for (const m of body.matchAll(/see index (S\d+)/g)) expect(body, `${name}: ${m[1]} not in its index`).toContain(`**${m[1]}**`);
+    }
+    expect(all).toContain('## Shared paragraphs');
+    expect(all).toMatch(/\(shared with: `[^`]+`/);
   });
 });
