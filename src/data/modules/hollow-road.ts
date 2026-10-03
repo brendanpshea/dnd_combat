@@ -1613,14 +1613,14 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'reedwife-lost-alone' },
     parley: BIND_HAG('hag-coven', 'Her two raiders watch her go, and then they run too.'),
   },
-  // A short rest, not a night: Vargan's "Get up" is now, and no dawn (the
+  // Healed, but not a night (sameDay): Vargan's "Get up" is now, and no dawn (the
   // dark moon's included) can come while the hag waits by the fire.
   'reedwife-lost': {
-    id: 'reedwife-lost', kind: 'rest', variant: 'long', next: 'reedwife-fight',
+    id: 'reedwife-lost', kind: 'rest', variant: 'long', sameDay: true, next: 'reedwife-fight',
     intro: REEDWIFE_LOST,
   },
   'reedwife-lost-alone': {
-    id: 'reedwife-lost-alone', kind: 'rest', variant: 'long', next: 'reedwife-fight-alone',
+    id: 'reedwife-lost-alone', kind: 'rest', variant: 'long', sameDay: true, next: 'reedwife-fight-alone',
     intro: REEDWIFE_LOST,
   },
   // Won in the hall: the hag is dead and the chief is beaten, but breathing.

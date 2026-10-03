@@ -127,3 +127,22 @@ describe('a fight with no way out', () => {
     expect(flagged('long')).toBe(false);
   });
 });
+
+describe('a rest straight back into a fight', () => {
+  it('heals in full without a night when it is sameDay, and the validator asks for it', async () => {
+    const { startAdventure, enterScene, resolveShopOrRest, dayOf } = await import('../src/adventure/runtime.js');
+    const { newCampaign } = await import('../src/campaign/campaign.js');
+    const m = (sameDay: boolean): Module => ({ id: 'sd', title: 'S', blurb: '', start: 'lost', scenes: {
+      boss: { id: 'boss', kind: 'battle', encounterId: 'cutpurses', mapId: 'open', onWin: { to: 'won' }, onLoss: { to: 'lost' } },
+      lost: { id: 'lost', kind: 'rest', variant: 'long', ...(sameDay ? { sameDay: true as const } : {}), next: 'boss' },
+      won,
+    } });
+    const s = startAdventure(newCampaign(1), m(true));
+    enterScene(s, m(true), 'lost');
+    resolveShopOrRest(s, m(true));
+    expect(dayOf(s)).toBe(1);
+    expect(s.sceneId).toBe('boss');
+    expect(validateModule(m(false)).some((e) => e.includes('give it sameDay'))).toBe(true);
+    expect(validateModule(m(true)).some((e) => e.includes('give it sameDay'))).toBe(false);
+  });
+});

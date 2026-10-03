@@ -438,7 +438,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     s?.kind === 'explore' ? !!s.map.camp : s?.kind === 'dungeon' ? !!s.dungeon.camp : false;
   const sleeps = ids.map((id) => {
     const s = module.scenes[id];
-    return s?.kind === 'rest' && s.variant === 'long';
+    return s?.kind === 'rest' && s.variant === 'long' && !s.sameDay;
   });
   const sceneVisitedBit = ids.map((id) => bit(`visited:${id}`));
 

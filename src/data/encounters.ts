@@ -234,6 +234,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'specter-haunt', name: 'Specter Haunt', suggestedLevel: 2,
     members: ['specter', 'specter'],
   },
+  // The crypt's painted dead: the same two specters as the barrow haunt, but
+  // their own fight (a night in the Undercrypt, not Part 1's barrow).
+  'painted-dead': {
+    id: 'painted-dead', name: 'The Painted Dead', suggestedLevel: 3,
+    members: ['specter', 'specter'],
+  },
   'wight-tomb': {
     id: 'wight-tomb', name: 'Wight Tomb', suggestedLevel: 3,
     members: ['wight', 'skeleton', 'skeleton'],

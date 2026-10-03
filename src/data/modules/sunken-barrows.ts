@@ -1276,15 +1276,15 @@ const scenes: Record<string, Scene> = {
   // and go back to their door, and the party comes to where it fell.
   // Losing after Marrow has stopped believing does not make him believe again.
   'seal-doubt-lost': {
-    id: 'seal-doubt-lost', kind: 'rest', variant: 'long', next: 'seal-doubt',
+    id: 'seal-doubt-lost', kind: 'rest', variant: 'long', sameDay: true, next: 'seal-doubt',
     intro: ['The ghouls drag you down among the candles. When you come round, you are lying by the shaft with a gravedigger\'s coat folded under your head. Below, the acolyte is still chanting, and {marrow} still has not lifted his chisel.'],
   },
   'seal-battle-lost': {
-    id: 'seal-battle-lost', kind: 'rest', variant: 'long', next: 'seal-battle',
+    id: 'seal-battle-lost', kind: 'rest', variant: 'long', sameDay: true, next: 'seal-battle',
     intro: ['A knife-hilt catches you behind the ear, and the candles go out. You come to by the shaft with your wrists tied. The faithful were too busy with the door to finish you. You work the ropes loose, and the chanting has not missed a beat.'],
   },
   'seal-breach-lost': {
-    id: 'seal-breach-lost', kind: 'rest', variant: 'long', next: 'seal-breach',
+    id: 'seal-breach-lost', kind: 'rest', variant: 'long', sameDay: true, next: 'seal-breach',
     intro: ['Grey hands close over your face, and the dark comes with them. You wake on the stair, far above the door, and the dead have not climbed past you. They are still squeezing through the door, slowly, one at a time.', 'You get up. Someone has to hold that door, and it is still you.'],
   },
   'seal-shut': {
