@@ -596,6 +596,22 @@ once, plainly, in the interface, because a player can silence the quasit.
 - **Battle `intro`** sets the enemy and the stakes in a sentence or two of
   motion; it's the last thing before dice, so end it on a verb.
 
+## Promises and threads
+
+- **Never promise a mechanic the scene doesn't enforce.** "You won't be
+  walking back past the kennels", "there's no second try": the scene makes it
+  true (`noFlee`, `noBack`, a one-way exit, a shared `attempt`), or the line
+  says less ("don't count on coming back").
+- **Close every thread you open, on every route.** A line that sets something
+  up (two scouts went out; a debt is owed) needs a payoff that every route
+  can reach, or a wording that needs none. Check it in the atlas.
+- **Regard follows what an NPC saw.** Guard an attitude change on the NPC
+  being met or with the party, or declare them `present` on the scene; mark
+  word of mouth `hearsay`. The validator enforces it.
+
+Settled decisions (what is not reopened each round) are in
+`docs/design-decisions.md`.
+
 ## What crosses between chapters: the ledger
 
 A chapter may remember as much as it likes while it is played. What it hands
