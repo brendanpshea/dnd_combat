@@ -2191,13 +2191,13 @@ Nettle is still shouting when you take her wrists, and her hands come out of the
 
 <sub>scene `sisters-battle`</sub>
 
-The sisters come at you with green claws and burning faces. "Then we collect by hand," Nettle says. Sedge says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last thing the stone has the strength to raise. A pillar of living fire climbs out and turns toward you.
+The sisters come at you with green claws and burning faces. "Then we collect by hand," Nettle says. Sedge says nothing. She is weeping, and she comes at you all the same. Behind them, the crack in the floor gives up the last things the stone has the strength to raise. A pillar of living fire climbs out. After it comes a squat thing of red brass, with a beard of flame and a hammer in its fist. Both turn toward you.
 
 **Battle:** The Sisters at the Stone <sub>(`sisters-at-stone` on `firepit`)</sub>
 
 **» Fight — won**
 
-Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air.
+Nettle falls first, clawing at your boots, still telling you what you owe. Sedge falls calling a name no one in the valley ever knew, and then cursing you. Where they lay there is only a scatter of dry reeds, and the coin of a hundred old bargains, green with fen-water. The fire gutters out of the air, and the brass thing cools where it stands, a statue with a hammer.
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 

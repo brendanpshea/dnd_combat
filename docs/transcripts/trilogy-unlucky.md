@@ -2631,7 +2631,7 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 <sub>scene `calling-battle-cracked`</sub>
 
-The sisters pour the last of themselves into the stone, and the stone spends it all at once. A pillar of living fire climbs out of the burning crack. The mountain's own bones heave up beside it into a shape with fists. Grey hands push up through the cracks and hold your ankles fast. "Take it all," Nettle tells the stone. "Every drop we owe." The Calling rises to one last note, and everything it raised turns toward you.
+The sisters pour the last of themselves into the stone, and the stone spends it all at once. A pillar of living fire climbs out of the burning crack. The mountain's own bones heave up beside it into a shape with fists. The wind off the peak drops into the bowl and stays there, howling. Grey hands push up through the cracks and hold your ankles fast. "Take it all," Nettle tells the stone. "Every drop we owe." The Calling rises to one last note, and everything it raised turns toward you.
 
 **Battle:** Elemental Cataclysm <sub>(`elemental-cataclysm` on `firepit`)</sub>
 
@@ -2657,7 +2657,7 @@ The sisters still stand sunk to the shoulder in the stone. They do not turn to l
 
 <sub>scene `calling-battle-cracked` (again)</sub>
 
-The stone spends the sisters again, and grey hands hold your ankles fast. The pillar of fire and the shape of mountain bone climb out of the burning crack toward you.
+The stone spends the sisters again, and grey hands hold your ankles fast. The pillar of fire and the shape of mountain bone climb out of the burning crack toward you, and the howling wind comes down with them.
 
 **Battle:** Elemental Cataclysm <sub>(`elemental-cataclysm` on `firepit`)</sub>
 

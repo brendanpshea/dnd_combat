@@ -198,7 +198,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | trilogy-completionist | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7731 XP) | 3 | 100% | fought |  |
 | trilogy-completionist | `redden` | Red Wyrmling's Forge `red-dragon-den` | `firepit` | — | 5 (7950 XP) | 4 | 100% | fought |  |
 | trilogy-completionist | `hills-night` | Harpy Roost `harpy-roost` | `open` | — | 5 (8238 XP) | 2 | 100% | fought |  |
-| trilogy-completionist | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (8238 XP) | 5 | 100% | fought |  |
+| trilogy-completionist | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (8238 XP) | 5 | 84% | fought |  |
 | trilogy-rusher | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (4109 XP) | 4 | 100% | fought |  |
 | trilogy-rusher | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (4534 XP) | 4 | 100% | fought |  |
 | trilogy-rusher | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (4984 XP) | 2 | 100% | fought |  |
@@ -216,7 +216,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | trilogy-cruel | `hills-night` | Harpy Roost `harpy-roost` | `open` | — | 5 (7591 XP) | 2 | 100% | fought |  |
 | trilogy-cruel | `gorgonvale-fight` | Gorgon Lair `gorgon-maze` | `corridor` | — | 5 (7591 XP) | 5 | 100% | fought |  |
 | trilogy-cruel | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (8041 XP) | 4 | 100% | fought |  |
-| trilogy-cruel | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (8566 XP) | 5 | 100% | fought |  |
+| trilogy-cruel | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (8566 XP) | 5 | 84% | fought |  |
 | trilogy-merciful | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (3702 XP) | 4 | 100% | fought |  |
 | trilogy-merciful | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (4127 XP) | 4 | 100% | fought |  |
 | trilogy-merciful | `tollcliff-fight` | Manticore Cliff `manticore-cliff` | `cliff` | — | 4 (4577 XP) | 3 | 100% | fought |  |
@@ -233,7 +233,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | trilogy-unlucky | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 4 (5371 XP) | 3 | 100% | fought (lost 1 first) |  |
 | trilogy-unlucky | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 (6146 XP) | 4 | 98% | fought |  |
 | trilogy-unlucky | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 5 (6671 XP) | 4 | 100% | fought |  |
-| trilogy-unlucky | `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | party surprised | 5 (7121 XP) | 6 | 100% | fought (lost 1 first) |  |
+| trilogy-unlucky | `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | party surprised | 5 (7121 XP) | 6 | 80% | fought (lost 1 first) |  |
 | cold-wyrmcalling | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (2700 XP) | 4 | 100% | fought |  |
 | cold-wyrmcalling | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (3155 XP) | 4 | 100% | fought |  |
 | cold-wyrmcalling | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (3605 XP) | 2 | 100% | fought |  |
@@ -245,7 +245,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | cold-wyrmcalling | `boarruns-fight` | Boar Stampede `boar-stampede` | `pass` | — | 4 (5780 XP) | 3 | 100% | fought |  |
 | cold-wyrmcalling | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 4 (6005 XP) | 3 | 100% | fought |  |
 | cold-wyrmcalling | `redden` | Red Wyrmling's Forge `red-dragon-den` | `firepit` | — | 4 (6224 XP) | 4 | 100% | fought |  |
-| cold-wyrmcalling | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (6512 XP) | 5 | 100% | fought |  |
+| cold-wyrmcalling | `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (6512 XP) | 5 | 84% | fought |  |
 
 ### Every fight in the chapter, at the levels it is met
 
@@ -275,7 +275,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | `clutch-gr` | The Brood on the Rim `den-clutch-gr` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
 | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 4 | routes 5 | 100% | ″ |  |
 | `clutch-gbr` | The Brood on the Rim `den-clutch-gbr` | `open` | — | 4 | not met; late chapter 5 | 100% | ″ |  |
-| `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 | routes 5 | 100% | ″ |  |
-| `sisters-battle-cracked` | The Sisters at the Stone `sisters-at-stone` | `firepit` | party surprised | 5 | routes 5 | 96% | ″ |  |
-| `calling-battle` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 6 | routes 5 | 98% | ″ |  |
-| `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | party surprised | 6 | routes 5 | 100% | ″ |  |
+| `sisters-battle` | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 | routes 5 | 84% | ″ |  |
+| `sisters-battle-cracked` | The Sisters at the Stone `sisters-at-stone` | `firepit` | party surprised | 5 | routes 5 | 84% | ″ |  |
+| `calling-battle` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 6 | routes 5 | 62% | ″ |  |
+| `calling-battle-cracked` | Elemental Cataclysm `elemental-cataclysm` | `firepit` | party surprised | 6 | routes 5 | 80% | ″ |  |
