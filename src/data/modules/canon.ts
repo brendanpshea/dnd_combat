@@ -68,7 +68,7 @@ export const TRILOGY_FACTS: Record<Id, CanonFact> = {
   /** The graves Marrow dug at Saltmere, and later keeps. */
   'saltmere-graves': { text: 'forty graves', value: 40 },
   /** A hot supper for the whole taproom, after. */
-  'taproom-supper': { text: '10 gold', value: 10 },
+  'taproom-supper': { text: '150 gold', value: 150 },
 
   // ── Part 3: the Wyrmcalling ──────────────────────────────────────────────
   /** Kin of the drowned, who bring their ropes to a company the valley owes (its regard at 2 or more). */
