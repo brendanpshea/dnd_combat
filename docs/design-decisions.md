@@ -48,8 +48,20 @@ change. Each entry gives the decision and, briefly, why.
 - **No fail state beyond a chapter's own defeat ending.** Losses cost time
   and position, never a soft-lock. A rest straight back into a fight is
   `sameDay` (no night passes mid-fight).
-- **One try at the big mercies** (binding the Reedwife, saving Halden), with
-  at least one way that doesn't need a single skill.
+- **One try at the big mercies** (binding the Reedwife, saving Halden), and
+  more than one skill can reach each: a party is never shut out of a mercy
+  because it lacks one particular skill (binding the Reedwife: Arcana as a
+  parley, or Religion as a rite; Halden: Religion, or Persuasion by his bell).
+- **Combat is meant to be a challenge.** A main-path fight wins roughly 70–90%
+  for a fresh party at the level routes actually meet it (bosses and finales
+  60–80%); the "worn" column of `docs/balance.md` shows real danger. Night
+  ambushes scale to their chapter. Tune by roster against the balance table,
+  not by adding state.
+- **The answer to the sisters decides the vigil, and the scene says so.** Each
+  answer's weight is foreshadowed by what the sisters do in the scene, not by
+  hints that hand over the answer. No false options: where an answer closes
+  the vigil (defiant, cold, Vargan's sale when he is dead), Sedge's refusal is
+  part of that answer's scene, not a choice offered afterwards.
 
 ## Prose
 
@@ -58,3 +70,17 @@ change. Each entry gives the decision and, briefly, why.
   (`noFlee`, `noBack`, a one-way door) or the line says less.
 - **A thread a line opens, another closes on every route.** If Mira says two
   scouts went out, every route learns what became of both.
+
+## Process
+
+- **Bugs and suggestions are different.** A *bug* is text false on some path
+  (check it in the atlas), a reward paid twice, a way to get stuck, a promise
+  the scene doesn't keep, or a contradiction of `docs/canon.md`: bugs are
+  always fixed. A *suggestion* is design or prose taste: it goes to a backlog,
+  and the user picks which to do.
+- **Feature freeze.** Until a read-through finds no confirmed bugs, no new
+  mechanics, scenes or branches except to fix a bug or carry a suggestion the
+  user picked. Every new branch is a new place to be inconsistent.
+- **Done** is a read-through whose playtester, working from the atlas, finds
+  no confirmed bugs.
+- **Facts come from `docs/canon.md`.** Add a fact there before writing it.

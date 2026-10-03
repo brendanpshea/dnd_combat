@@ -59,10 +59,12 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['orc', 'orc', 'scout', 'scout', 'bandit'],
   },
   'raiders-forward': {
-    // A forward scouting party — a level-1-appropriate first real fight (225 XP
-    // vs the full warband's 425). One orc anchors two lighter humanoids.
+    // The Hollow Road's first fight (the road ambush): a forward scouting
+    // party, two orcs, two archers and two bandits. Sized to bite at 1st level
+    // (the party still at 1st, greedy AI: ~88% won fresh), not to be a
+    // walk-over; losing it wakes the party on the carter's wagon.
     id: 'raiders-forward', name: 'Ashfang Outriders', suggestedLevel: 1,
-    members: ['orc', 'scout', 'bandit'],
+    members: ['orc', 'orc', 'scout', 'scout', 'bandit', 'bandit'],
   },
   wilds: {
     id: 'wilds', name: 'Wild Hunt', suggestedLevel: 2,
@@ -72,12 +74,13 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'cult', name: 'Cult of the Worm', suggestedLevel: 3,
     members: ['cult-fanatic', 'acolyte', 'ghoul', 'ghoul', 'animated-armor'],
   },
-  // The Sunken Barrows' finale: the cult at the Warden's door, with an old
-  // kings' soldier Marrow woke to keep it. The chapter's hardest fight, fought
-  // at 4th level (the floor rides on the king). The ladder keeps `cult`.
+  // The Sunken Barrows' finale: the cult at the Warden's door, with the two
+  // old kings' soldiers Marrow woke to keep it. The chapter's hardest fight,
+  // fought at 4th level: ~82% fresh, and a lost fight wakes by the shaft for
+  // a retry. The ladder keeps `cult`.
   'cult-at-door': {
     id: 'cult-at-door', name: 'The Worm at the Door', suggestedLevel: 4,
-    members: ['cult-fanatic', 'acolyte', 'ghast', 'ghoul', 'animated-armor', 'wight'],
+    members: ['cult-fanatic', 'acolyte', 'ghast', 'ghoul', 'animated-armor', 'wight', 'wight'],
   },
   // The Sunken Barrows: the cult once Marrow has stopped believing. He stands
   // aside, and so does the soldier he woke; his acolyte and the things he
@@ -186,8 +189,9 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   // out, a fire elemental and an azer (the "brass thing").
   'sisters-at-stone': {
     id: 'sisters-at-stone', name: 'The Sisters at the Stone', suggestedLevel: 5,
-    // About 83% fresh at 5th, surprised or not (100% before the azer).
-    members: ['green-hag', 'green-hag', 'fire-elemental', 'azer-forgecaller'],
+    // With the two magma mephits that scuttle out at the azer's heels: about
+    // 76% fresh at 5th, 70% caught by the grey hands (84% without them).
+    members: ['green-hag', 'green-hag', 'fire-elemental', 'azer-forgecaller', 'magma-mephit', 'magma-mephit'],
   },
   'sprite-glade': {
     id: 'sprite-glade', name: 'Sprite Glade', suggestedLevel: 1,
@@ -213,9 +217,30 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'cockatrice-flock', name: 'Cockatrice Flock', suggestedLevel: 1,
     members: ['cockatrice', 'cockatrice'],
   },
+  // The Wyrmcalling's broken east line on the night of the peak (met at
+  // 4th–5th; no XP): four harpies and the drake that flies with them.
   'harpy-roost': {
-    id: 'harpy-roost', name: 'Harpy Roost', suggestedLevel: 2,
-    members: ['harpy', 'harpy'],
+    id: 'harpy-roost', name: 'Harpy Roost', suggestedLevel: 4,
+    members: ['harpy', 'harpy', 'harpy', 'harpy', 'wyvern'],
+  },
+  // The Wyrmcalling's risky camp in the hills (met at 4th–5th; no XP): three
+  // harpies off the crags and a wyvern behind them. ~72% at 4th.
+  'crag-harpies': {
+    id: 'crag-harpies', name: 'Harpies of the Crags', suggestedLevel: 4,
+    members: ['harpy', 'harpy', 'harpy', 'wyvern'],
+  },
+  // The manticore's toll-cliff (the ladder keeps `manticore-cliff`): the
+  // manticore and the wyvern that roosts above its ledge (its goblins stay
+  // in the rocks). ~84% at 4th, ~75% stung first.
+  'manticore-toll': {
+    id: 'manticore-toll', name: 'The Toll-Cliff', suggestedLevel: 4,
+    members: ['manticore', 'wyvern'],
+  },
+  // The boar-runs (the ladder keeps `boar-stampede`): the three leaders of
+  // the herd. Met at 5th; no number of boars troubles a 5th-level party.
+  'boar-runs': {
+    id: 'boar-runs', name: 'The Boar-Runs', suggestedLevel: 4,
+    members: ['giant-boar', 'giant-boar', 'giant-boar'],
   },
   'owlbear-den': {
     id: 'owlbear-den', name: 'Owlbear Den', suggestedLevel: 3,
@@ -229,23 +254,59 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'gorgon-maze', name: 'Gorgon Lair', suggestedLevel: 5,
     members: ['gorgon'],
   },
-  // The Sunken Barrows' cold open, fought at 3rd level: four shadows and the
-  // churchyard's ghost, so the churchyard pays its share of the road to 4th.
-  // 100% at 3rd (greedy AI, 120 seeds), but the ghost leaves marks.
+  // The Sunken Barrows' cold open, fought at 3rd level: four shadows, the
+  // churchyard's ghost, and two of the newly buried clawing out of their
+  // graves (a ghast and a ghoul). ~90% at 3rd.
   'shadow-ambush': {
     id: 'shadow-ambush', name: 'Shadow Ambush', suggestedLevel: 3,
-    members: ['shadow', 'shadow', 'shadow', 'shadow', 'ghost'],
+    members: ['shadow', 'shadow', 'shadow', 'shadow', 'ghost', 'ghast', 'ghoul'],
   },
   'specter-haunt': {
     id: 'specter-haunt', name: 'Specter Haunt', suggestedLevel: 2,
     members: ['specter', 'specter'],
   },
-  // The crypt's painted dead: the same two specters as the barrow haunt, but
-  // their own fight (a night in the Undercrypt, not Part 1's barrow).
+  // The crypt's painted dead: two of the old kings' painted soldiers, peeled
+  // off the wall (the Undercrypt's risky camp, met at 4th; no XP).
   'painted-dead': {
-    id: 'painted-dead', name: 'The Painted Dead', suggestedLevel: 3,
-    members: ['specter', 'specter'],
+    id: 'painted-dead', name: 'The Painted Dead', suggestedLevel: 4,
+    members: ['wight', 'wight'],
   },
+  // The Warden's stair at night (the Sunken Barrows' last risky camp; no XP):
+  // two cold grey shapes, and a soldier of the old kings behind them.
+  'stair-haunt': {
+    id: 'stair-haunt', name: 'The Stair Haunt', suggestedLevel: 4,
+    members: ['specter', 'specter', 'wight'],
+  },
+  // The fen's dead at night (the Sunken Barrows' risky camp on the causeway,
+  // met at 3rd–4th; no XP): four ghouls and two ghasts. Part 1's marsh camp
+  // keeps `marsh-dead`.
+  'fen-dead': {
+    id: 'fen-dead', name: 'The Fen Dead', suggestedLevel: 3,
+    members: ['ghoul', 'ghoul', 'ghoul', 'ghoul', 'ghast', 'ghast'],
+  },
+  // The Undercrypt's diggers (the ladder keeps `undead`): two skeletons,
+  // three fresh dead and two ghouls. Met at 4th, and only by a company that
+  // spends every way past (`diggers-roused`). Slipping past pays
+  // `avoidedFightXP` of this roster (DIGGERS_SLIPPED), so its XP sets what
+  // every route through the cut is paid, fought or not.
+  diggers: {
+    id: 'diggers', name: 'The Diggers', suggestedLevel: 3,
+    members: ['skeleton', 'skeleton', 'zombie', 'zombie', 'zombie', 'ghoul', 'ghoul'],
+  },
+  // The Warden's own dead, through a cracked door (the Sunken Barrows' failed
+  // rites; the ladder keeps `undead`): bones in barrow-bronze, fen-dead, and
+  // two of the kings' soldiers. ~96% at 4th.
+  'warden-dead': {
+    id: 'warden-dead', name: 'The Warden\'s Dead', suggestedLevel: 4,
+    members: ['skeleton', 'skeleton', 'skeleton', 'zombie', 'zombie', 'zombie', 'wight', 'wight'],
+  },
+  // The serpent pool (the ladder keeps `snake-pit`): three fen-serpents.
+  // ~82% at 3rd, ~86% drawn off by Wren.
+  'serpent-pool': {
+    id: 'serpent-pool', name: 'The Serpent Pool', suggestedLevel: 3,
+    members: ['giant-constrictor-snake', 'giant-constrictor-snake', 'giant-constrictor-snake'],
+  },
+
   'wight-tomb': {
     id: 'wight-tomb', name: 'Wight Tomb', suggestedLevel: 3,
     members: ['wight', 'skeleton', 'skeleton'],
@@ -264,18 +325,21 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'black-dragon-den', name: "Black Wyrmling's Bog", suggestedLevel: 2,
     members: ['black-wyrmling', 'kobold', 'kobold'],
   },
-  // The Wyrmcalling's green and blue dens, met at 4th: two kobold
-  // emberlings apiece tend the hoard beside the spearmen (still 100% at 4th).
+  // The Wyrmcalling's green den, met at 4th: the wyrmling, the two ettercaps
+  // that spin its briar, their two giant spiders and two kobolds. ~92% at 4th.
   'green-dragon-den': {
-    id: 'green-dragon-den', name: "Green Wyrmling's Thicket", suggestedLevel: 2,
-    members: ['green-wyrmling', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling'],
+    id: 'green-dragon-den', name: "Green Wyrmling's Thicket", suggestedLevel: 4,
+    members: ['green-wyrmling', 'ettercap', 'ettercap', 'giant-spider', 'giant-spider', 'kobold', 'kobold'],
   },
   'white-dragon-den': {
     id: 'white-dragon-den', name: "White Wyrmling's Cave", suggestedLevel: 2,
     members: ['white-wyrmling', 'kobold', 'kobold'],
   },
+  // The Wyrmcalling's blue den, met at 4th–5th: two kobold emberlings tend
+  // the hoard beside the spearmen. (An air elemental with it wins ~80% at
+  // 4th, but every route now meets the den at 5th, where it adds only XP.)
   'blue-dragon-den': {
-    id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 3,
+    id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 4,
     members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling'],
   },
   'red-dragon-den': {
@@ -292,41 +356,45 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: `den-clutch-${k}`, name: 'The Brood on the Rim', suggestedLevel: 4,
     members: [...k].map((c) => ({ g: 'green-wyrmling', b: 'blue-wyrmling', r: 'red-wyrmling' })[c]!),
   }])),
-  // A back-alley crew: a fixer (spy) and two hired knives — the muscle a town
-  // informant keeps around. A first-real-fight step up from a bare street mug.
+  // A back-alley crew: a fixer (spy), two hired knives and three crossbowmen
+  // on the stalls — the muscle a town informant keeps around. Met at 1st: ~78%
+  // won fresh whether the party reads the ambush first or not.
   cutpurses: {
     id: 'cutpurses', name: 'Cutpurse Crew', suggestedLevel: 1,
-    members: ['spy', 'bandit', 'bandit'],
+    members: ['spy', 'scout', 'scout', 'scout', 'bandit', 'bandit'],
   },
-  // The marsh keeps its dead. A pair of ghouls clawing up out of the black water
-  // at night — a nastier camp-interruption than starving wolves.
+  // The marsh keeps its dead: the Hollow Road's risky camp on the marsh road,
+  // met at 2nd. Four ghouls clawing up out of the black water at night, and
+  // the ghast that leads them (no XP: a night attack is a setback).
   'marsh-dead': {
     id: 'marsh-dead', name: 'The Marsh Dead', suggestedLevel: 2,
-    members: ['ghoul', 'ghoul'],
+    members: ['ghoul', 'ghoul', 'ghoul', 'ghoul', 'ghast'],
   },
-  // The Ashfang's goblin outriders: a boss and his swarming pack. The road-out
-  // climax of Act 1 — still the humanoid, hired-blade face of the band. Four
-  // warriors, not three: with no milestone on the win, this fight carries more
-  // of the road to 2nd level (88% won by a 1st-level party, greedy AI).
+  // The Ashfang's goblin outriders: a boss, his worg and his swarming pack. The
+  // road-out climax of Act 1 — still the humanoid, hired-blade face of the
+  // band. With no milestone on the win, this fight carries more of the road to
+  // 2nd level (~78% won by a 1st-level party, greedy AI).
   'goblin-outriders': {
     id: 'goblin-outriders', name: 'Goblin Outriders', suggestedLevel: 1,
-    members: ['goblin-boss', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
+    members: ['goblin-boss', 'worg', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior', 'goblin-warrior'],
   },
   // The marsh tribe in the green hag's thrall — lizardfolk driven to serve, herding
   // one of her monstrous toads. The Act 2 climax: first proof the raiders command
   // more than hired swords.
+  // Met at 2nd: ~90% won with the drop on them, ~78% caught in the reeds.
   'hag-thralls': {
     id: 'hag-thralls', name: 'The Hag\'s Thralls', suggestedLevel: 2,
-    members: ['lizardfolk', 'lizardfolk', 'lizardfolk', 'giant-toad'],
+    members: ['lizardfolk', 'lizardfolk', 'lizardfolk', 'lizardfolk', 'lizardfolk', 'giant-toad', 'giant-toad'],
   },
   // The den's gate: a bugbear enforcer and the gnoll pack the Ashfang let run
-  // their perimeter for scraps, with the bone-hung packcaller that keeps them.
-  // Fought or slipped (a slip pays `avoidedFightXP`), it carries a share of the
-  // road to 3rd before the chief's hall. Met at 2nd: 100% (greedy AI, corridor,
-  // 100 seeds); 72% for a company that reaches it still at 1st.
+  // their perimeter for scraps, with the bone-hung packcaller that keeps them
+  // and the giant hyena they run with. Fought or slipped (a slip pays
+  // `avoidedFightXP`), it carries a share of the road to 3rd before the
+  // chief's hall. Met at 2nd: ~82% (greedy AI, corridor), caught on the wall
+  // about the same.
   'den-gate': {
     id: 'den-gate', name: 'Gate Enforcers', suggestedLevel: 2,
-    members: ['bugbear', 'gnoll-packcaller', 'gnoll', 'gnoll', 'gnoll'],
+    members: ['bugbear', 'gnoll-packcaller', 'gnoll', 'gnoll', 'gnoll', 'giant-hyena'],
   },
   // The chief and the power behind him: the Ashfang warlord flanked by the green
   // hag whose marsh he sold his own people to, and one last human blade.
@@ -336,27 +404,63 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
   },
   // The Hollow Road's hall as it is fought: the chief, the hag, and Hask, the
   // guard who answers to Vex — a veteran, the hall's real muscle, so turning
-  // Vex (who stands him down) is felt. (The ladder keeps `ashfang-warlord`.)
+  // Vex (who stands him down) is felt — and a raider at the door. Met at 3rd:
+  // ~70% won fresh, ~80% with the brand named. (The ladder keeps
+  // `ashfang-warlord`.)
   'ashfang-hall': {
     id: 'ashfang-hall', name: 'The Ashfang Chief and His Guard', suggestedLevel: 3,
-    members: ['bandit-captain', 'green-hag', 'veteran'],
+    members: ['bandit-captain', 'green-hag', 'veteran', 'bandit'],
   },
   // The hag after the chief turns on her, with his guard (Hask, the veteran)
-  // and one raider at her whistle. With Vex turned, `hag-coven` instead.
+  // and four raiders at her whistle. ~77% at 3rd. With Vex turned,
+  // `hag-whistled` instead.
   'hag-guarded': {
     id: 'hag-guarded', name: 'The Reedwife and the Chief\'s Guard', suggestedLevel: 3,
-    members: ['green-hag', 'veteran', 'bandit'],
+    members: ['green-hag', 'veteran', 'orc', 'orc', 'orc', 'scout'],
   },
   // The same fight after Vex turns: his guard stands down, so the chief and
-  // the hag face the party alone — the parley's promised payoff.
+  // the hag face the party without him — the parley's promised payoff. What
+  // answers her whistle instead is her own: a great marsh snake, with one
+  // raider who stayed. ~80% at 3rd.
   'ashfang-warlord-alone': {
     id: 'ashfang-warlord-alone', name: 'The Ashfang Chief, Unguarded', suggestedLevel: 3,
-    members: ['bandit-captain', 'green-hag'],
+    members: ['bandit-captain', 'green-hag', 'giant-constrictor-snake', 'bandit'],
   },
-  // The Ashfang's kenneled hunting-beasts — two giant hyenas off their chains.
+  // The Reedwife after Vargan turns, with Vex turned (Hask gone): her marsh
+  // snake and the two raiders who come in from the yard at her whistle.
+  // (The ladder keeps `hag-coven`.)
+  'hag-whistled': {
+    id: 'hag-whistled', name: 'The Reedwife at Bay', suggestedLevel: 3,
+    members: ['green-hag', 'giant-constrictor-snake', 'orc', 'scout'],
+  },
+  // The Ashfang's kenneled hunting-beasts: three giant hyenas and three worgs
+  // off their chains. ~90% at 3rd, in a room of the den.
   'kennel-hyenas': {
     id: 'kennel-hyenas', name: 'The Kennels', suggestedLevel: 3,
-    members: ['giant-hyena', 'giant-hyena'],
+    members: ['giant-hyena', 'giant-hyena', 'giant-hyena', 'worg', 'worg', 'worg'],
+  },
+  // The den's night watch (the Hollow Road's risky camp in the den, met at
+  // 3rd): an orc, two archers and the patrol's five worgs. No XP.
+  'den-watch': {
+    id: 'den-watch', name: 'The Night Watch', suggestedLevel: 3,
+    members: ['orc', 'scout', 'scout', 'worg', 'worg', 'worg', 'worg', 'worg'],
+  },
+  // The watch at the pen, when the lock is broken loud (no XP: the price of
+  // the captives): two axe-men, four archers and an orc. ~86% at 3rd.
+  'pen-watch': {
+    id: 'pen-watch', name: 'The Watch at the Pen', suggestedLevel: 3,
+    members: ['berserker', 'berserker', 'scout', 'scout', 'scout', 'scout', 'orc'],
+  },
+  // The barrow off the marsh road (the Hollow Road's side fight, met at 2nd):
+  // a specter and the barrow-wight it serves. ~78% at 2nd.
+  'barrow-haunt': {
+    id: 'barrow-haunt', name: 'The Barrow Haunt', suggestedLevel: 2,
+    members: ['specter', 'wight'],
+  },
+  // The Hollow Road's bog toads (the ladder keeps `toad-swamp`): four of them.
+  'bog-toads': {
+    id: 'bog-toads', name: 'The Bog Toads', suggestedLevel: 2,
+    members: ['giant-toad', 'giant-toad', 'giant-toad', 'giant-toad'],
   },
   // The muster yard: a captured ogre the Ashfang keep chained as a pit-brute,
   // loosed on you by two orc goaders. Fought on the classic ladder; The Hollow
@@ -386,7 +490,8 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['priest', 'acolyte', 'acolyte', 'ghoul', 'ghoul', 'skeleton', 'skeleton'],
   },
   // The fen's corpse-lights: four wisps and the two drowned things they feed.
-  // 100% at 3rd, but it drains the party.
+  // 100% at 3rd, but it drains the party. (Two ghasts more only bring it to
+  // ~94%, for 225 XP a head that pushes the chapter's routes into 4th early.)
   'corpse-lights': {
     id: 'corpse-lights', name: 'The Corpse-Lights', suggestedLevel: 3,
     members: ['will-o-wisp', 'will-o-wisp', 'will-o-wisp', 'will-o-wisp', 'specter', 'specter'],
@@ -398,42 +503,43 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'barrow-watchers', name: 'The Watchers at the Barrow Gate', suggestedLevel: 3,
     members: ['gargoyle', 'gargoyle', 'animated-armor'],
   },
-  // The embalmed king and his household dead, ghasts in their funeral best:
-  // the Undercrypt's hardest room before the door. 91% at 3rd.
+  // The embalmed king, his household dead (ghasts in their funeral best) and
+  // the soldier who keeps his chamber: the Undercrypt's hardest room before
+  // the door. ~90% at 4th.
   'barrow-king': {
-    id: 'barrow-king', name: 'The Embalmed King', suggestedLevel: 3,
-    members: ['mummy', 'ghast', 'ghast'],
+    id: 'barrow-king', name: 'The Embalmed King', suggestedLevel: 4,
+    members: ['mummy', 'ghast', 'ghast', 'wight'],
   },
-  // The sister's hired swords at the war-camp: a knight, a veteran sellsword
-  // and three archers. 96% at 4th.
+  // The sister's hired swords at the war-camp: a knight, a veteran sellsword,
+  // three archers and two cutthroats. ~92% at 4th.
   'hired-swords': {
     id: 'hired-swords', name: 'The Sister\'s Hired Swords', suggestedLevel: 4,
-    members: ['knight', 'veteran', 'scout', 'scout', 'scout'],
+    members: ['knight', 'veteran', 'scout', 'scout', 'scout', 'bandit', 'bandit'],
   },
   // The ogre-mage's hold, met at 4th (the oni's own ladder roster wins 13% at
   // 4th in a corridor): its orcs march out with it onto open ground before
-  // the gate. 73% at 4th.
+  // the gate, three of them now. ~90% at 4th.
   'oni-hold': {
     id: 'oni-hold', name: 'The Ogre-Mage\'s Hold', suggestedLevel: 4,
-    members: ['ogre-mage', 'orc', 'orc'],
+    members: ['ogre-mage', 'orc', 'orc', 'orc'],
   },
   // The first thing on the high trail: a flight of griffons riding the
   // Calling's pull up the switchbacks. The hills' opening fight, on every road
-  // up. 98% at 4th.
+  // up: five of them. ~88% at 4th.
   'griffon-flight': {
     id: 'griffon-flight', name: 'Griffons on the Switchbacks', suggestedLevel: 4,
-    members: ['griffon', 'griffon', 'griffon', 'griffon'],
+    members: ['griffon', 'griffon', 'griffon', 'griffon', 'griffon'],
   },
-  // The flooded pass: the water elemental, and the ice-mephits that came
-  // through the crack behind it. 95% at 4th.
+  // The flooded pass: the water elemental, and the ice-mephits and the winter
+  // wolf that came through the crack behind it. ~74% at 4th.
   'flooded-seam': {
     id: 'flooded-seam', name: 'The Flooded Pass', suggestedLevel: 4,
-    members: ['water-elemental', 'ice-mephit', 'ice-mephit', 'ice-mephit'],
+    members: ['water-elemental', 'ice-mephit', 'ice-mephit', 'ice-mephit', 'winter-wolf'],
   },
-  // The giants' hall: the ettin, two ogres and a runner. 88% at 4th.
+  // The giants' hall: the ettin, two ogres and two runners. ~88% at 4th.
   'giants-hall': {
     id: 'giants-hall', name: 'The Giants\' Hall', suggestedLevel: 4,
-    members: ['ettin', 'ogre', 'ogre', 'orc'],
+    members: ['ettin', 'ogre', 'ogre', 'orc', 'orc'],
   },
 };
 

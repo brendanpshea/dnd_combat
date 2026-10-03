@@ -22,12 +22,14 @@
  *    those conditions tracked too, hands over every state it reaches, chapter
  *    by chapter, with the carried flags each walk stands for. Each state at a
  *    scene says what its atoms can be there:
- *      - exactly, for a fact of the search, a carried flag, or where the party is;
+ *      - exactly, for a fact of the search, a carried flag, where the party is,
+ *        or a tally the ledger bands (`LEDGER_BANDS`: Wren's regard, the
+ *        valley's regard), followed value by value across the chapters;
  *      - one at a time, for a flag only text reads (a "shadow": each value is
  *        reachable alone; two such flags are not known to go together);
- *      - either way, for what the search does not track (a tally such as a
- *        regard, gold, an item, a class in the party, a return visit). These
- *        are marked `?` in conditions.
+ *      - either way, for what the search does not track (gold, an item, a
+ *        class in the party, a return visit, any other tally). These are
+ *        marked `?` in conditions.
  * 3. Each reachable combination is rendered with the runtime's own functions
  *    (`sceneParagraphs`, `legalChoices`, `endingText` …) on a synthetic
  *    state. Identical renderings merge, and their combinations are described
@@ -35,6 +37,10 @@
  *
  * A scene with more versions than `MAX_VARIANTS` is printed once instead,
  * with each conditional line marked with when it shows.
+ *
+ * A paragraph whose exact text shows in other scenes too (a reused constant)
+ * is marked with them, and each chapter starts with an index of them: a line
+ * written for one scene can be wrong in another that shares it.
  */
 import { writeFileSync, mkdirSync, existsSync, readFileSync, readdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
@@ -52,6 +58,7 @@ import type { CampaignState } from '../src/campaign/campaign.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
 import { moduleById } from '../src/data/modules/index.js';
+import { LEDGER_BANDS } from '../src/data/modules/ledger.js';
 
 /** The chapters the atlas covers, in order (the search needs each one's predecessor first). */
 export const ATLAS_CHAPTERS = ['hollow-road', 'sunken-barrows', 'wyrmcalling'];
@@ -214,7 +221,7 @@ function reqWords(reqs: Requirement[], tallies: ReadonlySet<string>, npcs: Recor
 /** How a state knows an atom: exactly (a fact, a carried flag, the hub), one
  *  at a time (a shadow), or not at all. */
 type Source = { kind: 'fact'; pow: number } | { kind: 'settled'; flag: string } | { kind: 'hub'; hub: Id }
-  | { kind: 'shadow'; bit: number } | { kind: 'untracked' };
+  | { kind: 'shadow'; bit: number } | { kind: 'tally'; t: number; edges: number[] } | { kind: 'untracked' };
 
 interface SceneInfo {
   id: Id;
@@ -260,6 +267,8 @@ function sourceOf(a: Atom, run: ReachRun): Source {
   const [kind, ...rest] = a.key.split(':');
   const id = rest.join(':');
   if (kind === 'at') return { kind: 'hub', hub: id };
+  const t = kind === 'flag' ? run.tallies.indexOf(id) : -1;
+  if (t >= 0) return { kind: 'tally', t, edges: a.edges ?? [1] };
   if (a.edges || !['flag', 'companion', 'visited'].includes(kind!)) return { kind: 'untracked' };
   const f = run.facts.indexOf(a.key);
   if (f >= 0) return { kind: 'fact', pow: 2 ** f };
@@ -284,10 +293,11 @@ function absorb(run: ReachRun, infos: Map<Id, SceneInfo>, dawn: SceneInfo | null
   const bySceneIndex = run.ids.map((id) => infos.get(id)!);
   const sources = bySceneIndex.map((info) => info.atoms.map((a) => sourceOf(a, run)));
   const dawnSources = dawn ? dawn.atoms.map((a) => sourceOf(a, run)) : [];
+  const fulls = run.fulls.length ? run.fulls : [[...run.handed]];
+  const W = run.tallyWords;
   // What each state says, before carried flags: '0', '1', 'b' (both, a
-  // shadow), '*' (untracked), 's' (settled: per arriving mix).
-  const keys = bySceneIndex.map(() => new Set<string>());
-  const dawnKeys = new Set<string>();
+  // shadow), '*' (untracked), 's' (settled: per arriving mix), 't' (a
+  // tracked tally: filled in below with its band, as 'A' + band).
   const say = (src: Source[], n: number): string => {
     let k = '';
     for (const s of src) {
@@ -296,33 +306,79 @@ function absorb(run: ReachRun, infos: Map<Id, SceneInfo>, dawn: SceneInfo | null
       else if (s.kind === 'shadow') {
         const on = run.mayOn[n]! & s.bit, off = run.mayOff[n]! & s.bit;
         k += on && off ? 'b' : on ? '1' : '0';
-      } else k += s.kind === 'settled' ? 's' : '*';
+      } else k += s.kind === 'settled' ? 's' : s.kind === 'tally' ? 't' : '*';
     }
     return k;
   };
+  // Each place's keys interned (one per scene, and the dawn as the last),
+  // and, per combo of tally values, the bands its tally atoms read (base 4).
+  const places = [...sources, dawnSources];
+  const D = sources.length;
+  const interned = places.map(() => new Map<string, number>());
+  const keyStrs: string[][] = places.map(() => []);
+  const intern = (p: number, k: string) => {
+    let id = interned[p]!.get(k);
+    if (id === undefined) { id = keyStrs[p]!.length; interned[p]!.set(k, id); keyStrs[p]!.push(k); }
+    return id;
+  };
+  const tallyAtoms = places.map((src) => src.filter((x): x is Extract<Source, { kind: 'tally' }> => x.kind === 'tally'));
+  const bandsOf = tallyAtoms.map((ts) => Array.from({ length: W * 32 }, (_, c) => {
+    const v = run.comboValues(c);
+    return ts.reduce((acc, t, j) => acc + t.edges.filter((e) => v[t.t]! >= e).length * 4 ** j, 0);
+  }));
+  const M = 4096;
+  const stateKey = new Int32Array(run.sceneOf.length);
+  const dawnKey = new Int32Array(run.sceneOf.length).fill(-1);
   for (let n = 0; n < run.sceneOf.length; n++) {
     const s = run.sceneOf[n]!;
-    keys[s]!.add(say(sources[s]!, n));
-    if (dawn && sleeps.has(run.ids[s]!)) dawnKeys.add(say(dawnSources, n));
+    stateKey[n] = intern(s, say(sources[s]!, n));
+    if (dawn && sleeps.has(run.ids[s]!)) dawnKey[n] = intern(D, say(dawnSources, n));
   }
-  const expand = (info: SceneInfo, src: Source[], ks: Set<string>) => {
-    if (ks.size) info.reached = true;
+  const fill = (p: number, code: number): string => {
+    const [id, bands] = [Math.floor(code / M), code % M];
+    let j = 0;
+    return keyStrs[p]![id]!.replace(/t/g, () => String.fromCharCode(65 + (Math.floor(bands / 4 ** j++) % 4)));
+  };
+  const expand = (info: SceneInfo, src: Source[], ks: Iterable<string>, mixes: readonly string[][]) => {
     for (const k of ks) {
-      for (const full of run.fulls.length ? run.fulls : [[...run.handed]]) {
+      info.reached = true;
+      for (const full of mixes) {
         let p = '';
         info.atoms.forEach((a, i) => {
           const c = k[i]!;
           const mask = c === '0' ? 1 : c === '1' ? 2 : c === 'b' ? 3
-            : c === 's' ? (full.includes((src[i] as { flag: string }).flag) ? 2 : 1)
-              : notPlayed(a, full) ? 1 << bandOfZero(a) : 2 ** domainOf(a) - 1;
+            : c >= 'A' && c <= 'Z' ? 1 << (c.charCodeAt(0) - 65)
+              : c === 's' ? (full.includes((src[i] as { flag: string }).flag) ? 2 : 1)
+                : notPlayed(a, full) ? 1 << bandOfZero(a) : 2 ** domainOf(a) - 1;
           p += String.fromCharCode(48 + mask);
         });
         info.patterns.add(p);
       }
     }
   };
-  bySceneIndex.forEach((info, s) => expand(info, sources[s]!, keys[s]!));
-  if (dawn) expand(dawn, dawnSources, dawnKeys);
+  // Seed by seed: the arriving mixes that start the tallies alike, and what
+  // the states a party from them reaches say, with each combination of tally
+  // values the state can hold there (so tallies go together exactly).
+  for (let seed = 0; seed < run.seeds; seed++) {
+    const mixes = fulls.filter((_, j) => (run.seedOfFull[j] ?? 0) === seed);
+    if (!mixes.length) continue;
+    const sets = run.tallySets(seed);
+    const codes = places.map(() => new Set<number>());
+    for (let n = 0; n < run.sceneOf.length; n++) {
+      const s = run.sceneOf[n]!;
+      for (let w = 0; w < W; w++) {
+        let bits = sets[n * W + w]!;
+        while (bits) {
+          const low = bits & -bits; bits ^= low;
+          const c = w * 32 + 31 - Math.clz32(low);
+          codes[s]!.add(stateKey[n]! * M + bandsOf[s]![c]!);
+          if (dawnKey[n]! >= 0) codes[D]!.add(dawnKey[n]! * M + bandsOf[D]![c]!);
+        }
+      }
+    }
+    bySceneIndex.forEach((info, s) => expand(info, sources[s]!, [...codes[s]!].map((c) => fill(s, c)), mixes));
+    if (dawn) expand(dawn, dawnSources, [...codes[D]!].map((c) => fill(D, c)), mixes);
+  }
 }
 
 // --- Rendering ----------------------------------------------------------------
@@ -385,15 +441,73 @@ function stateFor(module: Module, sceneId: Id, atoms: Atom[], values: number[]):
   };
 }
 
+// --- Shared text --------------------------------------------------------------
+
+/** Past this many other scenes, a shared paragraph's note points to the index
+ *  instead of naming them. */
+const MAX_NAMED_SHARERS = 3;
+
+/**
+ * Paragraphs whose exact text shows in more than one scene of a chapter (a
+ * constant reused: one "den flown" for three dens). A writer reads the scene
+ * they edit; the note says which others read the same words.
+ */
+interface SharedText {
+  /** By trimmed text: its number in the index, and the scenes that use it. */
+  byText: Map<string, { n: number; scenes: Id[] }>;
+}
+function sharedTextOf(module: Module): SharedText {
+  const users = new Map<string, Id[]>();
+  for (const [id, scene] of Object.entries(module.scenes)) {
+    const texts = parasOf(scene).flatMap(({ paras }) => paras.map((p) => (typeof p === 'string' ? p : p.text)));
+    if (scene.kind === 'ending') texts.push(...(scene.slides ?? []).map((sl) => sl.text));
+    for (const t of new Set(texts.map((x) => x.trim()).filter(Boolean))) users.set(t, [...(users.get(t) ?? []), id]);
+  }
+  const byText = new Map<string, { n: number; scenes: Id[] }>();
+  for (const [t, scenes] of users) if (scenes.length > 1) byText.set(t, { n: byText.size + 1, scenes });
+  return { byText };
+}
+/** The note under a paragraph in scene `id`, or '' when no other scene shows it. */
+function sharedNote(shared: SharedText, id: Id, text: string): string {
+  const s = shared.byText.get(text.trim());
+  if (!s) return '';
+  const others = s.scenes.filter((x) => x !== id);
+  return others.length > MAX_NAMED_SHARERS
+    ? `<sub>(shared ×${s.scenes.length}, see index S${s.n})</sub>`
+    : `<sub>(shared with: ${others.map((x) => `\`${x}\``).join(', ')})</sub>`;
+}
+function sharedIndex(shared: SharedText): string[] {
+  if (!shared.byText.size) return [];
+  const entries = [...shared.byText.entries()].map(([t, s]) => ({ t, ...s, w: t.replace(/[*_`]/g, '').split(/\s+/) }));
+  // Enough first words to tell each from the others.
+  const opening = (e: (typeof entries)[number]) => {
+    let n = Math.min(10, e.w.length);
+    while (n < e.w.length && entries.some((o) => o !== e && o.w.slice(0, n).join(' ') === e.w.slice(0, n).join(' '))) n++;
+    return n < e.w.length ? `${e.w.slice(0, n).join(' ')} …` : e.w.join(' ');
+  };
+  // Grouped by the scenes that share them.
+  const groups = new Map<string, typeof entries>();
+  for (const e of entries) { const k = e.scenes.join(' '); groups.set(k, [...(groups.get(k) ?? []), e]); }
+  return [
+    '## Shared paragraphs', '',
+    'Paragraphs whose exact text shows in more than one scene (a reused constant), grouped by the scenes that share them. Each is marked where it shows. **Change one, and read it in every scene listed**: a line written for one of them may be wrong in another.', '',
+    ...[...groups.values()].flatMap((g) => [
+      `- ${g[0]!.scenes.map((x) => `\`${x}\``).join(', ')}:`,
+      ...g.map((e) => `  - **S${e.n}** “${opening(e)}”`),
+    ]),
+    '',
+  ];
+}
+
 const skill = (s: SkillId, dc: number) => `[${SKILL_LABEL[s] ?? s} DC ${dc}]`;
 const quote = (paras: string[]) => paras.map((p) => p.trim()).filter(Boolean);
 
 /** The prose a player reads at a scene in one state, in order. What they can
  *  do there (choices, approaches, map markers) is listed once, apart: see
  *  `optionLines`. */
-function renderScene(scene: Scene, st: AdventureState): string[] {
+function renderScene(scene: Scene, st: AdventureState, note: (text: string) => string): string[] {
   const out: string[] = [];
-  const para = (ps: string[]) => { for (const p of quote(ps)) out.push(p, ''); };
+  const para = (ps: string[]) => { for (const p of quote(ps)) { out.push(p, ''); const n = note(p); if (n) out.push(n, ''); } };
   const section = (title: string, ps: Para[] | undefined) => {
     const shown = ps ? quote(paragraphsFor(st, ps)) : [];
     if (!shown.length) return;
@@ -536,6 +650,7 @@ function describe(group: number[][], all: number[][], atoms: Atom[], words: Arra
 
 interface ChapterAtlas {
   scenes: Array<{ id: Id; text: string }>;
+  shared: SharedText;
   dawns: string;
   neverShown: string[];
   variants: number;
@@ -546,6 +661,7 @@ interface ChapterAtlas {
 function buildChapter(module: Module): ChapterAtlas {
   const t0 = Date.now();
   const npcs = module.npcs ?? {};
+  const shared = sharedTextOf(module);
   const tallies = talliesOf(ATLAS_CHAPTERS.map((c) => moduleById(c)!));
   const infos = new Map<Id, SceneInfo>();
   for (const [id, scene] of Object.entries(module.scenes)) {
@@ -564,7 +680,7 @@ function buildChapter(module: Module): ChapterAtlas {
       unsure.set(info.id, u);
     }
     absorb(run, infos, dawn, sleeps);
-  });
+  }, undefined, LEDGER_BANDS);
   if (report.skipped) throw new Error(`${module.id}: the search did not run (${report.skipped})`);
 
   const neverShown: string[] = [];
@@ -581,6 +697,7 @@ function buildChapter(module: Module): ChapterAtlas {
     const all = full ?? [];
     const lines: string[] = [head, ''];
     const conds = sceneConditions(scene);
+    const note = (t: string) => sharedNote(shared, id, t);
     // The reachable combinations of what some conditions read: all of them,
     // or (a scene with too many) just those conditions' atoms.
     const over = (list: Requirement[][]) => full ?? combosOver(info,
@@ -598,7 +715,7 @@ function buildChapter(module: Module): ChapterAtlas {
     // Group the combinations by what they render to.
     const byText = new Map<string, number[][]>();
     for (const s of all) {
-      const body = renderScene(scene, stateFor(module, id, info.atoms, s)).join('\n').trim();
+      const body = renderScene(scene, stateFor(module, id, info.atoms, s), note).join('\n').trim();
       byText.set(body, [...(byText.get(body) ?? []), s]);
     }
     /** When `reqs` hold here (and, for a map's redirect, none of `prior` do). */
@@ -616,7 +733,7 @@ function buildChapter(module: Module): ChapterAtlas {
     if (overflow || byText.size > MAX_VARIANTS) {
       // Too many versions to print: print the scene once, each conditional line marked.
       lines.push(`**${overflow ? 'Too many combinations' : `${byText.size} versions`}** — printed once, each conditional line marked with when it shows.`, '');
-      lines.push(...lineByLine(scene, when));
+      lines.push(...lineByLine(scene, when, note));
       variants += 1;
     } else {
       const groups = [...byText.entries()];
@@ -670,7 +787,7 @@ function buildChapter(module: Module): ChapterAtlas {
     }
     dawns = out.join('\n');
   }
-  return { scenes, dawns, neverShown, variants, timeMs: Date.now() - t0, states: report.states };
+  return { scenes, shared, dawns, neverShown, variants, timeMs: Date.now() - t0, states: report.states };
 }
 
 /** The words of whatever a condition list guards in a scene. */
@@ -689,7 +806,7 @@ function lineFor(scene: Scene, reqs: Requirement[]): string {
 const clip = (t: string, n = 140) => (t.length > n ? `${t.slice(0, n).trimEnd()}…` : t);
 
 /** A scene's prose printed once, each conditional line marked with when it shows. */
-function lineByLine(scene: Scene, whenRaw: (reqs: Requirement[]) => string): string[] {
+function lineByLine(scene: Scene, whenRaw: (reqs: Requirement[]) => string, note: (text: string) => string): string[] {
   const out: string[] = [];
   const when = (reqs: Requirement[]) => {
     const w = whenRaw(reqs);
@@ -698,12 +815,20 @@ function lineByLine(scene: Scene, whenRaw: (reqs: Requirement[]) => string): str
   const para = (title: string, ps: readonly Para[] | undefined) => {
     if (!ps?.length) return;
     out.push(`*${title}:*`, '');
-    for (const p of ps) out.push(typeof p === 'string' ? p : !p.if?.length ? p.text : `> **[${when(p.if).startsWith('on ') ? '' : 'when '}${when(p.if)}]** ${p.text}`, '');
+    for (const p of ps) {
+      out.push(typeof p === 'string' ? p : !p.if?.length ? p.text : `> **[${when(p.if).startsWith('on ') ? '' : 'when '}${when(p.if)}]** ${p.text}`, '');
+      const n = note(typeof p === 'string' ? p : p.text);
+      if (n) out.push(n, '');
+    }
   };
   for (const { where, paras } of parasOf(scene)) para(where, paras);
   if (scene.kind === 'ending') {
     out.push('*slides:*', '');
-    for (const s of scene.slides ?? []) out.push(s.if.length ? `> **[${when(s.if).startsWith('on ') ? '' : 'when '}${when(s.if)}]** ${s.text}` : s.text, '');
+    for (const s of scene.slides ?? []) {
+      out.push(s.if.length ? `> **[${when(s.if).startsWith('on ') ? '' : 'when '}${when(s.if)}]** ${s.text}` : s.text, '');
+      const n = note(s.text);
+      if (n) out.push(n, '');
+    }
   }
   return out;
 }
@@ -719,12 +844,14 @@ function header(module: Module, a: ChapterAtlas, part?: { n: number; of: number 
     'Every version of every scene that some reachable state can produce — every route, carried choices from earlier chapters included — with when each version shows. Read every version of a scene you change; see "Reading the atlas" in docs/module-writing-guide.md.',
     '',
     '- **when …** names what the version needs, in as few words as hold over the reachable states (the rest can go either way). "— or —" joins alternatives.',
-    '- A condition ending in **?** is one the search does not track (a tally such as a regard, gold, an item, a class in the party, a return visit): both ways are shown, though not every party can bring both.',
+    '- A condition ending in **?** is one the search does not track (gold, an item, a class in the party, a return visit, a tally the ledger does not band): both ways are shown, though not every party can bring both. Wren\'s regard and the valley\'s regard are tracked exactly.',
     '- A flag only text reads is checked one at a time: each value shown is reachable, but two such flags together may not be.',
     '- `reads:` lists what the scene\'s conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).',
+    '- <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.',
     '',
     `${a.scenes.length} scenes · ${a.variants} versions · ${a.states.toLocaleString('en-US')} states searched (with text conditions tracked).`,
     '',
+    ...(!part || part.n === 1 ? sharedIndex(a.shared) : []),
   ];
 }
 

@@ -46,7 +46,11 @@ const MAX_STATES = 3_000_000;
 /** Facts that must hold (`has`), must not (`not`), and the hub the party
  *  must be at (`at`, an index into the hubs; -2 for nowhere it can be). */
 interface Mask { has: number; not: number; at?: number }
-interface Step { to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true; sset: number; sclr: number }
+interface Step {
+  to: Id; req: Mask; set: number; clr: number; label: string; /** loses a day (`passDay`) */ day?: true; sset: number; sclr: number;
+  /** Collect mode: what it does to the tracked tallies (an index into the walk's ops), and the raw parts behind that. */
+  op: number; reqs?: Requirement[]; effs?: Effect[];
+}
 /** What a step does to the atlas's shadow facts (see `searchModule`). */
 interface Shade { sset: number; sclr: number }
 
@@ -211,6 +215,25 @@ export interface ReachRun {
   shadows: readonly string[];
   mayOn: Int32Array;
   mayOff: Int32Array;
+  /** Tallies tracked exactly (`collect`'s `tallies`), as this chapter names
+   *  them (`npc.wren.attitude`, `regard`, `sunken-barrows:regard`). Each holds
+   *  its exact value, clamped where clamping cannot change a band (see
+   *  `tallyRange`). They are not part of a state: each walk's graph is built
+   *  as before, with a tally gate taken as open, and the values are then
+   *  carried forward along its edges (gates applied), once per starting mix
+   *  of values (a *seed*). So for one seed, the values a state can hold are
+   *  exact, together and with its facts. */
+  tallies: readonly string[];
+  /** How many seeds, and which one each of `fulls` starts from. */
+  seeds: number;
+  seedOfFull: readonly number[];
+  /** For one seed, the tally values each state can hold: a set of combos,
+   *  `tallyWords` 32-bit words per state. Empty: no party from that seed
+   *  reaches the state (a tally gate shuts every way in). */
+  tallySets: (seed: number) => Uint32Array;
+  tallyWords: number;
+  /** The values combo `c` stands for, by tally. */
+  comboValues: (c: number) => readonly number[];
 }
 interface Collect {
   /** Requirements to track as facts beyond the path's own (a pure function
@@ -218,6 +241,39 @@ interface Collect {
   reads: (m: Module) => Requirement[];
   /** Told each walk of the chapter asked about (not of earlier chapters). */
   onRun?: (run: ReachRun) => void;
+  /** Tallies to track exactly, by name, with the band edges they are read
+   *  at (the ledger's `LEDGER_BANDS`). A carried one goes by its carried
+   *  name (`sunken-barrows:regard`); NPC state by its own. */
+  tallies?: Readonly<Record<string, readonly number[]>>;
+}
+/** Past this many combinations of tally values, a walk tracks none. */
+const MAX_TALLY_COMBOS = 1024;
+/** How far past its band edges a tally that moves both ways is followed
+ *  exactly. Clamping there is exact for every band as long as no route moves
+ *  it further than this beyond an edge and back (Wren's regard spans −6..+8
+ *  over the trilogy, from 0). */
+const TALLY_SLACK = 6;
+/** A tally's name in the ledger: carried under `module:flag`, or as itself. */
+const ledgerName = (m: Module, f: string) => (m.carries?.includes(f) ? `${m.id}:${f}` : f);
+/**
+ * The values a tally is followed over: past them it is clamped. A tally that
+ * only ever rises can stop at its top edge (once there, it stays in the top
+ * band); one that only falls, just under its bottom edge. One that moves both
+ * ways gets `TALLY_SLACK` either side.
+ */
+function tallyRange(name: string, edges: readonly number[], chapters: readonly Module[]): { lo: number; hi: number } {
+  let up = false, down = false;
+  const set: number[] = [0];
+  for (const m of chapters) {
+    const all = [...Object.values(m.scenes).flatMap(effectsOf), ...(m.dawns ?? []).flatMap((d) => d.effects ?? [])];
+    for (const e of all) {
+      if ((e.kind !== 'addFlag' && e.kind !== 'setFlag') || ledgerName(m, e.flag) !== name) continue;
+      if (e.kind === 'addFlag') { if (e.amount > 0) up = true; if (e.amount < 0) down = true; }
+      else if (typeof e.value === 'number') set.push(e.value);
+    }
+  }
+  const both = up && down ? TALLY_SLACK : 0;
+  return { lo: Math.min(...set, edges[0]! - 1) - both, hi: Math.max(...set, edges[edges.length - 1]!) + both };
 }
 const collectCache = new WeakMap<Collect['reads'], Map<string, ReachReport>>();
 
@@ -229,8 +285,9 @@ const collectCache = new WeakMap<Collect['reads'], Map<string, ReachReport>>();
  */
 export function collectReach(
   module: Module, reads: Collect['reads'], onRun: (run: ReachRun) => void, chapters: readonly Module[] = MODULES,
+  tallies?: Collect['tallies'],
 ): ReachReport {
-  const report = searchChapter(module, chapters, { reads, onRun });
+  const report = searchChapter(module, chapters, { reads, onRun, ...(tallies ? { tallies } : {}) });
   let byReads = collectCache.get(reads);
   if (!byReads) collectCache.set(reads, (byReads = new Map()));
   byReads.set(JSON.stringify(module), report);
@@ -240,7 +297,7 @@ function collectedBefore(module: Module, chapters: readonly Module[], collect: C
   const byReads = collectCache.get(collect.reads);
   const hit = byReads?.get(JSON.stringify(module));
   if (hit) return hit;
-  const report = searchChapter(module, chapters, { reads: collect.reads });
+  const report = searchChapter(module, chapters, { reads: collect.reads, ...(collect.tallies ? { tallies: collect.tallies } : {}) });
   if (!byReads) collectCache.set(collect.reads, new Map([[JSON.stringify(module), report]]));
   else byReads.set(JSON.stringify(module), report);
   return report;
@@ -303,13 +360,14 @@ function searchChapter(module: Module, chapters: readonly Module[], collect?: Co
     run.seen.forEach((id) => seen.add(id));
     // The same finding in another mix of carried choices is the same finding.
     for (const e of run.errors) if (!errors.some((x) => sameFinding(x, e))) errors.push(e);
-    for (const full of fulls) {
-      for (const own of run.outputs) {
-        // NPC state this chapter can change is handed on as it left it.
-        const out = [...new Set([...full.filter((f) => !run.rewrites.has(f)), ...own])].sort();
+    fulls.forEach((full, j) => {
+      for (const own of run.outputsBySeed?.[run.seedOfFull![j]!] ?? run.outputs) {
+        // NPC state this chapter can change is handed on as it left it (a
+        // tally it tracks, `name=value`, likewise).
+        const out = [...new Set([...full.filter((f) => !run.rewrites.has(f.replace(/=.*$/, ''))), ...own])].sort();
         carried.set(out.join('|'), out);
       }
-    }
+    });
   }
   const unreached = Object.keys(module.scenes).filter((id) => !seen.has(id))
     .map((id) => `[${id}] can never be reached: every way in is shut by a requirement that cannot hold by then`);
@@ -328,8 +386,13 @@ interface Run {
   seen: Set<Id>;
   /** What it hands on (fully named), by every mix a victory state holds. */
   outputs: string[][];
-  /** Inherited flags it tracks and may change, so hands on afresh. */
+  /** Inherited flags it tracks and may change, so hands on afresh (and, in
+   *  collect mode, the tallies it tracks). */
   rewrites: Set<string>;
+  /** Collect mode: what it hands on by seed (tallies included, as
+   *  `name=value`), and each of `fulls`' seed. */
+  outputsBySeed?: string[][][];
+  seedOfFull?: number[];
 }
 
 function searchModule(module: Module, handed: ReadonlySet<string>, chapters: readonly Module[], collect?: Collect, fulls: string[][] = []): Run {
@@ -418,6 +481,106 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     ((r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`) && !settled.has(r.flag));
   const factNames = [...facts.keys()];
 
+  // Tallies tracked exactly, for the atlas only (see `ReachRun.tallies`).
+  // Every edge gets an *op*: a table from each combo of tally values before
+  // it to the combo after (-1: the edge is shut to it). Op 0 changes nothing.
+  const tallyNames: string[] = [];
+  const tallyLo: number[] = [], tallySize: number[] = [], stride: number[] = [];
+  let combos = 1;
+  if (collect?.tallies) {
+    const bands = collect.tallies;
+    const named = (f: string) => (bands[ledgerName(module, f)] ? ledgerName(module, f) : null);
+    const seen = new Set<string>();
+    const note = (f: string) => { if (named(f)) seen.add(f); };
+    for (const e of [...Object.values(module.scenes).flatMap(effectsOf), ...(module.dawns ?? []).flatMap((d) => d.effects ?? [])]) {
+      if (e.kind === 'addFlag' || e.kind === 'setFlag' || e.kind === 'clearFlag') note(e.flag);
+    }
+    for (const r of [...pathReads(module), ...assumedReads(module), ...extra]) {
+      if (r.kind === 'flag' || r.kind === 'notFlag' || r.kind === 'count') note(r.flag);
+    }
+    for (const full of fulls) for (const f of full) { const eq = f.indexOf('='); if (eq > 0) note(f.slice(0, eq)); }
+    for (const f of [...seen].sort()) {
+      const { lo: l, hi: h } = tallyRange(named(f)!, bands[named(f)!]!, chapters);
+      if (combos * (h - l + 1) > MAX_TALLY_COMBOS) continue;
+      tallyNames.push(f); tallyLo.push(l); tallySize.push(h - l + 1); stride.push(combos);
+      combos *= h - l + 1;
+    }
+  }
+  const T = tallyNames.length;
+  const tallyIndex = new Map(tallyNames.map((f, i) => [f, i]));
+  const comboValues = (c: number) => tallyNames.map((_, i) => tallyLo[i]! + Math.floor(c / stride[i]!) % tallySize[i]!);
+  const comboOf = (vals: number[]) => vals.reduce((acc, v, i) => acc + (Math.min(Math.max(v, tallyLo[i]!), tallyLo[i]! + tallySize[i]! - 1) - tallyLo[i]!) * stride[i]!, 0);
+  /** A requirement on a tracked tally, as the runtime reads it; null for any other. */
+  const tallyHolds = (r: Requirement, vals: readonly number[]): boolean | null => {
+    if (r.kind !== 'flag' && r.kind !== 'notFlag' && r.kind !== 'count') return null;
+    const i = tallyIndex.get(r.flag);
+    if (i === undefined) return null;
+    const v = vals[i]!;
+    if (r.kind === 'notFlag') return !(v > 0);
+    if (r.kind === 'count') return (r.atLeast === undefined || v >= r.atLeast) && (r.below === undefined || v < r.below);
+    return r.value === undefined ? v > 0 : typeof r.value === 'number' ? v >= r.value : false;
+  };
+  const ops: Int32Array[] = [Int32Array.from({ length: combos }, (_, c) => c)];
+  // Per op and tally: how far it can raise it and lower it, gates aside
+  // (Infinity: it sets it outright).
+  const opRise: number[][] = [tallyNames.map(() => 0)], opFall: number[][] = [tallyNames.map(() => 0)];
+  const opIds = new Map<string, number>();
+  const listIds = new Map<object, number>();
+  const idOfList = (x: object) => { let i = listIds.get(x); if (i === undefined) listIds.set(x, (i = listIds.size)); return i; };
+  /** The op for an edge that needs every one of `pre` lists, none of `excl`
+   *  lists, then does `effs`. A list is read for its tally requirements only
+   *  (the rest are known to hold, or taken as possible). */
+  const opFor = (pre: Array<Requirement[] | undefined>, excl: Requirement[][], effs: Array<Effect[] | undefined>): number => {
+    if (!T) return 0;
+    const p = pre.filter((x): x is Requirement[] => !!x?.some((r) => tallyHolds(r, comboValues(0)) !== null));
+    const x = excl.filter((l) => l.some((r) => tallyHolds(r, comboValues(0)) !== null));
+    const e = effs.filter((l): l is Effect[] => !!l?.some((f) => (f.kind === 'addFlag' || f.kind === 'setFlag' || f.kind === 'clearFlag') && tallyIndex.has(f.flag)));
+    if (!p.length && !x.length && !e.length) return 0;
+    const key = `${p.map(idOfList).join(',')}|${x.map(idOfList).join(',')}|${e.map(idOfList).join(',')}`;
+    let id = opIds.get(key);
+    if (id !== undefined) return id;
+    const table = new Int32Array(combos);
+    for (let c = 0; c < combos; c++) {
+      const vals = comboValues(c);
+      const holds = (l: Requirement[]) => l.every((r) => tallyHolds(r, vals) !== false);
+      if (!p.every(holds) || x.some(holds)) { table[c] = -1; continue; }
+      for (const l of e) for (const f of l) {
+        const i = f.kind === 'addFlag' || f.kind === 'setFlag' || f.kind === 'clearFlag' ? tallyIndex.get(f.flag) : undefined;
+        if (i === undefined) continue;
+        vals[i] = f.kind === 'addFlag' ? vals[i]! + f.amount
+          : f.kind === 'clearFlag' || (f.kind === 'setFlag' && f.value === false) ? 0
+            : f.kind === 'setFlag' && typeof f.value === 'number' ? f.value : 1;
+        vals[i] = Math.min(Math.max(vals[i]!, tallyLo[i]!), tallyLo[i]! + tallySize[i]! - 1);
+      }
+      table[c] = comboOf(vals);
+    }
+    ops.push(table);
+    const rise = tallyNames.map(() => 0), fall = tallyNames.map(() => 0);
+    for (const l of e) for (const f of l) {
+      const i = f.kind === 'addFlag' || f.kind === 'setFlag' || f.kind === 'clearFlag' ? tallyIndex.get(f.flag) : undefined;
+      if (i === undefined) continue;
+      if (f.kind === 'addFlag') { if (f.amount > 0) rise[i]! += f.amount; else fall[i]! -= f.amount; }
+      else { rise[i] = Infinity; fall[i] = Infinity; }
+    }
+    opRise.push(rise); opFall.push(fall);
+    opIds.set(key, (id = ops.length - 1));
+    return id;
+  };
+  /** One op, then another. */
+  const composed = new Map<number, number>();
+  const then = (a: number, b: number): number => {
+    if (!a || !b) return a || b;
+    const k = a * 65536 + b;
+    let id = composed.get(k);
+    if (id === undefined) {
+      const ta = ops[a]!, tb = ops[b]!;
+      ops.push(Int32Array.from(ta, (c) => (c < 0 ? -1 : tb[c]!)));
+      opRise.push(opRise[a]!.map((x, i) => x + opRise[b]![i]!)); opFall.push(opFall[a]!.map((x, i) => x + opFall[b]![i]!));
+      composed.set(k, (id = ops.length - 1));
+    }
+    return id;
+  };
+
   const mask = (reqs: Requirement[] | undefined): Mask => {
     let has = 0, not = 0;
     let at: number | undefined;
@@ -456,8 +619,9 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   };
   const met = (m: Mask, f: number, h: number) => and(f, m.has) === m.has && and(f, m.not) === 0 && (m.at === undefined || m.at === h);
   const OPEN: Mask = { has: 0, not: 0 };
-  const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined): Step =>
-    ({ to, label, req, ...effects(eff), ...(eff?.some((e) => e.kind === 'passDay') ? { day: true as const } : {}) });
+  const step = (to: Id, label: string, req: Mask = OPEN, eff: Effect[] | undefined = undefined, reqs?: Requirement[]): Step =>
+    ({ to, label, req, ...effects(eff), ...(eff?.some((e) => e.kind === 'passDay') ? { day: true as const } : {}),
+      op: opFor([reqs], [], [eff]), ...(T ? { reqs: reqs ?? [], effs: eff ?? [] } : {}) });
 
   // --- Each scene's ways out, compiled once ----------------------------------
   // `leave` marks the implicit way back to the hub; `when` the explore nodes,
@@ -465,20 +629,20 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   interface Compiled {
     steps: Step[];
     leave: boolean;
-    nodes: Array<{ req: Mask; when: Array<{ req: Mask; to: Id; maybe: boolean }>; to: Id; label: string }>;
+    nodes: Array<{ req: Mask; when: Array<{ req: Mask; to: Id; maybe: boolean; if: Requirement[]; sure: boolean }>; to: Id; label: string; requires?: Requirement[] }>;
     events: Array<{ until: Mask | null; to: Id; label: string }>;
     travel: boolean;
   }
   const compiled: Compiled[] = ids.map((id) => {
     const s = module.scenes[id]!;
     const c: Compiled = { steps: [], leave: false, nodes: [], events: [], travel: false };
-    const out = (o: { to: Id; effects?: Effect[] }, label: string, req?: Mask) => c.steps.push(step(o.to, label, req, o.effects));
+    const out = (o: { to: Id; effects?: Effect[] }, label: string, req?: Mask, reqs?: Requirement[]) => c.steps.push(step(o.to, label, req, o.effects, reqs));
     switch (s.kind) {
       case 'story': case 'dialogue':
         for (const ch of s.next) {
           const req = mask(ch.requires);
-          c.steps.push(step(ch.to, `"${ch.label}"`, req, ch.effects));
-          if (ch.check) c.steps.push(step(ch.check.failTo, `"${ch.label}" (fails)`, req, [...(ch.effects ?? []), ...(ch.check.failEffects ?? [])]));
+          c.steps.push(step(ch.to, `"${ch.label}"`, req, ch.effects, ch.requires));
+          if (ch.check) c.steps.push(step(ch.check.failTo, `"${ch.label}" (fails)`, req, [...(ch.effects ?? []), ...(ch.check.failEffects ?? [])], ch.requires));
         }
         c.leave = !s.noBack;
         break;
@@ -487,8 +651,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
         out(s.success, 'gets past'); out(s.failure, 'fails to get past');
         for (const a of s.approaches) {
           const req = mask(a.requires);
-          if (a.success) out(a.success, `"${a.label}"`, req);
-          if (a.failure && s.retry !== 'perApproach') out(a.failure, `"${a.label}" (fails)`, req);
+          if (a.success) out(a.success, `"${a.label}"`, req, a.requires);
+          if (a.failure && s.retry !== 'perApproach') out(a.failure, `"${a.label}" (fails)`, req, a.requires);
         }
         c.leave = !s.noBack;
         break;
@@ -505,9 +669,11 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       case 'shop': case 'rest': c.steps.push(step(s.next, 'moves on')); break;
       case 'explore':
         for (const n of s.map.nodes) {
-          c.nodes.push({ req: mask(n.requires), to: n.scene, label: `goes to ${n.label}`,
-            when: (n.sceneWhen ?? []).map((w) => ({ req: mask(w.if.filter((r) => !untracked(r))), to: w.to, maybe: w.if.some(untracked) })) });
-          if (n.wandering) c.steps.push(step(n.wandering.battleScene, `is jumped on the way to ${n.label}`, mask(n.requires)));
+          c.nodes.push({ req: mask(n.requires), to: n.scene, label: `goes to ${n.label}`, ...(n.requires ? { requires: n.requires } : {}),
+            when: (n.sceneWhen ?? []).map((w) => ({ req: mask(w.if.filter((r) => !untracked(r))), to: w.to, maybe: w.if.some(untracked), if: w.if,
+              // Collect mode: a maybe-redirect whose only unknowns are tracked tallies is decided by them.
+              sure: w.if.filter(untracked).every((r) => tallyHolds(r, comboValues(0)) !== null) })) });
+          if (n.wandering) c.steps.push(step(n.wandering.battleScene, `is jumped on the way to ${n.label}`, mask(n.requires), undefined, n.requires));
         }
         if (s.map.camp?.risky) c.steps.push(step(s.map.camp.risky.battleScene, 'is attacked in camp'));
         c.travel = true;
@@ -531,7 +697,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     return c;
   });
   const hubVisitedBits = hubs.map((h) => bit(`visited:${h}`));
-  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects) }));
+  const dawnSteps = dawns.map((d) => ({ day: d.day, bit: bit(d.key), ...effects(d.effects), op: opFor([], [], [d.effects]) }));
   /** Where a party can sleep the night, by scene: at a camp (the place it
    *  stands in — as `campRule`), or a long rest scene. */
   const campAt = (s: Scene | undefined) =>
@@ -556,6 +722,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   const edgeFrom: number[] = [], edgeTo: number[] = [];
   // The atlas's shadows: what each edge sets and clears (collect mode only).
   const edgeSet: number[] = [], edgeClr: number[] = [];
+  // And what each edge does to the tracked tallies (an op; collect mode only).
+  const edgeOp: number[] = [];
   const sceneShadowBit = ids.map((id) => sbit(`visited:${id}`));
 
   const add = (scene: number, hub: number, f: number, from: number, label: string): number => {
@@ -569,7 +737,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     return n;
   };
   /** Walk from state `n` to scene `to`, after effects. */
-  const enter = (n: number, toRef: Id, set: number, clr: number, label: string, shade?: Shade) => {
+  const enter = (n: number, toRef: Id, set: number, clr: number, label: string, shade?: Shade, op = 0) => {
     const hub = hubOf[n]!;
     const target = toRef === HUB_REF ? (hub >= 0 ? hubs[hub]! : module.start) : toRef;
     const t = index.get(target);
@@ -580,7 +748,7 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     if (hx !== undefined) { h = hx; f = or(f, hubVisitedBits[hx]!); }
     const m = add(t, h, f, n, label);
     edgeFrom.push(n); edgeTo.push(m);
-    if (collect) { edgeSet.push((shade?.sset ?? 0) | sceneShadowBit[t]!); edgeClr.push(shade?.sclr ?? 0); }
+    if (collect) { edgeSet.push((shade?.sset ?? 0) | sceneShadowBit[t]!); edgeClr.push(shade?.sclr ?? 0); edgeOp.push(op); }
   };
 
   const start = index.get(module.start);
@@ -599,25 +767,33 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     const next = dawnSteps.find((d) => !and(f, d.bit));
     for (const st of c.steps) {
       if (!met(st.req, f, hub)) continue;
-      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`, st);
+      enter(n, st.to, st.set, st.clr, `${here}: ${st.label}`, st, st.op);
       // A day lost may bring that morning (or may not yet).
       // The step's effects, then the morning's.
       if (st.day && next) {
         enter(n, st.to, or(or(without(st.set, next.clr), next.set), next.bit), or(st.clr, next.clr),
           `${here}: ${st.label}, and loses a day to the morning of day ${next.day}`,
-          { sset: (st.sset & ~next.sclr) | next.sset, sclr: st.sclr | next.sclr });
+          { sset: (st.sset & ~next.sclr) | next.sset, sclr: st.sclr | next.sclr }, then(st.op, next.op));
       }
     }
     for (const nd of c.nodes) {
       if (!met(nd.req, f, hub)) continue;
       // First matching redirect wins; one that reads an untracked flag may or
       // may not apply, so it is taken and the search carries on past it too.
+      // (Collect mode: each such redirect is open to the tally values it
+      // holds for, and the ways past it to those it does not, when tallies
+      // alone decide it.)
       let to: Id = nd.to;
+      const past: Requirement[][] = [];
       for (const w of nd.when) {
-        if (w.maybe) { enter(n, w.to, 0, 0, `${here}: ${nd.label}`); continue; }
+        if (w.maybe) {
+          enter(n, w.to, 0, 0, `${here}: ${nd.label}`, undefined, T ? opFor([nd.requires, w.if], [...past], []) : 0);
+          if (T && w.sure && met(w.req, f, hub)) past.push(w.if);
+          continue;
+        }
         if (met(w.req, f, hub)) { to = w.to; break; }
       }
-      enter(n, to, 0, 0, `${here}: ${nd.label}`);
+      enter(n, to, 0, 0, `${here}: ${nd.label}`, undefined, T ? opFor([nd.requires], past, []) : 0);
     }
     for (const ev of c.events) if (!ev.until || !met(ev.until, f, hub)) enter(n, ev.to, 0, 0, `${here}: ${ev.label}`);
     if (c.leave && hub >= 0 && hubs[hub] !== here) enter(n, HUB_REF, 0, 0, `${here}: goes back`);
@@ -630,9 +806,72 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
       const scene = module.scenes[here];
       const camp = isHubScene(scene) && campAt(scene);
       const label = `sleeps until the morning of day ${next.day}`;
-      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`, next);
-      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`, next);
+      if (camp) enter(n, here, or(next.set, next.bit), next.clr, `${here}: ${label}`, next, next.op);
+      if (sleeps[s]) enter(n, (scene as Extract<Scene, { kind: 'rest' }>).next, or(next.set, next.bit), next.clr, `${here}: ${label}`, next, next.op);
     }
+  }
+
+  // In the last chapter, a tally that never falls reads the same from any
+  // start at or above its top edge (and one that never rises, from any
+  // below its bottom edge): such starts are one seed.
+  const seedLo = tallyLo.slice(), seedHi = tallyLo.map((l, i) => l + tallySize[i]! - 1);
+  if (T && !module.sequel) {
+    tallyNames.forEach((f, t) => {
+      const edges = collect!.tallies![ledgerName(module, f)]!;
+      if (!opFall.some((x) => x[t]! > 0)) seedHi[t] = Math.min(seedHi[t]!, edges[edges.length - 1]!);
+      if (!opRise.some((x) => x[t]! > 0)) seedLo[t] = Math.max(seedLo[t]!, edges[0]! - 1);
+    });
+  }
+  // Collect mode: each of `fulls` starts the tallies from the values it
+  // carries in (`name=value`; absent, 0). One seed per distinct start.
+  const seedCombos: number[] = [];
+  const seedOfFull = (fulls.length ? fulls : [[]]).map((full) => {
+    const vals = tallyNames.map(() => 0);
+    for (const f of full) { const eq = f.indexOf('='); const i = eq > 0 ? tallyIndex.get(f.slice(0, eq)) : undefined; if (i !== undefined) vals[i] = Number(f.slice(eq + 1)); }
+    vals.forEach((v, i) => { vals[i] = Math.min(Math.max(v, seedLo[i]!), seedHi[i]!); });
+    const c = comboOf(vals);
+    let k = seedCombos.indexOf(c);
+    if (k < 0) { k = seedCombos.length; seedCombos.push(c); }
+    return k;
+  });
+  const W = Math.ceil(combos / 32);
+  let tallySets: Uint32Array[] = [];
+  let out = new Int32Array(0), order = new Int32Array(0);
+  if (collect) {
+    const N = sceneOf.length;
+    out = new Int32Array(N + 1);
+    for (const f of edgeFrom) out[f + 1]!++;
+    for (let i = 0; i < N; i++) out[i + 1]! += out[i]!;
+    order = new Int32Array(edgeFrom.length);
+    const fill = out.slice(0, N);
+    for (let e = 0; e < edgeFrom.length; e++) order[fill[edgeFrom[e]!]!++] = e;
+    // The tally values each state can hold, forward along every edge (each
+    // through its op), to a fixed point: once per seed.
+    tallySets = seedCombos.map((seed) => {
+      const sets = new Uint32Array(N * W);
+      if (!T) { sets.fill(1); return sets; }
+      sets[0 * W + (seed >> 5)] = 1 << (seed & 31);
+      const queued = new Uint8Array(N); const work = [0]; queued[0] = 1;
+      while (work.length) {
+        const n = work.pop()!; queued[n] = 0;
+        for (let i = out[n]!; i < out[n + 1]!; i++) {
+          const e = order[i]!, m = edgeTo[e]!, table = ops[edgeOp[e]!]!;
+          let changed = false;
+          for (let w = 0; w < W; w++) {
+            let bits = sets[n * W + w]!;
+            while (bits) {
+              const low = bits & -bits; bits ^= low;
+              const d = table[w * 32 + 31 - Math.clz32(low)]!;
+              if (d < 0) continue;
+              const slot = m * W + (d >> 5), b = (1 << (d & 31)) >>> 0;
+              if (!(sets[slot]! & b)) { sets[slot] = (sets[slot]! | b) >>> 0; changed = true; }
+            }
+          }
+          if (changed && !queued[m]) { queued[m] = 1; work.push(m); }
+        }
+      }
+      return sets;
+    });
   }
 
   if (collect?.onRun) {
@@ -640,11 +879,6 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
     // in a state if some edge in leaves it on (or sets it), and likewise off.
     const N = sceneOf.length;
     const mayOn = new Int32Array(N), mayOff = new Int32Array(N);
-    const out = new Int32Array(N + 1);
-    for (const f of edgeFrom) out[f + 1]!++;
-    for (let i = 0; i < N; i++) out[i + 1]! += out[i]!;
-    const order = new Int32Array(edgeFrom.length), fill = out.slice(0, N);
-    for (let e = 0; e < edgeFrom.length; e++) order[fill[edgeFrom[e]!]!++] = e;
     mayOn[0] = sceneShadowBit[start]!; mayOff[0] = ~sceneShadowBit[start]!;
     const queued = new Uint8Array(N); const work = [0]; queued[0] = 1;
     while (work.length) {
@@ -656,7 +890,8 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
         if (on !== mayOn[m] || off !== mayOff[m]) { mayOn[m] = on; mayOff[m] = off; if (!queued[m]) { queued[m] = 1; work.push(m); } }
       }
     }
-    collect.onRun({ handed, fulls, fixed, facts: factNames, hubs, ids, sceneOf, hubOf, factsOf, shadows, mayOn, mayOff });
+    collect.onRun({ handed, fulls, fixed, facts: factNames, hubs, ids, sceneOf, hubOf, factsOf, shadows, mayOn, mayOff,
+      tallies: tallyNames, seeds: seedCombos.length, seedOfFull, tallySets: (k) => tallySets[k]!, tallyWords: W, comboValues });
   }
 
   // --- What it found -------------------------------------------------------------
@@ -676,8 +911,31 @@ function searchModule(module: Module, handed: ReadonlySet<string>, chapters: rea
   }
   const outputs = [...byMix.values()];
   const rewrites = new Set(handsOn.filter((h) => isNpcFlag(h.flag)).map((h) => h.flag));
-  // The atlas wants the states and what is handed on, not the findings.
-  if (collect) return { errors, states: N, seen: seenScenes, outputs, rewrites };
+  // The atlas wants the states and what is handed on, not the findings. With
+  // tallies tracked, what a victory hands on is told seed by seed, each
+  // tally (under its ledger name) at each value it can hold there.
+  if (collect) {
+    const handTallies = tallyNames.map((f) => ledgerName(module, f));
+    handTallies.forEach((f) => rewrites.add(f));
+    const outputsBySeed = tallySets.map((sets) => {
+      const mixes = new Map<string, string[]>();
+      for (let n = 0; n < N; n++) {
+        if (!victory(n)) continue;
+        const own = handsOn.filter((_, i) => and(factsOf[n]!, handBits[i]!)).map((h) => h.as);
+        for (let w = 0; w < W; w++) {
+          let bits = sets[n * W + w]!;
+          while (bits) {
+            const low = bits & -bits; bits ^= low;
+            const vals = comboValues(w * 32 + 31 - Math.clz32(low));
+            const mix = [...own, ...handTallies.map((f, i) => `${f}=${vals[i]}`)];
+            mixes.set(mix.join('|'), mix);
+          }
+        }
+      }
+      return [...mixes.values()];
+    });
+    return { errors, states: N, seen: seenScenes, outputs, rewrites, outputsBySeed, seedOfFull };
+  }
   // A module with a victory ending: a state that cannot reach one is stranded,
   // even in a run (a mix of carried choices) where none is reached at all.
   if (Object.values(module.scenes).some((sc) => sc.kind === 'ending' && sc.outcome === 'victory')) {

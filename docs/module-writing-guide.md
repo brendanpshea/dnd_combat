@@ -612,6 +612,17 @@ once, plainly, in the interface, because a player can silence the quasit.
 Settled decisions (what is not reopened each round) are in
 `docs/design-decisions.md`.
 
+### The world bible
+
+The facts the prose relies on and no rule reads live in `docs/canon.md`:
+which season each part happens in, which road, where the places lie, who looks
+like what and carries what (the girl's one shoe, Wren's leg, Halden's book),
+and who was where on each ledger value. **Check it before you write a fact,
+and add a new fact there first**, then write the line. Names and numbers that
+rules also read stay in `src/data/modules/canon.ts` (see "Facts of the world:
+canon"). A phrasing that contradicts the bible goes in the table in
+`test/canon-phrases.test.ts`, so the contradiction can't come back.
+
 ## What crosses between chapters: the ledger
 
 A chapter may remember as much as it likes while it is played. What it hands
@@ -643,14 +654,21 @@ and read the transcript diff. The full `npm test` (about two minutes, most
 of it arena simulations) is for once before a commit, not for every edit.
 
 Difficulty claims rest on `docs/balance.md`, not on the win rates in
-`src/data/encounters.ts` comments. `npm run balance` (about 30 seconds on four
-cores, two minutes with `--serial`) replays the transcript routes, reads the
-level each route really carries to each fight, and simulates every fight for a
-fresh party at that level on its own map (greedy AI both sides, 50 seeds); it
-flags fights won under 60% or met more than a level below `suggestedLevel`.
-It is too slow for `check:story` and has no staleness test, so **regenerate
-with `npm run balance` when encounters or chapters change**, and read the
-flagged rows.
+`src/data/encounters.ts` comments. `npm run balance` (about a minute on four
+cores, three or four with `--serial`) replays the transcript routes, reads the
+level each route really carries to each fight and how many fights it has
+fought since its last long rest, and simulates every fight on its own map
+(greedy AI both sides) three ways: **fresh** (50 seeds), **worn** (60% HP,
+half of each slot tier and rest-scoped pool; 30 seeds) and **on arrival**
+(wear set from the route's fights since rest: none fresh, one light, two or
+more worn). The target is a main-path fight winning roughly **70–90% fresh**
+(bosses and finales 60–80%), so the worn column shows real danger; the table
+counts each chapter's main-path fights below, in and above that band, and
+flags fights won under 60% (LOW), won 97% or more on a route's path (EASY),
+met more than a level below `suggestedLevel` (UNDER) or two or more above it
+(OVER). It is too slow for `check:story` and has no staleness test, so
+**regenerate with `npm run balance` when encounters or chapters change**, and
+read the band summary and the flagged rows.
 
 Before a round of fixes ships, one reviewer reads only the round's diff and
 the atlas versions of every scene it touched (and of scenes that read the
@@ -685,15 +703,29 @@ with when it is open.
 - **"Never shown on any reachable route"** (per scene, and gathered at the
   end of each file) is a line, choice or marker whose condition no reachable
   state meets: dead text, or a condition that is wrong.
+- **Shared paragraphs.** Many paragraphs are one constant reused in several
+  scenes (one "den flown" for three dens, one Wren briefing in several
+  scenes). Each is marked where it shows, `(shared with: scene-a, scene-b)`,
+  or `(shared ×7, see index S12)` when many scenes use it; the index at the
+  top of each chapter file lists every shared paragraph by its first words,
+  grouped by the scenes that share it. **Writers: when you change a shared
+  paragraph, read it in every scene it appears in**, not just the one you
+  were editing. A line written for one context goes wrong in another: the
+  den the party never entered, the briefing given to a party that already
+  knows.
 - **What `?` means.** A condition marked `?` is one the search does not track
-  (a tally such as a regard, gold, an item, a class in the party, a return
-  visit): both ways are shown, though not every party can bring both. A flag
-  only text reads is checked one at a time, so two such flags in one "when"
-  may not go together.
+  (gold, an item, a class in the party, a return visit, a tally the ledger
+  does not band): both ways are shown, though not every party can bring
+  both. A flag only text reads is checked one at a time, so two such flags
+  in one "when" may not go together. The tallies the ledger bands
+  (`LEDGER_BANDS`: Wren's regard, the valley's regard) are tracked exactly,
+  across chapters: "when Wren's regard ≥ 2" with no `?` means some party
+  really arrives there with her warm, and a version that is missing is one
+  no party can see.
 - **Regenerate** with `npm run atlas` after any module or runtime change;
   `test/atlas.test.ts` (in `check:story`) fails until the committed files
   match. It runs the reachability search once more per chapter, with every
-  text condition tracked (about ten seconds).
+  text condition tracked (about twenty seconds).
 
 ## Reading a route
 

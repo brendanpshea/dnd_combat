@@ -105,7 +105,7 @@ describe('the trilogy\'s numeric facts', () => {
     charged(sb, 'inn', 'room', 'inn-room');
     paid(sb, 'lights-won', 'keep', 'drowned-gold');
     paid(sb, 'marrow-spared', 'bind', 'offering-purse');
-    charged(sb, 'sb-aftermath-hub', 'mira', 'taproom-supper');
+    charged(sb, 'sb-hall', 'mira', 'taproom-supper');
     charged(wc, 'onihold', 'pay', 'ogre-toll');
   });
 });
