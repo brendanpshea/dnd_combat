@@ -417,13 +417,13 @@ A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps 
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (1540)_
 
@@ -433,15 +433,15 @@ _+95 gold (1540)_
 
 <sub>scene `redden`</sub>
 
-You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers.
+You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers. Three hounds as red as coals sleep among the heaps, with smoke curling from their jaws.
 
-On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light.
+On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light, and its hounds rise with it.
 
-**Battle:** Red Wyrmling's Forge <sub>(`red-dragon-den` on `firepit`)</sub>
+**Battle:** Red Wyrmling's Forge <sub>(`red-forge` on `firepit`)</sub>
 
 **» Fight — won**
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -469,15 +469,15 @@ _(a paragraph shown before: “The drake goes down thrashing, and the…”)_
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 **» Rob the statues without waking it**
 
 <sub>scene `gorgonvale-sneak`</sub>
 
-The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.
+The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. Two younger bulls doze among the statues halfway down the rows.
 
 One wrong step on the loose rock, and you join the collection.
 

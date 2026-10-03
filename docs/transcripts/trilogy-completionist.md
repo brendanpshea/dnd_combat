@@ -1187,13 +1187,13 @@ Wren watches you fill your pockets with the drowned folk's coin and their two po
 
 <sub>scene `fen-night`</sub>
 
-You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
+You wake to a hand on your shoulder and a blade already drawn beside you. Seven shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Three of them stink worse than the fen. Behind them a tall dead soldier in green bronze wades up out of the reeds, its sword already drawn. They do not hurry. They have done this before.
 
 **Battle:** The Fen Dead <sub>(`fen-dead` on `bog`)</sub>
 
 **» Fight — won**
 
-The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
+The dead lie still, properly still this time, the bronze soldier in a heap among them, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
@@ -1513,15 +1513,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 <sub>scene `seal-doubt`</sub>
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
+At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
-The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred from the door. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1531,7 +1531,7 @@ _+120 gold (1265)_
 
 **Marrow, the Gravedigger**
 
-> Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.
+> Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.
 
 > "They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."
 
@@ -1672,6 +1672,8 @@ She flexes her green fingers. "The rest of the collectors are gathering up on th
 **Battle:** The Sister's Hired Swords <sub>(`hired-swords` on `open`)</sub>
 
 **» Fight — won**
+
+_Level up: 4 → 5_
 
 The last hired sword goes down. Nettle smiles at you once more, and then there is only a heap of wet reeds where she stood, and a puddle spreading over the mud.
 
@@ -1832,8 +1834,6 @@ The griffons come down on the switchbacks screaming, all beak and talon, and the
 **Battle:** Griffons on the Switchbacks <sub>(`griffon-flight` on `pass`)</sub>
 
 **» Fight — won**
-
-_Level up: 4 → 5_
 
 The last griffon tumbles away down the loose rock. Above you the whole mountain is still climbing toward the stone.
 
@@ -2061,13 +2061,13 @@ _(a paragraph shown before: “The drake goes down thrashing, and the…”)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, two whirlwinds spin up out of nothing, full of grit and blue sparks. On top of the tower, a winged thing of grey stone unfolds itself.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwinds blow themselves out, the stone thing lies in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (1905)_
 
@@ -2091,15 +2091,15 @@ _(a paragraph shown before: “The drake goes down thrashing, and the…”)_
 
 <sub>scene `redden`</sub>
 
-You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers.
+You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers. Three hounds as red as coals sleep among the heaps, with smoke curling from their jaws.
 
-On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light.
+On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light, and its hounds rise with it.
 
-**Battle:** Red Wyrmling's Forge <sub>(`red-dragon-den` on `firepit`)</sub>
+**Battle:** Red Wyrmling's Forge <sub>(`red-forge` on `firepit`)</sub>
 
 **» Fight — won**
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -2121,15 +2121,15 @@ A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps 
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, two more plumes of steam drift up between the statues.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 **» Rob the statues without waking it**
 
 <sub>scene `gorgonvale-sneak`</sub>
 
-The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.
+The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. Two younger bulls doze among the statues halfway down the rows.
 
 One wrong step on the loose rock, and you join the collection.
 
