@@ -39,7 +39,7 @@ The churchyard gate hangs off its hinge. Between the headstones the darkness has
 
 Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
 
-On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.
+On either side of her, two of the new-buried stand up out of their open graves. They step onto the grass together, square and in step, like men called to the roll. They are grey and gnawing, and one of them reeks of rot.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -47,7 +47,7 @@ Draw steel, for whatever good steel does against a shadow.
 
 **» Fight — won**
 
-The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that clawed their way out lie still across their own graves, and the lamplight lies still on the grass.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves, and the lamplight lies still on the grass.
 
 <sub>scene `grave-morning`</sub>
 
@@ -601,13 +601,13 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two soldiers of the old kings do not stir from the door. They wait for an order, and Marrow gives none.
+Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
-The last ghoul falls among the candles. When it is over, Marrow has not moved from the door.
+The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 

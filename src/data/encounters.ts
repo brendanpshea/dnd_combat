@@ -285,9 +285,10 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['ghoul', 'ghoul', 'ghoul', 'ghoul', 'ghast', 'ghast'],
   },
   // The Undercrypt's diggers (the ladder keeps `undead`): two skeletons,
-  // three fresh dead and two ghouls. Met at 4th by the one route that fights
-  // them (the rest slip past for `avoidedFightXP`, so a dearer roster would
-  // pay every route for a fight it never had).
+  // three fresh dead and two ghouls. Met at 4th, and only by a company that
+  // spends every way past (`diggers-roused`). Slipping past pays
+  // `avoidedFightXP` of this roster (DIGGERS_SLIPPED), so its XP sets what
+  // every route through the cut is paid, fought or not.
   diggers: {
     id: 'diggers', name: 'The Diggers', suggestedLevel: 3,
     members: ['skeleton', 'skeleton', 'zombie', 'zombie', 'zombie', 'ghoul', 'ghoul'],

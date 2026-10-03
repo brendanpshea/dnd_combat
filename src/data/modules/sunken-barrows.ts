@@ -258,10 +258,10 @@ const scenes: Record<string, Scene> = {
     intro: [
       'The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.',
       'Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.',
-      'On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.',
+      'On either side of her, two of the new-buried stand up out of their open graves. They step onto the grass together, square and in step, like men called to the roll. They are grey and gnawing, and one of them reeks of rot.',
       'Draw steel, for whatever good steel does against a shadow.',
     ],
-    onWin: { to: 'grave-morning', text: ['The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that clawed their way out lie still across their own graves, and the lamplight lies still on the grass.'] },
+    onWin: { to: 'grave-morning', text: ['The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves, and the lamplight lies still on the grass.'] },
     // Lost before the party has met anyone who could drag them out of the fen:
     // the town carries them in, and morning still shows them the graves.
     onLoss: { to: 'lychyard-lost' },
@@ -1236,9 +1236,9 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' },
     intro: [
       '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. {marrow} only watches, the chisel loose in his lap.',
-      'Beside him, the two soldiers of the old kings do not stir from the door. They wait for an order, and {marrow} gives none.',
+      'Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and {marrow} gives none.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. When it is over, {marrow} has not moved from the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -1261,9 +1261,9 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-battle-lost' },
     loot: { bonusTier: 'rare' },
     intro: ['{marrow} turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.',
-      'Against the door, the two soldiers of the old kings get to their feet in their green bronze. {marrow} woke them to keep his door, and they draw their swords.'],
+      'Against the door, the two bronze soldiers get to their feet. {marrow} woke them to keep his door, and they draw their swords.'],
     again: ['{marrow} turns from the door again, chisel in hand. "The door opens for the *faithful*!" His acolyte already has the knife out. The armour, the ghouls and the two soldiers in green bronze come for you once more.'],
-    onWin: { to: 'seal-door', text: ['{marrow} dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.', 'Coins lie thick on the bottom step, where the faithful threw them at the door. You sweep them into a sack before you open the book.'],
+    onWin: { to: 'seal-door', text: ['{marrow} dies reaching for the door. The two bronze soldiers lie broken at its foot, among the armour\'s scattered plates and the ghouls. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.', 'Coins lie thick on the bottom step, where the faithful threw them at the door. You sweep them into a sack before you open the book.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // The fighting over, before the rites: Halden keeps his promise here, if

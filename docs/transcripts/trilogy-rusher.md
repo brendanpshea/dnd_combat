@@ -499,7 +499,7 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 **» Fight — won**
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -587,7 +587,7 @@ The churchyard gate hangs off its hinge. Between the headstones the darkness has
 
 Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
 
-On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.
+On either side of her, two of the new-buried stand up out of their open graves. They step onto the grass together, square and in step, like men called to the roll. They are grey and gnawing, and one of them reeks of rot.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -595,7 +595,7 @@ Draw steel, for whatever good steel does against a shadow.
 
 **» Fight — won**
 
-The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that clawed their way out lie still across their own graves, and the lamplight lies still on the grass.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves, and the lamplight lies still on the grass.
 
 <sub>scene `grave-morning`</sub>
 
@@ -1077,13 +1077,13 @@ The grey man leans in to his work. "Faster," he tells the chisel, sweetly reason
 
 Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.
 
-Against the door, the two soldiers of the old kings get to their feet in their green bronze. Marrow woke them to keep his door, and they draw their swords.
+Against the door, the two bronze soldiers get to their feet. Marrow woke them to keep his door, and they draw their swords.
 
 **Battle:** The Worm at the Door <sub>(`cult-at-door` on `firepit`)</sub>
 
 **» Fight — won**
 
-Marrow dies reaching for the door. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.
+Marrow dies reaching for the door. The two bronze soldiers lie broken at its foot, among the armour's scattered plates and the ghouls. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.
 
 Coins lie thick on the bottom step, where the faithful threw them at the door. You sweep them into a sack before you open the book.
 
@@ -1309,7 +1309,7 @@ Under your boots, the ground has begun to drum.
 
 <sub>scene `greenden`</sub>
 
-The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
+The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Grey threads hang thick across its roof, and something pale and spindly shifts along them. Somewhere inside, kobolds start shrieking the alarm.
 
 Something green slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon's teeth. Every bone on the tunnel floor came from something bigger than it is.
 

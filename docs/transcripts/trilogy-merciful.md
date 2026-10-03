@@ -323,7 +323,7 @@ The crew moves in from the stalls, two knives and three crossbows behind their f
 
 _Level up: 1 → 2_
 
-The crew is still turning round when the fixer falls, and his hired blades throw down their knives. You are standing between them and the gate, so they bolt the other way, straight into the reeve's watch.
+The crew is still turning round when the fixer falls, and his hired blades throw down their knives, and the crossbows come down off the roofs. You are standing between them and the gate, so they all bolt the other way, straight into the reeve's watch.
 
 <sub>scene `spy-caught`</sub>
 
@@ -615,7 +615,7 @@ Before she can whistle for anyone, you speak her price the way a priest speaks a
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard, watch her go, and then run too.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.
 
 <sub>scene `vargan-fate`</sub>
 
@@ -689,7 +689,7 @@ The churchyard gate hangs off its hinge. Between the headstones the darkness has
 
 Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
 
-On either side of her the turned earth heaves. Two of the new-buried claw their way up out of their graves, grey and gnawing, and one of them reeks of rot.
+On either side of her, two of the new-buried stand up out of their open graves. They step onto the grass together, square and in step, like men called to the roll. They are grey and gnawing, and one of them reeks of rot.
 
 Draw steel, for whatever good steel does against a shadow.
 
@@ -697,7 +697,7 @@ Draw steel, for whatever good steel does against a shadow.
 
 **» Fight — won**
 
-The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that clawed their way out lie still across their own graves, and the lamplight lies still on the grass.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves, and the lamplight lies still on the grass.
 
 <sub>scene `grave-morning`</sub>
 
@@ -1177,13 +1177,13 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two soldiers of the old kings do not stir from the door. They wait for an order, and Marrow gives none.
+Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
-The last ghoul falls among the candles. When it is over, Marrow has not moved from the door.
+The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1449,7 +1449,7 @@ Under your boots, the ground has begun to drum.
 
 <sub>scene `greenden`</sub>
 
-The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
+The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Grey threads hang thick across its roof, and something pale and spindly shifts along them. Somewhere inside, kobolds start shrieking the alarm.
 
 Something green slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon's teeth. Every bone on the tunnel floor came from something bigger than it is.
 

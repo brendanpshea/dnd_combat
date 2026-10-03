@@ -1315,7 +1315,7 @@ const scenes: Record<string, Scene> = {
   'peak-line-lost': {
     id: 'peak-line-lost', kind: 'story', noBack: true, art: { imageId: 'loc-camp', emoji: '🏕️' },
     text: [
-      'Someone has laid you on a cot with your boots still on, and by the light it is a day later. The pikemen drove the harpies off in the end, with rocks and shouting and their own hands over their ears.',
+      'Someone has laid you on a cot with your boots still on, and by the light it is a day later. The pikemen drove the harpies and their drake off in the end, with rocks and shouting and their own hands over their ears.',
       '{vex} looks in, grey from lack of sleep. "We held," he says. "Just. Get up when you can. The stone is still singing."',
     ],
     next: [{ id: 'up', label: 'Get back on your feet', to: 'warcamp', effects: [{ kind: 'passDay' }] }],
@@ -1579,7 +1579,7 @@ const scenes: Record<string, Scene> = {
     id: 'tollcliff-talked', kind: 'story', art: { emoji: '🦁' },
     text: [
       'You tell it the truth, more or less. "The hags promised you a valley full of meat. They\'re up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn\'t wait on a ledge for scraps."',
-      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the {calling} Stone, and the grey drake flaps after it. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.',
+      'The manticore\'s human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the {calling} Stone. The grey drake shrieks and scatters off its roost, away over the rocks. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run off downhill.',
     ],
     next: [{ id: 'ok', label: 'Walk the open trail', to: 'hills',
       effects: [{ kind: 'setFlag', flag: 'tollcliff-cleared' }, { kind: 'setFlag', flag: 'manticore-sent' },
@@ -1670,7 +1670,7 @@ const scenes: Record<string, Scene> = {
     id: 'greenden', kind: 'story', art: { emoji: '🐉' },
     again: ['The briar tunnel still stinks of cut grass gone bad. The green wyrmling slides out of the briar again, showing its small dragon\'s teeth, and its kobolds shriek the alarm.'],
     text: [
-      'The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.',
+      'The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Grey threads hang thick across its roof, and something pale and spindly shifts along them. Somewhere inside, kobolds start shrieking the alarm.',
       'Something green slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon\'s teeth. Every bone on the tunnel floor came from something bigger than it is.',
     ],
     next: [
@@ -1691,7 +1691,7 @@ const scenes: Record<string, Scene> = {
     id: 'greenden-cowed', kind: 'story', art: { emoji: '🐉' },
     text: [
       'Your dragonborn steps forward and roars in the old tongue of dragons. The wyrmling knows every word. *This mountain has an older dragon than you. Go home before it finds you.*',
-      'The wyrmling drops flat on its bones and shivers. It snatches up its little hoard in its jaws and bolts out the back of the briar, away over the far hills. Its kobolds run after it. It does not look back, and it does not leave you a single coin.',
+      'The wyrmling drops flat on its bones and shivers. It snatches up its little hoard in its jaws and bolts out the back of the briar, away over the far hills. Its kobolds run after it, and the pale spinners and their spiders go up their grey threads and out through the briar behind them. The wyrmling does not look back, and it does not leave you a single coin.',
     ],
     // Sparing it costs the hoard: the fight pays, the mercy does not.
     next: [{ id: 'ok', label: 'Let it go', to: 'hills',

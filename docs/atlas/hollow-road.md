@@ -21,32 +21,27 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `scout-saved`, `scout-fail`:
   - **S2** “"You got the horse off me. Let me pay some of that back." She catches …”
   - **S3** “"You got the horse off me. Let me pay some of that back." She looks …”
-- `boss`, `boss-unguarded`:
-  - **S4** “The chief's axe goes spinning out of his hand, and …”
 - `boss`, `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`:
-  - **S5** “Behind the throne stands the chief's strongbox, its lid forced …”
-- `boss-shaken`, `boss-unguarded-shaken`:
-  - **S6** “Vargan fights with one eye on his own shut fist. …”
+  - **S4** “Behind the throne stands the chief's strongbox, its lid forced …”
 - `vargan-brand`, `vargan-brand-alone`:
-  - **S7** “The rag on his axe hand has slipped. Burned into …”
-  - **S8** “He stares down at his own hand as if it …”
+  - **S5** “The rag on his axe hand has slipped. Burned into …”
+  - **S6** “He stares down at his own hand as if it …”
 - `vargan-turns`, `vargan-turns-alone`:
-  - **S9** “Vargan looks from the brand to the hag, and turns, …”
-  - **S10** “Vargan looks at the hag without a word, and turns, …”
-  - **S11** “The hag looks down at him a moment, and when …”
+  - **S7** “Vargan looks from the brand to the hag, and turns, …”
+  - **S8** “Vargan looks at the hag without a word, and turns, …”
+  - **S9** “The hag looks down at him a moment, and when …”
 - `bind-hag-rite`, `bind-hag-rite-alone`:
-  - **S12** “Before she can whistle for anyone, you speak her price …”
-  - **S14** “One word comes out wrong, and the rite falls apart …”
+  - **S10** “Before she can whistle for anyone, you speak her price …”
+  - **S12** “One word comes out wrong, and the rite falls apart …”
 - `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`, `reedwife-fight-alone`:
-  - **S13** “The words catch in her like a hook. She hisses …”
+  - **S11** “The words catch in her like a hook. She hisses …”
 - `reedwife-fight`, `reedwife-fight-alone`:
-  - **S15** “The Reedwife staggers back into the fire-pit and goes down …”
-  - **S16** “A sodden purse hangs at her belt on a cord …”
-  - **S17** “You say her price back to her, in her own …”
-  - **S18** “You start the words, and she hears the place where …”
+  - **S13** “A sodden purse hangs at her belt on a cord …”
+  - **S14** “You say her price back to her, in her own …”
+  - **S15** “You start the words, and she hears the place where …”
 - `reedwife-lost`, `reedwife-lost-alone`:
-  - **S19** “The hag's cold fingers close over your eyes, and the …”
-  - **S20** “You wake behind the throne, where somebody dragged you. Vargan …”
+  - **S16** “The hag's cold fingers close over your eyes, and the …”
+  - **S17** “You wake behind the throne, where somebody dragged you. Vargan …”
 
 ## `road` · story
 
@@ -482,13 +477,13 @@ The crew moves in from the stalls, two knives and three crossbows behind their f
 
 *Won:*
 
-The crew is still turning round when the fixer falls, and his hired blades throw down their knives. You are standing between them and the gate, so they bolt the other way, straight into the reeve's watch.
+The crew is still turning round when the fixer falls, and his hired blades throw down their knives, and the crossbows come down off the roofs. You are standing between them and the gate, so they all bolt the other way, straight into the reeve's watch.
 
 ## `spy-balked` · story
 
 You plant your feet and roar at the hired knives to put their blades away, now, while they still have hands to do it. Every head in the square turns.
 
-The knives look at your steel, then at the fixer, then at all the people watching. One by one they set their blades down on the cobbles. The fixer goes with them, out past the well and away from the gate. None of them looks keen to explain this to the chief.
+The knives look at your steel, then at the fixer, then at all the people watching. One by one they set their blades down on the cobbles, and up on the stall-roofs the crossbows come down too. The fixer goes with them, out past the well and away from the gate. None of them looks keen to explain this to the chief.
 
 - » **Turn out his stall**
 
@@ -1551,9 +1546,7 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss-unguarded`)</sub>
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1567,9 +1560,7 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss-unguarded`)</sub>
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1591,9 +1582,7 @@ By the door, the chief's guard is still reaching for his weapon. He is a grey an
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss-unguarded-shaken`)</sub>
+Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1607,9 +1596,7 @@ Vargan's eyes go to his shut fist again. Behind him the hag says nothing. By the
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss-unguarded-shaken`)</sub>
+Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1633,9 +1620,7 @@ Then she whistles, low and wet. One raider comes in from the yard, white-faced. 
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss`)</sub>
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1651,9 +1636,7 @@ Vargan rolls the great axe off his shoulder again. The hag whistles, and her bra
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss`)</sub>
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1675,9 +1658,7 @@ Vargan closes his fist over the brand and bellows for Hask. By the door, Hask gr
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss-shaken`)</sub>
+Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1693,9 +1674,7 @@ Hask is still gone, and Vargan still keeps his branded hand shut in a fist.
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
-
-<sub>(shared with: `boss-shaken`)</sub>
+Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
@@ -1799,7 +1778,7 @@ The words catch in her like a hook. She hisses and twists, but she cannot get fr
 
 <sub>(shared with: `bind-hag-rite-alone`, `reedwife-fight`, `reedwife-fight-alone`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for the chief's guard. He comes out of the smoke at her call, and watches her go, and then walks out into the smoke after her.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for the chief's guard. He comes out of the smoke at her call with four raiders at his back. He watches her go, and then walks out into the smoke after her, and his raiders go with him.
 
 *Fail:*
 
@@ -1821,7 +1800,7 @@ The words catch in her like a hook. She hisses and twists, but she cannot get fr
 
 <sub>(shared with: `bind-hag-rite`, `reedwife-fight`, `reedwife-fight-alone`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard, watch her go, and then run too.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.
 
 *Fail:*
 
@@ -1843,9 +1822,7 @@ The **Reedwife** stands by the fire-pit with marsh water dripping from her finge
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
-
-<sub>(shared with: `reedwife-fight-alone`)</sub>
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. The four raiders lie where they fell, and the chief's grey old guard is down among them.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
 
@@ -1861,7 +1838,7 @@ The words catch in her like a hook. She hisses and twists, but she cannot get fr
 
 <sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight-alone`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
 
 *Talk refused:*
 
@@ -1877,9 +1854,7 @@ The Reedwife is still by the fire-pit. "Up again, sweetlings?" She whistles, and
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
-
-<sub>(shared with: `reedwife-fight-alone`)</sub>
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. The four raiders lie where they fell, and the chief's grey old guard is down among them.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
 
@@ -1895,7 +1870,7 @@ The words catch in her like a hook. She hisses and twists, but she cannot get fr
 
 <sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight-alone`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
 
 *Talk refused:*
 
@@ -1917,9 +1892,7 @@ The **Reedwife** stands by the fire-pit with marsh water dripping from her finge
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
-
-<sub>(shared with: `reedwife-fight`)</sub>
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
 
@@ -1951,9 +1924,7 @@ The Reedwife is still by the fire-pit. She whistles for Hask once more, and he s
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
-
-<sub>(shared with: `reedwife-fight`)</sub>
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
 

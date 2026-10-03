@@ -89,6 +89,10 @@ const WREN_ON_VEX: Para[] = [
 // She dies as a body, not a heap of reeds: in Part 3 her sister's seeming
 // melts into wet reeds and a puddle, and the two must not read alike.
 const BOSS_FALLS = 'The chief\'s axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.';
+/** The unguarded hall's whistled help, ended (`boss-unguarded`). */
+// The guarded hall: the chief's guard and a raider fight beside him.
+const GUARD_ENDS = 'By the door the chief\'s grey old guard is down, and the raider who stood with him lies across the threshold.';
+const SNAKE_ENDS = 'Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.';
 /** What the hall pays, beside its loot: the chief's strongbox. */
 const BOSS_HOARD = 'Behind the throne stands the chief\'s strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.';
 const BOSS_WON: Effect[] = [
@@ -706,14 +710,14 @@ const scenes: Record<string, Scene> = {
     intro: ['The crew moves in from the stalls, two knives and three crossbows behind their fixer, but you are already where they didn\'t expect you. They scramble.'],
     // You picked them out first and stood between them and the gate, so
     // nobody gets out to warn the den.
-    onWin: { to: 'spy-caught', text: ['The crew is still turning round when the fixer falls, and his hired blades throw down their knives. You are standing between them and the gate, so they bolt the other way, straight into the reeve\'s watch.'] },
+    onWin: { to: 'spy-caught', text: ['The crew is still turning round when the fixer falls, and his hired blades throw down their knives, and the crossbows come down off the roofs. You are standing between them and the gate, so they all bolt the other way, straight into the reeve\'s watch.'] },
   },
   // Shouted down: the hired help decides this is not worth dying for.
   'spy-balked': {
     id: 'spy-balked', kind: 'story', noBack: true, art: { imageId: 'loc-village', emoji: '📣' },
     text: [
       'You plant your feet and roar at the hired knives to put their blades away, now, while they still have hands to do it. Every head in the square turns.',
-      'The knives look at your steel, then at the fixer, then at all the people watching. One by one they set their blades down on the cobbles. The fixer goes with them, out past the well and away from the gate. None of them looks keen to explain this to the chief.',
+      'The knives look at your steel, then at the fixer, then at all the people watching. One by one they set their blades down on the cobbles, and up on the stall-roofs the crossbows come down too. The fixer goes with them, out past the well and away from the gate. None of them looks keen to explain this to the chief.',
     ],
     next: [{ id: 'ok', label: 'Turn out his stall', to: 'spy-caught', effects: [{ kind: 'xp', amount: avoidedFightXP('cutpurses') }] }],
   },
@@ -1455,8 +1459,9 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'vex-threatened' }],
         text: '{vex} looks along your drawn blades, one by one, then slides his own home. "Not much of a choice, put like that. I\'ll take the road out of this valley, while I still have the legs for it."' },
       '"{hask} guards the chief, and {hask} answers to me. He\'ll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I\'m tired of soldiering for a man who burns barns and calls it strategy."'],
-    // Hask standing aside is one blade fewer at the chief's side: the company
-    // earns what beating him would have.
+    // Hask standing aside pays the gap between the guarded hall and the
+    // unguarded one, quartered like any avoided fight. Her snake and a raider
+    // take his place, so it is less than beating him would pay.
     // The journal holds for a {vex} bought with a pardon or cowed at
     // blade-point (`vex-threatened`), so it promises him nothing.
     next: [{ id: 'ok', label: 'Go and face the chief', to: 'inner',
@@ -1561,7 +1566,7 @@ const scenes: Record<string, Scene> = {
       'The chief\'s guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.'],
     again: ['The hag\'s fingers are already weaving something cold out of the smoke. "Don\'t kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.'],
     loot: { bonusTier: 'rare' }, // a warlord's hoard + a hag's trophies — guaranteed drop
-    onWin: { to: 'vargan-beaten', text: [BOSS_FALLS, BOSS_HOARD], effects: BOSS_WON },
+    onWin: { to: 'vargan-beaten', text: [`${BOSS_FALLS} ${GUARD_ENDS}`, BOSS_HOARD], effects: BOSS_WON },
   },
   // The same hall with Vargan's brand named: he loses the first round.
   'boss-shaken': {
@@ -1573,7 +1578,7 @@ const scenes: Record<string, Scene> = {
     ],
     again: [{ assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan}\'s eyes go to his shut fist again. Behind him the hag says nothing. By then you are already moving.' }],
     loot: { bonusTier: 'rare' },
-    onWin: { to: 'vargan-beaten', text: [`{vargan} fights with one eye on his own shut fist. ${BOSS_FALLS}`, BOSS_HOARD], effects: BOSS_WON },
+    onWin: { to: 'vargan-beaten', text: [`{vargan} fights with one eye on his own shut fist. ${BOSS_FALLS} ${GUARD_ENDS}`, BOSS_HOARD], effects: BOSS_WON },
   },
   // The same hall with Vex's word kept: his guard finds somewhere else to be.
   'boss-unguarded': {
@@ -1586,7 +1591,7 @@ const scenes: Record<string, Scene> = {
     ],
     again: [{ assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask} is nowhere in the hall. {vex}\'s word still holds.' }, '{vargan} rolls the great axe off his shoulder again. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.'],
     loot: { bonusTier: 'rare' },
-    onWin: { to: 'vargan-beaten', text: [BOSS_FALLS, BOSS_HOARD], effects: BOSS_WON },
+    onWin: { to: 'vargan-beaten', text: [`${BOSS_FALLS} ${SNAKE_ENDS}`, BOSS_HOARD], effects: BOSS_WON },
   },
   // Vex's guard gone *and* the brand named.
   'boss-unguarded-shaken': {
@@ -1599,7 +1604,7 @@ const scenes: Record<string, Scene> = {
     ],
     again: [{ assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, { kind: 'flag', flag: 'vargan-shaken' }], text: '{hask} is still gone, and {vargan} still keeps his branded hand shut in a fist.' }, '"Waste not," the hag hisses, and her branded snake pours over the threshold again with the one raider who stayed. By then you are already moving.'],
     loot: { bonusTier: 'rare' },
-    onWin: { to: 'vargan-beaten', text: [`{vargan} fights with one eye on his own shut fist. ${BOSS_FALLS}`, BOSS_HOARD], effects: BOSS_WON },
+    onWin: { to: 'vargan-beaten', text: [`{vargan} fights with one eye on his own shut fist. ${BOSS_FALLS} ${SNAKE_ENDS}`, BOSS_HOARD], effects: BOSS_WON },
   },
 
   // The brand named: Vargan sees what he sold himself for, and the talk comes
@@ -1638,10 +1643,10 @@ const scenes: Record<string, Scene> = {
   },
   // The binding as a rite (BIND_HAG_RITE), split on Vex's bargain like the fight.
   'bind-hag-rite': BIND_HAG_RITE('bind-hag-rite', 'hag-guarded', 'reedwife-fight',
-    'At the door she whistles for the chief\'s guard. He comes out of the smoke at her call, and watches her go, and then walks out into the smoke after her.'),
+    'At the door she whistles for the chief\'s guard. He comes out of the smoke at her call with four raiders at his back. He watches her go, and then walks out into the smoke after her, and his raiders go with him.'),
   'bind-hag-rite-alone': BIND_HAG_RITE('bind-hag-rite-alone', 'hag-whistled', 'reedwife-fight-alone',
-    'At the door she whistles for {hask}, and he does not come. Two raiders stumble in from the yard, watch her go, and then run too.'),
-  // The hag fights on without him, with the chief's guard and one more raider.
+    'At the door she whistles for {hask}, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man\'s waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.'),
+  // The hag fights on without him, with the chief's guard and four raiders.
   'reedwife-fight': {
     id: 'reedwife-fight', kind: 'battle', encounterId: 'hag-guarded', mapId: 'firepit',
     // No falling back: the hall behind you is the one where Vargan turned.
@@ -1649,9 +1654,9 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' },
     intro: ['The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief\'s guard again. He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.'],
     again: ['The {reedwife} is still by the fire-pit. "Up again, sweetlings?" She whistles, and the chief\'s guard comes back out of the smoke with his four raiders.'],
-    onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS, REEDWIFE_HOARD], effects: REEDWIFE_WON },
+    onWin: { to: 'vargan-fate', text: [`${REEDWIFE_FALLS} The four raiders lie where they fell, and the chief\'s grey old guard is down among them.`, REEDWIFE_HOARD], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost' },
-    parley: BIND_HAG('hag-guarded', 'The chief\'s guard watches her go, and then walks out into the smoke after her.'),
+    parley: BIND_HAG('hag-guarded', 'The chief\'s guard watches her go, and then walks out into the smoke after her. His four raiders go with him.'),
   },
   // The same, with Hask gone: two raiders come in from the yard at her
   // whistle, and her own branded marsh snake with them.
@@ -1661,7 +1666,7 @@ const scenes: Record<string, Scene> = {
     loot: { bonusTier: 'rare' },
     intro: ['The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief\'s guard again. {hask} still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man\'s waist, with reeds and a reaching hand branded into its scales.'],
     again: ['The {reedwife} is still by the fire-pit. She whistles for {hask} once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.'],
-    onWin: { to: 'vargan-fate', text: [REEDWIFE_FALLS, REEDWIFE_HOARD], effects: REEDWIFE_WON },
+    onWin: { to: 'vargan-fate', text: [`${REEDWIFE_FALLS} Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.`, REEDWIFE_HOARD], effects: REEDWIFE_WON },
     onLoss: { to: 'reedwife-lost-alone' },
     parley: BIND_HAG('hag-whistled', 'Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.'),
   },

@@ -791,7 +791,7 @@ The harpies' song closes over your heads, and you go down in the mud of the east
 
 ## `peak-line-lost` · story
 
-Someone has laid you on a cot with your boots still on, and by the light it is a day later. The pikemen drove the harpies off in the end, with rocks and shouting and their own hands over their ears.
+Someone has laid you on a cot with your boots still on, and by the light it is a day later. The pikemen drove the harpies and their drake off in the end, with rocks and shouting and their own hands over their ears.
 
 Vex looks in, grey from lack of sleep. "We held," he says. "Just. Get up when you can. The stone is still singing."
 
@@ -1260,7 +1260,7 @@ The manticore still lies along its ledge under the overhang. It opens one eye. "
 
 You tell it the truth, more or less. "The hags promised you a valley full of meat. They're up at the stone right now. Have they paid you one sheep yet?" You shrug. "A lord takes what he was promised. He doesn't wait on a ledge for scraps."
 
-The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone, and the grey drake flaps after it. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run the other way.
+The manticore's human face goes thoughtful. "Promises," it says, tasting the word. It stretches, and its spiked tail rattles. "I believe I will go and dine with them." It drops off the ledge and beats away uphill, toward the Calling Stone. The grey drake shrieks and scatters off its roost, away over the rocks. Two goblins break from the rocks below the ledge, where they have been hiding all along, and run off downhill.
 
 - » **Walk the open trail**
 
@@ -1386,7 +1386,7 @@ The boar-runs lie still, and grass is growing back over the churned earth. The h
 
 ### 1. when the first visit?
 
-The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
+The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Grey threads hang thick across its roof, and something pale and spindly shifts along them. Somewhere inside, kobolds start shrieking the alarm.
 
 Something green slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon's teeth. Every bone on the tunnel floor came from something bigger than it is.
 
@@ -1413,7 +1413,7 @@ Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind
 
 Your dragonborn steps forward and roars in the old tongue of dragons. The wyrmling knows every word. *This mountain has an older dragon than you. Go home before it finds you.*
 
-The wyrmling drops flat on its bones and shivers. It snatches up its little hoard in its jaws and bolts out the back of the briar, away over the far hills. Its kobolds run after it. It does not look back, and it does not leave you a single coin.
+The wyrmling drops flat on its bones and shivers. It snatches up its little hoard in its jaws and bolts out the back of the briar, away over the far hills. Its kobolds run after it, and the pale spinners and their spiders go up their grey threads and out through the briar behind them. The wyrmling does not look back, and it does not leave you a single coin.
 
 - » **Let it go**
 

@@ -186,8 +186,12 @@ never "the girl".
 
 ### Foes the fights rely on
 
-- **The chief's hall:** beside the chief and the hag, a raider or two and, where
-  the hag stands, her branded marsh snake (the reed-mark on its scales).
+- **The chief's hall:** beside the chief and the hag, one raider (with Hask,
+  or with the snake when Hask stands aside). After Vargan turns, Hask brings
+  four raiders to her whistle (three orcs and an archer); with Vex turned two
+  raiders come instead. **Her branded marsh snake** (the reed-mark on its
+  scales) appears only where Vex is turned and Hask doesn't come: it answers
+  her whistle in the unguarded hall and in her fight after Vargan turns.
 - **The Warden's door:** two soldiers of the old kings, in bronze, stand with
   the cult (not one).
 - **The toll-cliff:** the manticore keeps a wyvern on its ledge; its goblins
@@ -230,8 +234,8 @@ her.
 - **Vex not turned, Reedwife `bound`**: Hask came out of the smoke at her
   whistle. The binding is said at the door of the fight, before a blow, and
   then "the chief's guard watches her go, and then walks out into the smoke
-  after her". A company that lost that fight first and bound her on its return
-  did fight him, so a later line can say **he answered her whistle** or **he
+  after her", his four raiders with him. A company that lost that fight
+  first and bound her on its return did fight him, so a later line can say **he answered her whistle** or **he
   stood for the chief**, never that he fought the company. The binding can
   also be said as a rite (Religion) before her whistle: she whistles at the
   door as she leaves, and Hask follows her out the same way.

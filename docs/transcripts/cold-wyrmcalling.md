@@ -207,7 +207,7 @@ The last griffon tumbles away down the loose rock. Above you the whole mountain 
 
 <sub>scene `greenden`</sub>
 
-The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Somewhere inside, kobolds start shrieking the alarm.
+The thicket smells of cut grass gone bad, sharp and rotten at once. A tunnel runs into it through strangling briar, and its floor is a bed of picked bones. Grey threads hang thick across its roof, and something pale and spindly shifts along them. Somewhere inside, kobolds start shrieking the alarm.
 
 Something green slides out of the briar on its belly. It is no longer than a pony, but its teeth are a dragon's teeth. Every bone on the tunnel floor came from something bigger than it is.
 
