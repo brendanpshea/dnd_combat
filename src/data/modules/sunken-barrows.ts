@@ -237,7 +237,7 @@ const scenes: Record<string, Scene> = {
     id: 'return', kind: 'story', art: { imageId: 'loc-town', emoji: '🔔' },
     text: [
       '{thornwick} by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.',
-      'You had hoped for a quiet year after the marsh. You very nearly had one.',
+      'You had hoped for a quiet season after the marsh. You very nearly had one.',
       'The gate-warden meets you on the road, his lantern shaking. Behind him the bell clangs on and on. "It\'s the **churchyard**," he manages. "The graves are *open*, and it wasn\'t shovels did it."',
       'Down the lane, past the shuttered market, cold lamplight spills across the churchyard wall. And the shadows between the stones are moving against the light.',
       { if: [{ kind: 'notFlag', flag: 'hollow-road:won' }],
@@ -247,7 +247,7 @@ const scenes: Record<string, Scene> = {
       { id: 'go', label: 'Answer the bells', to: 'lychyard', hideWhenBlocked: true,
         requires: [{ kind: 'flag', flag: 'hollow-road:won' }], effects: OPENING },
       // A cold start: still the company that broke the Ashfang, so it still
-      // has last year's bounty, about what a run through Part 1 carries.
+      // has last season's bounty, about what a run through Part 1 carries.
       { id: 'go-cold', label: 'Answer the bells', to: 'lychyard', hideWhenBlocked: true,
         requires: [{ kind: 'notFlag', flag: 'hollow-road:won' }], effects: [COLD_START, ...OPENING, { kind: 'gold', amount: 250 }] },
     ],
@@ -297,7 +297,7 @@ const scenes: Record<string, Scene> = {
       ],
       nodes: [
         // Every company, carried in or starting cold, is the one that broke the
-        // Ashfang last year, and Mira and the reeve know it.
+        // Ashfang last season, and Mira and the reeve know it.
         { id: 'inn', x: 22, y: 32, label: 'The {wander-inn}', icon: 'tok-tavern', scene: 'inn',
           sceneWhen: [{ if: [{ kind: 'flag', flag: 'reeve-task' }], to: 'inn-later' }] },
         { id: 'market', x: 44, y: 42, label: 'Market', icon: 'tok-market', scene: 'sb-market' },
@@ -330,7 +330,7 @@ const scenes: Record<string, Scene> = {
       '"Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I\'ll say it, since the rest of them won\'t. You saw off the {reedwife}, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."',
       // Bound in Part 1 (BIND_HAG): the price is paid, and the dead walk anyway.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
-        text: '"And you didn\'t even kill her. You held her to her old price, the fen-folk say. They tied a {door-price} out for her at {door-midwinter}, the way their grans did, and it was gone by morning." She shakes her head. "So the price is paid. Then why are the graves open?"' },
+        text: '"And you didn\'t even kill her. You held her to her old price, the fen-folk say. They\'ve a {door-price} penned ready, and they mean to tie it out for her at {door-midwinter}, the way their grans did." She shakes her head. "So the price is as good as paid. Then why are the graves open?"' },
       '"Not a soul in here can tell you what the one thing has to do with the other. That\'s why they keep looking at you." She tops up your cup. "Brother {halden}\'s not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn\'t come back."',
       { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }],
         text: 'She stops with the jug still tilted. "Some of them haven\'t forgotten the chief, either. On his knees in his own hall, they say, and his hag no help to him." She sets the jug down. "I haven\'t forgotten it myself."' },
@@ -362,7 +362,7 @@ const scenes: Record<string, Scene> = {
       'mace', 'warhammer', 'shield',
     ],
     intro: ['"Grave-trouble, they say." **{bram}** spreads his hands over the stall. "Then you\'ll be wanting silver, steel, and no questions. Two of the three I stock."'] },
-  // He knows this company: it broke the Ashfang last year.
+  // He knows this company: it broke the Ashfang last season.
   'reeve-hall': {
     id: 'reeve-hall', kind: 'dialogue', npc: REEVE, art: { emoji: '⚖️' },
     lines: [
@@ -414,11 +414,11 @@ const scenes: Record<string, Scene> = {
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
       'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.',
-      'She favours one leg when she stands, and pretends she doesn\'t. "**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last year. I was under it until the reeve\'s men brought me in. It holds."',
+      'She favours one leg when she stands, and pretends she doesn\'t. "**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve\'s men brought me in. It holds."',
       // A cold company (her `attitude` below 0), whatever made it so: worded
       // to hold for any cold Wren, not only one the company walked past.
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
-        text: 'She looks at you a beat too long. "Heard about you," she says, and leaves it there.' },
+        text: 'She looks at you a beat too long, and leaves it there.' },
       '"' + WREN_BRIEF + '"',
     ],
     next: [{ id: 'go', label: 'Follow her onto the raised road', to: 'fen',
@@ -436,7 +436,7 @@ const scenes: Record<string, Scene> = {
     again: ['{wren} is still sitting on the milestone where the raised road begins, sharpening her boot-knife. She looks up. "Ready?"'],
     lines: [
       'The cart-road ends where the old raised road begins. A young woman in the reeve\'s colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.',
-      '"**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. "My partner was {tamsin}. A dead horse came down on her on the marsh road, the week you went for the den. Nobody brought her home." She tests her bowstring and does not look up.',
+      '"**{wren}**. The reeve\'s scout." She says it fast, like she practised it on the way here. "My partner was {tamsin}. A dead horse came down on her on the marsh road, the week you went for the den. She died out there in the night, alone." She tests her bowstring and does not look up.',
       '"' + WREN_BRIEF + '"',
     ],
     next: [{ id: 'go', label: 'Follow her onto the raised road', to: 'fen',
@@ -618,7 +618,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved'] }], text: 'He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk left her a {door-price} at the water\'s edge each {door-midwinter}, and for that she kept the **{warden} of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." {wren} lets out a breath. "The whole town drank to her fall," she says.' },
       // Bound in Part 1: why the Warden stirs with his keeper alive.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
-        text: '"They say you held her to her price, and she takes it still." {halden} shakes his head. "A keeper held by strangers\' words keeps the price, but not the watch. She eats the {door-price} and sits by her pool. Nobody sits by his door." {wren} looks out across the water toward the far pools, and her jaw sets.' },
+        text: '"They say you held her to her price, and she\'ll take it." {halden} shakes his head. "A keeper held by strangers\' words keeps the price, but not the watch. She will eat the {door-price} and sit by her pool. Nobody sits by his door." {wren} looks out across the water toward the far pools, and her jaw sets.' },
       '{halden} lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil\'s mark first. The old builders cut it into the {barrow-gate}, and the gate\'s watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I\'ll follow you down and wait on the stair." {wren} puts her own cloak round his shoulders. "Nerve we\'ve got," she says.',
     ],
     // Talked down, not fought: the chapel's fight is still earned.
@@ -642,7 +642,7 @@ const scenes: Record<string, Scene> = {
         text: '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the {ashfang} wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."' },
       // Bound in Part 1: the note read against a keeper still alive.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
-        text: 'When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and she took the {door-price} at {door-midwinter}. It makes no difference. A keeper held by strangers\' words keeps the price, not the watch.* {wren} reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."' },
+        text: 'When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a {door-price} tied ready for {door-midwinter}. It makes no difference. A keeper held by strangers\' words keeps the price, not the watch.* {wren} reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."' },
       'Under the altar cloth you find a healing potion that {halden} never got to drink. On the way out, {wren} sniffs one of the black candles and makes a face. "{halden} never bought these in {thornwick}. No chandler in the valley makes them."',
     ],
     next: [{ id: 'on', label: 'Take the prayer book', to: 'fen', effects: CHAPEL_CLEARED }],

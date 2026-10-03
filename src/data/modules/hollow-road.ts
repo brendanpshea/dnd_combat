@@ -1222,13 +1222,13 @@ const scenes: Record<string, Scene> = {
   'gate-fight': {
     id: 'gate-fight', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
     intro: ['A horn brays from the watch-post, and the gate-runners answer. Something hairy and twice a man\'s size ducks through the gateway. Behind him three gnolls come yammering their high, laughing bark, and a fourth, hung with bone charms, howls them on. The narrow timber run hems them all in.'],
-    again: ['The watch-post saw you coming this time. The bugbear already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls.'],
-    onWin: { to: 'inner', text: ['The bugbear goes down last, folding across the gateway.'],
+    again: ['The watch-post saw you coming this time. The big one already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls.'],
+    onWin: { to: 'inner', text: ['The big one goes down last, folding across the gateway.'],
       effects: [{ kind: 'setFlag', flag: 'den-entered' }, SIGNAL_SPENT] },
     parley: {
       skill: 'deception', dc: 15, label: 'Pass yourselves off as new blood',
-      refused: ['The bugbear sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.'],
-      success: { to: 'inner', text: ['"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The bugbear sniffs you, weighs you, and decides you are someone else\'s problem. The gnolls fall in laughing behind you, and the den stays asleep.'],
+      refused: ['The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.'],
+      success: { to: 'inner', text: ['"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The big one sniffs you, weighs you, and decides you are someone else\'s problem. The gnolls fall in laughing behind you, and the den stays asleep.'],
         effects: [{ kind: 'setFlag', flag: 'den-entered' }, ...GATE_PASSED] },
     },
   },
@@ -1250,7 +1250,7 @@ const scenes: Record<string, Scene> = {
     id: 'gate-caught', kind: 'battle', encounterId: 'den-gate', mapId: 'corridor',
     surprise: 'party',
     intro: ['Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, something hairy and twice a man\'s size is already waiting at the foot of the wall. A pack of spotted, dog-faced things yammers behind it.'],
-    onWin: { to: 'inner', text: ['The bugbear goes down last, face-first in the mud at the foot of the wall.'],
+    onWin: { to: 'inner', text: ['The big one goes down last, face-first in the mud at the foot of the wall.'],
       effects: [{ kind: 'setFlag', flag: 'den-entered' }, SIGNAL_SPENT] },
   },
   // The den as a dungeon: rooms and links, laid out by the game. The spine is
@@ -1322,7 +1322,7 @@ const scenes: Record<string, Scene> = {
     loot: false, encounterId: 'raiders-forward', mapId: '@room',
     intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents: an orc, an archer and a bandit, blinking in the light. The bandit finds his voice first and starts to shout.'],
     again: ['Another patrol. They come round the drying-racks this time, three of them, and they have their blades out before they reach the fire.'],
-    onWin: { to: '@hub', text: ['You put the patrol down before the whole den wakes, and kick dirt over the fire. Across the yard someone shouts for the watch, and you are on your feet and moving before the shout stops.'] },
+    onWin: { to: '@hub', text: ['You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.'] },
   },
   // The clock (see DAWNS): the Reedwife takes her due when the moon goes
   // dark. Until then the pen holds people; after, it holds a shoe.
@@ -1359,10 +1359,9 @@ const scenes: Record<string, Scene> = {
       { id: 'pick', label: '[Sleight of Hand DC 13] Work the padlock open quietly', to: 'den-pens-freed',
         once: true, check: { skill: 'sleight-of-hand', dc: 13, failTo: 'pens-alarm' } },
       { id: 'hack', label: 'Hack through the stakes, and never mind the noise', to: 'pens-alarm' },
-      // {wren} is never in the den, but a {wren} who knows the company
-      // (`met`) hears of it: she rounds up the Ashfang after, and the
-      // reeve's men find the pens (her `attitude`, read in Parts 2–3). One
-      // who never learned its name has nothing to hold against it.
+      // The pen moves {wren}'s regard only if she has met the company: a Wren
+      // it never met hasn't heard (design-decisions: regard follows what an
+      // NPC saw). One saved after the den misses it; that is the smaller cost.
       { id: 'leave', label: 'Leave them for the reeve\'s men', to: 'den-pens-left',
         requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'captives-left' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
@@ -1387,12 +1386,13 @@ const scenes: Record<string, Scene> = {
   'den-pens-freed': {
     id: 'den-pens-freed', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: ['The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.'],
-    // {wren} hears of it as she does of a pen left (`den-pens`), if she
-    // knows the company at all.
-    next: [{ id: 'ok', label: 'Back to the den', to: 'inner', requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
-      effects: [{ kind: 'setFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
-    { id: 'ok-unmet', label: 'Back to the den', to: 'inner', requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
-      effects: [{ kind: 'setFlag', flag: 'captives-freed' }] }], noBack: true,
+    // As with a pen left (`den-pens`): only a Wren who has met the company.
+    next: [
+      { id: 'ok', label: 'Back to the den', to: 'inner', requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
+        effects: [{ kind: 'setFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
+      { id: 'ok-unmet', label: 'Back to the den', to: 'inner', requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
+        effects: [{ kind: 'setFlag', flag: 'captives-freed' }] },
+    ], noBack: true,
   },
   'den-pens-left': {
     id: 'den-pens-left', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },

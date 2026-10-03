@@ -21,7 +21,7 @@ Every version of every scene that some reachable state can produce — every rou
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-You had hoped for a quiet year after the marsh. You very nearly had one.
+You had hoped for a quiet season after the marsh. You very nearly had one.
 
 The gate-warden meets you on the road, his lantern shaking. Behind him the bell clangs on and on. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -33,7 +33,7 @@ Your purse is still heavy with the reeve's bounty for the Ashfang. Thornwick kee
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-You had hoped for a quiet year after the marsh. You very nearly had one.
+You had hoped for a quiet season after the marsh. You very nearly had one.
 
 The gate-warden meets you on the road, his lantern shaking. Behind him the bell clangs on and on. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -136,7 +136,7 @@ The Wander-Inn is full, and the drinkers are in no hurry to leave, not with the 
 
 "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You saw off the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-"And you didn't even kill her. You held her to her old price, the fen-folk say. They tied a lamb out for her at midwinter, the way their grans did, and it was gone by morning." She shakes her head. "So the price is paid. Then why are the graves open?"
+"And you didn't even kill her. You held her to her old price, the fen-folk say. They've a lamb penned ready, and they mean to tie it out for her at midwinter, the way their grans did." She shakes her head. "So the price is as good as paid. Then why are the graves open?"
 
 "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
@@ -150,7 +150,7 @@ The Wander-Inn is full, and the drinkers are in no hurry to leave, not with the 
 
 "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You saw off the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-"And you didn't even kill her. You held her to her old price, the fen-folk say. They tied a lamb out for her at midwinter, the way their grans did, and it was gone by morning." She shakes her head. "So the price is paid. Then why are the graves open?"
+"And you didn't even kill her. You held her to her old price, the fen-folk say. They've a lamb penned ready, and they mean to tie it out for her at midwinter, the way their grans did." She shakes her head. "So the price is as good as paid. Then why are the graves open?"
 
 "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
@@ -278,9 +278,9 @@ The churchyard lies quiet, its open graves still gaping at the sky. Nothing more
 
 The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
-She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last year. I was under it until the reeve's men brought me in. It holds."
+She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
 
-She looks at you a beat too long. "Heard about you," she says, and leaves it there.
+She looks at you a beat too long, and leaves it there.
 
 "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
@@ -296,7 +296,7 @@ Wren is still sitting on the milestone where the raised road begins, sharpening 
 
 The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
-She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last year. I was under it until the reeve's men brought me in. It holds."
+She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
 
 "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
@@ -314,7 +314,7 @@ She favours one leg when she stands, and pretends she doesn't. "**Wren**. The re
 
 The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
-"**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "My partner was Tamsin. A dead horse came down on her on the marsh road, the week you went for the den. Nobody brought her home." She tests her bowstring and does not look up.
+"**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "My partner was Tamsin. A dead horse came down on her on the marsh road, the week you went for the den. She died out there in the night, alone." She tests her bowstring and does not look up.
 
 "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
@@ -548,7 +548,7 @@ He looks up at the leaning bell-tower. "I rang the drowned bell up there every n
 
 He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "The whole town drank to her fall," she says.
 
-"They say you held her to her price, and she takes it still." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She eats the lamb and sits by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
+"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
@@ -578,7 +578,7 @@ He looks up at the leaning bell-tower. "I rang the drowned bell up there every n
 
 He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
 
-"They say you held her to her price, and she takes it still." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She eats the lamb and sits by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
+"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
@@ -608,7 +608,7 @@ He looks up at the leaning bell-tower. "I rang the drowned bell up there every n
 
 He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "The whole town drank to her fall," she says.
 
-"They say you held her to her price, and she takes it still." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She eats the lamb and sits by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
+"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
@@ -638,7 +638,7 @@ He looks up at the leaning bell-tower. "I rang the drowned bell up there every n
 
 He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
 
-"They say you held her to her price, and she takes it still." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She eats the lamb and sits by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
+"They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
 Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
@@ -672,7 +672,7 @@ Further down the hand starts to shake, and the nib tears the page. *The rites of
 
 "That's the hag's brand," Wren says, reading over your shoulder. "They say you saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
-When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and she took the lamb at midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
+When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -698,7 +698,7 @@ Further down the hand starts to shake, and the nib tears the page. *The rites of
 
 "That's the hag's brand," Wren says, reading over your shoulder. "You saw it on those lizardfolk in the hollow. Every marsh-thing that ran with the Ashfang wore it." She reads the second note twice. "We drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
-When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and she took the lamb at midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
+When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 

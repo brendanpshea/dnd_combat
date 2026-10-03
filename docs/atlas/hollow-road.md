@@ -1160,33 +1160,33 @@ A horn brays from the watch-post, and the gate-runners answer. Something hairy a
 
 *Won:*
 
-The bugbear goes down last, folding across the gateway.
+The big one goes down last, folding across the gateway.
 
 *Talked down:*
 
-"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The bugbear sniffs you, weighs you, and decides you are someone else's problem. The gnolls fall in laughing behind you, and the den stays asleep.
+"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The big one sniffs you, weighs you, and decides you are someone else's problem. The gnolls fall in laughing behind you, and the den stays asleep.
 
 *Talk refused:*
 
-The bugbear sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
+The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
 
 ### 2. when a return visit?
 
-The watch-post saw you coming this time. The bugbear already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls.
+The watch-post saw you coming this time. The big one already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls.
 
 **Battle:** Gate Enforcers · parley: Pass yourselves off as new blood [Deception DC 15]
 
 *Won:*
 
-The bugbear goes down last, folding across the gateway.
+The big one goes down last, folding across the gateway.
 
 *Talked down:*
 
-"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The bugbear sniffs you, weighs you, and decides you are someone else's problem. The gnolls fall in laughing behind you, and the den stays asleep.
+"Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The big one sniffs you, weighs you, and decides you are someone else's problem. The gnolls fall in laughing behind you, and the den stays asleep.
 
 *Talk refused:*
 
-The bugbear sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
+The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
 
 ## `gate-signal-blown` · story
 
@@ -1204,7 +1204,7 @@ Halfway over the wall, a stake shifts under a boot and cracks. A horn brays righ
 
 *Won:*
 
-The bugbear goes down last, face-first in the mud at the foot of the wall.
+The big one goes down last, face-first in the mud at the foot of the wall.
 
 ## `inner` · dungeon
 
@@ -1280,7 +1280,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc, an a
 
 *Won:*
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Across the yard someone shouts for the watch, and you are on your feet and moving before the shout stops.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
 
 ### 2. when a return visit?
 
@@ -1290,7 +1290,7 @@ Another patrol. They come round the drying-racks this time, three of them, and t
 
 *Won:*
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Across the yard someone shouts for the watch, and you are on your feet and moving before the shout stops.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
 
 ## `den-pens-door` · story
 

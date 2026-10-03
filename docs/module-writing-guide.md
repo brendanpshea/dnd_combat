@@ -652,6 +652,13 @@ It is too slow for `check:story` and has no staleness test, so **regenerate
 with `npm run balance` when encounters or chapters change**, and read the
 flagged rows.
 
+Before a round of fixes ships, one reviewer reads only the round's diff and
+the atlas versions of every scene it touched (and of scenes that read the
+flags it changed), looking for what the fixes themselves broke: a line false
+on some path, a promise the scene doesn't keep, a thread opened and not
+closed, regard moved where the NPC wasn't. Fixes cause the next round's bugs
+more than anything else does; this pass is what catches them.
+
 When several people (or agents) work at once, split the work by chapter: one
 owner per chapter file, so nobody edits a file someone else has open.
 Anything that spans chapters, or touches the engine, goes first, on its own.

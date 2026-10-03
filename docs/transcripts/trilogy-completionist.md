@@ -573,7 +573,7 @@ A horn brays from the watch-post, and the gate-runners answer. Something hairy a
 
 _Level up: 2 → 3_
 
-The bugbear goes down last, folding across the gateway.
+The big one goes down last, folding across the gateway.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -667,7 +667,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc, an a
 
 **» Fight — won**
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Across the yard someone shouts for the watch, and you are on your feet and moving before the shout stops.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -929,7 +929,7 @@ The carter's girl sits on the edge of the well in a new pair of shoes. She shows
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-You had hoped for a quiet year after the marsh. You very nearly had one.
+You had hoped for a quiet season after the marsh. You very nearly had one.
 
 The gate-warden meets you on the road, his lantern shaking. Behind him the bell clangs on and on. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -1757,7 +1757,7 @@ _Journal (clue): Wren's Map-Notes_
 
 <sub>scene `wagons-carter`</sub>
 
-A grey-bearded carter is backing a supply wagon up to Bram's stores, and he stops halfway when he sees you. "I was in the stake pen behind the Ashfang kennels the night your company broke the den," he says. "Me, and a girl of about seven on my back. We walked home."
+A grey-bearded carter is backing a supply wagon up to Bram's stores, and he stops halfway when he sees you. "I was in the stake pen behind the Ashfang kennels the season your company broke the den," he says. "Me, and a girl of about seven on my back. We walked home."
 
 "I drive for the army now. The pay's bad, and nobody locks me in at night." He reaches under the wagon-seat and comes up with a crate. "The best of the stores. Two flasks of the strong healing, and one that keeps fire off you up where the dragons are. I took it off the top before Bram could price it. Don't tell him."
 
@@ -1961,7 +1961,9 @@ _+140 gold (1660)_
 
 **Dawn — day 4.**
 
-Before first light the stone's note thins, and a woman's voice comes down the wind in its place, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
+Before first light the stone's note thins, and for a while the mountain is almost quiet.
+
+A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
 
 → The Toll-Cliff
 
@@ -2165,9 +2167,9 @@ Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
-The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
+The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, out of the ground, and out of the sky."
 
-Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
+Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "She fed on the people of this valley. We owe you nothing." — Nettle wants a fight. Sedge wants something else.**
 

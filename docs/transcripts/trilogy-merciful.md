@@ -543,7 +543,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc, an a
 
 **» Fight — won**
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Across the yard someone shouts for the watch, and you are on your feet and moving before the shout stops.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -679,7 +679,7 @@ The carter's girl sits on the edge of the well in a new pair of shoes. She shows
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-You had hoped for a quiet year after the marsh. You very nearly had one.
+You had hoped for a quiet season after the marsh. You very nearly had one.
 
 The gate-warden meets you on the road, his lantern shaking. Behind him the bell clangs on and on. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -727,7 +727,7 @@ _Journal (clue): They Walk One Way_
 
 > "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You saw off the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
 
-> "And you didn't even kill her. You held her to her old price, the fen-folk say. They tied a lamb out for her at midwinter, the way their grans did, and it was gone by morning." She shakes her head. "So the price is paid. Then why are the graves open?"
+> "And you didn't even kill her. You held her to her old price, the fen-folk say. They've a lamb penned ready, and they mean to tie it out for her at midwinter, the way their grans did." She shakes her head. "So the price is as good as paid. Then why are the graves open?"
 
 > "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
 
@@ -853,7 +853,7 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 > He pushes his prayer book into your hands. "The **Reedwife** was never just a hag. She was a jailer. The fen-folk left her a lamb at the water's edge each midwinter, and for that she kept the **Warden of the Barrows** asleep under the fen. When she was gone from that door, his seal broke. Now he calls the dead to open his door from the inside." Wren lets out a breath. "We drank to her fall," she says.
 
-> "They say you held her to her price, and she takes it still." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She eats the lamb and sits by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
+> "They say you held her to her price, and she'll take it." Halden shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. She will eat the lamb and sit by her pool. Nobody sits by his door." Wren looks out across the water toward the far pools, and her jaw sets.
 
 > Halden lifts the altar cloth and hands you a healing potion. "I bought it for a bad night," he says. "I think yours will be worse." He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it into the Barrow Gate, and the gate's watchers still know it. The rites of sealing are at the back. Someone must say them whole at his door, and it will take nerve. I'll follow you down and wait on the stair." Wren puts her own cloak round his shoulders. "Nerve we've got," she says.
 
@@ -1527,7 +1527,9 @@ _+95 gold (931)_
 
 **Dawn — day 4.**
 
-Before first light the stone's note thins, and a woman's voice comes down the wind in its place, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
+Before first light the stone's note thins, and for a while the mountain is almost quiet.
+
+A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
 
 → The Middle Pass
 
@@ -1547,7 +1549,7 @@ _-600 gold (331)_
 
 The ogre-mage weighs the purse in one blue hand and smiles. "Gold, and not one of my soldiers scratched. The best kind of war." It blows the horn three times.
 
-Its warband files out of the gate and down the far side of the pass. Every night after, its horn answers the stone from somewhere below the ridge.
+Its warband files out of the gate and down the near side of the pass, toward the meadows. Every night after, its horn answers the stone from the slopes above the camp.
 
 **» Walk through the open pass**
 
@@ -1659,9 +1661,9 @@ Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
-The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
+The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, out of the ground, and out of the sky."
 
-Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
+Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "The vigil broke on our watch. We know, and we're sorry for that part." — Sedge is listening for something. So is Nettle.**
 
@@ -1722,6 +1724,8 @@ Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the wa
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 
 Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
+
+Once a year the pikemen stand where the torches went out on the Calling's last night. Nobody makes a speech. They stand there until the light goes, and then they walk back down together.
 
 Vargan still cuts reeds in the shallows he sold. During the Calling's last week, a sack of reed-arrows turned up at the war-camp gate, and nobody saw who left it.
 

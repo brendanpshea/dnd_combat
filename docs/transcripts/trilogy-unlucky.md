@@ -745,7 +745,7 @@ A horn brays from the watch-post, and the gate-runners answer. Something hairy a
 
 `[Deception DC 15 — Ash the Sneaky rolls 5 — failed]`
 
-The bugbear sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
+The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
 
 **» Fight — lost**
 
@@ -847,7 +847,7 @@ _(a paragraph shown before: “Halfway over the wall, a stake shifts…”)_
 
 **» Fight — won**
 
-The bugbear goes down last, face-first in the mud at the foot of the wall.
+The big one goes down last, face-first in the mud at the foot of the wall.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -1053,7 +1053,7 @@ Every evening, a widow walks the edge of the marsh and calls a name across the w
 
 Thornwick by night, and the bells are ringing, but not to count the hour. Somebody who has forgotten how bells work is hauling on the rope in a panic.
 
-You had hoped for a quiet year after the marsh. You very nearly had one.
+You had hoped for a quiet season after the marsh. You very nearly had one.
 
 The gate-warden meets you on the road, his lantern shaking. Behind him the bell clangs on and on. "It's the **churchyard**," he manages. "The graves are *open*, and it wasn't shovels did it."
 
@@ -1161,7 +1161,7 @@ _Journal (lead): Into the Deep Fen_
 
 > The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
-> "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "My partner was Tamsin. A dead horse came down on her on the marsh road, the week you went for the den. Nobody brought her home." She tests her bowstring and does not look up.
+> "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. "My partner was Tamsin. A dead horse came down on her on the marsh road, the week you went for the den. She died out there in the night, alone." She tests her bowstring and does not look up.
 
 > "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
@@ -2081,7 +2081,9 @@ A rider from the scouts' fire brings word at first light. Three more nights befo
 
 **Dawn — day 4.**
 
-Before first light the stone's note thins, and a woman's voice comes down the wind in its place, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
+Before first light the stone's note thins, and for a while the mountain is almost quiet.
+
+A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
 
 → The War-Stores
 
@@ -2523,6 +2525,8 @@ The ettin lifts both its clubs again, and both heads still want the same thing. 
 
 **» Fight — won**
 
+_Level up: 4 → 5_
+
 The ettin goes down still arguing about whose fault it was. The orc runner falls beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
 _+140 gold (710)_
@@ -2575,9 +2579,9 @@ Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
-The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, and out of the ground."
+The light around the stone thickens, and the ground beneath it begins, gently, to burn. "But you came so far," Nettle says. "Stay. The last of the collection is arriving now. Out of the fire, out of the ground, and out of the sky."
 
-Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
+Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can talk about how you pay. Until then, I hold on." Sedge has not looked at you once. She is looking down the mountain, toward the marsh.
 
 **» "She fed on the people of this valley. We owe you nothing." — Nettle wants a fight. Sedge wants something else.**
 
@@ -2613,13 +2617,13 @@ Nettle stops shouting just in time. She drives her hands back into the rock, and
 
 **» Sing a wrong note into the Calling**
 
-`[Arcana DC 17 — Morgan Le Fey rolls 10 — failed]`
+`[Arcana DC 17 — Morgan Le Fey rolls 8 — failed]`
 
 Nettle hears your wrong note and sings right over it, louder. The Calling never misses a beat.
 
 **» Say Halden's rites over the stone — Its oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 5 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 6 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
@@ -2639,7 +2643,7 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 <sub>scene `calling-battle-cracked`</sub>
 
-The sisters pour the last of themselves into the stone, and the stone spends it all at once. A pillar of living fire climbs out of the burning crack. The mountain's own bones heave up beside it into a shape with fists. The wind off the peak drops into the bowl and stays there, howling. Grey hands push up through the cracks and hold your ankles fast. "Take it all," Nettle tells the stone. "Every drop we owe." The Calling rises to one last note, and everything it raised turns toward you.
+The sisters pour the last of themselves into the stone, and the stone spends it all at once. A pillar of living fire climbs out of the burning crack. The mountain's own bones heave up beside it into a shape with fists. The wind off the peak drops into the bowl and stays there, howling. Grey hands push up through the cracks and catch at your ankles, and you tear free as the fire reaches you. "Take it all," Nettle tells the stone. "Every drop we owe." The Calling rises to one last note, and everything it raised turns toward you.
 
 **Battle:** Elemental Cataclysm <sub>(`elemental-cataclysm` on `firepit`)</sub>
 
@@ -2665,17 +2669,15 @@ The sisters still stand sunk to the shoulder in the stone. They do not turn to l
 
 <sub>scene `calling-battle-cracked` (again)</sub>
 
-The stone spends the sisters again, and grey hands hold your ankles fast. The pillar of fire and the shape of mountain bone climb out of the burning crack toward you, and the howling wind comes down with them.
+The stone spends the sisters again. The pillar of fire and the shape of mountain bone climb out of the burning crack toward you, and the howling wind comes down with them. The grey hands grab for you again, and again you kick loose.
 
 **Battle:** Elemental Cataclysm <sub>(`elemental-cataclysm` on `firepit`)</sub>
 
 **» Fight — won**
 
-_Level up: 4 → 5_
-
 The stone takes the last of the sisters. Nettle goes smiling, and Sedge goes with her sister's name still on her lips. A few dry reeds are all that is left of them, and the coin of a hundred old bargains, green with fen-water.
 
-The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
+The fire gutters out of the air, and the shape of mountain bone shakes itself apart into rubble. The howling wind blows itself out to a breeze off the peak. The black fang has nothing left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
 _+200 gold (910)_
 
