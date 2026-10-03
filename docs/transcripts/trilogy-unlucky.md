@@ -1413,7 +1413,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -1929,7 +1929,7 @@ The command tent stands open. Maps cover a table, and the grey-haired captain si
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
+He gives his name as **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
 The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
@@ -2289,7 +2289,7 @@ _+50 gold (1170)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
@@ -2435,7 +2435,7 @@ The den is empty, and fresh claw-marks lead out toward the open sky. Its owner w
 
 <sub>scene `gorgonvale-flown`</sub>
 
-The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon has gone down to the war-camp.
+The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its young bull have gone down to the war-camp, and two of the statues have left their plinths with them.
 
 **» Back to the trail**
 
@@ -2599,7 +2599,7 @@ Nettle does not turn. "Then you own the debt," she says, and her hands sink deep
 
 <sub>scene `vigil-rueful`</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 **» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
@@ -2607,11 +2607,11 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 "Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
 
-**» Tell her the door still needs a keeper**
+**» Name her sister a keeper, in the old words — The valley had words for the keepers of doors, once.**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 7 — failed]`
+`[Religion DC 15 — Morgan Le Fey rolls 7 — failed]`
 
-"A keeper," Sedge says. "She was a keeper for an age, and no one in your valley knew it. Give me a better reason than your need."
+You stumble over the old words. "Even the words are forgotten," Sedge says, and turns back to the stone.
 
 <sub>scene `vigil-refused-rueful`</sub>
 
@@ -2729,7 +2729,7 @@ Your fighter sits down on the first barrel inside the gate, and does not get up 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 The pikemen still keep the list of names from the Calling's last night. Once a year they stand where the torches went out, and read it aloud.
 

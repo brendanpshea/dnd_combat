@@ -761,7 +761,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -1217,7 +1217,7 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 <sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
+He gives his name as **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
 The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
@@ -1365,13 +1365,13 @@ _+50 gold (966)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (1061)_
 
@@ -1405,15 +1405,15 @@ Its warband files out of the gate and down the near side of the pass, toward the
 
 <sub>scene `redden`</sub>
 
-You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers.
+You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers. Three hounds as red as coals sleep among the heaps, with smoke curling from their jaws.
 
-On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light.
+On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light, and its hounds rise with it.
 
-**Battle:** Red Wyrmling's Forge <sub>(`red-dragon-den` on `firepit`)</sub>
+**Battle:** Red Wyrmling's Forge <sub>(`red-forge` on `firepit`)</sub>
 
 **» Fight — won**
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -1427,11 +1427,11 @@ _+120 gold (581)_
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 Someone has scratched one word into the rock at the shepherd's feet, in big, shaky letters: **GORGON**.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 **» Back away before it looks up**
 
@@ -1519,7 +1519,7 @@ Sedge has stopped singing. Her hands are still in the rock, but she is listening
 
 <sub>scene `vigil-sold`</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 **» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
@@ -1551,7 +1551,7 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 

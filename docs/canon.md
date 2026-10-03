@@ -147,7 +147,8 @@ keep the two from reading alike.)
 company that executed Vargan: "wiping the same cup"); the extra cup she fills
 for the dead scout. **Her lamp:** lit in the inn's window every night from the
 night the graves opened (Part 2); she blows it out in Part 2's epilogue. She
-pours on the house three times in the trilogy ("Three times now").
+pours on the house only for a company the town thinks well of; she never
+counts the times aloud (Part 1's round depends on facts the ledger drops).
 
 **Halden.** Thornwick's priest, Brother Halden. **His prayer book** holds the
 rites of sealing, notes in his tidy hand. In the drowned chapel the party gets
@@ -193,9 +194,19 @@ never "the girl".
   scales) appears only where Vex is turned and Hask doesn't come: it answers
   her whistle in the unguarded hall and in her fight after Vargan turns.
 - **The Warden's door:** two soldiers of the old kings, in bronze, stand with
-  the cult (not one).
+  the cult (not one). Both fight when Marrow does (`seal-battle`). With Marrow
+  talked round (`seal-doubt`), one rises at his acolyte's scream and the other
+  stays at the door; two of the kneelers rise to fight, and the rest never
+  do.
+- **The fen dead at night (`fen-night`):** six shapes out of the water (four
+  ghouls, two that stink worse: ghasts).
 - **The toll-cliff:** the manticore keeps a wyvern on its ledge; its goblins
   stay hidden in the rocks.
+- **The valley of statues:** the gorgon (the old bull), a younger bull, and
+  two winged statues that are not statues (gargoyles).
+- **The dens:** the red forge keeps three hounds and two kobolds; the blue
+  mesa two kobolds, two emberlings, a whirlwind and two winged stone things
+  on its tower. The brood on the rim is the wyrmlings alone.
 
 ## Who was where, per ledger value
 

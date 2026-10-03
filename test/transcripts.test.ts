@@ -48,4 +48,14 @@ describe('route transcripts', () => {
       expect(body.length, `${name} is over 150 KB — trim the route`).toBeLessThan(150 * 1024);
     }
   });
+
+  // docs/design-decisions.md: the level curve is the same on every route, and
+  // Part 3 tops out at 5th. The most thorough routes are here, so a roster or
+  // reward that pays past the cap shows up as a 6th level.
+  it('no route levels past 5th', () => {
+    for (const [name, body] of Object.entries(files)) {
+      const over = [...body.matchAll(/Level up: \d+ → (\d+)/g)].filter((m) => Number(m[1]) > 5);
+      expect(over.map((m) => m[0]), `${name} reaches 6th: lower the XP its optional fights pay`).toEqual([]);
+    }
+  });
 });

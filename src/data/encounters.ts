@@ -83,12 +83,17 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['cult-fanatic', 'acolyte', 'ghast', 'ghoul', 'animated-armor', 'wight', 'wight'],
   },
   // The Sunken Barrows: the cult once Marrow has stopped believing. He stands
-  // aside, and so does the soldier he woke; his acolyte and the things he
-  // raised do not. One of the two "ghouls" at the door is a ghast, here as
-  // in `cult-at-door`.
+  // aside; his acolyte and the things he raised do not. At the acolyte's
+  // scream one of the two bronze soldiers at the door rises (the other waits
+  // for Marrow's order, which never comes), and two of the kneelers rise to
+  // fight beside it (priests: Marrow himself is the `cult-fanatic`, and he
+  // does not fight here). One of the two "ghouls" at the door is a ghast,
+  // here as in `cult-at-door`. ~80% at 4th (the bare four won 100%; with the
+  // soldier alone still 100%; three priests ~31%). Its XP (2,500) is a little
+  // under `cult-at-door`'s (250 less), so talking him round costs little.
   'cult-wavering': {
     id: 'cult-wavering', name: 'The Worm Without Its Shepherd', suggestedLevel: 4,
-    members: ['acolyte', 'ghast', 'ghoul', 'animated-armor'],
+    members: ['acolyte', 'ghast', 'ghoul', 'animated-armor', 'wight', 'priest', 'priest'],
   },
   knights: {
     id: 'knights', name: 'Knightly Order', suggestedLevel: 4,
@@ -254,6 +259,15 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'gorgon-maze', name: 'Gorgon Lair', suggestedLevel: 5,
     members: ['gorgon'],
   },
+  // The Wyrmcalling's valley of statues (the ladder keeps `gorgon-maze`): the
+  // old bull, a younger one grazing out of sight among the statues, and two
+  // gargoyles posing as statues. Met at 5th on every route: ~86% fresh, ~10%
+  // worn (the gorgon alone, or two, won 100%; three gorgons ~70%, but paid
+  // enough XP to lift the most thorough route to 6th).
+  'gorgon-vale': {
+    id: 'gorgon-vale', name: 'The Valley of Statues', suggestedLevel: 5,
+    members: ['gorgon', 'gorgon', 'gargoyle', 'gargoyle'],
+  },
   // The Sunken Barrows' cold open, fought at 3rd level: four shadows, the
   // churchyard's ghost, and two of the newly buried clawing out of their
   // graves (a ghast and a ghoul). ~90% at 3rd.
@@ -278,8 +292,10 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     members: ['specter', 'specter', 'wight'],
   },
   // The fen's dead at night (the Sunken Barrows' risky camp on the causeway,
-  // met at 3rd–4th; no XP): four ghouls and two ghasts. Part 1's marsh camp
-  // keeps `marsh-dead`.
+  // met at 4th; no XP): four ghouls and two ghasts. 100% fresh, ~70% worn at
+  // 4th; a night ambush meets a party that camped because it was spent, so
+  // the worn rate is the one to hold (a bronze soldier with them: 0% worn).
+  // Part 1's marsh camp keeps `marsh-dead`.
   'fen-dead': {
     id: 'fen-dead', name: 'The Fen Dead', suggestedLevel: 3,
     members: ['ghoul', 'ghoul', 'ghoul', 'ghoul', 'ghast', 'ghast'],
@@ -335,16 +351,27 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
     id: 'white-dragon-den', name: "White Wyrmling's Cave", suggestedLevel: 2,
     members: ['white-wyrmling', 'kobold', 'kobold'],
   },
-  // The Wyrmcalling's blue den, met at 4th–5th: two kobold emberlings tend
-  // the hoard beside the spearmen. (An air elemental with it wins ~80% at
-  // 4th, but every route now meets the den at 5th, where it adds only XP.)
+  // The Wyrmcalling's blue den, met at 5th on every route: two kobold
+  // spearmen and two emberlings tend the hoard, a whirlwind the stone's song
+  // has torn loose spins between the lightning-rods, and two gargoyles keep
+  // the watchtower. ~90–96% fresh, ~20% worn at 5th (the kobolds alone won
+  // 100%). Two whirlwinds and one gargoyle won ~74%, but paid enough XP to
+  // lift the most thorough route to 6th on the sisters' fall: Part 3 tops
+  // out at 5th (docs/design-decisions.md).
   'blue-dragon-den': {
-    id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 4,
-    members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling'],
+    id: 'blue-dragon-den', name: "Blue Wyrmling's Mesa", suggestedLevel: 5,
+    members: ['blue-wyrmling', 'kobold', 'kobold', 'kobold-emberling', 'kobold-emberling', 'air-elemental', 'gargoyle', 'gargoyle'],
   },
   'red-dragon-den': {
     id: 'red-dragon-den', name: "Red Wyrmling's Forge", suggestedLevel: 4,
     members: ['red-wyrmling', 'kobold', 'kobold'],
+  },
+  // The Wyrmcalling's red den (the ladder keeps `red-dragon-den`), met at 5th
+  // on every route: the wyrmling, its two kobolds, and the three smoking
+  // hounds that sleep among its heaps. ~74% at 5th (the bare den won 100%).
+  'red-forge': {
+    id: 'red-forge', name: "Red Wyrmling's Forge", suggestedLevel: 5,
+    members: ['red-wyrmling', 'kobold', 'kobold', 'hell-hound', 'hell-hound', 'hell-hound'],
   },
   'chromatic-clutch': {
     id: 'chromatic-clutch', name: 'Chromatic Clutch', suggestedLevel: 4,

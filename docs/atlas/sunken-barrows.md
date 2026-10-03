@@ -653,7 +653,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -665,7 +665,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a lamb tied ready for midwinter. It makes no difference. A keeper held by strangers' words keeps the price, not the watch.* Wren reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."
 
@@ -1635,15 +1635,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 ## `seal-doubt` · battle
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
+At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd
 
 *Won:*
 
-The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1651,7 +1651,7 @@ Coins lie thick on the bottom step, thrown there by the faithful for the Warden.
 
 **Marrow, the Gravedigger:**
 
-Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.
+Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.
 
 "They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."
 
@@ -2311,9 +2311,9 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when `seal-cracked`]** The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.
 
-> **[when Wren's regard ≥ 2]** At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
+> **[when Wren's regard ≥ 2]** At the edge of town Wren says "Thank you," fast, to the road, and walks on before anyone can ask what for.
 
-> **[when Wren's regard < 0]** Wren walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.
+> **[when Wren's regard < 0]** Wren talks to the fen-folk on the road the whole way home, and not much to you.
 
 - » **Go up to the reeve's hall**
 

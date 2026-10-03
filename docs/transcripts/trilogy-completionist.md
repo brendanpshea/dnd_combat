@@ -667,7 +667,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc and t
 
 **» Fight — won**
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -807,7 +807,7 @@ The chief bellows for Hask, his guard. Hask stands by the door with his spear gr
 
 "You've cost me a good season," Vargan says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
 
-Then she whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
+She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 
 **Battle:** The Ashfang Chief, Unguarded <sub>(`ashfang-warlord-alone` on `firepit`)</sub>
 
@@ -1115,7 +1115,7 @@ The next note is shorter. *She is gone from her door, and he is waking.* Below t
 
 Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
+"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
 
 Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
 
@@ -1513,15 +1513,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 <sub>scene `seal-doubt`</sub>
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
+At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
-The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1531,7 +1531,7 @@ _+120 gold (1265)_
 
 **Marrow, the Gravedigger**
 
-> Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.
+> Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.
 
 > "They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."
 
@@ -1583,7 +1583,7 @@ Since the lead cut Wren has taken the old man's feet wherever the roof drops low
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
-At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
+At the edge of town Wren says "Thank you," fast, to the road, and walks on before anyone can ask what for.
 
 **» Go up to the reeve's hall**
 
@@ -1672,6 +1672,8 @@ She flexes her green fingers. "The rest of the collectors are gathering up on th
 **Battle:** The Sister's Hired Swords <sub>(`hired-swords` on `open`)</sub>
 
 **» Fight — won**
+
+_Level up: 4 → 5_
 
 The last hired sword goes down. Nettle smiles at you once more, and then there is only a heap of wet reeds where she stood, and a puddle spreading over the mud.
 
@@ -1832,8 +1834,6 @@ The griffons come down on the switchbacks screaming, all beak and talon, and the
 **Battle:** Griffons on the Switchbacks <sub>(`griffon-flight` on `pass`)</sub>
 
 **» Fight — won**
-
-_Level up: 4 → 5_
 
 The last griffon tumbles away down the loose rock. Above you the whole mountain is still climbing toward the stone.
 
@@ -2061,13 +2061,13 @@ _(a paragraph shown before: “The drake goes down thrashing, and the…”)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (1905)_
 
@@ -2091,15 +2091,15 @@ _(a paragraph shown before: “The drake goes down thrashing, and the…”)_
 
 <sub>scene `redden`</sub>
 
-You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers.
+You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers. Three hounds as red as coals sleep among the heaps, with smoke curling from their jaws.
 
-On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light.
+On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light, and its hounds rise with it.
 
-**Battle:** Red Wyrmling's Forge <sub>(`red-dragon-den` on `firepit`)</sub>
+**Battle:** Red Wyrmling's Forge <sub>(`red-forge` on `firepit`)</sub>
 
 **» Fight — won**
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -2121,15 +2121,15 @@ A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps 
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 **» Rob the statues without waking it**
 
 <sub>scene `gorgonvale-sneak`</sub>
 
-The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.
+The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. A younger bull dozes among the statues halfway down the rows. Two of the statues have wings folded on their backs.
 
 One wrong step on the loose rock, and you join the collection.
 
@@ -2229,7 +2229,7 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 `[Athletics DC 11 — Arthur the Bold rolls 26 — passed]`
 
-Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
+Nettle is still laughing when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>scene `sisters-battle`</sub>
 
@@ -2279,7 +2279,7 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 After the Calling's last night, Bram tried to sell the army back its own arrows. Hardly anyone had loosed one.
 

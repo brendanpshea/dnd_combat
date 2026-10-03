@@ -82,7 +82,7 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S55** “Your wizard finds the line of old letters that binds …”
   - **S56** “The letters crawl and shift under your wizard's eyes. They …”
   - **S57** “Your warlock speaks to the stone in a patron's voice, …”
-  - **S58** “The stone has heard better offers. It keeps the sisters …”
+  - **S58** “The stone has heard better offers. It keeps the sisters.”
   - **S59** “Wren puts her hand flat on the stone, over a …”
   - **S60** “Your blow lands a hand's width off the chalk. The …”
   - **S61** “Wren walks round the stone twice, slowly, the way she …”
@@ -102,8 +102,8 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S69** “Nettle smiles at you the whole time you pull. You …”
 - `tear-loose-defiant`, `tear-loose-defiant-cracked`:
   - **S70** “Sedge has her hands sunk to the wrist in the …”
-  - **S71** “Nettle is still shouting when you take her wrists, and …”
-  - **S72** “Nettle stops shouting just in time. She drives her hands …”
+  - **S71** “Nettle is still laughing when you take her wrists, and …”
+  - **S72** “Nettle stops laughing just in time. She drives her hands …”
   - **S73** “Nettle hears your wrong note and sings right over it, …”
 - `tear-loose-cold`, `tear-loose-cold-cracked`:
   - **S74** “Sedge does not pull back, not at first. By the …”
@@ -122,7 +122,7 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `vigil-down-with-hask`, `down-with-hask`:
   - **S83** “Hask walks down at the back, the way a guard …”
 - `vigil-rueful`, `vigil-unknowing`, `vigil-sold`:
-  - **S84** “Sedge keeps her hands in the rock, but she is …”
+  - **S84** “Sedge has not looked away from you since you spoke. …”
   - **S85** “"Her pen is empty," you tell Sedge. "The carter walked …”
   - **S86** “"One pen," Sedge says. "She sat in the dark for …”
   - **S87** “"The fen-folk on the rim came up this mountain for …”
@@ -138,35 +138,37 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S97** “Wren lowers her bow and steps up beside you. "I owe …”
   - **S98** “Sedge hardly looks at her. "Your scout loves you," she …”
   - **S99** “Wren lowers her bow and steps up beside you. "I walked …”
-  - **S100** “"The door under the fen still needs a keeper," you …”
-  - **S101** “"A keeper," Sedge says. "She was a keeper for an …”
+  - **S100** “You name her sister a keeper of the door, the …”
+  - **S101** “You stumble over the old words. "Even the words are …”
+  - **S102** “"The door under the fen still needs a keeper," you …”
+  - **S103** “"A keeper," Sedge says. "She was a keeper for an …”
 - `calling-battle`, `calling-battle-cracked`:
-  - **S102** “The stone takes the last of the sisters. Nettle goes …”
-  - **S103** “The fire gutters out of the air, and the shape …”
-  - **S104** “The rock bucks under you like a struck bell, and …”
+  - **S104** “The stone takes the last of the sisters. Nettle goes …”
+  - **S105** “The fire gutters out of the air, and the shape …”
+  - **S106** “The rock bucks under you like a struck bell, and …”
 - `wc-epilogue`, `wc-epilogue-vigil`:
-  - **S105** “Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She …”
-  - **S106** “Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The …”
-  - **S107** “Somewhere past the far hills, a green dragon is growing …”
-  - **S108** “The manticore never came back to its cliff. Shepherds say …”
-  - **S109** “Hunters still hear the ettin some nights, far off in …”
-  - **S110** “After the Calling's last night, Bram tried to sell the …”
-  - **S111** “The beasts you left in the hills nearly broke the …”
-  - **S112** “The reed-cutters are back in the shallows Vargan sold, cutting …”
-  - **S113** “Vargan still cuts reeds in the shallows he sold. During …”
-  - **S114** “In Saltmere, a lamp burns all night among forty graves, …”
-  - **S115** “Marrow still mends Thornwick's churchyard on the reeve's orders. While …”
-  - **S116** “Brother Halden climbs to the bowl each spring to bless …”
-  - **S117** “Down in Thornwick, the reeve orders a plaque for the …”
-  - **S118** “Thornwick's watch stood at the thin end of the east …”
-  - **S119** “Hask went back to Vex's side with a new scar …”
-  - **S120** “Wren's route report of the climb to the stone runs …”
-  - **S121** “The carter from the Ashfang pens drives the last wagon …”
-  - **S122** “Wren still limps on cold mornings, and she tells every …”
-  - **S123** “Wren tells every new scout how she walked the fen …”
-  - **S124** “Wren draws the road to the stone for every new …”
-  - **S125** “Wren keeps a list of the people she would follow …”
-  - **S126** “Wren keeps a short list folded in her bracer. It …”
+  - **S107** “Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She …”
+  - **S108** “Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. The …”
+  - **S109** “Somewhere past the far hills, a green dragon is growing …”
+  - **S110** “The manticore never came back to its cliff. Shepherds say …”
+  - **S111** “Hunters still hear the ettin some nights, far off in …”
+  - **S112** “After the Calling's last night, Bram tried to sell the …”
+  - **S113** “The beasts you left in the hills nearly broke the …”
+  - **S114** “The reed-cutters are back in the shallows Vargan sold, cutting …”
+  - **S115** “Vargan still cuts reeds in the shallows he sold. During …”
+  - **S116** “In Saltmere, a lamp burns all night among forty graves, …”
+  - **S117** “Marrow still mends Thornwick's churchyard on the reeve's orders. While …”
+  - **S118** “Brother Halden climbs to the bowl each spring to bless …”
+  - **S119** “Down in Thornwick, the reeve orders a plaque for the …”
+  - **S120** “Thornwick's watch stood at the thin end of the east …”
+  - **S121** “Hask went back to Vex's side with a new scar …”
+  - **S122** “Wren's route report of the climb to the stone runs …”
+  - **S123** “The carter from the Ashfang pens drives the last wagon …”
+  - **S124** “Wren still limps on cold mornings, and she tells every …”
+  - **S125** “Wren tells every new scout how she walked the fen …”
+  - **S126** “Wren draws the road to the stone for every new …”
+  - **S127** “Wren keeps a list of the people she would follow …”
+  - **S128** “Wren keeps a short list folded in her bracer. It …”
 
 ## `muster` · story
 
@@ -262,7 +264,7 @@ The command tent stands open. Maps cover a table, and the grey-haired captain si
 
 ## `vex-brief` · story
 
-You know this man. It is **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
+He gives his name as **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
 The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
@@ -1425,7 +1427,7 @@ The den is empty, and fresh claw-marks lead out toward the open sky. Its owner w
 
 ## `tollcliff-flown` · story
 
-The overhang is empty. Deep claw-marks run down the cliff toward the valley, and snapped black tail-spikes lie on the trail. The manticore went down at the war-camp when the Calling peaked, and it has not come back to its ledge.
+The overhang is empty. Deep claw-marks run down the cliff toward the valley, and snapped black tail-spikes lie on the trail. The manticore flew down at the war-camp when the Calling peaked, and it has not come back to its ledge.
 
 - » **Back to the trail**
 
@@ -1437,7 +1439,7 @@ The boar-runs are empty. The herd has churned the gully to soup, and every hoofp
 
 ## `gorgonvale-flown` · story
 
-The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon has gone down to the war-camp.
+The statues still stand in their crooked rows, but nothing grazes between them. A trail of grey grass, turned to stone, runs out of the valley and down the slope. The gorgon and its young bull have gone down to the war-camp, and two of the statues have left their plinths with them.
 
 - » **Back to the trail**
 
@@ -1511,23 +1513,23 @@ The brook runs downhill now, chattering over the stones with no shape in it at a
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa
 
 *Won:*
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 ### 2. when a return visit?
 
-The copper rods still hum on the mesa's broken walls. The blue wyrmling uncoils along its wall again, crackling, and the air turns sharp and metallic.
+The copper rods still hum on the mesa's broken walls. The blue wyrmling uncoils along its wall again, crackling, and the air turns sharp and metallic. The whirlwind spins up between the rods, and the stone things unfold on the tower.
 
 **Battle:** Blue Wyrmling's Mesa
 
 *Won:*
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 ## `blueden-done` · story
 
@@ -1629,27 +1631,27 @@ The fort at the middle pass stands empty, its horn silent on the wall. The camp'
 
 ### 1. when the first visit?
 
-You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers.
+You smell the den before you see it: woodsmoke with a hot, metal edge. In a scorched bowl of hillside, something has built a forge-hall out of split rock and cinders. Its kobolds tend heaps of half-melted treasure with the care of jewellers. Three hounds as red as coals sleep among the heaps, with smoke curling from their jaws.
 
-On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light.
+On the largest heap lies a red **wyrmling** with one eye open. It rises to meet you, burning with its own light, and its hounds rise with it.
 
 **Battle:** Red Wyrmling's Forge
 
 *Won:*
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
 ### 2. when a return visit?
 
-The forge-hall still smokes in its scorched bowl. The red wyrmling rises off its heap again, burning with its own light, and its kobolds run for cover.
+The forge-hall still smokes in its scorched bowl. The red wyrmling rises off its heap again, burning with its own light. Its three hounds come off the heaps with smoke curling from their jaws, and its kobolds run for cover.
 
 **Battle:** Red Wyrmling's Forge
 
 *Won:*
 
-The wyrmling's fire goes out from the inside, and it is finally, simply small. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
+The wyrmling's fire goes out from the inside, and it is finally, simply small. Its hounds and its kobolds lie dead among the heaps. Its half-melted hoard cools into heavy lumps of real gold, and Bram will weigh every one twice before he pays.
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
@@ -1669,23 +1671,23 @@ The burning den has gone cold. Rain has found the scorched bowl, and green shoot
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 Someone has scratched one word into the rock at the shepherd's feet, in big, shaky letters: **GORGON**.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 ### 2. when a return visit?
 
-The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils. It is not looking your way.
+The gorgon still grazes at the head of the valley of statues, its head down. Steam curls from its iron nostrils, and another plume rises further down the rows. It is not looking your way.
 
 ### 3. when `wren-brief` · the first visit?
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 - » **Rob the statues without waking it** <sub>(once)</sub>
 - » **Go in blade-first**
@@ -1695,7 +1697,7 @@ The bull has not noticed you yet.
 
 <sub>reads: flag:wren-brief</sub>
 
-The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews.
+The statues stand in crooked rows, and their purses lie in the grass at their feet, where the stone belts let go of them. The gorgon grazes at the far end with its back half turned. Its iron plates creak as it chews. A younger bull dozes among the statues halfway down the rows. Two of the statues have wings folded on their backs.
 
 One wrong step on the loose rock, and you join the collection.
 
@@ -1715,25 +1717,25 @@ A stone arm snaps off under your elbow and hits the rock like a dropped bell. Ac
 
 ## `gorgonvale-fight` · battle
 
-The gorgon's head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering, and the valley becomes a maze of stone people with you inside it.
+The gorgon's head comes up, and its breath comes with it. A rolling green vapour turns the grass it touches into grey stalks of stone. It charges through its own statues with its iron plates thundering. A younger bull comes crashing out of the rows after it. Two of the statues spread stone wings and drop from their plinths, and the valley becomes a maze of stone people with you inside it.
 
-**Battle:** Gorgon Lair
+**Battle:** The Valley of Statues
 
 *Won:*
 
-The gorgon crashes onto its side with its iron plates ringing, and the green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 <sub>(shared with: `gorgonvale-woken`)</sub>
 
 ## `gorgonvale-woken` · battle
 
-The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues, and the maze closes in around you.
+The gorgon swings round, and its breath comes rolling down the rows. The green vapour turns the grass to grey stalks of stone. It charges through its own statues. A younger bull comes snorting out of the rows behind you, two winged statues drop from their plinths, and the maze closes in around you.
 
-**Battle:** Gorgon Lair
+**Battle:** The Valley of Statues
 
 *Won:*
 
-The gorgon crashes onto its side with its iron plates ringing, and the green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
+The gorgon crashes onto its side with its iron plates ringing, beside the young bull already down among the broken statues. Two of the statues lie in pieces that were never people. The green vapour thins away to nothing. The statues keep their silent watch. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
 <sub>(shared with: `gorgonvale-fight`)</sub>
 
@@ -2209,7 +2211,7 @@ Before you start down, horns sound behind you. Vex has marched the forward colum
 
 > **[when Wren's regard < 0 · Halden not saved · Vex not turned · Part 2 regard ≥ 2]** "We hold the ridge. You go down," Vex says. "Take the fen-folk's rope. No one else up here is going down with you, and a small party's a quiet one."
 
-> **[when Wren's regard < 0 · Halden not saved · Vex not turned · Part 2 regard < 2]** "We hold the ridge. You go down," Vex says. He looks along the rim, where no one from the valley has come to see you off. "That's the whole plan. A small party's a quiet one."
+> **[when Wren's regard < 0 · Halden not saved · Vex not turned · Part 2 regard < 2]** "We hold the ridge. You go down," Vex says. He looks along the rim. No one steps forward. "That's the whole plan. A small party's a quiet one."
 
 - » **Take the fen-folk's drowning-ropes** <sub>open when Part 2 regard ≥ 2; otherwise hidden</sub>
 - » **Let them hold the rim while you go down**
@@ -2363,7 +2365,7 @@ Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can 
 
 Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen. The sisters' faces are burning down like candles, and the stone sings louder for every drop.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She takes your lamb now like a dog on a leash and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -2391,7 +2393,7 @@ Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her
 
 On a ledge above the bowl crouches the manticore from the toll-cliff. It came up here to collect its meal from the hags. It watches the sisters, and licks its lips, and waits to see who wins.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She takes your lamb now like a dog on a leash and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -2488,7 +2490,7 @@ For one breath, the song falters. Sedge turns her burning face toward you. "Sorr
 
 Nettle does not turn. "Then you own the debt," she says, and her hands sink deeper into the rock. "Good. Owed is owed."
 
-Wren lets her bowstring ease a finger's width. "That's the first time anyone's said it," she murmurs. "Somebody should have."
+Wren lets her bowstring ease a finger's width. "Somebody should have said it," she murmurs.
 
 - » **Ask Sedge to take up her sister's vigil** <sub>(once)</sub> <sub>open on every route here</sub>
 - » **Tear them out of the stone** <sub>open when not Part 2 seal-cracked; otherwise hidden</sub>
@@ -2606,7 +2608,7 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag their hands out of the rock, failed:*
 
-The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
+The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.
 
 <sub>(shared with: `tear-loose-cracked`, `tear-loose-sold`, `tear-loose-sold-cracked`)</sub>
 
@@ -2696,7 +2698,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -2794,7 +2796,7 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag their hands out of the rock, failed:*
 
-The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
+The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.
 
 <sub>(shared with: `tear-loose`, `tear-loose-sold`, `tear-loose-sold-cracked`)</sub>
 
@@ -2884,7 +2886,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -3064,7 +3066,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -3252,7 +3254,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -3342,13 +3344,13 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag Nettle out first, passed:*
 
-Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
+Nettle is still laughing when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>(shared with: `tear-loose-defiant-cracked`)</sub>
 
 *Drag Nettle out first, failed:*
 
-Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+Nettle stops laughing just in time. She drives her hands back into the rock, and her song climbs over your grunting.
 
 <sub>(shared with: `tear-loose-defiant-cracked`)</sub>
 
@@ -3438,7 +3440,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -3536,13 +3538,13 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag Nettle out first, passed:*
 
-Nettle is still shouting when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
+Nettle is still laughing when you take her wrists, and her hands come out of the rock before she knows it. She tears at you, screaming. Sedge will not leave her sister alone with you, and she pulls free after her.
 
 <sub>(shared with: `tear-loose-defiant`)</sub>
 
 *Drag Nettle out first, failed:*
 
-Nettle stops shouting just in time. She drives her hands back into the rock, and her song climbs over your grunting.
+Nettle stops laughing just in time. She drives her hands back into the rock, and her song climbs over your grunting.
 
 <sub>(shared with: `tear-loose-defiant`)</sub>
 
@@ -3632,7 +3634,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -3728,7 +3730,7 @@ Sedge does not pull back, not at first. By the time she does, her hands are out 
 
 *Drag Sedge out first, failed:*
 
-Sedge finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.
+Sedge finds her nerve a moment too soon. She drives her hands back into the rock, and it closes round her wrists again.
 
 <sub>(shared with: `tear-loose-cold-cracked`)</sub>
 
@@ -3818,7 +3820,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -3922,7 +3924,7 @@ Sedge does not pull back, not at first. By the time she does, her hands are out 
 
 *Drag Sedge out first, failed:*
 
-Sedge finds her nerve a moment too soon. She drives her hands back into the rock, and the stone keeps drinking.
+Sedge finds her nerve a moment too soon. She drives her hands back into the rock, and it closes round her wrists again.
 
 <sub>(shared with: `tear-loose-cold`)</sub>
 
@@ -4012,7 +4014,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -4102,7 +4104,7 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag their hands out of the rock, failed:*
 
-The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
+The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.
 
 <sub>(shared with: `tear-loose`, `tear-loose-cracked`, `tear-loose-sold-cracked`)</sub>
 
@@ -4192,7 +4194,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -4290,7 +4292,7 @@ Nothing you try reaches them. The sisters sink into the stone to the elbow, and 
 
 *Drag their hands out of the rock, failed:*
 
-The rock holds them fast. You let go with burned palms, and the stone keeps drinking.
+The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.
 
 <sub>(shared with: `tear-loose`, `tear-loose-cracked`, `tear-loose-sold`)</sub>
 
@@ -4380,7 +4382,7 @@ Your warlock speaks to the stone in a patron's voice, and promises it something 
 
 *Let your warlock offer the stone a better bargain, failed:*
 
-The stone has heard better offers. It keeps the sisters and goes on drinking.
+The stone has heard better offers. It keeps the sisters.
 
 <sub>(shared ×10, see index S58)</sub>
 
@@ -4649,7 +4651,7 @@ Sedge slowly shakes her head. "One of yours sold her the water, and the rest of 
 
 <sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4667,7 +4669,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 *Promise her the fen will pay the old price, passed:*
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
@@ -4749,6 +4751,18 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 <sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
 
+*Name her sister a keeper, in the old words, passed:*
+
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
+*Name her sister a keeper, in the old words, failed:*
+
+You stumble over the old words. "Even the words are forgotten," Sedge says, and turns back to the stone.
+
+<sub>(shared with: `vigil-unknowing`, `vigil-sold`)</sub>
+
 *Tell her the door still needs a keeper, passed:*
 
 "The door under the fen still needs a keeper," you tell her. "A priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
@@ -4769,13 +4783,14 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 - » **Promise her Halden will say the rites for her sister** [Persuasion DC 15] — _He is up on the rim, alive because of you. He has never refused anyone the rites._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Wren speak for you** [Persuasion DC 13] — _She has owed you her leg since the marsh road. She would tell anyone what she thinks of you._ <sub>open when Wren in the party · `wren-follows` ≥ 1? · Wren saved; otherwise hidden</sub>
 - » **Let Wren speak for you** [Persuasion DC 13] — _She walked the fen with you, and she came down into this bowl with you. She would tell anyone what she thinks of you._ <sub>open when Wren in the party · `wren-follows` ≥ 1? · Wren not saved; otherwise hidden</sub>
+- » **Name her sister a keeper, in the old words** [Religion DC 15] — _The valley had words for the keepers of doors, once._
 - » **Tell her the door still needs a keeper** [Persuasion DC 15]
 
 ## `vigil-unknowing` · challenge
 
 <sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -4793,7 +4808,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 *Promise her the fen will pay the old price, passed:*
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
@@ -4875,6 +4890,18 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 <sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
 
+*Name her sister a keeper, in the old words, passed:*
+
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
+*Name her sister a keeper, in the old words, failed:*
+
+You stumble over the old words. "Even the words are forgotten," Sedge says, and turns back to the stone.
+
+<sub>(shared with: `vigil-rueful`, `vigil-sold`)</sub>
+
 *Tell her the door still needs a keeper, passed:*
 
 "The door under the fen still needs a keeper," you tell her. "A priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
@@ -4895,13 +4922,14 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 - » **Promise her Halden will say the rites for her sister** [Persuasion DC 15] — _He is up on the rim, alive because of you. He has never refused anyone the rites._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Wren speak for you** [Persuasion DC 13] — _She has owed you her leg since the marsh road. She would tell anyone what she thinks of you._ <sub>open when Wren in the party · `wren-follows` ≥ 1? · Wren saved; otherwise hidden</sub>
 - » **Let Wren speak for you** [Persuasion DC 13] — _She walked the fen with you, and she came down into this bowl with you. She would tell anyone what she thinks of you._ <sub>open when Wren in the party · `wren-follows` ≥ 1? · Wren not saved; otherwise hidden</sub>
+- » **Name her sister a keeper, in the old words** [Religion DC 17] — _The valley had words for the keepers of doors, once._
 - » **Tell her the door still needs a keeper** [Persuasion DC 17]
 
 ## `vigil-sold` · challenge
 
 <sub>reads: flag:hollow-road:captives-freed, flag:sunken-barrows:regard, flag:npc.marrow.fate.sings, companion:halden, flag:npc.halden.fate.saved, companion:wren, flag:wren-follows?, flag:npc.wren.fate.saved</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -4919,7 +4947,7 @@ Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to
 
 *Promise her the fen will pay the old price, passed:*
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
@@ -5001,6 +5029,18 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 
 <sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
 
+*Name her sister a keeper, in the old words, passed:*
+
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "Those words are older than your town," she says. "Someone kept them, at least."
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
+*Name her sister a keeper, in the old words, failed:*
+
+You stumble over the old words. "Even the words are forgotten," Sedge says, and turns back to the stone.
+
+<sub>(shared with: `vigil-rueful`, `vigil-unknowing`)</sub>
+
 *Tell her the door still needs a keeper, passed:*
 
 "The door under the fen still needs a keeper," you tell her. "A priest's book is a poor jailer. Your sister kept that door through more winters than anyone can count. Keep it for her."
@@ -5021,6 +5061,7 @@ Sedge hardly looks at her. "Your scout loves you," she says. "My sister loved no
 - » **Promise her Halden will say the rites for her sister** [Persuasion DC 15] — _He is up on the rim, alive because of you. He has never refused anyone the rites._ <sub>open when Halden not in the party · Halden saved; otherwise hidden</sub>
 - » **Let Wren speak for you** [Persuasion DC 13] — _She has owed you her leg since the marsh road. She would tell anyone what she thinks of you._ <sub>open when Wren in the party · `wren-follows` ≥ 1? · Wren saved; otherwise hidden</sub>
 - » **Let Wren speak for you** [Persuasion DC 13] — _She walked the fen with you, and she came down into this bowl with you. She would tell anyone what she thinks of you._ <sub>open when Wren in the party · `wren-follows` ≥ 1? · Wren not saved; otherwise hidden</sub>
+- » **Name her sister a keeper, in the old words** [Religion DC 15] — _The valley had words for the keepers of doors, once._
 - » **Tell her the door still needs a keeper** [Persuasion DC 15]
 
 ## `vigil-aftermath` · story
@@ -5345,7 +5386,7 @@ Vex's clerk looks in, sees that you are breathing, and sets your kit at the foot
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end at a black stone split in two, with dry reeds blowing round its foot.
 
-> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 <sub>(shared with: `wc-epilogue-vigil`)</sub>
 
@@ -5459,7 +5500,7 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+> **[when Part 2 regard ≥ 1]** Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 <sub>(shared with: `wc-epilogue`)</sub>
 
@@ -5501,7 +5542,7 @@ Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's
 
 <sub>(shared with: `wc-epilogue`)</sub>
 
-> **[when Part 2 seal-cracked]** Deep under the fen, the knocking at the Undercrypt's door stops for good. The fen-folk leave a lamb at the water's edge each midwinter, the way their grandparents did.
+> **[when Part 2 seal-cracked]** Deep under the fen, the knocking at the Warden's door stops for good. The fen-folk leave a lamb at the water's edge each midwinter, the way their grandparents did.
 
 > **[when not Part 2 seal-cracked · Reedwife not bound]** Deep under the fen, the Warden's door stays shut. Tall shapes keep watch over it now, and the fen-folk know better than to ask their names.
 

@@ -543,7 +543,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc and t
 
 **» Fight — won**
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner`)</sub>
 
@@ -1175,15 +1175,15 @@ Marrow's chisel stops. His acolyte sees it stop, and screams that Marrow has los
 
 <sub>scene `seal-doubt`</sub>
 
-Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Marrow only watches, the chisel loose in his lap.
+Marrow sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. Marrow only watches, the chisel loose in his lap.
 
-Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and Marrow gives none.
+At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and Marrow gives none.
 
 **Battle:** The Worm Without Its Shepherd <sub>(`cult-wavering` on `firepit`)</sub>
 
 **» Fight — won**
 
-The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, Marrow is still sitting against the door.
+The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, Marrow is still sitting against the door.
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
@@ -1193,7 +1193,7 @@ _+120 gold (451)_
 
 **Marrow, the Gravedigger**
 
-> Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.
+> Marrow looks up at the door, and at the letters he pried loose. "Forty graves," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.
 
 > "They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."
 
@@ -1249,7 +1249,7 @@ Wren sees the chain glint in the folds of your cloak, and she knows it. She take
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
-At the edge of town Wren stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.
+At the edge of town Wren says "Thank you," fast, to the road, and walks on before anyone can ask what for.
 
 **» Go up to the reeve's hall**
 
@@ -1513,13 +1513,13 @@ _+50 gold (836)_
 
 The mesa smells like a storm about to break. Something lives in the ruined watchtower at its top, and its kobolds have lashed copper rods to every standing wall to catch the lightning. The rods hum.
 
-Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic.
+Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns sharp and metallic. Between the rods, a whirlwind spins up out of nothing, full of grit and blue sparks. On top of the tower, two winged things of grey stone unfold themselves.
 
 **Battle:** Blue Wyrmling's Mesa <sub>(`blue-dragon-den` on `ruins`)</sub>
 
 **» Fight — won**
 
-The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
+The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, the stone things lie in pieces at the foot of the tower, and the kobolds lie where they fell. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
 _+95 gold (931)_
 
@@ -1563,11 +1563,11 @@ Its warband files out of the gate and down the near side of the pass, toward the
 
 The statues in this valley are far too good. One is a shepherd caught mid-stride, with one arm flung up. One is a wolf turning to run. One is a hired sword with his blade half drawn, and a look on his face you can read from thirty paces.
 
-At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle.
+At the head of the valley, a bull made of black iron plates grazes between them. Steam curls from its nostrils in the cold air, and wherever the steam drifts, the grass has gone grey and brittle. Further down the rows, another plume of steam drifts up between the statues. Two of the statues nearby have wings.
 
 Someone has scratched one word into the rock at the shepherd's feet, in big, shaky letters: **GORGON**.
 
-The bull has not noticed you yet.
+None of them has noticed you yet.
 
 **» Back away before it looks up**
 
@@ -1657,7 +1657,7 @@ Two fen-folk come up behind the pikes, mud to the knees, with coils of rope over
 
 Down in the bowl, **Nettle** is waiting at the foot of the stone, and beside her the younger sister, **Sedge**. They have pushed their green fingers to the knuckle into the black rock. Old letters ring its base, filled with lead like the letters on the Warden's door under the fen. The sisters' faces are burning down like candles, and the stone sings louder for every drop.
 
-"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She takes your lamb now like a dog on a leash and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
+"Binders," Nettle says, without turning around. "Our sister had kept the door under the fen since before your grandmothers' grandmothers. One lamb each midwinter, and the Warden slept. You beat her in the chief's hall and tied her back to her old price with her own words. She waits for your lamb now like a dog on a leash, and sits by her pool, and a leashed keeper keeps nothing. So we take the valley, and she walks free."
 
 Sedge does not turn either. Her voice is raw, and you have heard it before, on the wind. "Not one of you ever thanked her. You never even knew her name. One of your reed-cutters came down to the bank and sold her the shallows, and your valley stood by and let him." Nettle goes on as if her sister had not spoken. "So we did what she did. She bought a reed-cutter with a valley. We bought these hills with the same coin, one promise at a time."
 
@@ -1677,13 +1677,13 @@ Nettle does not turn. "Then you own the debt," she says, and her hands sink deep
 
 <sub>scene `vigil-rueful`</sub>
 
-Sedge keeps her hands in the rock, but she is listening. Nettle sings louder, to drown you out.
+Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
 **» Promise her the fen will pay the old price**
 
 `[Persuasion DC 15 — Elaine the Holy rolls 16 — passed]`
 
-"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand with their ropes.
+"The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
 <sub>scene `vigil-kept`</sub>
 
@@ -1719,7 +1719,7 @@ Every village in the valley paid into the purse, and a farmer from each one come
 
 The valley remembers it as the year of three wars: the raiders, the graves, and the hills. The songs about the last one end strangely. There is no great fight on the mountain. Two tall women walk down out of the hills and into the fen, and the Calling stops.
 
-Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "Three times now," she says. "People will start to expect it."
+Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says. "People will start to expect it."
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
 

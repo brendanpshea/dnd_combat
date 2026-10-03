@@ -954,7 +954,7 @@ const scenes: Record<string, Scene> = {
   'scout-left': {
     id: 'scout-left', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
     text: [
-      'You step around the horse. She doesn\'t call after you. She only watches you go, jaw still set, as if she had expected nothing else.',
+      'You step around the horse. She doesn\'t call after you. She only watches you go, jaw still set.',
       'Behind you the reeds close over the trail. You don\'t look back.',
     ],
     next: [{ id: 'ok', label: 'Keep walking', to: 'trail' }], noBack: true,
@@ -1341,7 +1341,7 @@ const scenes: Record<string, Scene> = {
     loot: false, encounterId: 'den-watch', mapId: '@room',
     intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents: an orc and two archers, blinking in the light. Five grey wolves the size of ponies strain at their leashes. The orc finds his voice first. He starts to shout, and slips the leashes.'],
     again: ['Another patrol. They come round the drying-racks this time with their grey wolves already off the leash, and they have their blades out before they reach the fire.'],
-    onWin: { to: '@hub', text: ['You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.'] },
+    onWin: { to: '@hub', text: ['You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.'] },
   },
   // The clock (see DAWNS): the Reedwife takes her due when the moon goes
   // dark. Until then the pen holds people; after, it holds a shoe.
@@ -1573,10 +1573,10 @@ const scenes: Record<string, Scene> = {
     id: 'boss-shaken', kind: 'battle', encounterId: 'ashfang-hall', mapId: 'firepit',
     surprise: 'enemies',
     intro: [
-      { assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan} closes his fist over the brand and looks at it a moment too long. Behind him the hag says nothing at all. By then you are already moving.' },
+      { assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan} closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.' },
       'By the door, the chief\'s guard is still reaching for his weapon. He is a grey and scarred old soldier. The raider beside him is still fumbling for his knife.',
     ],
-    again: [{ assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan}\'s eyes go to his shut fist again. Behind him the hag says nothing. By then you are already moving.' }],
+    again: [{ assumes: [{ kind: 'flag', flag: 'vargan-shaken' }], text: '{vargan}\'s eyes go to his shut fist again, and the hag lets them. By then you are already moving.' }],
     loot: { bonusTier: 'rare' },
     onWin: { to: 'vargan-beaten', text: [`{vargan} fights with one eye on his own shut fist. ${BOSS_FALLS} ${GUARD_ENDS}`, BOSS_HOARD], effects: BOSS_WON },
   },
@@ -1587,7 +1587,7 @@ const scenes: Record<string, Scene> = {
       { assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
         text: 'The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.' },
       '"You\'ve cost me a good season," {vargan} says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn\'t come.',
-      'Then she whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man\'s waist, with reeds and a reaching hand branded into its scales.',
+      'She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man\'s waist, with reeds and a reaching hand branded into its scales.',
     ],
     again: [{ assumes: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: '{hask} is nowhere in the hall. {vex}\'s word still holds.' }, '{vargan} rolls the great axe off his shoulder again. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.'],
     loot: { bonusTier: 'rare' },
@@ -1982,7 +1982,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     { day: 4, text: [
       'Last night\'s moon was a thin paring of light, and it was down long before dawn.',
       { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: true }],
-        text: '{vex} said the chief keeps people in the pen behind the kennels for the {reedwife}, and she comes for them when the moon goes dark. Three more nights of this moon, at most.' },
+        text: '{vex} said the chief keeps people in the pen behind the kennels for the {reedwife}. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.' },
       // Woken on the marsh road or in town (`at` names no third map but the
       // den), or in the den itself, or on {mira}'s cot after falling there.
       ...(['square', 'trail'] as const).map((hub) => ({

@@ -724,7 +724,7 @@ The mud under the arrow is dark and wet. She will not last many more nights out 
 
 ## `scout-left` · story
 
-You step around the horse. She doesn't call after you. She only watches you go, jaw still set, as if she had expected nothing else.
+You step around the horse. She doesn't call after you. She only watches you go, jaw still set.
 
 Behind you the reeds close over the trail. You don't look back.
 
@@ -1284,7 +1284,7 @@ You've barely banked the fire when a watch-patrol rounds the tents: an orc and t
 
 *Won:*
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 ### 2. when a return visit?
 
@@ -1294,7 +1294,7 @@ Another patrol. They come round the drying-racks this time with their grey wolve
 
 *Won:*
 
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off a fire, and you are on your feet and moving before it stops rolling.
+You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 ## `den-pens-door` · story
 
@@ -1574,7 +1574,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 ### 1. when the first visit?
 
-Vargan closes his fist over the brand and looks at it a moment too long. Behind him the hag says nothing at all. By then you are already moving.
+Vargan closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.
 
 By the door, the chief's guard is still reaching for his weapon. He is a grey and scarred old soldier. The raider beside him is still fumbling for his knife.
 
@@ -1590,7 +1590,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 ### 2. when a return visit?
 
-Vargan's eyes go to his shut fist again. Behind him the hag says nothing. By then you are already moving.
+Vargan's eyes go to his shut fist again, and the hag lets them. By then you are already moving.
 
 **Battle:** The Ashfang Chief and His Guard
 
@@ -1614,7 +1614,7 @@ The chief bellows for Hask, his guard. Hask stands by the door with his spear gr
 
 "You've cost me a good season," Vargan says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
 
-Then she whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
+She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 
 **Battle:** The Ashfang Chief, Unguarded
 
@@ -2372,7 +2372,7 @@ Somewhere out there the Ashfang still have the carter they took off the marsh ro
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Vex said the chief keeps people in the pen behind the kennels for the Reedwife, and she comes for them when the moon goes dark. Three more nights of this moon, at most.
+Vex said the chief keeps people in the pen behind the kennels for the Reedwife. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
@@ -2380,7 +2380,7 @@ There is still no word of the reeve's scouts. If one of them is lying hurt out o
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
-Vex said the chief keeps people in the pen behind the kennels for the Reedwife, and she comes for them when the moon goes dark. Three more nights of this moon, at most.
+Vex said the chief keeps people in the pen behind the kennels for the Reedwife. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.
 
 #### when `pens-settled` · `scout-walked-past` — or — `pens-settled` · met Wren
 

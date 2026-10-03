@@ -17,7 +17,8 @@
  * finale (the churchyard's shadows, ghost and new-buried 2,150, the drowned
  * chapel 1,050, the corpse-lights 2,200, the Barrow Gate's watchers 1,100,
  * wights 800, the embalmed king and his soldier 2,300), then the cult at the
- * door 2,750, or 900 with Marrow talked down; the serpent pool optional
+ * door 2,750, or 2,500 with Marrow talked down (one bronze soldier and two
+ * kneelers still fight); the serpent pool optional
  * (+1,350). The XP sits early, so a carried company (~1,500–2,600 XP from
  * Part 1) reaches 4th between the chapel and the Barrow Gate, and a cold
  * start just past the Barrow Gate. The finale is the chapter's hardest fight. Every way past a fight
@@ -636,7 +637,7 @@ const scenes: Record<string, Scene> = {
       'The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower\'s bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*',
       'Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil\'s mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*',
       // True of any {wren}: one who stood in the hollow, or one who heard.
-      '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "Every marsh-thing that ran with the {ashfang} wore it, the lizardfolk in the hollow too." She reads the second note twice. "The whole town drank to her fall," she says. She shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."',
+      '"That\'s the hag\'s brand," {wren} says, reading over your shoulder. "Every marsh-thing that ran with the {ashfang} wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door\'s past the {barrow-gate}. I\'ll get you that far."',
       // Bound in Part 1: the note read against a keeper still alive.
       { if: [{ kind: 'npc', npc: 'reedwife', fate: 'bound' }],
         text: 'When you open the book again, you find more squeezed in beside the second note, small and cramped. *Gone from her door, I mean, not from the fen. They say strangers hold her to her price now, and there is a {door-price} tied ready for {door-midwinter}. It makes no difference. A keeper held by strangers\' words keeps the price, not the watch.* {wren} reads it over your arm and looks out at the fen. "So we paid her," she says, "and she went fishing."' },
@@ -1235,10 +1236,10 @@ const scenes: Record<string, Scene> = {
     onLoss: { to: 'seal-doubt-lost' },
     loot: { bonusTier: 'rare' },
     intro: [
-      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. {marrow} only watches, the chisel loose in his lap.',
-      'Beside him, the two bronze soldiers do not stir from the door. They wait for an order, and {marrow} gives none.',
+      '{marrow} sits with his back against the door, his chisel still. His acolyte screams at you over the candles. The armour and the ghouls come for you anyway, and one of the ghouls stinks worse than the grave. Two of the kneelers come up off their knees, praying aloud, and the black candles flare in their hands. {marrow} only watches, the chisel loose in his lap.',
+      'At the scream, one of the two bronze soldiers gets to its feet and draws its sword. The other does not stir from the door. It waits for an order, and {marrow} gives none.',
     ],
-    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles. The bronze pair by the door have not stirred. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
+    onWin: { to: 'marrow-spared', text: ['The last ghoul falls among the candles, beside the two kneelers who rose to fight. The bronze soldier that rose lies broken at the foot of the stair. Its twin has not stirred. When it is over, {marrow} is still sitting against the door.', 'Coins lie thick on the bottom step, thrown there by the faithful for the {warden}. You gather them up, and {marrow} does not look round.'],
       effects: [{ kind: 'setFlag', flag: 'cult-broken' }, { kind: 'gold', amount: 120 }] },
   },
   // Marrow lived: lend his voice to the rites, or bind him for Thornwick.
@@ -1246,7 +1247,7 @@ const scenes: Record<string, Scene> = {
     id: 'marrow-spared', kind: 'dialogue', noBack: true, art: { imageId: 'loc-dungeon', emoji: '⛏️' },
     npc: speaker(NPCS.marrow!, 'the Gravedigger'),
     lines: [
-      '{marrow} looks up at the door, and at the letters he pried loose. "{^saltmere-graves}," he says. "I thought he would give them back to me." Behind him, the kneelers who never fought still hold their black candles.',
+      '{marrow} looks up at the door, and at the letters he pried loose. "{^saltmere-graves}," he says. "I thought he would give them back to me." Behind him, the kneelers who did not rise still hold their black candles.',
       '"They will sing whatever I sing," he says. "Or you can take me up to your reeve. I would understand that."',
     ],
     next: [
@@ -1380,9 +1381,9 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'seal-cracked' }],
         text: 'The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.' },
       { if: [{ kind: 'npc', npc: 'wren', attitude: { atLeast: 2 } }],
-        text: 'At the edge of town {wren} stops and says "Thank you," fast, to the road. She is gone up the lane before anyone can ask what for.' },
+        text: 'At the edge of town {wren} says "Thank you," fast, to the road, and walks on before anyone can ask what for.' },
       { if: [{ kind: 'npc', npc: 'wren', attitude: { below: 0 } }],
-        text: '{wren} walks a few paces ahead of the company the whole way. She talks to the fen-folk on the road, and not much to you.' },
+        text: '{wren} talks to the fen-folk on the road the whole way home, and not much to you.' },
     ],
     // The reeve's commission, counted out in the hall that evening.
     next: [{ id: 'hall', label: 'Go up to the reeve\'s hall', to: 'sb-hall', effects: [{ kind: 'gold', amount: 150 }] }],
