@@ -411,6 +411,10 @@ export interface BattleMeeting {
   how: 'fought' | 'parleyed' | 'fell back' | 'not fought';
   /** Fights lost on the route before it was won (the unlucky route). */
   losses: number;
+  /** Fights (won or lost) since the route's last long rest — camp, a rest
+   *  scene, or the start of the chapter — on arrival at the door. Read-only:
+   *  `npm run balance` sets the party's wear from it. */
+  fightsSinceRest: number;
 }
 
 export type BattleObserver = (m: BattleMeeting) => void;
@@ -663,7 +667,7 @@ function playChapter(
             },
             xp: state.campaign.xp, level: levelForXp(state.campaign.xp),
             ...(surprise ? { surprise } : {}),
-            how: 'not fought', losses: 0,
+            how: 'not fought', losses: 0, fightsSinceRest,
           };
           meetings.set(scene.id, meeting);
           onBattle(meeting);
