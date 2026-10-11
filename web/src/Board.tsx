@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useEffect, useRef, useState, type CSSProperties } from 'react';
 import type { GameState, Position, Combatant, Id } from '../../src/engine/types.js';
 import { cellAt, isDown } from '../../src/engine/types.js';
 import { acOf } from '../../src/data/armor.js';
@@ -17,6 +17,10 @@ import { conditionBadges, conditionChip, conditionTint } from './conditions.js';
 import { boardThemeVars } from './boardTheme.js';
 import { classLook } from './classLook.js';
 import type { MapTheme } from '../../src/data/maps.js';
+import {
+  FIT, MIN_ZOOM, MAX_ZOOM, clamp, zoomToTap, centreOn, ensureVisible, zoomAbout,
+  isPannable, offScreenEdge, type Camera, type Size,
+} from './boardCamera.js';
 
 
 export type CellHighlight = 'move' | 'enemy' | 'ally' | 'cell-target' | 'aoe' | 'hint' | undefined;
@@ -86,6 +90,204 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
    * so nothing shows a focus ring for a mouse user who never pressed a key.
    */
   const [cursor, setCursor] = useState<Position | undefined>(undefined);
+
+  /*
+   * THE CAMERA.
+   *
+   * See boardCamera.ts for the model and why it is a transform rather than a
+   * cell size. The component holds only what needs a DOM: the viewport's
+   * measured size, the gesture in progress, and the suppression of the click
+   * that follows a drag.
+   *
+   * `view` starts at zero and is filled by a ResizeObserver. Every camera
+   * function tolerates that — a zero viewport yields the fit — so the first
+   * paint is the board exactly as it was before any of this existed.
+   */
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const [view, setView] = useState<Size>({ w: 0, h: 0 });
+  const [cam, setCam] = useState<Camera>(FIT);
+
+  useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const read = () => setView((was) => {
+      const w = el.clientWidth, h = el.clientHeight;
+      // Only on a real change: `setView` re-runs the effects below, and a
+      // sub-pixel wobble between the observer and the transform would loop.
+      return Math.abs(was.w - w) < 1 && Math.abs(was.h - h) < 1 ? was : { w, h };
+    });
+    read();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /**
+   * Open at a zoom where the squares can be tapped, and re-open on a new board.
+   *
+   * On the 8-wide boards this game ships today `zoomToTap` returns 1, so this
+   * does nothing and the board is pixel-identical to the version with no
+   * camera. It is what makes a board wider than the screen playable rather
+   * than merely visible.
+   *
+   * Keyed on the board's shape, so a new fight starts from the fit rather than
+   * wherever the last one was left pointing.
+   */
+  useEffect(() => {
+    setCam(clamp({ zoom: zoomToTap(view, width), x: 0, y: 0 }, view));
+  }, [view, width, height]);
+
+  /*
+   * Follow whoever is acting, by the shortest move that brings them into view.
+   *
+   * Only when they are off screen, and only as far as it takes — see
+   * `ensureVisible`. A camera that re-centred every turn would swing the board
+   * out from under a player who had just finished reading it.
+   */
+  const active = state.combatants[activeId];
+  const activeCell = active ? posKey(active.position) : '';
+  useEffect(() => {
+    if (!active) return;
+    setCam((was) => {
+      const next = ensureVisible(was, view, state.grid, active.position, 8);
+      return next.x === was.x && next.y === was.y && next.zoom === was.zoom ? was : next;
+    });
+    // `activeCell` rather than the combatant: a creature that moves during its
+    // own turn should be followed too.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId, activeCell, view.w, view.h]);
+
+  // The keyboard cursor must not walk off screen — it is the only way a
+  // keyboard player can pan at all.
+  useEffect(() => {
+    if (!cursor) return;
+    setCam((was) => {
+      const next = ensureVisible(was, view, state.grid, cursor, 8);
+      return next.x === was.x && next.y === was.y ? was : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cursor?.x, cursor?.y, view.w, view.h]);
+
+  const pannable = isPannable(cam, view);
+
+  /*
+   * Drag to pan, pinch to zoom — and a tap is still a tap.
+   *
+   * EVERY GESTURE IS MEASURED FROM WHERE IT BEGAN, never accumulated event by
+   * event. Accumulating drifts both ways: a pan clamps on every move, so
+   * dragging along an edge loses whatever the clamp ate and the board creeps
+   * away from the finger; and an incremental pinch compounds a ratio per
+   * pointer, which on two fingers moving at once is applied twice from
+   * half-updated positions. Measured in a real browser, a full pinch-out moved
+   * the zoom from 1.00 to 1.03, and the pinch back in zoomed to 3.
+   *
+   * POINTERS ARE CAPTURED, and the gesture re-arms when one of two fingers
+   * lifts. A touch that leaves the element otherwise never reports an up here,
+   * so its entry sits in the map for ever and the NEXT gesture is computed
+   * against a finger that is no longer on the glass — which is the other half
+   * of what that measurement was showing.
+   *
+   * `moved` is what separates a pan from a tap. A click fires after a drag
+   * exactly as it does after a tap, so without a threshold every pan would also
+   * order a move to whatever square the finger came to rest on — the single
+   * worst thing a camera could do to this game. The click is swallowed in the
+   * capture phase, before any cell sees it.
+   */
+  const drag = useRef({
+    points: new Map<number, { x: number; y: number }>(),
+    mode: 'none' as 'none' | 'pan' | 'pinch',
+    /** The camera when this gesture began; every frame is measured from it. */
+    from: FIT,
+    /** Pan: the press point, in client space. Pinch: the midpoint, in local space. */
+    origin: { x: 0, y: 0 },
+    span0: 0,
+    moved: false,
+  });
+  const DRAG_SLOP = 8; // px of travel before a press becomes a pan
+
+  const spanOf = (pts: Array<{ x: number; y: number }>) =>
+    Math.hypot(pts[0]!.x - pts[1]!.x, pts[0]!.y - pts[1]!.y);
+  const localTo = (p: { x: number; y: number }) => {
+    const box = wrapRef.current?.getBoundingClientRect();
+    return { x: p.x - (box?.left ?? 0), y: p.y - (box?.top ?? 0) };
+  };
+
+  /** Start (or restart) a gesture from whatever fingers are down now. */
+  const arm = (cur: Camera) => {
+    const d = drag.current;
+    const pts = [...d.points.values()];
+    d.from = cur;
+    if (pts.length >= 2) {
+      d.mode = 'pinch';
+      d.span0 = spanOf(pts) || 1;
+      d.origin = localTo({ x: (pts[0]!.x + pts[1]!.x) / 2, y: (pts[0]!.y + pts[1]!.y) / 2 });
+      d.moved = true; // a pinch is never a tap
+    } else if (pts.length === 1) {
+      d.mode = 'pan';
+      d.origin = { ...pts[0]! };
+    } else {
+      d.mode = 'none';
+    }
+  };
+
+  function onPointerDown(e: React.PointerEvent) {
+    const d = drag.current;
+    if (d.points.size === 0) d.moved = false;
+    d.points.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    arm(cam);
+  }
+
+  /*
+   * THE POINTER IS CAPTURED ONLY ONCE THE GESTURE IS A GESTURE.
+   *
+   * Capturing on every press looks like the robust thing to do and silently
+   * breaks the game: with a capture active, the browser dispatches the
+   * following `click` to the CAPTURING element rather than to what was under
+   * the finger, so every tap on a square and every press of a camera button
+   * stops arriving. Measured in Chrome — the zoom buttons simply did nothing.
+   *
+   * Taking it at the moment a press becomes a drag keeps taps intact and still
+   * buys what capture is for: a finger that leaves the board mid-drag goes on
+   * reporting here, instead of stranding the board stuck to it.
+   */
+  const capture = (e: React.PointerEvent) => {
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* not capturable */ }
+  };
+
+  function onPointerMove(e: React.PointerEvent) {
+    const d = drag.current;
+    if (!d.points.has(e.pointerId)) return;
+    d.points.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const pts = [...d.points.values()];
+
+    if (d.mode === 'pinch' && pts.length >= 2) {
+      // A pinch may zoom OUT from the fit as well as in — which is how a player
+      // gets back to the whole board without hunting for a button.
+      capture(e);
+      setCam(zoomAbout(d.from, view, (d.from.zoom * spanOf(pts)) / d.span0, d.origin));
+      return;
+    }
+    if (d.mode !== 'pan' || !pannable) return;
+    const dx = e.clientX - d.origin.x, dy = e.clientY - d.origin.y;
+    if (!d.moved && Math.hypot(dx, dy) < DRAG_SLOP) return;
+    if (!d.moved) capture(e);
+    d.moved = true;
+    setCam(clamp({ zoom: d.from.zoom, x: d.from.x + dx, y: d.from.y + dy }, view));
+  }
+
+  function onPointerUp(e: React.PointerEvent) {
+    const d = drag.current;
+    d.points.delete(e.pointerId);
+    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch { /* never taken */ }
+    // Lifting one finger of a pinch leaves the other panning, from here —
+    // rather than from where the pinch started, which would snap the board.
+    setCam((c) => { arm(c); return c; });
+  }
+
+  const zoomBy = (k: number) => setCam((c) =>
+    zoomAbout(c, view, c.zoom * k, { x: view.w / 2, y: view.h / 2 }));
+
 
   // Slide tokens along their actual path (around walls / through allies) via
   // the Web Animations API. Runs before paint so there's no jump-then-slide.
@@ -509,12 +711,61 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
     boardStyle.backgroundImage = backdropLayers(boardBgUrl(boardTheme));
   }
 
+  /*
+   * What you cannot see, on the edge nearest it.
+   *
+   * The problem a camera creates: with the whole board in view you could watch
+   * an enemy act. Panned in, a creature taking its turn off screen is simply
+   * absent, and the player loses the thread of the fight. A marker on the edge
+   * keeps the two facts that survive the crop — that it is there, and roughly
+   * which way.
+   *
+   * Only the living, and only while something is actually out of sight; at zoom
+   * 1 this list is always empty, which is the whole board as it was.
+   */
+  const offBoard = !pannable ? [] : Object.values(state.combatants)
+    .filter((c) => c.alive && !isDown(c))
+    .map((c) => ({ c, edge: offScreenEdge(cam, view, state.grid, c.position) }))
+    .filter((m): m is { c: Combatant; edge: NonNullable<ReturnType<typeof offScreenEdge>> } => !!m.edge);
+
   return (
     // --board-aspect drives the width cap in styles.css: a tall board (8×12,
     // aspect 1.5) must be narrower than a square one to fit the same viewport
-    // height. Width is what sets cell size, so this is the whole responsive
-    // story — columns never grow, so taps stay finger-sized on a phone.
-    <div className="board-wrap" style={{ ['--board-aspect' as string]: `${height / width}` }}>
+    // height. Width is what sets the board's size at zoom 1, so this is still
+    // the whole responsive story; the camera scales that, it does not replace
+    // it. The wrap is also the camera's window: it clips, and the pan layer
+    // inside it is what moves.
+    <div
+      ref={wrapRef}
+      className={`board-wrap${pannable ? ' panning' : ''}`}
+      style={{ ['--board-aspect' as string]: `${height / width}` }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      /* Ctrl/⌘ + wheel is the desktop convention for zooming a canvas rather
+         than scrolling the page past it. A bare wheel is left alone: the
+         battle column scrolls, and stealing that would trap the page. */
+      onWheel={(e) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+        e.preventDefault();
+        setCam((c) => zoomAbout(c, view, c.zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12),
+          localTo({ x: e.clientX, y: e.clientY })));
+      }}
+      /* The click that follows a drag, swallowed before a cell can read it as
+         an order to move. Capture phase, because the cell's own handler would
+         otherwise run first. */
+      onClickCapture={(e) => {
+        if (!drag.current.moved) return;
+        drag.current.moved = false;
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <div
+        className="board-pan"
+        style={{ transform: `translate(${cam.x}px, ${cam.y}px) scale(${cam.zoom})` }}
+      >
       <div
         className={`board theme-${boardTheme}`}
         style={boardStyle}
@@ -560,6 +811,44 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
         {summonTokens.length > 0 && <div className="token-layer summon-layer">{summonTokens}</div>}
         <div className="token-layer">{tokens}</div>
         {bolts.length > 0 && <div className="token-layer projectile-layer">{bolts}</div>}
+      </div>
+      </div>
+      {offBoard.map(({ c, edge }) => (
+        <span
+          key={c.id}
+          className={`offboard off-${edge.side} ${c.team === state.combatants[activeId]?.team ? 'ally' : 'foe'}${c.id === activeId ? ' acting' : ''}`}
+          style={{ [edge.side === 'left' || edge.side === 'right' ? 'top' : 'left']: `${edge.offset * 100}%` }}
+          title={`${c.name} — off screen`}
+          aria-hidden="true"
+        >
+          {edge.side === 'left' ? '◀' : edge.side === 'right' ? '▶' : edge.side === 'top' ? '▲' : '▼'}
+        </span>
+      ))}
+      {/*
+        * Always rendered, and shown by CSS only when the camera is in use (or
+        * under a hovering pointer) — see `.board-cam`. Rendering them
+        * conditionally instead would mean a player who pinches has no controls
+        * until React catches up, and a mouse user has no way to find them at
+        * all.
+        */}
+      <div className="board-cam">
+        <button
+          type="button" className="cam-btn" title="Zoom in"
+          disabled={cam.zoom >= MAX_ZOOM} onClick={() => zoomBy(1.4)}
+        >＋</button>
+        <button
+          type="button" className="cam-btn" title="Zoom out"
+          disabled={cam.zoom <= MIN_ZOOM} onClick={() => zoomBy(1 / 1.4)}
+        >－</button>
+        <button
+          type="button" className="cam-btn" title={active ? `Centre on ${active.name}` : 'Centre'}
+          disabled={!pannable || !active}
+          onClick={() => active && setCam((c) => centreOn(c, view, state.grid, active.position))}
+        >◎</button>
+        <button
+          type="button" className="cam-btn" title="Show the whole board"
+          disabled={!pannable} onClick={() => setCam(clamp(FIT, view))}
+        >⤢</button>
       </div>
     </div>
   );

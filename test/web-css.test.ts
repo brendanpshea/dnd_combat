@@ -1404,3 +1404,69 @@ describe('the opportunity-attack prompt', () => {
     expect(confirm).toMatch(/who\.length === 0/);
   });
 });
+
+/**
+ * The battle camera's wiring — the parts no unit test can reach.
+ *
+ * The arithmetic is covered by test/board-camera.test.ts, which is pure. What
+ * is left here are three facts that live in CSS and in event plumbing, every
+ * one of which was found by driving the real app in a real browser rather than
+ * by reading the code, and every one of which silently breaks the game rather
+ * than looking wrong.
+ */
+describe('the battle camera', () => {
+  const css = readFileSync(fileURLToPath(new URL('../web/src/styles.css', import.meta.url)), 'utf8');
+  const board = readFileSync(fileURLToPath(new URL('../web/src/Board.tsx', import.meta.url)), 'utf8');
+
+  it('lets a pinch through before the camera is in use', () => {
+    /*
+     * With `touch-action: auto` on the wrap, Chrome claimed the gesture and
+     * fired `pointercancel` for both fingers two moves in: every pinch from
+     * the fit died at about 1.45x and stuck there. `pan-y` keeps the battle
+     * column's own vertical scroll and hands us everything else — which has to
+     * be true AT REST, because a pinch at rest is how a player first zooms in.
+     */
+    expect(css).toMatch(/\.board-wrap\s*\{[^}]*touch-action:\s*pan-y/);
+    expect(css, 'the camera does not take the gestures once it is in use')
+      .toMatch(/\.board-wrap\.panning\s*\{[^}]*touch-action:\s*none/);
+  });
+
+  it('clips, so the pan layer has something to be clipped by', () => {
+    expect(css).toMatch(/\.board-wrap\s*\{[^}]*overflow:\s*hidden/);
+    expect(board, 'the pan layer is gone, so the camera moves nothing')
+      .toContain('className="board-pan"');
+  });
+
+  it('keeps the controls off the squares until there is something to control', () => {
+    // They sit over the board, and the board is the control surface: measured
+    // on a 390px phone, the first version put two buttons over the right-hand
+    // end of the player's own deployment rank.
+    expect(css).toMatch(/\.board-cam\s*\{[^}]*opacity:\s*0/);
+    expect(css).toMatch(/\.board-cam\s*\{[^}]*pointer-events:\s*none/);
+    expect(css, 'nothing ever reveals them').toMatch(/\.board-wrap\.panning \.board-cam\s*\{[^}]*opacity:\s*1/);
+  });
+
+  it('captures the pointer only once a press has become a drag', () => {
+    /*
+     * Capturing on pointerdown is the obvious robust thing and it breaks
+     * everything: with a capture active the browser dispatches the following
+     * `click` to the CAPTURING element, so taps on squares and presses of the
+     * camera's own buttons stop arriving. Measured in Chrome — the zoom
+     * buttons did nothing at all.
+     */
+    // Sliced to the handler BODY, not to the next function: the `capture`
+    // helper is declared right after it and naturally mentions the call.
+    const start = board.indexOf('function onPointerDown');
+    const down = board.slice(start, board.indexOf('\n  }', start));
+    expect(down, 'setPointerCapture is back on pointerdown, which kills every tap')
+      .not.toContain('setPointerCapture');
+    expect(board, 'the capture is gone entirely, so a drag off the board strands it')
+      .toContain('setPointerCapture');
+  });
+
+  it('swallows the click that follows a drag', () => {
+    // Without this a pan also orders a move to whatever square the finger came
+    // to rest on. Capture phase, or the cell's own handler runs first.
+    expect(board).toMatch(/onClickCapture=\{\(e\) => \{[\s\S]{0,200}?drag\.current\.moved/);
+  });
+});
