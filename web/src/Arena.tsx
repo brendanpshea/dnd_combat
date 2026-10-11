@@ -27,7 +27,7 @@ import {
 } from '../../src/campaign/campaign.js';
 import { SKILL_LABEL } from '../../src/data/classes.js';
 import { SPELLS } from '../../src/data/spells.js';
-import { buildMonster, MONSTERS } from '../../src/data/monsters.js';
+import { buildMonster, MONSTERS, canThreatenAtRange } from '../../src/data/monsters.js';
 import { membersCoinXP } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import {
@@ -138,7 +138,11 @@ function makeCombat(c: CampaignState, run: ArenaRunState, wave: ArenaWave): Comb
   const grid = parseMap(wave.map);
   // Where they start is part of the wave, seeded off it, so a retry is the same
   // fight rather than a reroll of the layout.
-  const spots = deployFoes(grid, wave.encounter.members.length, (run.seed ^ (wave.wave * 2654435761)) >>> 0);
+  // The shooters take the sheltered cells (see `assignByRole`): a barricade
+  // line with the archers in front of it and the ogres behind is an open
+  // field drawn differently. Same cells as before, dealt by role.
+  const spots = deployFoes(grid, wave.encounter.members.length, (run.seed ^ (wave.wave * 2654435761)) >>> 0,
+    wave.encounter.members.map(canThreatenAtRange));
   const foes = wave.encounter.members.map((mid, i) =>
     buildMonster(mid, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
       wave.encounter.members.length > 1 ? String(i + 1) : ''));
