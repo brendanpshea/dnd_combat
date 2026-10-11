@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MONSTERS, MONSTER_XP, buildMonster } from '../src/data/monsters.js';
+import { MONSTERS, MONSTER_XP, buildMonster, canThreatenAtRange } from '../src/data/monsters.js';
 import {
   generateEncounter, arenaRoster, adjustedXp, rawXp, groupMultiplier, ARENA_EXCLUDED,
 } from '../src/arena/encounter.js';
@@ -435,7 +435,7 @@ describe('arena difficulty calibration', () => {
         // far rank measured a fight the game no longer generates: it read L5 at
         // 75% while the shipping deployment put it at 60%, and the gap was the
         // test's own layout, not the calibration.
-        const spots = deployFoes(g, e.value.members.length, rng); rng = spots.state;
+        const spots = deployFoes(g, e.value.members.length, rng, e.value.members.map(canThreatenAtRange)); rng = spots.state;
         const foes = e.value.members.map((mid, k) =>
           buildMonster(mid, 'team2', spots.value.positions[k] ?? { x: 0, y: g.height - 1 }, String(k + 1)));
         const c = new Combat({

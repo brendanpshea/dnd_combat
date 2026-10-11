@@ -48,7 +48,7 @@ import { dayOf, halfOf, dayLevelOf, lunch, night } from '../src/arena/day.js';
 import { RUN_TARGET_XP } from '../src/arena/medal.js';
 import { Combat } from '../src/engine/combat.js';
 import { chooseAction, setSpellVariety, spellVariety } from '../src/ai/greedy.js';
-import { buildMonster } from '../src/data/monsters.js';
+import { buildMonster, canThreatenAtRange } from '../src/data/monsters.js';
 import { TRINKETS, trinketSlot } from '../src/data/trinkets.js';
 import { SPELLS } from '../src/data/spells.js';
 import { CLASSES } from '../src/data/classes.js';
@@ -379,7 +379,7 @@ function playOne(seed: number, collect: boolean): Outcome {
      */
     const grid = parseMap(wave.map);
     const spots = deployFoes(grid, wave.encounter.members.length,
-      (run.seed ^ (run.wave * 2654435761)) >>> 0);
+      (run.seed ^ (run.wave * 2654435761)) >>> 0, wave.encounter.members.map(canThreatenAtRange));
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
         String(i + 1)));
@@ -659,7 +659,7 @@ function itemAB(itemId: Id | undefined, fights: number, waveNo: number, level: n
      */
     const grid = parseMap(wave.map);
     const spots = deployFoes(grid, wave.encounter.members.length,
-      (run.seed ^ (run.wave * 2654435761)) >>> 0);
+      (run.seed ^ (run.wave * 2654435761)) >>> 0, wave.encounter.members.map(canThreatenAtRange));
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
         String(i + 1)));

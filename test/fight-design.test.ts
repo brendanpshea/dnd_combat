@@ -213,3 +213,29 @@ describe('the shooters get the sheltered cells', () => {
     }
   });
 });
+
+describe('what the arena actually offers', () => {
+  it('puts the shooting gallery behind doors and keeps the warren out', async () => {
+    /*
+     * The doors draw from their own list, not from the layout weights — so a
+     * layout at weight 0 is not "off" if it has a door entry. `rooms` went
+     * live that way by accident, with its 16-round fights, the moment it got a
+     * name for the door card.
+     */
+    const { DOOR_LAYOUTS, gatesFor } = await import('../src/arena/gates.js');
+    expect(DOOR_LAYOUTS).toContain('gallery');
+    expect(DOOR_LAYOUTS).not.toContain('rooms');
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) for (const g of gatesFor(seed, 3, 1)) seen.add(g.layout);
+    expect(seen.has('rooms'), 'a door opened onto the warren').toBe(false);
+    expect(seen.has('gallery'), 'no door ever opened onto the gallery').toBe(true);
+  });
+
+  it('deals the arena\'s shooters the sheltered cells', async () => {
+    // Without the flags `deployFoes` keeps the pattern's order, and the
+    // gallery's barricade shelters whoever happened to be drawn first.
+    const { readFileSync } = await import('node:fs');
+    const arena = readFileSync(new URL('../web/src/Arena.tsx', import.meta.url), 'utf8');
+    expect(arena).toMatch(/deployFoes\([^;]*members\.map\(canThreatenAtRange\)/s);
+  });
+});

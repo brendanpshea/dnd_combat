@@ -72,7 +72,20 @@ const GROUND: Record<LayoutName, { name: string; blurb: string }> = {
   gallery: { name: 'The Shooting Gallery', blurb: 'They hold a barricade line. Reach them or be shot.' },
   rooms: { name: 'The Warren', blurb: 'Chambers and doorways. Nothing stays in sight for long.' },
 };
-const LAYOUT_NAMES = Object.keys(GROUND) as LayoutName[];
+/*
+ * Every ground that can be behind a door. Not simply every key of GROUND:
+ * the table needs an entry per layout for the type, and a layout can exist
+ * there before it is ready to be fought on.
+ *
+ * `rooms` is held back. Its fights ran 15.7 rounds against 6.2 for every
+ * other ground (scripts/arena-width.ts, 400 seeds a level), with the lines
+ * first meeting around round six — a walk, not a fight. It went into the
+ * rotation by accident when GROUND gained its entry, which is why this list is
+ * now spelled out rather than derived.
+ */
+const HELD_BACK: ReadonlySet<LayoutName> = new Set(['rooms']);
+export const DOOR_LAYOUTS = (Object.keys(GROUND) as LayoutName[]).filter((l) => !HELD_BACK.has(l));
+const LAYOUT_NAMES = DOOR_LAYOUTS;
 
 export interface Gate {
   /** 0, 1 or 2 — the door's index, and what the run persists. */

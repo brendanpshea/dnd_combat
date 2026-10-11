@@ -33,7 +33,7 @@ import { Combat } from '../src/engine/combat.js';
 import { parseMap } from '../src/data/maps.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { chooseAction } from '../src/ai/greedy.js';
-import { buildMonster } from '../src/data/monsters.js';
+import { buildMonster, canThreatenAtRange } from '../src/data/monsters.js';
 
 const RUNS = Number(process.argv[2] ?? 30);
 const MAX_DAYS = Number(process.argv[process.argv.indexOf('--max-days') + 1] || 200);
@@ -56,7 +56,7 @@ function playOne(seed: number): Outcome {
     // real arena boards are 12 or 16 rows deep, so it is the middle of the map.
     const grid = parseMap(wave.map);
     const spots = deployFoes(grid, wave.encounter.members.length,
-      (run.seed ^ (run.wave * 2654435761)) >>> 0);
+      (run.seed ^ (run.wave * 2654435761)) >>> 0, wave.encounter.members.map(canThreatenAtRange));
     const foes = wave.encounter.members.map((id, i) =>
       buildMonster(id, 'team2', spots.value.positions[i] ?? { x: 0, y: grid.height - 1 },
         String(i + 1)));
