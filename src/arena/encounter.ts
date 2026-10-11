@@ -20,6 +20,7 @@
 import type { Id } from '../engine/types.js';
 import type { CreatureType } from '../engine/types.js';
 import { MONSTERS, MONSTER_XP, canThreatenAtRange } from '../data/monsters.js';
+import { SPELLS } from '../data/spells.js';
 import { next, type RngState } from '../engine/rng.js';
 
 /**
@@ -100,6 +101,13 @@ export interface GenerateOptions {
    * play, because nothing the player does changes it.
    */
   maxMemberXp?: number;
+  /**
+   * What the fight should ASK of the party, beyond how hard it is.
+   *
+   * See `EncounterBrief`. Default 'mixed', which is the behaviour the arena
+   * has always had.
+   */
+  brief?: EncounterBrief;
   /**
    * The party's level, for monsters that declare a `minPartyLevel`. Separate
    * from the XP cap because the thing being guarded against is an ability, not
@@ -245,6 +253,100 @@ function ensureRangedPresence(
   return { members: next, state: p.state };
 }
 
+
+/**
+ * Spell shapes that hit a patch of ground rather than a creature.
+ *
+ * `monsters.ts` cannot answer this: `spells.ts` imports it, so it cannot
+ * import back. The question belongs to encounter building anyway — it is about
+ * what a WAVE can do to a party, not about one monster's stat block.
+ */
+const AREA_TARGETING = new Set(['sphere2x2', 'sphere5x5', 'cone15', 'line15', 'cube15']);
+
+/**
+ * Can this creature punish a party for standing in a heap?
+ *
+ * The other half of `canThreatenAtRange`. A shooter makes holding the back
+ * rank cost something; an area makes HUDDLING cost something, which is the
+ * failure the back-rank party actually commits — four heroes in a two-by-two
+ * block, every one of them inside the same twenty-foot sphere.
+ */
+export function canHitAnArea(monsterId: Id): boolean {
+  const ids = MONSTERS[monsterId]?.spellcasting?.spellIds ?? [];
+  return ids.some((id) => AREA_TARGETING.has(SPELLS[id]?.targeting?.kind ?? ''));
+}
+
+/**
+ * What a fight is FOR, beyond its budget.
+ *
+ * Budget says how hard; a brief says what it asks of you. Measured, the
+ * difference matters more than the difficulty does: at the same budget a wave
+ * that cannot reach you makes standing still free, and one that can reach you
+ * everywhere makes it fatal.
+ *
+ * - `volley`    at least two can shoot, so the party cannot simply out-range
+ *               the one archer and ignore the rest.
+ * - `artillery` at least one drops an area, so standing in a clump costs.
+ * - `mixed`     whatever the generator drew (today's behaviour).
+ */
+export type EncounterBrief = 'mixed' | 'volley' | 'artillery';
+
+/**
+ * Swap members until the brief is met, cheapest slot first.
+ *
+ * Swaps rather than adds, and never for anything dearer, so the budget and the
+ * headcount come out where the generator put them — this changes what a fight
+ * ASKS, not how hard it is. The leader slot is left alone: it is the wave's
+ * character, and trading it away is what flattens the variety the generator
+ * works to create.
+ *
+ * Gives up rather than reaching outside the roster: a brief that cannot be
+ * met at this budget should produce an ordinary fight, not a wave of things
+ * the party cannot hurt.
+ */
+function meetBrief(
+  members: Id[], pool: RosterEntry[], roster: RosterEntry[], brief: EncounterBrief, state: RngState,
+): { members: Id[]; state: RngState } {
+  const want = brief === 'volley' ? 2 : brief === 'artillery' ? 1 : 0;
+  if (want === 0) return { members, state };
+  const holds = brief === 'volley' ? canThreatenAtRange : canHitAnArea;
+  let out = [...members];
+  let rng = state;
+  for (let guard = 0; guard < want; guard++) {
+    if (out.filter(holds).length >= want) break;
+    /*
+     * Every member that does not already satisfy the brief, cheapest first —
+     * and the first one that something can actually be swapped IN for wins.
+     *
+     * The first cut only ever looked at the single cheapest member. At level 1
+     * the cheapest creature that drops an area costs 50 XP, so a wave whose
+     * cheapest body was a 25 XP kobold simply gave up, and one artillery wave
+     * in ten had no artillery in it. Walking up the slots costs nothing and
+     * still never swaps for anything dearer than what it replaces, so the
+     * budget is as safe as it was.
+     */
+    const order = out.map((id, i) => i)
+      .filter((i) => !holds(out[i]!))
+      .sort((a, b) => (MONSTER_XP[out[a]!] ?? 0) - (MONSTER_XP[out[b]!] ?? 0));
+    let swapped = false;
+    for (const idx of order) {
+      const ceiling = MONSTER_XP[out[idx]!] ?? 0;
+      const affordable = (list: RosterEntry[]) =>
+        list.filter((m) => m.xp <= ceiling && holds(m.id) && !out.includes(m.id));
+      // Prefer a creature of a type already in the warband, so the wave still
+      // reads as one or two flavours rather than a zoo.
+      const fits = affordable(pool).length > 0 ? affordable(pool) : affordable(roster);
+      if (fits.length === 0) continue;
+      const p = pick(fits, rng); rng = p.state;
+      out[idx] = p.value.id;
+      swapped = true;
+      break;
+    }
+    if (!swapped) break;
+  }
+  return { members: out, state: rng };
+}
+
 /**
  * Build a fight worth roughly `budget` adjusted XP.
  *
@@ -363,6 +465,12 @@ function generateOnce(
   const withReach = ensureRangedPresence(members, pool, roster, rng);
   members.splice(0, members.length, ...withReach.members);
   rng = withReach.state;
+
+  // The brief runs after the floor, so a wave always has reach first and then
+  // whatever more the brief asks for.
+  const briefed = meetBrief(members, pool, roster, opts.brief ?? 'mixed', rng);
+  members.splice(0, members.length, ...briefed.members);
+  rng = briefed.state;
 
   const usedTypes = [...new Set(members.map((id) => MONSTERS[id]!.creatureType ?? 'humanoid'))];
   return {

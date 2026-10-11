@@ -18,9 +18,22 @@ import { parseMap } from '../data/maps.js';
 import { next, type RngState } from '../engine/rng.js';
 import { blocksMovement } from '../engine/grid.js';
 
-const WIDTH = 8;
+/**
+ * The default board width, and still the only one the game ships.
+ *
+ * It is a DEFAULT rather than a constant because the cap was never a rule: the
+ * board is eight wide because `styles.css` fits the whole thing on a phone and
+ * eight columns is where the cells stop being finger-sized. A camera now
+ * decides how much of a board is on screen (web/src/boardCamera.ts), so width
+ * is a design question again and the generator has to be able to answer it.
+ *
+ * Everything below that used to be written against 8 is written against the
+ * width it is handed, in the same proportions — so a width-8 board is the
+ * board it always was, cell for cell, and test/arena-map.test.ts holds that.
+ */
+export const DEFAULT_WIDTH = 8;
 /** Files a party and an encounter deploy on (see buildParty / buildEncounter). */
-const DEPLOY_FILES = [0, 1, 2, 3, 4, 5, 6, 7];
+const deployFiles = (width: number) => Array.from({ length: width }, (_, i) => i);
 const THEMES: MapTheme[] = ['stone', 'forest', 'graveyard', 'ember', 'village', 'bog'];
 
 /** Terrain a theme prefers for its scatter, so a bog is boggy and a forge burns. */
@@ -49,6 +62,8 @@ export const THEME_SCATTER: Record<MapTheme, { difficult: number; hazard: number
 };
 
 export interface ArenaMapOptions {
+  /** Columns. Defaults to `DEFAULT_WIDTH`, which is the only width shipped. */
+  width?: number;
   /** Force a depth instead of rolling 50/50. Any row count the validator
    *  accepts; the generator itself rolls 12 or 16 (see below). */
   height?: number;
@@ -64,7 +79,8 @@ export interface ArenaMapOptions {
 
 /** The stamps `layout` may name. */
 export type LayoutName =
-  'chokepoint' | 'pillars' | 'redoubt' | 'crossfire' | 'ruin' | 'open';
+  'chokepoint' | 'pillars' | 'redoubt' | 'crossfire' | 'ruin' | 'open'
+  | 'gallery' | 'rooms';
 
 /**
  * Why a candidate board was rejected. Surfaced (rather than swallowed) so the
@@ -82,6 +98,10 @@ export function validateArenaMap(map: MapData): MapFault[] {
   const at = (x: number, y: number) => cells[y * width + x]!;
   const faults: MapFault[] = [];
   const ranks = [0, height - 1];
+  // From the map in hand, not from a module constant: a validator that checked
+  // eight files of a twelve-wide board would pass a map with a wall across the
+  // four columns it never looked at.
+  const DEPLOY_FILES = deployFiles(width);
 
   for (const y of ranks) {
     for (const x of DEPLOY_FILES) {
@@ -140,24 +160,115 @@ export function validateArenaMap(map: MapData): MapFault[] {
  *
  * Every layout is written for the middle of the board; `draft` mirrors it
  * horizontally at random and keeps it clear of the deploy ranks.
+ *
+ * A STAMP'S `y` IS UPSIDE DOWN, and until `gallery` every layout was symmetric
+ * enough not to care. `draft` builds `grid[y]` and hands the rows out in that
+ * order; `parseMap` reads row `i` as `y = height - 1 - i` (top rank first). So
+ * a stamp's row 0 becomes the FAR rank — the enemy's — and its last row
+ * becomes the party's. `lo` and `hi` are symmetric, so nothing noticed.
+ *
+ * It bites the moment a layout means something by which end it is at: the
+ * first cut of `gallery` put its firing line two rows above the middle and the
+ * barricades came out two rows in front of the PARTY, handing the shooters'
+ * cover to the people it was meant to be used against.
  */
-type Stamp = (put: (x: number, y: number, ch: string) => void, mid: number, roll: () => number, height: number) => void;
+type Stamp = (put: (x: number, y: number, ch: string) => void, mid: number, roll: () => number, height: number, width: number) => void;
 
 const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
+  {
+    /*
+     * LONGBOWS BEHIND COVER.
+     *
+     * A barricade line laid just in front of the enemy's own rank, with two
+     * ways through. A barricade blocks movement and not sight, so whatever
+     * stands behind it can shoot over it the whole fight while holding half
+     * cover (+2 AC) and somewhere to hide — and a party that wants to stop
+     * being shot has to come through a gap or go round the end, in the open,
+     * under fire.
+     *
+     * This is the shape that makes standing still cost something. A band
+     * across the MIDDLE (chokepoint) is an obstacle both sides share; a band
+     * in front of one side's deployment is an advantage one side holds, and
+     * taking it away is the fight.
+     */
+    name: 'gallery', weight: 0,
+    stamp: (put, mid, roll, height, width) => {
+      /*
+       * Two or three rows in FRONT of the shooters' own rank — and written as
+       * a distance from the top of the stamp rather than from `mid`, because
+       * the stamp's rows are upside down (see the note above `LAYOUTS`) and
+       * `put` will not write above row 2 at all. Hung off `mid` instead, the
+       * line wandered as far as the middle of the board, where it is cover for
+       * whoever gets there first rather than cover the shooters hold.
+       */
+      const line = 3 + Math.floor(roll() * 2);
+      const gapA = 1 + Math.floor(roll() * Math.max(1, Math.floor(width / 2) - 1));
+      const gapB = Math.floor(width / 2) + 1 + Math.floor(roll() * Math.max(1, Math.floor(width / 2) - 2));
+      for (let x = 0; x < width; x++) {
+        if (x === gapA || x === gapB) continue;
+        put(x, line, '+');
+      }
+      // Corners to fall back to, rather than one flat firing step. Offset a
+      // column from each doorway: a stub in a doorway's own approach is what
+      // makes a board fail the connectivity check, which is how the
+      // chokepoint layout once went un-shipped for months.
+      // `line - 1` is BEHIND the barricade from the shooters' side, the stamp
+      // being upside down. Offset a column from each doorway: a stub in a
+      // doorway's own approach is what makes a board fail the connectivity
+      // check, which is how the chokepoint layout once went un-shipped.
+      put(Math.max(0, gapA - 1), line - 1, '+');
+      put(Math.min(width - 1, gapB + 1), line - 1, '+');
+    },
+  },
+  {
+    /*
+     * ROOMS.
+     *
+     * Two bands with their doorways at opposite ends, so crossing the board is
+     * a zig-zag rather than a walk, and a stub beside each doorway so a band
+     * reads as a chamber wall rather than a fence. Sightlines break at every
+     * doorway: what you can shoot changes with every step, which is the thing
+     * an open field never asks.
+     *
+     * The doorways are deliberately offset. Lined up, the two bands are one
+     * corridor and the board is a chokepoint with extra walls.
+     */
+    name: 'rooms', weight: 0,
+    stamp: (put, mid, roll, height, width) => {
+      // Far enough apart to leave a room between them. The gap also keeps each
+      // stub clear of the other band's doorway.
+      const d = Math.max(2, Math.floor((height - 5) / 4));
+      const lower = mid - d, upper = mid + d;
+      const near = 1 + Math.floor(roll() * Math.max(1, Math.floor(width / 3)));
+      const far = width - 2 - Math.floor(roll() * Math.max(1, Math.floor(width / 3)));
+      for (let x = 0; x < width; x++) {
+        if (x !== near) put(x, lower, roll() < 0.25 ? '+' : '#');
+        if (x !== far) put(x, upper, roll() < 0.25 ? '+' : '#');
+      }
+      // Beside the doorways, never in them — see the note in `gallery`, and
+      // the one on `chokepoint` that this rule was learned from.
+      put(Math.max(0, near - 1), lower + 1, '#');
+      put(Math.min(width - 1, far + 1), upper - 1, '#');
+    },
+  },
   {
     // A wall across the board with one or two ways through. The melee line has
     // somewhere worth standing, and the shooters behind it have a lane to hold.
     name: 'chokepoint', weight: 20,
-    stamp: (put, mid, roll) => {
-      const gapA = 1 + Math.floor(roll() * 3);
-      const gapB = 5 + Math.floor(roll() * 2);
+    stamp: (put, mid, roll, _height, width) => {
+      // Two ways through, one in each half. Written as fractions of the width
+      // so a wider band still has exactly two gaps rather than the same two
+      // columns with a longer wall either side of them.
+      const half = Math.floor(width / 2);
+      const gapA = 1 + Math.floor(roll() * Math.max(1, half - 1));
+      const gapB = half + 1 + Math.floor(roll() * Math.max(1, half - 2));
       // Part of the band is barricade rather than wall — a stretch you can see
       // and shoot over but not walk through. That is the sniping step: behind
       // it a rogue has cover from everything on the far side, which is both
       // +2 AC and (canHide) somewhere to disappear, while still having a shot.
       // A band of pure wall gives none of that; it is only an obstacle.
-      const lowFrom = 2 + Math.floor(roll() * 3);
-      for (let x = 0; x < WIDTH; x++) {
+      const lowFrom = Math.floor(width / 4) + Math.floor(roll() * 3);
+      for (let x = 0; x < width; x++) {
         if (x === gapA || x === gapB) continue;
         put(x, mid, x >= lowFrom && x < lowFrom + 2 ? '+' : '#');
       }
@@ -180,13 +291,13 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // Pillars. Nothing is blocked for long, but no sightline is safe either:
     // one step either way changes who can see whom.
     name: 'pillars', weight: 18,
-    stamp: (put, mid, roll, height) => {
+    stamp: (put, mid, roll, height, width) => {
       const step = 3;
       for (let y = 2; y <= height - 3; y += step) {
         // Alternate rows by index: `y / step` is never whole for y = 2, 5, 8,
         // so reading it directly put every row on the same columns.
         const off = Math.floor(y / step) % 2 === 0 ? 1 : 3;
-        for (let x = off; x < WIDTH; x += 3) put(x, y, roll() < 0.3 ? '+' : '#');
+        for (let x = off; x < width; x += 3) put(x, y, roll() < 0.3 ? '+' : '#');
       }
     },
   },
@@ -194,10 +305,13 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // A ring of barricades in the middle: strong from the front, open from
     // behind. Worth taking, and worth going round.
     name: 'redoubt', weight: 16,
-    stamp: (put, mid) => {
-      for (let x = 2; x <= 5; x++) put(x, mid - 1, '+');
-      put(2, mid, '+');
-      put(5, mid, '+');
+    stamp: (put, mid, _roll, _height, width) => {
+      // The middle half of the board, whatever that is: on eight columns the
+      // 2..5 it has always been.
+      const from = Math.floor(width / 4), to = Math.ceil((width * 3) / 4) - 1;
+      for (let x = from; x <= to; x++) put(x, mid - 1, '+');
+      put(from, mid, '+');
+      put(to, mid, '+');
     },
   },
   {
@@ -205,11 +319,11 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // edges; anything that has to close wants the middle, and gets shot doing
     // it. This is the one that most rewards a rogue: two long walls to work.
     name: 'crossfire', weight: 16,
-    stamp: (put, mid, roll, height) => {
+    stamp: (put, mid, roll, height, width) => {
       const span = Math.min(5, Math.max(3, height - 6));
       for (let k = 0; k < span; k++) {
         put(1, mid - 1 + k, '+');
-        put(WIDTH - 2, mid - 1 + k, '+');
+        put(width - 2, mid - 1 + k, '+');
       }
     },
   },
@@ -217,12 +331,15 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // A solid block off to one side with rubble around it: two unequal lanes,
     // and a hard corner to break line of sight behind.
     name: 'ruin', weight: 16,
-    stamp: (put, mid, roll) => {
-      const x0 = roll() < 0.5 ? 1 : 4;
-      for (let x = x0; x < x0 + 3; x++) {
+    stamp: (put, mid, roll, _height, width) => {
+      const x0 = roll() < 0.5 ? 1 : Math.floor(width / 2);
+      // The block grows with the board: three columns of eight is a quarter of
+      // it, and a three-column block on twenty columns is a pebble.
+      const span = Math.max(3, Math.round((width * 3) / 8));
+      for (let x = x0; x < x0 + span; x++) {
         for (let y = mid - 1; y <= mid + 1; y++) put(x, y, '#');
       }
-      put(x0 - 1 < 0 ? x0 + 3 : x0 - 1, mid, '+');
+      put(x0 - 1 < 0 ? x0 + span : x0 - 1, mid, '+');
       put(x0 + 1, mid + 2, '+');
     },
   },
@@ -231,20 +348,20 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // still produces an honest open field — some fights should have no cover
     // to argue about.
     name: 'open', weight: 14,
-    stamp: (put, mid, roll) => {
-      put(2 + Math.floor(roll() * 2), mid, '+');
-      put(4 + Math.floor(roll() * 2), mid + 1 + Math.floor(roll() * 2), '+');
+    stamp: (put, mid, roll, _height, width) => {
+      put(Math.floor(width / 4) + Math.floor(roll() * 2), mid, '+');
+      put(Math.floor(width / 2) + Math.floor(roll() * 2), mid + 1 + Math.floor(roll() * 2), '+');
     },
   },
 ];
 
 /** One candidate board — not yet validated. */
 function draft(
-  theme: MapTheme, height: number, state: RngState, forced?: LayoutName,
+  theme: MapTheme, height: number, width: number, state: RngState, forced?: LayoutName,
 ): { rows: string[]; state: RngState } {
   let rng = state;
   const roll = () => { const r = next(rng); rng = r.state; return r.value; };
-  const grid: string[][] = Array.from({ length: height }, () => Array<string>(WIDTH).fill('.'));
+  const grid: string[][] = Array.from({ length: height }, () => Array<string>(width).fill('.'));
 
   // Blocking terrain stays out of the two ranks at each end: that is what makes
   // deployment reliably legal instead of lucky.
@@ -252,8 +369,8 @@ function draft(
   const mirror = roll() < 0.5;
   const put = (x: number, y: number, ch: string) => {
     if (y < lo || y > hi) return;
-    const px = mirror ? WIDTH - 1 - x : x;
-    if (px < 0 || px >= WIDTH) return;
+    const px = mirror ? width - 1 - x : x;
+    if (px < 0 || px >= width) return;
     grid[y]![px] = ch;
   };
 
@@ -266,7 +383,7 @@ function draft(
   // Where the shape sits: centred, nudged a rank or two so two boards from the
   // same layout do not read as the same board.
   const mid = Math.max(lo + 1, Math.min(hi - 1, Math.floor(height / 2) + (Math.floor(roll() * 3) - 1)));
-  layout.stamp(put, mid, roll, height);
+  layout.stamp(put, mid, roll, height, width);
 
   // Hazards and mud as POOLS, not confetti. A single fire tile is one step to
   // walk round and so is never a decision; a four-cell pool across a lane is a
@@ -275,14 +392,14 @@ function draft(
   const pools = (chance: number, ch: string) => {
     if (chance <= 0) return;
     // Roughly the old per-cell budget, spent in one or two blobs instead.
-    const budget = Math.round(chance * WIDTH * height);
+    const budget = Math.round(chance * width * height);
     let placed = 0;
     for (let attempt = 0; attempt < 6 && placed < budget; attempt++) {
-      let x = Math.floor(roll() * WIDTH);
+      let x = Math.floor(roll() * width);
       let y = lo + Math.floor(roll() * Math.max(1, hi - lo + 1));
       const size = 2 + Math.floor(roll() * 4);
       for (let k = 0; k < size && placed < budget; k++) {
-        if (y >= lo && y <= hi && x >= 0 && x < WIDTH && grid[y]![x] === '.') {
+        if (y >= lo && y <= hi && x >= 0 && x < width && grid[y]![x] === '.') {
           grid[y]![x] = ch;
           placed++;
         }
@@ -335,6 +452,7 @@ export function generateArenaMap(
     // action bar. 12 keeps the whole effect and fits.
     height = r.value < 0.5 ? 10 : 12;
   }
+  const width = opts.width ?? DEFAULT_WIDTH;
   let theme = opts.theme;
   if (theme === undefined) {
     const r = next(rng); rng = r.state;
@@ -342,15 +460,15 @@ export function generateArenaMap(
   }
 
   for (let attempt = 0; attempt < 24; attempt++) {
-    const d = draft(theme, height, rng, opts.layout); rng = d.state;
-    const map: MapData = { id: `arena-${theme}-${height}`, name: 'Arena', theme, rows: d.rows };
+    const d = draft(theme, height, width, rng, opts.layout); rng = d.state;
+    const map: MapData = { id: `arena-${theme}-${width}x${height}`, name: 'Arena', theme, rows: d.rows };
     if (validateArenaMap(map).length === 0) {
       return { value: { map, rerolls: attempt }, state: rng };
     }
   }
   const open: MapData = {
-    id: `arena-${theme}-${height}`, name: 'Arena', theme,
-    rows: Array.from({ length: height }, () => '.'.repeat(WIDTH)),
+    id: `arena-${theme}-${width}x${height}`, name: 'Arena', theme,
+    rows: Array.from({ length: height }, () => '.'.repeat(width)),
   };
   return { value: { map: open, rerolls: 24 }, state: rng };
 }

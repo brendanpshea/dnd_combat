@@ -400,12 +400,28 @@ describe('arena difficulty calibration', () => {
       const budget = evenBudgetFor(level);
       let rng = seedRng(level * 7919);
       let wins = 0;
-      // N=40 carries about +-8 points, and this reads a quantity that sits
-      // near 45%: it flaked at exactly 0.65 on a change that moved the true
-      // rate by nothing (re-measured at N=150: 42.0%, where N=40 said 65%).
-      // 120 fights per level is ~3s for all seven and halves the error bar,
-      // which is the difference between a tripwire and a coin toss.
-      const N = 120;
+      /*
+       * N=40 carried about +-8 points against a quantity near 45%, and flaked
+       * at exactly 0.65 on a change that moved the true rate by nothing
+       * (re-measured at N=150: 42.0%, where N=40 said 65%). N=120 halved that
+       * and it happened again: a change to how the AI prices a walk — measured
+       * balance-neutral, 90/59/51/60/55/44/70 against 89/59/48/59/58/43/69 at
+       * the shipped budgets — moved L7 from just under the bar to exactly on
+       * it.
+       *
+       * So the budgets were re-measured at N=300, with this harness, at the
+       * shipped numbers: 58, 41, 41, 51, 53, 37, 58. Every rung is inside the
+       * band and L7's 23,000 is right — 27,000 overshoots to 30%. The constant
+       * was never the problem; 120 fights is simply too coarse a ruler for a
+       * hard edge at 0.65 when the true value is 58%.
+       *
+       * N=300 puts that edge two and a half standard errors away instead of
+       * one and a half. It costs this test about two minutes, which it can
+       * afford: `arena.test.ts` is one of the three sim files the deploy skips
+       * (vitest.config.ts), so this runs on a full `npm test` and not on the
+       * way to production.
+       */
+      const N = 300;
       for (let i = 0; i < N; i++) {
         // The caps are part of what a budget buys — without them this measures
         // a fight the arena would never actually generate.
@@ -436,7 +452,10 @@ describe('arena difficulty calibration', () => {
       expect(rate, `L${level} at budget ${budget}: ${Math.round(rate * 100)}% — EVEN_BUDGET needs re-measuring`)
         .toBeLessThan(0.65);
     }
-  }, 120000);
+    // Raised with N. Seven levels x 300 fights runs about three minutes here,
+    // and a timeout reads as a calibration failure, which is the one thing
+    // this test must never say when it is not true.
+  }, 420000);
 });
 
 /**

@@ -14,7 +14,7 @@ import { SPELLS, spellDc, cantripDice, spellDice, eldritchBeams, wearsMetal, can
 import { heightenedTarget } from '../engine/rules/metamagic.js';
 import { shoveDc } from '../engine/rules/shove.js';
 import { skillMod, bestSkill } from '../engine/rules/skills.js';
-import { hazardMaxFor } from '../engine/rules/movement.js';
+import { hazardMaxFor, walkReads, type WalkRead } from '../engine/rules/movement.js';
 import { conditionBlocked } from '../engine/rules/conditions.js';
 import { MONSTERS, monsterLevel } from '../data/monsters.js';
 import { ITEMS } from '../data/items.js';
@@ -1868,21 +1868,83 @@ function nearestEnemyDist(state: GameState, from: Position, team: Combatant['tea
   return best;
 }
 
+/**
+ * WHAT A WALK COSTS, in hit points, and why the AI has to know.
+ *
+ * MEASURED, at the arena's even budget over 250 seeds a cell: at level 1 a
+ * party that moved took 60 damage a fight and dealt 96; one forbidden to move
+ * took 46 and dealt 106, and won 19 points more often. Nearly six of those
+ * fourteen extra points were HAZARD — heroes walking through fire to close a
+ * square, on a board where the level-1 wizard has eight hit points. The AI
+ * was choosing those walks because `scoreMove` priced the ground it gained
+ * and nothing it paid: a lava tile and an open one scored the same, and a
+ * step out of an ogre's reach was free for anyone holding a sword.
+ *
+ * Expected, not worst case. `worstCaseWalkDamage` exists and answers a
+ * different question — "could this kill me", which is what the board's warning
+ * badge needs. A score wants the average, or every route past a creature with
+ * a greataxe reads as lethal and the AI stops moving at all, which is the bug
+ * at the other end of this one.
+ *
+ * The two constants are the gap between a maximum and an average: a hit lands
+ * a bit over half the time and rolls a bit over half its die when it does, so
+ * an opportunity attack costs about a third of the number `readWalk` reports;
+ * a hazard always lands, so it costs about the die's average over its maximum.
+ */
+const OPPORTUNITY_COST = 0.3;   // vs its maximum: hit chance x average roll
+const HAZARD_COST = 0.55;       // vs its maximum: 3d6 averages 10.5 of 18
+
+function walkCost(read: WalkRead | undefined, actor: Combatant): number {
+  if (!read) return 0;
+  const swings = read.provokers.reduce((sum, p) => sum + p.maxDamage, 0) * OPPORTUNITY_COST;
+  const hp = swings + read.hazardDamage * HAZARD_COST;
+  if (hp <= 0) return 0;
+  /*
+   * The same hit points are worth more to whoever has fewer of them.
+   *
+   * Six damage is a scratch on a fighter and most of a level-1 wizard. Pricing
+   * the walk in flat hit points would let the squishiest member of the party —
+   * the one a single hazard tile can drop — take exactly the same risks as the
+   * one wearing plate. Doubling as the bar empties is enough to separate them
+   * without making a hurt creature refuse to move at all.
+   */
+  return hp * (1 + (1 - actor.hp / Math.max(1, actor.maxHp)));
+}
+
+/**
+ * One actor's walks, remembered for as long as it is standing still.
+ *
+ * `chooseAction` scores every reachable cell, and is called again after every
+ * action a creature takes, so this is read tens of times per turn and changes
+ * only when the actor actually moves. Keyed on everything that can change the
+ * answer; a miss just recomputes.
+ */
+let walkMemo: { key: string; reads: Map<string, WalkRead> } | undefined;
+
+function walksFor(state: GameState, actor: Combatant): Map<string, WalkRead> {
+  const key = `${actor.id}|${actor.position.x},${actor.position.y}|${actor.turn.movementUsed}` +
+    `|${actor.turn.disengaged ? 1 : 0}|${state.round}|${state.turnIndex}`;
+  if (walkMemo?.key !== key) walkMemo = { key, reads: walkReads(state, actor) };
+  return walkMemo.reads;
+}
+
 function scoreMove(state: GameState, actor: Combatant, to: Position): number {
   const now = nearestEnemyDist(state, actor.position, actor.team);
   const after = nearestEnemyDist(state, to, actor.team);
+  const cost = walkCost(walksFor(state, actor).get(`${to.x},${to.y}`), actor);
   if (isMeleeFighter(actor)) {
     // Close distance; reaching adjacency this turn is what makes attacks possible.
     const closing = (now - after) * 0.4;
     const reach = after === 1 && !actor.turn.actionUsed ? 1.5 : 0;
-    return closing + reach;
+    return closing + reach - cost;
   }
   // Ranged casters kite: stay 3-8 cells away, never adjacent.
   const comfort = (d: number) => (d <= 1 ? -3 : d >= 3 && d <= 8 ? 1 : 0);
-  let s = comfort(after) - comfort(now) + 0.01 * (after - now);
-  // Walking out of melee without Disengage eats an opportunity attack.
-  if (now === 1 && after > 1 && !actor.turn.disengaged) s -= 4;
-  return s;
+  const s = comfort(after) - comfort(now) + 0.01 * (after - now);
+  // The opportunity attack for leaving melee is priced by `walkCost` now, off
+  // what the creature actually swings rather than a flat -4 that was the same
+  // for a kobold and a hill giant.
+  return s - cost;
 }
 
 function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'useFeature' }): number {

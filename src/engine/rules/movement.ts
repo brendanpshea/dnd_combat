@@ -295,6 +295,56 @@ export interface WalkRead {
 }
 
 /**
+ * Every reachable cell's walk, from ONE search.
+ *
+ * `readWalk` answers for a single destination and runs a full `reachable` to
+ * do it. The AI asks about every cell it could step to, on every actor's turn,
+ * in a loop — which turned the hottest function in the search into a nested
+ * one. This pays for the search once and walks the paths out of it.
+ *
+ * Same answers as calling `readWalk` per cell, by construction: it is the same
+ * search with the same budget, the same danger function and the same
+ * tiebreak, so the paths are the paths `executeMove` will actually walk.
+ */
+export function walkReads(state: GameState, mover: Combatant): Map<string, WalkRead> {
+  const out = new Map<string, WalkRead>();
+  const budget = mover.turn.movementMax - mover.turn.movementUsed;
+  if (budget <= 0) return out;
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover),
+    stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET);
+
+  const hazardMax = hazardMaxFor(mover, state.grid);
+  const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
+    .map((id) => state.combatants[id]!)
+    .filter((h) => canTakeReaction(h));
+
+  for (const key of r.costs.keys()) {
+    const [x, y] = key.split(',').map(Number) as [number, number];
+    const path = pathTo(r, mover.position, { x, y });
+    if (!path) continue;
+    const provokers: Provoker[] = [];
+    let hazardDamage = 0;
+    const spent = new Set<Id>();
+    for (let i = 1; i < path.length; i++) {
+      const from = path[i - 1]!;
+      const step = path[i]!;
+      for (const h of threats) {
+        if (spent.has(h.id)) continue;
+        const weapon = meleeWeaponOf(h);
+        if (!weapon) continue;
+        if (reachesCell(h, from) && !reachesCell(h, step)) {
+          provokers.push({ id: h.id, name: h.name, maxDamage: maxHit(h, weapon) });
+          spent.add(h.id);
+        }
+      }
+      if (cellAt(state.grid, step)!.terrain === 'hazard') hazardDamage += hazardMax;
+    }
+    out.set(key, { provokers, hazardDamage });
+  }
+  return out;
+}
+
+/**
  * WHO gets a free swing for this walk, not just how much it might cost.
  *
  * `worstCaseWalkDamage` is a number, and a number is what the AI needs. A

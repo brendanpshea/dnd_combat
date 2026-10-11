@@ -106,3 +106,56 @@ describe('every wave can punish standing still', () => {
     }
   });
 });
+
+/**
+ * Deployment has to fan out across whatever board it is handed.
+ *
+ * The file order `[3, 1, 5, 2, 6, 0, 7, 4]` was written for eight columns and
+ * kept in bounds with `% grid.width`, which does nothing at all on a wider
+ * board: every monster landed in the left eight files while the party spread
+ * across the whole width. That is not a harder fight or an easier one — it is
+ * a different fight, happening in a strip of the board with the rest unused,
+ * and it would have been measured as "a wide board changes nothing".
+ *
+ * Found while building scripts/arena-width.ts, whose first run swept widths up
+ * to 24 against monsters that were all standing in the first third of them.
+ */
+describe('deployment across a wider board', () => {
+  const WIDTHS = [8, 12, 16, 24];
+
+  it('spreads the enemy over the whole width, not the first eight files', () => {
+    for (const width of WIDTHS) {
+      const grid = parseMap(generateArenaMap({ width, height: 12 }, seedRng(11)).value.map);
+      const spots = deployPositions(grid, 6, 'far-rank', seedRng(5));
+      const span = Math.max(...spots.value.map((p) => p.x)) - Math.min(...spots.value.map((p) => p.x));
+      // Six foes on eight files span 6; the same six on 24 should span far more
+      // than the 6 they would if the order were still read as raw columns.
+      expect(span, `width ${width}: the enemy is huddled in ${span + 1} files\n${spots.value.map((p) => `${p.x},${p.y}`).join(' ')}`)
+        .toBeGreaterThanOrEqual(Math.floor((width * 5) / 8));
+    }
+  });
+
+  it('is unchanged on the width the game ships', () => {
+    // The scaling is a no-op at eight, and that has to stay exactly true: this
+    // is the deployment every balance number in the repo was measured against.
+    const grid = parseMap(generateArenaMap({ height: 12 }, seedRng(11)).value.map);
+    for (const pattern of PATTERNS) {
+      const bare = deployPositions(grid, 6, pattern, seedRng(5));
+      expect(bare.value.map((p) => `${p.x},${p.y}`).join(' '))
+        .toBe(deployPositions(parseMap(generateArenaMap({ width: 8, height: 12 }, seedRng(11)).value.map),
+          6, pattern, seedRng(5)).value.map((p) => `${p.x},${p.y}`).join(' '));
+    }
+    // And the far-rank order itself, pinned: 3, 1, 5, 2, 6, 0 of eight files.
+    const far = deployPositions(grid, 6, 'far-rank', seedRng(5));
+    expect(far.value.map((p) => p.x)).toEqual([3, 1, 5, 2, 6, 0]);
+  });
+
+  it('still puts a pincer on the real flanks', () => {
+    for (const width of WIDTHS) {
+      const grid = parseMap(generateArenaMap({ width, height: 12 }, seedRng(11)).value.map);
+      const xs = deployPositions(grid, 6, 'pincer', seedRng(5)).value.map((p) => p.x);
+      expect(Math.min(...xs), `width ${width}`).toBeLessThan(2);
+      expect(Math.max(...xs), `width ${width}`).toBeGreaterThan(width - 3);
+    }
+  });
+});
