@@ -742,7 +742,26 @@ function searchModule(
           const key = onceKey(a.attempt, per ? `approach:${id}:${a.id}` : null);
           if (a.success) out(a.success, `"${a.label}"`, req, a.requires, key);
           if (a.failure && !per) out(a.failure, `"${a.label}" (fails)`, req, a.requires, key);
-          // A spent approach's own failure plays where the party stands.
+          /*
+           * A spent approach's own failure plays where the party stands.
+           *
+           * IT MUST STAY A SELF-LOOP WITH NO EFFECTS, because this is the one
+           * edge the trace adds to a walk whose report is shared. `traceXp`
+           * files its `ReachReport` under the key `checkModuleReach` reads, and
+           * `scripts/check-story.ts` runs the XP pass first on purpose so the
+           * check behind it costs nothing.
+           *
+           * That is sound only because of the shape of this step. A state is
+           * `(scene, hub, flags)` (see `add`), so a step naming its own scene,
+           * keeping the hub and carrying no effects packs to the key the source
+           * already holds: it cannot create a state. And a self-loop cannot
+           * change which states are reachable, nor which can still reach a
+           * victory — so neither `states` nor `errors` nor `skipped` can move.
+           *
+           * Give it a destination or a flag and the traced walk stops being the
+           * check's walk, silently, in whichever ran first.
+           * test/xp-trace-parity.test.ts holds the shape.
+           */
           if (a.failure && per && xp) {
             const pay = payOf(a.failure.effects, key, 0, grp);
             if (pay) c.steps.push(step(id, `"${a.label}" (fails)`, req, undefined, a.requires, pay));
