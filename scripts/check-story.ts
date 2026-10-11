@@ -6,9 +6,9 @@
  * simulations included) runs once before a commit.
  *
  * For a chapter with a level band, also its XP ceiling (src/adventure/xp-reach.ts):
- * the most XP any route can meet its last fight with, and end it with, the
- * level that is, and how far below the next level it stays. A fight met above
- * the band, or XP that can be farmed, is a problem like any other.
+ * the most XP any route can reach a fight's door with, and end the chapter
+ * with, the level that is, and how far below the next level it stays. A fight
+ * met above the band, or XP that can be farmed, is a problem like any other.
  */
 import { MODULES } from '../src/data/modules/index.js';
 import { validateModule } from '../src/adventure/validate.js';
@@ -39,9 +39,25 @@ for (const m of MODULES) {
     for (const f of xp.battles.filter((x) => x.max >= LEVEL_XP[band.to]!)) {
       errors.push(`[${f.scene}] can be met with ${xpAt(f)}, above the chapter's band (${band.from}–${band.to}). One way:\n      ${f.path.join('\n      ')}`);
     }
-    const last = xp.battles[0];
+    /*
+     * THE RICHEST DOOR, NOT THE LAST FIGHT.
+     *
+     * `battles` is sorted by how much XP its door can be reached with, so
+     * `battles[0]` is the fight a party can arrive at carrying the most — which
+     * is systematically NOT the chapter's last fight. A fight that pays nothing
+     * is one you can reach with everything else already banked, so this line
+     * named `camp-ambush` for the Hollow Road and `seal-breach` for the
+     * Barrows: the risky-camp night attack and the cracked door, both
+     * `loot: false` by design, neither of them the chapter's climax (that is
+     * `boss` and the sisters). Calling them "the last fight" sent whoever was
+     * tuning the chapter to the wrong scene.
+     *
+     * The number is still the one the band check cares about. Only the name
+     * for it was wrong.
+     */
+    const richest = xp.battles[0];
     const end = xp.endings.find((e) => e.outcome === 'victory');
-    if (last && end) lines.push(`    XP ceiling (band ${band.from}–${band.to}, from ${xp.startXp.toLocaleString()}): last fight [${last.scene}] ${xpAt(last)} · end ${xpAt(end)}`);
+    if (richest && end) lines.push(`    XP ceiling (band ${band.from}–${band.to}, from ${xp.startXp.toLocaleString()}): richest door [${richest.scene}] ${xpAt(richest)} · end ${xpAt(end)}`);
   }
   console.log(`${errors.length ? '✗' : '✓'} ${m.id}${budget}`);
   for (const l of lines) console.log(l);

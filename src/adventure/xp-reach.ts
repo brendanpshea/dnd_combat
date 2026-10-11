@@ -71,6 +71,7 @@ export interface XpReport {
   module: Id;
   /** The XP the chapter was started at (the chapter before's victory max). */
   startXp: number;
+  /** Fights, richest door first — NOT story order: see scripts/check-story.ts. */
   battles: XpBattle[];
   endings: XpEnding[];
   /** The most XP a victory ending can be reached with (what the sequel starts at). */
@@ -349,7 +350,7 @@ function analyse(g: XpGraph, startXp: number, unpaid: (scene: Id) => readonly st
   // Every once-only payment, by key: where it is paid (inside a component, or
   // on an edge between two), the most it pays, and how. A payment that
   // repeats, inside a component, is farmable.
-  interface Key { add: number; label: string; inside: Set<number>; across: number[] }
+  interface Key { add: number; floor: number; label: string; inside: Set<number>; across: number[] }
   const keys = new Map<string, Key>();
   const farm = new Set<string>();
   for (let e = 0; e < E; e++) {
@@ -359,17 +360,39 @@ function analyse(g: XpGraph, startXp: number, unpaid: (scene: Id) => readonly st
     for (const p of g.pays[pay]!) {
       if (p.key === null) { if (within && p.add > 0) farm.add(g.edgeLabel.get(e) ?? '?'); continue; }
       let k = keys.get(p.key);
-      if (!k) keys.set(p.key, (k = { add: 0, label: '', inside: new Set(), across: [] }));
+      if (!k) keys.set(p.key, (k = { add: 0, floor: 0, label: '', inside: new Set(), across: [] }));
       if (p.add > k.add || !k.label) { k.add = Math.max(k.add, p.add); k.label = g.edgeLabel.get(e) ?? '?'; }
+      // The floor is tracked beside the add rather than with it: a key paid in
+      // two places may add most in one and floor highest in the other, and
+      // taking the larger of each is the upper bound of both.
+      k.floor = Math.max(k.floor, p.floor);
       if (within) k.inside.add(c); else if (k.across[k.across.length - 1] !== e) k.across.push(e);
     }
   }
-  // A key met at most once on any route is counted where it is paid, by the
-  // longest path below. One a route can meet again further on (the same
-  // fight, won with other facts held) cannot be: the walk does not know it was
-  // paid. Such a key is counted, once, at every state some route paying it
-  // reaches (`hit`), and the longest path leaves it out.
-  const again = new Map<string, { add: number; label: string; hit: Uint8Array }>();
+  /*
+   * A key met at most once on any route is counted where it is paid, by the
+   * longest path below. One a route can meet again further on (the same
+   * fight, won with other facts held) cannot be: the walk does not know it was
+   * paid. Such a key is counted, once, at every state some route paying it
+   * reaches (`hit`), and the longest path leaves it out.
+   *
+   * THE FLOOR TRAVELS WITH THE ADD, or the bound stops being a bound.
+   *
+   * A key counted here is counted with no idea of WHERE on the route it was
+   * paid, so a floor it carries cannot be applied in order. The upper bound of
+   * both orders is `max(xp, floor) + add`: floor-then-add gives `floor + add`,
+   * add-then-floor gives `max(xp + add, floor)`, and (since the add is clamped
+   * at 0) that expression is at or above each. Dropping the floor instead —
+   * which this did — would have reported a party POORER than one route can
+   * actually be, and an under-estimate is the one answer this file must never
+   * give: every caller reads it as a ceiling.
+   *
+   * It is unreachable on the shipped chapters, because `misplacedLevelFloors`
+   * (validate.ts) confines `xpToLevel` to the start scene's own choices, which
+   * carry no key. That is a rule in another file about what modules may say,
+   * not a property of this search, and it is not this file's to rely on.
+   */
+  const again = new Map<string, { add: number; floor: number; label: string; hit: Uint8Array }>();
   const seen = new Uint8Array(comps), queue = new Int32Array(comps);
   for (const [name, k] of keys) {
     if (k.inside.size + k.across.length <= 1) continue;
@@ -385,7 +408,7 @@ function analyse(g: XpGraph, startXp: number, unpaid: (scene: Id) => readonly st
     if (!twice) continue;
     const hit = seen.slice();
     for (const c of k.inside) hit[c] = 1;
-    again.set(name, { add: Math.max(0, k.add), label: k.label, hit });
+    again.set(name, { add: Math.max(0, k.add), floor: k.floor, label: k.label, hit });
   }
 
   // What each component pays inside it (once per key), and its highest floor.
@@ -442,7 +465,12 @@ function analyse(g: XpGraph, startXp: number, unpaid: (scene: Id) => readonly st
       }
     }
     through(c);
-    for (const [name, x] of again) if (!skip.includes(name) && x.hit[c] && x.add) out.push(`+${x.add} ${x.label} (somewhere before)`);
+    for (const [name, x] of again) {
+      if (skip.includes(name) || !x.hit[c]) continue;
+      if (x.floor > v) out.push(`to ${x.floor} (a level's floor) ${x.label} (somewhere before)`);
+      if (x.add) out.push(`+${x.add} ${x.label} (somewhere before)`);
+      v = Math.max(v, x.floor) + x.add;
+    }
     return out;
   };
 
@@ -456,7 +484,11 @@ function analyse(g: XpGraph, startXp: number, unpaid: (scene: Id) => readonly st
     const skip = skips[g.sceneOf[n]!]!;
     let max = valOut[c]!;
     for (const x of inside.get(c) ?? []) if (skip.includes(x.key)) max -= x.add;
-    for (const [name, x] of again) if (!skip.includes(name) && x.hit[c]) max += x.add;
+    for (const [name, x] of again) {
+      if (skip.includes(name) || !x.hit[c]) continue;
+      // See `again`: the order is unknown, so take the bound of both.
+      max = Math.max(max, x.floor) + x.add;
+    }
     max = Math.max(max, morningFloor) + morningAdd;
     const was = best.get(scene);
     if (!was || max > was.max) best.set(scene, { max, c, skip });

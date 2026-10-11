@@ -98,6 +98,29 @@ describe('the fill table is real', () => {
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
     const run = () => execFileSync(pythonCmd, ['art/token_fill.py', '--check'],
       { cwd: ROOT, encoding: 'utf8' });
+    /*
+     * A MISSING PILLOW IS NOT A STALE TABLE, and this reported one as the other.
+     *
+     * The generator imports PIL. In a container without it the check exits
+     * non-zero on an ImportError, and this test read that as "the fill table is
+     * out of date" — the only thing between a fresh clone and a green
+     * `npm test`, blamed on a file nobody had touched.
+     *
+     * The deploy installs pillow on purpose (`.github/workflows/deploy.yml`,
+     * "without PIL it does not fail loudly"), so CI is where this must stay
+     * strict: there, a missing Pillow is a broken workflow and skipping would
+     * hide exactly what that comment was guarding. Off CI it is just a
+     * dependency the developer has not installed, and saying so is the useful
+     * answer.
+     */
+    try {
+      execFileSync(pythonCmd, ['-c', 'import PIL'], { cwd: ROOT, stdio: 'ignore' });
+    } catch {
+      if (!process.env.CI) {
+        console.warn('token_fill --check skipped: no Pillow. `python3 -m pip install pillow` to run it.');
+        return;
+      }
+    }
     expect(run).not.toThrow();
   }, 60000);
 });
