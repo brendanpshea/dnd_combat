@@ -96,9 +96,19 @@ export function deployPositions(
   const far = grid.height - 1;
   // The party holds rank 0 and its immediate front; keep the enemy out of it.
   const minY = Math.min(3, far);
-  // The same file spread buildEncounter uses, so a wide group fans out from
-  // the centre rather than filling in from one edge.
-  const files = [3, 1, 5, 2, 6, 0, 7, 4];
+  /*
+   * The same file spread buildEncounter uses, so a wide group fans out from
+   * the centre rather than filling in from one edge.
+   *
+   * SCALED TO THE BOARD, not to eight columns. The order is written as eighths
+   * and stretched across whatever width it is handed: `% grid.width` used to be
+   * the only thing keeping it in bounds, which on a twenty-four-wide board
+   * crowded every monster into the left third while the party spread across
+   * the whole of it. That is not a harder fight or an easier one — it is a
+   * different fight, happening in a strip of the board with the rest unused.
+   */
+  const files = [3, 1, 5, 2, 6, 0, 7, 4].map((f) =>
+    Math.min(grid.width - 1, Math.round((f * grid.width) / 8)));
   const taken = new Set<string>();
   const out: Position[] = [];
   let rng = state;
@@ -107,11 +117,11 @@ export function deployPositions(
     switch (pattern) {
       // The classic: everyone on the back rank.
       case 'far-rank':
-        return { x: files[i % files.length]! % grid.width, y: far };
+        return { x: files[i % files.length]!, y: far };
       // A few paces up the board. Cuts the free approach phase without
       // changing who is fighting whom.
       case 'advanced':
-        return { x: files[i % files.length]! % grid.width, y: Math.max(minY, far - 3) };
+        return { x: files[i % files.length]!, y: Math.max(minY, far - 3) };
       // Split down both flanks, so the party cannot face one direction and
       // hold. Alternates sides as the group is laid out.
       case 'pincer': {
@@ -125,7 +135,7 @@ export function deployPositions(
       default: {
         const r = next(rng); rng = r.state;
         const depth = Math.floor(minY + r.value * (far - minY + 1));
-        return { x: files[i % files.length]! % grid.width, y: depth };
+        return { x: files[i % files.length]!, y: depth };
       }
     }
   };
@@ -139,11 +149,63 @@ export function deployPositions(
   return { value: out, state: rng };
 }
 
-/** Pattern and positions in one call — what a fight builder actually wants. */
+/**
+ * How well a cell shelters whoever stands in it from a party on rank 0.
+ *
+ * Two things, in order: whether something solid stands between this cell and
+ * the party — half cover, +2 AC, and somewhere a creature may hide — and then
+ * how far back it is. Purely a question about the ground, so it reads the grid
+ * and nothing else.
+ */
+function shelter(grid: GridState, p: Position): number {
+  const front = cellAt(grid, { x: p.x, y: p.y - 1 });
+  const covered = !!front && blocksMovement(front.terrain);
+  // Diagonals count too: a barricade off one shoulder breaks the line from
+  // half the party's rank, which is most of what cover is worth here.
+  const flanks = [-1, 1].filter((dx) => {
+    const c = cellAt(grid, { x: p.x + dx, y: p.y - 1 });
+    return !!c && blocksMovement(c.terrain);
+  }).length;
+  return (covered ? 100 : 0) + flanks * 25 + p.y;
+}
+
+/**
+ * Put the shooters where the shooting is good.
+ *
+ * WHY THIS IS SEPARATE FROM THE PATTERN. A pattern says where a warband
+ * stands as a shape — a line, a pincer, a scatter. It cannot say who stands
+ * WHERE in that shape, because it does not know what the monsters are, and
+ * that is the half that decides whether a board's cover means anything. A
+ * barricade line with the archers in front of it and the ogres behind is the
+ * same fight as an open field, drawn differently.
+ *
+ * So the cells are chosen first and dealt afterwards: the most sheltered go to
+ * whatever can shoot, the most exposed to whatever has to walk. The shape, the
+ * headcount and the cells themselves are exactly what the pattern produced —
+ * this only decides who gets which.
+ */
+export function assignByRole(
+  grid: GridState, positions: readonly Position[], ranged: readonly boolean[],
+): Position[] {
+  const order = positions.map((_, i) => i).sort((a, b) =>
+    shelter(grid, positions[b]!) - shelter(grid, positions[a]!));
+  const shooters = ranged.map((r, i) => (r ? i : -1)).filter((i) => i >= 0);
+  const walkers = ranged.map((r, i) => (r ? -1 : i)).filter((i) => i >= 0);
+  const out: Position[] = new Array(positions.length);
+  // Shooters take the best cells from the back; everyone else fills forward.
+  for (const [k, member] of shooters.entries()) out[member] = positions[order[k]!]!;
+  for (const [k, member] of walkers.entries()) out[member] = positions[order[shooters.length + k]!]!;
+  return out.map((p, i) => p ?? positions[i]!);
+}
+
+/** Pattern and positions in one call — what a fight builder actually wants.
+ *  Pass `ranged` (one flag per member, in member order) to have the shooters
+ *  dealt the sheltered cells — see `assignByRole`. */
 export function deployFoes(
-  grid: GridState, count: number, state: RngState,
+  grid: GridState, count: number, state: RngState, ranged?: readonly boolean[],
 ): { value: { pattern: DeployPattern; positions: Position[] }; state: RngState } {
   const p = pickPattern(state);
   const spots = deployPositions(grid, count, p.value, p.state);
-  return { value: { pattern: p.value, positions: spots.value }, state: spots.state };
+  const positions = ranged ? assignByRole(grid, spots.value, ranged) : spots.value;
+  return { value: { pattern: p.value, positions }, state: spots.state };
 }

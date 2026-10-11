@@ -69,6 +69,8 @@ const GROUND: Record<LayoutName, { name: string; blurb: string }> = {
   crossfire: { name: 'The Gauntlet', blurb: 'Barricades down both flanks, an open lane between.' },
   ruin: { name: 'The Ruin', blurb: 'A fallen block, and two uneven lanes around it.' },
   open: { name: 'The Killing Floor', blurb: 'Open ground. Almost nothing to hide behind.' },
+  gallery: { name: 'The Shooting Gallery', blurb: 'They hold a barricade line. Reach them or be shot.' },
+  rooms: { name: 'The Warren', blurb: 'Chambers and doorways. Nothing stays in sight for long.' },
 };
 const LAYOUT_NAMES = Object.keys(GROUND) as LayoutName[];
 
