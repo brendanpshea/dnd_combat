@@ -15,6 +15,7 @@
  * node carries as a flag instead; and a lost fight's fall to the module's
  * defeat scene.
  */
+import { outsideOf } from './outside.js';
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Requirement, type Scene } from './types.js';
 import { refsOf } from './graph.js';
@@ -74,7 +75,8 @@ export function needsOf(reqs: Requirement[] | undefined): string | undefined {
   }).join(', ');
 }
 
-export function moduleMap(module: Module): ModuleMap {
+export function moduleMap(whole: Module): ModuleMap {
+  const module = outsideOf(whole);
   const scenes = module.scenes;
 
   // --- Which location each scene belongs to ---------------------------------

@@ -1,3 +1,4 @@
+import { expandModule } from '../src/adventure/embed.js';
 import { describe, it, expect } from 'vitest';
 import {
   newCampaign, characterSkillCheck, partySkillCheck, groupSkillCheck,
@@ -675,8 +676,10 @@ describe('camp', () => {
     expect(campRule(state, hollow)).toEqual({}); // safe
     enterScene(state, hollow, 'trail');
     expect(campRule(state, hollow)?.risky).toBeTruthy();
-    enterScene(state, hollow, 'inner');
-    expect(campRule(state, hollow)?.risky).toBeTruthy(); // rest in the den, at a price
+    // The den as a run builds it (a generated delve, spliced in).
+    const live = expandModule(hollow, { seed: 1, flags: [] });
+    enterScene(state, live, 'inner/delve');
+    expect(campRule(state, live)?.risky).toBeTruthy(); // rest in the den, at a price
   });
 
   it('a camp is only made on the map, never from inside a scene', () => {

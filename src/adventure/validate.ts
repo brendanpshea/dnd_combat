@@ -3,6 +3,7 @@
  * (enforced by a test over every module). Catches the dead ends, dangling
  * gotos, and typos that a scene graph makes easy to introduce.
  */
+import { outsideOf } from './outside.js';
 import type { Id } from '../engine/types.js';
 import { CLASSES, SKILL_ABILITY, type SkillId } from '../data/classes.js';
 import { MONSTERS } from '../data/monsters.js';
@@ -74,7 +75,10 @@ function misplacedLevelFloors(module: Module): string[] {
 }
 
 /** Returns a list of problems; empty means the module is well-formed. */
-export function validateModule(module: Module): string[] {
+export function validateModule(whole: Module): string[] {
+  // A delve proved apart is proved from outside (outside.ts): its own proof
+  // ran when it was built.
+  const module = outsideOf(whole);
   const errors: string[] = [];
   const ids = new Set(Object.keys(module.scenes));
   const at = (id: Id, msg: string) => errors.push(`[${id}] ${msg}`);

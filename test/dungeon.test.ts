@@ -391,12 +391,14 @@ describe('the Ashfang Den', () => {
   it('offers no way back into the den once the chief is dead (it would strand the ending)', async () => {
     const { HOLLOW_ROAD_MODULE: H } = await import('../src/data/modules/hollow-road.js');
     const { hubReturn } = await import('../src/adventure/runtime.js');
-    const s = startAdventure(newCampaign(1), H);
-    enterScene(s, H, 'inner');
-    enterScene(s, H, 'boss');
-    resolveBattle(s, H, true);
+    const { expandModule } = await import('../src/adventure/embed.js');
+    const L = expandModule(H, { seed: 1, flags: [] });   // the den as a run builds it
+    const s = startAdventure(newCampaign(1), L);
+    enterScene(s, L, 'inner/delve');
+    enterScene(s, L, 'boss');
+    resolveBattle(s, L, true);
     expect(s.sceneId).toBe('vargan-beaten');
-    expect(hubReturn(s, H)).toBeNull();
+    expect(hubReturn(s, L)).toBeNull();
   });
 });
 

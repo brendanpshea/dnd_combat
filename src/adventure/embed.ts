@@ -20,12 +20,14 @@
  * require them.
  */
 import type { Id } from '../engine/types.js';
-import { RUNTIME_FLAGS, type EmbeddedDelve, type EmbeddedTown, type Module, type Outcome, type Scene } from './types.js';
+import { RUNTIME_FLAGS, type EmbeddedDelve, type EmbeddedTown, type ExploreNode, type Module, type Outcome, type Requirement, type Scene } from './types.js';
 import type { AdventureState } from './runtime.js';
 import { generateSpecDelve } from './delve-spec.js';
 import { generateCity } from './city-gen.js';
 import { validateModule } from './validate.js';
 import { compileQuests } from './quests.js';
+import { outsideOf } from './outside.js';
+import { isNpcFlag } from './npcs.js';
 
 /** Keys whose string value names a scene. */
 const SCENE_REF_KEYS = new Set(['to', 'fight', 'search', 'scene', 'battle', 'battleScene', 'out', 'failTo', 'next']);
@@ -85,7 +87,8 @@ function splice(
   const name = (id: Id) => (id === 'start' ? at : own.has(id) ? `${at}/${id}` : id);
   const out = Object.values(scenes);
   // The runtime's own flag is the runtime's, wherever the shop is.
-  rewrite(out, name, (f) => exports[f] ?? (keep.has(f) || RUNTIME_FLAGS.includes(f) ? f : `${at}/${f}`));
+  // NPC state is the campaign's, never the place's.
+  rewrite(out, name, (f) => exports[f] ?? (keep.has(f) || RUNTIME_FLAGS.includes(f) || isNpcFlag(f) ? f : `${at}/${f}`));
   for (const sc of out) sc.id = name(sc.id);
   /*
    * The ways out, back to the story. Not scenes of their own: every route
@@ -117,7 +120,10 @@ function splice(
 /** One delve, as scenes for the host (see `splice`). */
 export function expandDelve(at: Id, delve: EmbeddedDelve, seed: number, story: ReadonlySet<string>): Record<Id, Scene> {
   const built = generateSpecDelve(seed, delve.spec, story).module;
-  return splice(at, built.scenes, { won: delve.onWin, 'gave-up': delve.onLeave }, 'fallen', delve.reads, delve.exports);
+  // A required room's story scene waits on the story's own flags: those stay
+  // the story's.
+  const own = (delve.spec.require ?? []).flatMap((r) => r.event?.until ?? []).flatMap((r) => ('flag' in r ? [r.flag] : []));
+  return splice(at, built.scenes, { won: delve.onWin, 'gave-up': delve.onLeave }, 'fallen', [...(delve.reads ?? []), ...own], delve.exports);
 }
 
 /** One town, as scenes for the host (see `splice`). */
@@ -189,8 +195,19 @@ export const MAX_READS = 4;
  * is expanded — so this proves the modules a run can actually get: several
  * seeds, under every combination of the story flags the delves read.
  */
+export { outsideOf } from './outside.js';
+
 export function validateLive(module: Module, seeds: readonly number[] = [1, 2, 3]): string[] {
   if (!generates(module)) return validateModule(module);
+  // Every delve proved apart, and nothing else generated: the story's
+  // outside of them, once, and each built (its own proof) for every seed.
+  if (Object.values(module.delves ?? {}).every((d) => d.proveApart) && !module.towns) {
+    const errors = validateModule(compileQuests(module));
+    for (const seed of seeds) {
+      try { expandModule(module, { seed, flags: [] }); } catch (e) { errors.push(`[seed ${seed}] ${(e as Error).message}`); }
+    }
+    return [...new Set(errors)];
+  }
   const errors: string[] = [];
   for (const { at } of placesOf(module)) {
     if (module.scenes[at]) errors.push(`[${at}] is both a scene and a generated place`);

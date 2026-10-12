@@ -31,7 +31,7 @@ import { ITEMS } from '../data/items.js';
 import { generateEncounter, type EncounterBrief } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
 import { LEVEL_XP, levelForXp, MAX_LEVEL } from '../campaign/campaign.js';
-import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, Effect } from './types.js';
+import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, Effect, Requirement, SceneRef } from './types.js';
 import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
 import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
@@ -73,6 +73,17 @@ export interface RequiredRoom {
   rest?: 'short' | 'safe';
   /** What Search turns up: coin, or an item id. */
   loot?: 'gold' | Id;
+  /**
+   * In a story (Module.delves): a scene of the story's own that plays on
+   * walking in, until `until` holds — a conversation, the story's own fight.
+   * The story's flags in `until` stay the story's. On a goal room, it stands
+   * in for the boss: the room is where the story takes over.
+   */
+  event?: { scene: SceneRef; until?: Requirement[] };
+  /** In a story: what Search here enters, a scene of the story's own. */
+  search?: SceneRef;
+  /** In a story: a way out from here, into one of the story's scenes. */
+  exit?: { to: SceneRef; label?: string };
 }
 
 /** A set piece to build in (see delve-pieces.ts), by its library id. */
@@ -646,7 +657,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
         : isGoal ? goalWin : { to: '@hub' };
       // A key room and a goal always fight; a required room fights if it says so.
       const reqFight = req?.fight;
-      const must = !!key || isGoal;
+      // A goal the story takes over (its own scene on walking in) is not
+      // also a generated boss.
+      const must = !!key || (isGoal && !req?.event);
       if (typeof reqFight === 'string') room.fight = fight(id, reqFight, win);
       else if (reqFight) room.fight = fight(id, fightOf(level, reqFight.boss ?? isGoal, reqFight.brief, factionOf(id)), win);
       else if (must) room.fight = fight(id, fightOf(level, isGoal, undefined, factionOf(id)), win);
@@ -664,9 +677,13 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
           goalFight.intro = [`${lord}, who leads ${dice.pick(fac.names)}, is waiting for you.`];
         }
       }
+      if (req?.event) room.event = req.event;
+      if (req?.exit) room.exit = req.exit;
       if (req?.rest) room.rest = req.rest;
       else if (safe.has(id)) Object.assign(room, { name: T.safe[0], rest: 'safe', firstVisit: [T.safe[1]] });
-      if (req?.loot) {
+      if (req?.search) {
+        room.search = req.search;
+      } else if (req?.loot) {
         room.search = find(id, req.loot === 'gold' ? 'A purse, heavier than it looks.' : `Tucked away here: ${ITEMS[req.loot]!.name}.`,
           req.loot === 'gold' ? [{ kind: 'gold', amount: 30 + 10 * level }] : [{ kind: 'addItem', itemId: req.loot }]);
       } else if (id === 'cache') {
@@ -774,6 +791,29 @@ export function specDelveFromId(id: string): Module | undefined {
  * the spec. Throws at once on a spec that cannot be met; otherwise tries
  * candidates until one passes every proof.
  */
+/**
+ * A delve proved on its own, before a story takes it in: the story's own
+ * scenes its required rooms name are not here yet, so each stands in as the
+ * simplest thing it could be — an event that does what it waits on and goes
+ * back into the dark, a search that finds nothing, a way out that ends it.
+ * The story's proofs see the real ones, spliced.
+ */
+function withStandIns(module: Module, require: readonly RequiredRoom[]): Module {
+  const scenes: Record<Id, Scene> = { ...module.scenes };
+  const stand = (id: Id, sc: Scene) => { if (!scenes[id]) scenes[id] = sc; };
+  for (const r of require) {
+    if (r.event) {
+      const sets = (r.event.until ?? []).flatMap((q) => (q.kind === 'flag' ? [{ kind: 'setFlag' as const, flag: q.flag }] : []));
+      stand(r.event.scene, { id: r.event.scene, kind: 'story', noBack: true, text: ['(The story\'s own scene.)'],
+        // A goal the story takes over is where the delve is won.
+        next: [{ id: 'on', label: 'On', to: r.where === 'goal' ? 'won' : '@hub', ...(sets.length ? { effects: sets } : {}) }] });
+    }
+    if (r.search) stand(r.search, { id: r.search, kind: 'story', noBack: true, text: ['(The story\'s own search.)'], next: [{ id: 'on', label: 'On', to: '@hub' }] });
+    if (r.exit) stand(r.exit.to, { id: r.exit.to, kind: 'ending', outcome: 'victory', text: ['(The story goes on.)'] });
+  }
+  return { ...module, scenes };
+}
+
 export function generateSpecDelve(
   seed: number, spec: DelveSpec = {}, story: ReadonlySet<string> = new Set(),
 ): { module: Module; rerolls: number } {
@@ -788,7 +828,7 @@ export function generateSpecDelve(
       last = [e.message];
       continue;
     }
-    last = validateModule(module);
+    last = validateModule(withStandIns(module, full.require));
     if (last.length === 0) return { module: { ...module, id: specDelveId(seed, spec) }, rerolls: attempt };
   }
   throw new Error(`No valid delve for seed ${seed}: ${last.join('; ')}`);

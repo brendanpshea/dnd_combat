@@ -837,6 +837,15 @@ export interface EmbeddedDelve {
   reads?: string[];
   /** Delve flags handed back to the story, renamed: generated name → story name. */
   exports?: Record<string, string>;
+  /**
+   * Proved in parts: the delve on its own when it is built (layout, keys,
+   * secret doors), and the story with the delve as only what the story sees
+   * of it — its door, the story's own scenes in its required rooms, and its
+   * ways out. Its inner flags then never multiply the story's states.
+   */
+  proveApart?: true;
+  /** What the story calls the place (for its outside, in maps and proofs). */
+  title?: string;
 }
 
 /** A named character and where a chapter introduces them (Module.cast). */
