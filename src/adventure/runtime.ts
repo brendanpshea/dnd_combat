@@ -1230,8 +1230,11 @@ function emptySearch(roomId: string, own?: readonly string[]): string {
 export function canSearch(state: AdventureState, module: Module): boolean {
   const scene = currentScene(state, module);
   if (scene.kind !== 'dungeon') return false;
-  const p = dungeonProgress(state, scene.id, scene.dungeon);
-  return !p.searched.includes(p.at);
+  const d = scene.dungeon;
+  const p = dungeonProgress(state, scene.id, d);
+  if (p.searched.includes(p.at)) return false;
+  if (!d.searchWhereFound) return true;
+  return !!roomOf(d, p.at)?.search || d.links.some((l) => !!l.door?.secret && (l.a === p.at || l.b === p.at));
 }
 
 /**

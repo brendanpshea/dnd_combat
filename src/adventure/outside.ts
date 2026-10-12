@@ -6,6 +6,7 @@
 import type { Id } from '../engine/types.js';
 import type { EmbeddedDelve, EmbeddedTown, ExploreNode, Module, Requirement, Scene } from './types.js';
 import { refsOf, requirementsOf } from './graph.js';
+import { delveFightXpBound } from './delve-spec.js';
 
 /**
  * The story with each `proveApart` delve as only what the story sees of it:
@@ -14,6 +15,13 @@ import { refsOf, requirementsOf } from './graph.js';
  * out. What lies between — rooms, keys, ambushes — the delve's own proof
  * covered when it was built.
  */
+/** Every flag the chapter's paths read (not an ending's slides). */
+const askedOf = (module: Module): Set<string> => new Set([
+  ...Object.values(module.scenes).filter((sc) => sc.kind !== 'ending').flatMap(requirementsOf),
+  ...Object.values(module.delves ?? {}).flatMap((d) => [...(d.spec.lock?.requires ?? []), ...(d.spec.require ?? []).flatMap((r) => (r.event?.when ?? []).flatMap((w) => w.if))]),
+  ...Object.values(module.towns ?? {}).flatMap((t) => (t.spec.places ?? []).flatMap((pl) => (pl.event?.when ?? []).flatMap((w) => w.if))),
+].flatMap((r) => (r.kind === 'flag' || r.kind === 'notFlag' ? [r.flag] : [])));
+
 export function outsideOf(module: Module): Module {
   if (!Object.values(module.delves ?? {}).some((d) => d.proveApart) && !Object.values(module.towns ?? {}).some((t) => t.proveApart)) return module;
   const scenes: Record<Id, Scene> = { ...module.scenes };
@@ -26,7 +34,10 @@ export function outsideOf(module: Module): Module {
       // Whether an optional room is done is the delve's own business: nothing
       // outside it asks, so its outside shows the event every time, and its
       // flags stay out of the chapter's proof. Only the path (main, goal) gates.
-      const gates = r.where === 'main' || r.where === 'goal';
+      // …unless something outside it asks the same flag (the story's own
+      // lock does): then a room done is done for the chapter too.
+      const gates = r.where === 'main' || r.where === 'goal'
+        || (r.event?.until ?? []).some((q) => (q.kind === 'flag' || q.kind === 'notFlag') && askedOf(module).has(q.flag));
       const until = (gates ? r.event?.until ?? [] : []).flatMap((q): Requirement[] =>
         q.kind === 'flag' ? [{ kind: 'notFlag', flag: q.flag }] : q.kind === 'notFlag' ? [{ kind: 'flag', flag: q.flag }] : []);
       // Past a story's lock (the goal always is): only once the story opens it.
@@ -45,6 +56,12 @@ export function outsideOf(module: Module): Module {
       if (r.exit) at_(r.exit.to, 'x', [...before, ...(gates ? r.event?.until ?? [] : [])]);
     });
     nodes.push({ id: 'out', label: 'Out', icon: 'tok-gate', scene: d.onLeave.to, x: 90, y: 90 });
+    // What its own fights could pay, once: the XP ceiling counts it, where
+    // the chapter cannot see the fights themselves (delveFightXpBound).
+    const fights = `${at}/fights`;
+    scenes[fights] = { id: fights, kind: 'story', text: ['(The place\'s own fights.)'],
+      next: [{ id: 'won', label: 'Fight through', to: hub, once: true, effects: [{ kind: 'xp', amount: delveFightXpBound(d.spec) }] }] };
+    nodes.push({ id: 'fights', label: 'Its own fights', icon: 'tok-mystery', scene: fights, x: 90, y: 70 });
     scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };
     scenes[hub] = { id: hub, kind: 'explore', map: { title: d.title ?? 'Inside', art: { emoji: '🏚️' }, entry: ['out'], nodes } };
   }

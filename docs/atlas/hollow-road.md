@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-112 scenes · 169 versions · 2,495,026 states searched (with text conditions tracked).
+114 scenes · 171 versions · 1,252,998 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -42,8 +42,10 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `reedwife-lost`, `reedwife-lost-alone`:
   - **S16** “The hag's cold fingers close over your eyes, and the …”
   - **S17** “You wake behind the throne, where somebody dragged you. Vargan …”
+- `trail/fights`, `inner/fights`:
+  - **S18** “(The place's own fights.)”
 - `trail`, `inner`:
-  - **S18** “In.”
+  - **S19** “In.”
 
 ## `road` · story
 
@@ -2152,6 +2154,14 @@ Up in the hollow, the reeve's men pull down the den's timber wall one post at a 
 
 > **[when not `captives-freed` · not `captives-taken`]** The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The Ashfang who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.
 
+## `trail/fights` · story
+
+(The place's own fights.)
+
+<sub>(shared with: `inner/fights`)</sub>
+
+- » **Fight through** <sub>(once)</sub>
+
 ## `trail` · story
 
 In.
@@ -2162,13 +2172,13 @@ In.
 
 ## `trail/delve` · explore
 
-<sub>reads: flag:trail-known, flag:npc.wren.fate.saved, companion:wren, flag:npc.wren.fate.lost, flag:scout-bled-out, flag:scout-walked-past, flag:trail-read, flag:crossed-ravine, flag:know-hag, flag:trail-wet</sub>
+<sub>reads: flag:trail-read, flag:trail-known, flag:crossed-ravine, flag:npc.wren.fate.saved, companion:wren, flag:npc.wren.fate.lost, flag:scout-bled-out, flag:scout-walked-past, flag:know-hag, flag:trail-wet</sub>
 
 **Map:** The Marsh Road
 
-- **Fresh Tracks** → `tracks`
+- **Fresh Tracks** → `tracks` <sub>open when not `trail-read`; otherwise greyed</sub>
   - goes to `tracks-mapped` instead when `trail-known`
-- **Sunken Ravine** → `ravine`
+- **Sunken Ravine** → `ravine` <sub>open when not `crossed-ravine`; otherwise greyed</sub>
 - **A Cry for Help** → `wounded`
   - goes to `scout-along` instead when Wren in the party
   - goes to `scout-sent` instead when Wren saved
@@ -2182,6 +2192,15 @@ In.
   - goes to `ambush-wet` instead when `trail-wet`
 - **The Hollow** → `hollow-quiet` <sub>open when `know-hag`; otherwise greyed</sub>
 - **Out** → `square/city`
+- **Its own fights** → `trail/fights`
+
+## `inner/fights` · story
+
+(The place's own fights.)
+
+<sub>(shared with: `trail/fights`)</sub>
+
+- » **Fight through** <sub>(once)</sub>
 
 ## `inner` · story
 
@@ -2204,6 +2223,7 @@ In.
 - **The Pens** → `den-pens-door`
 - **The Chief's Hall** → `boss-approach` <sub>open when `pit-won` · met Vex; otherwise greyed</sub>
 - **Out** → `hollow-quiet`
+- **Its own fights** → `inner/fights`
 
 ## `square/city` · explore
 

@@ -34,7 +34,7 @@ import { LEVEL_XP, levelForXp, MAX_LEVEL } from '../campaign/campaign.js';
 import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, Effect, Requirement, SceneRef } from './types.js';
 import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
-import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
+import { Dice, ROOMS, SIZE_ROOMS, STORY_THEMES, encounterPools, type DelveOptions } from './dungeon-gen.js';
 import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
 import { beastName, bossName, styleFor } from './names.js';
 import { FACTIONS, canHold, factionsFor, type Faction } from '../data/factions.js';
@@ -43,7 +43,7 @@ import { adjustedXp } from '../arena/encounter.js';
 import { MONSTER_XP } from '../data/monsters.js';
 
 export type SpecTheme = keyof typeof ROOMS;
-export const SPEC_THEMES = Object.keys(ROOMS) as SpecTheme[];
+export const SPEC_THEMES = (Object.keys(ROOMS) as SpecTheme[]).filter((t) => !(STORY_THEMES as readonly string[]).includes(t));
 
 /**
  * How a floor is wired.
@@ -119,6 +119,17 @@ export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
    *  past it. */
   factions?: Id[];
   /**
+   * In a story: the place as the story calls it. Its name and the line at its
+   * door, and what stepping back out of it says and offers. A delve dressed
+   * by its story draws no history of its own and searches only where there is
+   * something to find.
+   */
+  dressing?: { name: string; door: string; outside: string; back: string; leave: string };
+  /** At most this many of its rooms hold a fight of the generator's own
+   *  (besides a key's guard and the goal): a story's place keeps its levels
+   *  for the story's fights. */
+  maxFights?: number;
+  /**
    * In a story: the first floor's lock is the story's, opened by its own
    * flags (a ravine crossed, a trail read) — no key room. Rooms placed
    * `afterLock` lie beyond it.
@@ -178,14 +189,41 @@ export function shareFor(role: FightRole, level: number): number {
   return t[Math.min(Math.max(1, level), t.length) - 1]!;
 }
 
+/**
+ * The most XP (a head, for a party of `partySize`) a delve's own fights can
+ * pay, whatever its layout: every room but the entrance and the story's own
+ * fights to the room budget (and the goal to the boss's, unless the story
+ * takes it over), with the generator's ten per cent of slack. What a chapter
+ * proved against the delve's outside counts in place of the fights it cannot see.
+ */
+export function delveFightXpBound(spec: DelveSpec, partySize = 4): number {
+  const full = checkSpec(spec);
+  let total = 0;
+  for (let f = 1; f <= full.floors; f++) {
+    // Each floor is budgeted at the level the floors above can bring (a level a floor, at most).
+    const lvl = Math.min(MAX_LEVEL, full.level + f - 1);
+    const n = full.rooms || SIZE_ROOMS[full.size ?? 'medium'][1];
+    const story = full.require.filter((r) => (r.floor ?? (r.where === 'goal' ? full.floors : 1)) === f && r.event && !r.fight).length;
+    const goalTaken = full.require.some((r) => r.where === 'goal' && r.event && (r.floor ?? full.floors) === f);
+    // Capped: the filler, and each key's guard (the story holds the first floor's lock, if it has one).
+    const keys = (full.shape === 'keys' ? 2 : 1) - (f === 1 && full.lock ? 1 : 0);
+    const rooms = full.maxFights !== undefined ? Math.min(n - 1 - story, full.maxFights + keys) : n - 1 - story;
+    total += rooms * evenBudgetFor(lvl) * shareFor('room', lvl) * 1.1;
+    if (!goalTaken) total += evenBudgetFor(lvl) * shareFor('boss', lvl) * 1.1;
+  }
+  return Math.ceil(total / partySize);
+}
+
 /** Throws on a spec no candidate could satisfy; returns it with defaults. */
-export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'lock'>> & Pick<DelveSpec, 'size' | 'lock'> {
+export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights'>> & Pick<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights'> {
   const err = (m: string) => { throw new Error(`Bad delve spec: ${m}`); };
   const level = spec.level ?? 2;
   if (!Number.isInteger(level) || level < 1 || level > MAX_LEVEL) err(`level ${level} is not 1–${MAX_LEVEL}`);
   const floors = spec.floors ?? 1;
   if (!Number.isInteger(floors) || floors < 1 || floors > MAX_FLOORS) err(`floors ${floors} is not 1–${MAX_FLOORS}`);
-  if (spec.theme && !SPEC_THEMES.includes(spec.theme)) err(`no theme '${spec.theme}'`);
+  if (spec.theme && !(spec.theme in ROOMS)) err(`no theme '${spec.theme}'`);
+  // A story's own theme is the story's: only a dressed place may use it.
+  if (spec.theme && (STORY_THEMES as readonly string[]).includes(spec.theme) && !spec.dressing) err(`'${spec.theme}' is a story's theme: give the place its dressing`);
   if (spec.shape && !DELVE_SHAPES.includes(spec.shape)) err(`no shape '${spec.shape}'`);
   if (spec.rooms !== undefined && (!Number.isInteger(spec.rooms) || spec.rooms < ROOM_RANGE[0] || spec.rooms > ROOM_RANGE[1])) {
     err(`rooms ${spec.rooms} is not ${ROOM_RANGE[0]}–${ROOM_RANGE[1]}`);
@@ -253,6 +291,8 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'l
     rooms: spec.rooms ?? 0, fights: spec.fights ?? 'authored', rest: spec.rest ?? 'standard',
     ...(spec.size ? { size: spec.size } : {}),
     ...(spec.lock ? { lock: spec.lock } : {}),
+    ...(spec.dressing ? { dressing: spec.dressing } : {}),
+    ...(spec.maxFights !== undefined ? { maxFights: spec.maxFights } : {}),
   };
 }
 
@@ -398,7 +438,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
   let holders: Faction[] = spec.factions.map((id) => FACTIONS[id]!);
   let history: History | undefined;
   let title: string;
-  if (peopled || spec.history) {
+  const dress = spec.dressing;
+  if (dress) {
+    title = dress.name;
+  } else if (peopled || spec.history) {
     if (peopled && holders.length === 0) {
       const fit = dice.shuffle([...factionsFor(spec.theme, spec.level)]);
       holders = fit.slice(0, dice.chance(0.4) && fit.length > 1 ? 2 : 1);
@@ -498,7 +541,8 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const fight = (roomId: Id, enc: Id, win: Win): Id => {
       const id = `${pre}fight-${roomId}`;
       const talk = roomId === goal ? {} : parleyFor(factionOf(roomId), win, enc);
-      scenes[id] = { id, kind: 'battle', encounterId: enc, mapId: '@room', onWin: win, ...talk };
+      const opens = roomId === goal ? undefined : factionOf(roomId)?.intros;
+      scenes[id] = { id, kind: 'battle', encounterId: enc, mapId: '@room', onWin: win, ...talk, ...(opens ? { intro: [dice.pick(opens)] } : {}) };
       floorXp += encounterXP(enc);
       return id;
     };
@@ -653,6 +697,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       safe.add(byGoal(pick) ? beforeLock.find((x) => !byGoal(x)) ?? pick : pick);
     }
     const keyOf = new Map(g.keys.map((k) => [k.room, k.flag]));
+    let filler = 0;
     const rooms: DungeonRoom[] = [];
 
     const contents = (id: Id): DungeonRoom => {
@@ -674,7 +719,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       if (typeof reqFight === 'string') room.fight = fight(id, reqFight, win);
       else if (reqFight) room.fight = fight(id, fightOf(level, reqFight.boss ?? isGoal, reqFight.brief, factionOf(id)), win);
       else if (must) room.fight = fight(id, fightOf(level, isGoal, undefined, factionOf(id)), win);
-      else if (!req && id !== 'cache' && dice.chance(0.55)) room.fight = fight(id, fightOf(level, false, undefined, factionOf(id)), win);
+      else if (!req && id !== 'cache' && dice.chance(0.55) && filler < (spec.maxFights ?? Infinity)) {
+        filler++;
+        room.fight = fight(id, fightOf(level, false, undefined, factionOf(id)), win);
+      }
       if (isGoal) {
         room.goal = true;
         if (!last) room.exit = { to: `delve-${f + 1}`, label: 'Down the stairs' };
@@ -738,8 +786,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
         next: [{ id: 'on', label: 'Go on', to: sceneId }] };
     }
     const dungeon: Dungeon = {
-      title: f === 1 ? title : `${title}, Level ${f}`, theme: spec.theme, entry: g.main[0]!,
+      title: f === 1 ? title : `${title}, Level ${f}`, theme: T.board ?? (spec.theme as Dungeon['theme']), entry: g.main[0]!,
       camp: { risky: { chance: 0.5, battleScene: campId } }, rest: spec.rest, rooms, links: g.links,
+      ...(dress ? { searchWhereFound: true as const } : {}),
     };
     scenes[sceneId] = { id: sceneId, kind: 'dungeon', dungeon };
     goals.push([dungeon, goal, out]);
@@ -747,10 +796,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
   }
 
   Object.assign(scenes, {
-    start: { id: 'start', kind: 'story', text: [`The way into ${title} stands open.`, ...(history ? [history.story] : [])], next: [{ id: 'in', label: 'Go in', to: 'delve',
+    start: { id: 'start', kind: 'story', text: dress ? [dress.door] : [`The way into ${title} stands open.`, ...(history ? [history.story] : [])], next: [{ id: 'in', label: 'Go in', to: 'delve',
       effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
-    outside: { id: 'outside', kind: 'story', text: ['Daylight, and air that does not smell of the deep.'], noBack: true,
-      next: [{ id: 'in', label: 'Go back in', to: 'delve' }, { id: 'quit', label: 'Leave it for someone else', to: 'gave-up' }] },
+    outside: { id: 'outside', kind: 'story', text: [dress?.outside ?? 'Daylight, and air that does not smell of the deep.'], noBack: true,
+      next: [{ id: 'in', label: dress?.back ?? 'Go back in', to: 'delve' }, { id: 'quit', label: dress?.leave ?? 'Leave it for someone else', to: 'gave-up' }] },
     dark: { id: 'dark', kind: 'story', text: ['The torch gutters and dies. You feel your way back along the wall to the light.'], noBack: true,
       next: [{ id: 'out', label: 'Out', to: 'outside' }] },
     fallen: { id: 'fallen', kind: 'story', text: ['You come to outside, dragged clear by whoever was still standing.'], noBack: true,

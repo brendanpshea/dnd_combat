@@ -397,6 +397,10 @@ export interface Dungeon {
   /** What a room searched for nothing says, in this place's own words (one
    *  is picked per room). Absent: the engine's plain few. */
   emptySearches?: string[];
+  /** Search only where something is to be found: a room with a `search`, or
+   *  one beside a secret door. (A story's place, where the story matters more
+   *  than combing every corner.) */
+  searchWhereFound?: true;
   /** The look of the place, and of the boards its `@room` fights are fought on. */
   theme: MapTheme;
   art?: SceneArt;
