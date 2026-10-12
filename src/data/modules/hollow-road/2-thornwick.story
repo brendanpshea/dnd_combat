@@ -12,12 +12,12 @@ art: loc-tavern 🍺
 noBack: true
 Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you'll do.
 "Sellswords. Good. You read my note, then." **{mira}** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
-"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why."
+"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon. Six, by my count, and none of them will say why."
 "And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left."
 "Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter's boy once. Years back, the spring the marsh rose, his mother's house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there's more, the kind no one says with the door open." She sets the cup down.
 > Pull up a stool → tavern  #sit
   journal quest q-main: Break the {ashfang}
-    {mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them.
+    {mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them. The reed-cutters count six nights to the dark of the moon.
     stage Find the {ashfang} den | visited gate
     stage End the chief, and whatever stands behind him | npc reedwife met
   journal quest q-scouts: The Reeve's Scouts
@@ -53,7 +53,7 @@ art: loc-tavern 🍺
 kind: rest
 variant: long
 next: tavern
-You take a room above the taproom, bolt the door, and sleep straight through until the smell of {mira}'s bread comes up the stairs. Your wounds have closed, and your head is clear.
+You take a room above the taproom, bolt the door, and sleep straight through until the smell of {mira}'s bread comes up the stairs. Your wounds have closed, and your head is clear. Out of the window, the old moon is a little thinner than it was.
 
 # tavern-spy
 noBack: true
@@ -68,6 +68,7 @@ art: 👁️
     stage Catch the peddler, quietly if you can | spy-caught
     taken: know-spy
     resolved: spy-caught
+    failed: den-alarm
 
 # tavern-trail
 noBack: true
@@ -108,7 +109,16 @@ The old hands at the long table shove along the bench to make room for you again
   once
 > Ask the caravan veteran about her axe → rumor-weapons  #weapons
   once
+> Ask the old reed-cutter about the lady in the water → rumor-reeds  #reeds
+  once
 > Leave them to their ale → tavern  #back
+
+# rumor-reeds
+back: true
+art: 🌾
+At the end of the bench an old reed-cutter sits with his hands round his cup, the fingers scarred white from a lifetime of sedge. He does not look up. "The lady in the water. My gran left her a {door-price} every {door-midwinter}, at the edge of the reeds, and so did hers. One a winter, for sitting by our door in the dark. That was the bargain, and the fen kept it."
+"Then the spring the water rose, the bargain went wrong somewhere, and nobody's left a {door-price} since. Folk say she's owed. Folk say you can hold her like that: say her own price back to her, the old way, and ask for nothing more." He drinks. "Folk say a lot of things."
+> Nod your thanks → regulars  #ok
 
 # rumor-tactics
 back: true
@@ -223,7 +233,35 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 ? not spy-seen | "Don't look at me like that. If I knew his face, he'd be there already. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
 ? not spy-seen; not know-spy; not mira-read | "Or ask {mira} at the {wander-inn}. She hears everything."
 ? spy-seen | "And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road's yours."
+> [Deception DC 13] "Reeve's business. Stand aside." → gate-slipped  #bluff
+  once hide
+  do +den-alarm
+  check deception 13 → gate-bluff-called
+  fail do -den-alarm
+> [Stealth DC 12] Go over the wall after dark → gate-slipped  #wall
+  once hide
+  do +den-alarm; day
+  check stealth 12 → gate-wall-caught
+  fail do -den-alarm; day
 > Back into the square → square/city  #ok
+
+# gate-bluff-called
+noBack: true
+art: loc-village 🚧
+The warden looks at you for a long moment. "The reeve's business," he says. "The reeve was in my guardhouse an hour ago, and he never mentioned you." The spear stays where it is.
+> Back into the square → square/city  #ok
+
+# gate-wall-caught
+noBack: true
+art: loc-village 🌙
+You find a low stretch of the wall, but the watch walks it more often than you bargained for. A lantern swings your way, and you spend the rest of the night in a barn, waiting for it to go away.
+> Back into the square at first light → square/city  #ok
+
+# gate-slipped
+noBack: true
+art: loc-road 🌙
+You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddler is still at his stall, and the {ashfang} will hear of you before you ever see their smoke.
+> Set out on the marsh road → road-out  #go
 
 # mill
 kind: dialogue
@@ -233,8 +271,18 @@ The mill's sails hang still, and the miller meets you at a barred door with a bo
 "Clear them out and there's coin in it. Just — don't let the ugly things *touch* you."
 again:
 {osk} the miller still has his boat-hook in both hands. "Back, are you? The ugly things are still in my hedgerows, and my grain's still standing."
+> [Nature DC 13] Smoke them out of the hedge with green wood → mill-smoked  #smoke
+  once hide
+  check nature 13 → mill-fight
 > Beat the hedgerows → mill-fight  #help
 > Leave him to his hedgerows → square/city  #later
+
+# mill-smoked
+noBack: true
+art: 🌾
+You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
+> Back to the square → square/city  #ok
+  do +mill-saved; gold 35; xp avoided cockatrice-flock
 
 # mill-fight
 kind: battle

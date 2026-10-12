@@ -229,7 +229,17 @@ Something gold catches your light in the dark below. So does something that move
 again:
 The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.
 > Go down into the dark → barrow-fight  #in
+> [Religion DC 13] Say the old words over the capstone, and close it → barrow-settled  #settle
+  once hide
+  check religion 13 → barrow-fight
 > Leave the dead their peace → @hub  #leave
+
+# barrow-settled
+noBack: true
+art: 🪦
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+> Back to the trail → @hub  #ok
+  do +barrow-cleared; xp avoided barrow-haunt
 
 # barrow-fight
 kind: battle
@@ -249,7 +259,17 @@ Something spins here, and it has been eating well off the {ashfang}'s road. But 
 again:
 The grey webs still sheet the reeds, and the man-shaped bundles still hang in them. The spinners have not gone anywhere.
 > Cut your way in → thicket-fight  #in
+> [Survival DC 12] Fire the dry reeds upwind, and let the webs burn → thicket-burned  #burn
+  once hide
+  check survival 12 → thicket-fight
 > Give the webs a wide berth → @hub  #leave
+
+# thicket-burned
+noBack: true
+art: 🔥
+You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
+> Back to the trail → @hub  #ok
+  do +thicket-cleared; xp avoided spiders
 
 # thicket-fight
 kind: battle

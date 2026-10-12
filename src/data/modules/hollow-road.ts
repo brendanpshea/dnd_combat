@@ -36,7 +36,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   cover: 'loc-village',
   levelBand: { from: 1, to: 3 },
   places: {
-    'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
+    'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'den-alarm', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
   },
   towns: {
     square: {
@@ -55,10 +55,12 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
             event: { scene: 'spy-confront', until: [{ kind: 'flag', flag: 'spy-caught' }], when: [
               { if: [{ kind: 'visited', scene: 'spy-confront' }], to: 'spy-confront' },
               { if: [{ kind: 'flag', flag: 'know-spy' }], to: 'spy-stalk' }] } },
-          // Shut until the peddler is caught; the road out fought once.
+          // Shut until the peddler is caught, or the party got out another
+          // way and the den knows it (`den-alarm`); the road out fought once.
           { label: 'The Marsh Road', replaces: 'gate', icon: 'tok-gate', text: [], event: { scene: 'trailhead', when: [
-            { if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-blocked' },
-            { if: [{ kind: 'visited', scene: 'trail' }], to: 'trailhead-clear' }] } },
+            { if: [{ kind: 'notFlag', flag: 'spy-caught' }, { kind: 'notFlag', flag: 'den-alarm' }], to: 'gate-blocked' },
+            { if: [{ kind: 'visited', scene: 'trail' }], to: 'trailhead-clear' },
+            { if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-slipped' }] } },
         ],
       },
       onLeave: { to: 'trailhead' },

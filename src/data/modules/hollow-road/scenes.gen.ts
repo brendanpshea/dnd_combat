@@ -107,7 +107,7 @@ export const SCENES: Record<string, Scene> = {
     lines: [
       "Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you'll do.",
       "\"Sellswords. Good. You read my note, then.\" **{mira}** doesn't smile. She hasn't since the raids began. \"The reeve's too proud to beg, so I wrote it for him. Sit.\"",
-      "\"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon, and none of them will say why.\"",
+      "\"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon. Six, by my count, and none of them will say why.\"",
       "\"And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left.\"",
       "\"Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter's boy once. Years back, the spring the marsh rose, his mother's house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there's more, the kind no one says with the door open.\" She sets the cup down.",
     ],
@@ -123,7 +123,7 @@ export const SCENES: Record<string, Scene> = {
               id: "q-main",
               kind: "quest",
               title: "Break the {ashfang}",
-              body: "{mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them.",
+              body: "{mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them. The reed-cutters count six nights to the dark of the moon.",
               stages: [
                 { text: "Find the {ashfang} den", done: [{ kind: "visited", scene: "gate" }] },
                 {
@@ -199,7 +199,7 @@ export const SCENES: Record<string, Scene> = {
     variant: "long",
     next: "tavern",
     intro: [
-      "You take a room above the taproom, bolt the door, and sleep straight through until the smell of {mira}'s bread comes up the stairs. Your wounds have closed, and your head is clear.",
+      "You take a room above the taproom, bolt the door, and sleep straight through until the smell of {mira}'s bread comes up the stairs. Your wounds have closed, and your head is clear. Out of the window, the old moon is a little thinner than it was.",
     ],
   },
   "tavern-spy": {
@@ -229,6 +229,7 @@ export const SCENES: Record<string, Scene> = {
               stages: [{ text: "Catch the peddler, quietly if you can", done: [{ kind: "flag", flag: "spy-caught" }] }],
               takenBy: "know-spy",
               resolvedBy: "spy-caught",
+              failedBy: "den-alarm",
             },
           },
         ],
@@ -300,8 +301,25 @@ export const SCENES: Record<string, Scene> = {
       },
       { id: "magic", label: "Ask the hedge-witch about working spells", to: "rumor-magic", once: true },
       { id: "weapons", label: "Ask the caravan veteran about her axe", to: "rumor-weapons", once: true },
+      {
+        id: "reeds",
+        label: "Ask the old reed-cutter about the lady in the water",
+        to: "rumor-reeds",
+        once: true,
+      },
       { id: "back", label: "Leave them to their ale", to: "tavern" },
     ],
+  },
+  "rumor-reeds": {
+    id: "rumor-reeds",
+    kind: "story",
+    back: true,
+    art: { emoji: "🌾" },
+    text: [
+      "At the end of the bench an old reed-cutter sits with his hands round his cup, the fingers scarred white from a lifetime of sedge. He does not look up. \"The lady in the water. My gran left her a {door-price} every {door-midwinter}, at the edge of the reeds, and so did hers. One a winter, for sitting by our door in the dark. That was the bargain, and the fen kept it.\"",
+      "\"Then the spring the water rose, the bargain went wrong somewhere, and nobody's left a {door-price} since. Folk say she's owed. Folk say you can hold her like that: say her own price back to her, the old way, and ask for nothing more.\" He drinks. \"Folk say a lot of things.\"",
+    ],
+    next: [{ id: "ok", label: "Nod your thanks", to: "regulars" }],
   },
   "rumor-tactics": {
     id: "rumor-tactics",
@@ -556,7 +574,67 @@ export const SCENES: Record<string, Scene> = {
         text: "\"And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you.\" He jerks his chin at the stall by the market. \"Bring him in, and the road's yours.\"",
       },
     ],
+    next: [
+      {
+        id: "bluff",
+        label: "[Deception DC 13] \"Reeve's business. Stand aside.\"",
+        to: "gate-slipped",
+        once: true,
+        hideWhenBlocked: true,
+        effects: [{ kind: "setFlag", flag: "den-alarm" }],
+        check: {
+          skill: "deception",
+          dc: 13,
+          failTo: "gate-bluff-called",
+          failEffects: [{ kind: "clearFlag", flag: "den-alarm" }],
+        },
+      },
+      {
+        id: "wall",
+        label: "[Stealth DC 12] Go over the wall after dark",
+        to: "gate-slipped",
+        once: true,
+        hideWhenBlocked: true,
+        effects: [{ kind: "setFlag", flag: "den-alarm" }, { kind: "passDay" }],
+        check: {
+          skill: "stealth",
+          dc: 12,
+          failTo: "gate-wall-caught",
+          failEffects: [{ kind: "clearFlag", flag: "den-alarm" }, { kind: "passDay" }],
+        },
+      },
+      { id: "ok", label: "Back into the square", to: "square/city" },
+    ],
+  },
+  "gate-bluff-called": {
+    id: "gate-bluff-called",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-village", emoji: "🚧" },
+    text: [
+      "The warden looks at you for a long moment. \"The reeve's business,\" he says. \"The reeve was in my guardhouse an hour ago, and he never mentioned you.\" The spear stays where it is.",
+    ],
     next: [{ id: "ok", label: "Back into the square", to: "square/city" }],
+  },
+  "gate-wall-caught": {
+    id: "gate-wall-caught",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-village", emoji: "🌙" },
+    text: [
+      "You find a low stretch of the wall, but the watch walks it more often than you bargained for. A lantern swings your way, and you spend the rest of the night in a barn, waiting for it to go away.",
+    ],
+    next: [{ id: "ok", label: "Back into the square at first light", to: "square/city" }],
+  },
+  "gate-slipped": {
+    id: "gate-slipped",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-road", emoji: "🌙" },
+    text: [
+      "You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddler is still at his stall, and the {ashfang} will hear of you before you ever see their smoke.",
+    ],
+    next: [{ id: "go", label: "Set out on the marsh road", to: "road-out" }],
   },
   "mill": {
     id: "mill",
@@ -571,8 +649,37 @@ export const SCENES: Record<string, Scene> = {
       "{osk} the miller still has his boat-hook in both hands. \"Back, are you? The ugly things are still in my hedgerows, and my grain's still standing.\"",
     ],
     next: [
+      {
+        id: "smoke",
+        label: "[Nature DC 13] Smoke them out of the hedge with green wood",
+        to: "mill-smoked",
+        once: true,
+        hideWhenBlocked: true,
+        check: { skill: "nature", dc: 13, failTo: "mill-fight" },
+      },
       { id: "help", label: "Beat the hedgerows", to: "mill-fight" },
       { id: "later", label: "Leave him to his hedgerows", to: "square/city" },
+    ],
+  },
+  "mill-smoked": {
+    id: "mill-smoked",
+    kind: "story",
+    noBack: true,
+    art: { emoji: "🌾" },
+    text: [
+      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.",
+    ],
+    next: [
+      {
+        id: "ok",
+        label: "Back to the square",
+        to: "square/city",
+        effects: [
+          { kind: "setFlag", flag: "mill-saved" },
+          { kind: "gold", amount: 35 },
+          { kind: "xp", amount: avoidedFightXP("cockatrice-flock") },
+        ],
+      },
     ],
   },
   "mill-fight": {
@@ -1170,7 +1277,35 @@ export const SCENES: Record<string, Scene> = {
     ],
     next: [
       { id: "in", label: "Go down into the dark", to: "barrow-fight" },
+      {
+        id: "settle",
+        label: "[Religion DC 13] Say the old words over the capstone, and close it",
+        to: "barrow-settled",
+        once: true,
+        hideWhenBlocked: true,
+        check: { skill: "religion", dc: 13, failTo: "barrow-fight" },
+      },
       { id: "leave", label: "Leave the dead their peace", to: "@hub" },
+    ],
+  },
+  "barrow-settled": {
+    id: "barrow-settled",
+    kind: "story",
+    noBack: true,
+    art: { emoji: "🪦" },
+    text: [
+      "You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.",
+    ],
+    next: [
+      {
+        id: "ok",
+        label: "Back to the trail",
+        to: "@hub",
+        effects: [
+          { kind: "setFlag", flag: "barrow-cleared" },
+          { kind: "xp", amount: avoidedFightXP("barrow-haunt") },
+        ],
+      },
     ],
   },
   "barrow-fight": {
@@ -1205,7 +1340,32 @@ export const SCENES: Record<string, Scene> = {
     ],
     next: [
       { id: "in", label: "Cut your way in", to: "thicket-fight" },
+      {
+        id: "burn",
+        label: "[Survival DC 12] Fire the dry reeds upwind, and let the webs burn",
+        to: "thicket-burned",
+        once: true,
+        hideWhenBlocked: true,
+        check: { skill: "survival", dc: 12, failTo: "thicket-fight" },
+      },
       { id: "leave", label: "Give the webs a wide berth", to: "@hub" },
+    ],
+  },
+  "thicket-burned": {
+    id: "thicket-burned",
+    kind: "story",
+    noBack: true,
+    art: { emoji: "🔥" },
+    text: [
+      "You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.",
+    ],
+    next: [
+      {
+        id: "ok",
+        label: "Back to the trail",
+        to: "@hub",
+        effects: [{ kind: "setFlag", flag: "thicket-cleared" }, { kind: "xp", amount: avoidedFightXP("spiders") }],
+      },
     ],
   },
   "thicket-fight": {
@@ -1472,7 +1632,11 @@ export const SCENES: Record<string, Scene> = {
     onWin: {
       to: "inner",
       text: ["The big one goes down last, folding across the gateway."],
-      effects: [{ kind: "setFlag", flag: "den-entered" }, { kind: "setFlag", flag: "signal-spent" }],
+      effects: [
+        { kind: "setFlag", flag: "den-entered" },
+        { kind: "setFlag", flag: "signal-spent" },
+        { kind: "setFlag", flag: "den-alarm" },
+      ],
     },
     parley: {
       skill: "deception",
@@ -1507,6 +1671,7 @@ export const SCENES: Record<string, Scene> = {
         effects: [
           { kind: "passDay" },
           { kind: "clearFlag", flag: "know-signal" },
+          { kind: "setFlag", flag: "den-alarm" },
           {
             kind: "journal",
             entry: {
@@ -1532,7 +1697,11 @@ export const SCENES: Record<string, Scene> = {
     onWin: {
       to: "inner",
       text: ["The big one goes down last, face-first in the mud at the foot of the wall."],
-      effects: [{ kind: "setFlag", flag: "den-entered" }, { kind: "setFlag", flag: "signal-spent" }],
+      effects: [
+        { kind: "setFlag", flag: "den-entered" },
+        { kind: "setFlag", flag: "signal-spent" },
+        { kind: "setFlag", flag: "den-alarm" },
+      ],
     },
   },
   "den-muster": {
@@ -1592,7 +1761,7 @@ export const SCENES: Record<string, Scene> = {
     assumes: [{ kind: "flag", flag: "captives-taken" }],
     text: [
       "There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.",
-      "The moon has gone dark, and the {reedwife} has come and gone. In the corner lies one small shoe.",
+      "Something has come for them out of the water, and gone again. In the corner lies one small shoe.",
     ],
     next: [{ id: "ok", label: "Back to the den", to: "@hub" }],
   },
@@ -1620,7 +1789,11 @@ export const SCENES: Record<string, Scene> = {
         id: "leave",
         label: "Leave them for the reeve's men",
         to: "den-pens-left",
-        effects: [{ kind: "setFlag", flag: "captives-left" }, { kind: "npc", npc: "wren", attitude: -1 }],
+        effects: [
+          { kind: "setFlag", flag: "captives-left" },
+          { kind: "setFlag", flag: "captives-taken" },
+          { kind: "npc", npc: "wren", attitude: -1 },
+        ],
       },
     ],
   },
@@ -1636,6 +1809,7 @@ export const SCENES: Record<string, Scene> = {
     ],
     onWin: {
       to: "den-pens-freed",
+      effects: [{ kind: "setFlag", flag: "den-alarm" }],
       text: [
         "The last raider falls against the stakes, and no one else comes. Across the yard someone laughs at the noise and goes back to his dice.",
       ],
@@ -1645,7 +1819,7 @@ export const SCENES: Record<string, Scene> = {
       text: [
         "You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.",
       ],
-      effects: [{ kind: "setFlag", flag: "captives-taken" }],
+      effects: [{ kind: "setFlag", flag: "captives-taken" }, { kind: "setFlag", flag: "den-alarm" }],
     },
   },
   "den-pens-freed": {
@@ -1697,6 +1871,22 @@ export const SCENES: Record<string, Scene> = {
         { kind: "addItem", itemId: "potion-healing", qty: 1 },
       ],
     },
+    parley: {
+      skill: "animal-handling",
+      dc: 12,
+      label: "Throw them the meat off the cook fire",
+      refused: ["The pack goes for the meat and then for you, in that order, and not for long in the first."],
+      success: {
+        to: "@hub",
+        text: [
+          "The pack falls on the meat, snarling at each other instead of you, and you step round them to the gate. Their keeper dropped his key ring as he ran. One key fits the plunder tent.",
+        ],
+        effects: [
+          { kind: "setFlag", flag: "kennel-cleared" },
+          { kind: "xp", amount: avoidedFightXP("kennel-hyenas") },
+        ],
+      },
+    },
   },
   "den-cache": {
     id: "den-cache",
@@ -1738,6 +1928,10 @@ export const SCENES: Record<string, Scene> = {
       {
         if: [{ kind: "notFlag", flag: "pens-found" }, { kind: "flag", flag: "captives-taken" }],
         text: "Before you can answer, he tips his head back toward the kennels. \"There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark.\" He looks into his fire. \"Go and look, if you want to know what the chief sold.\"",
+      },
+      {
+        if: [{ kind: "flag", flag: "den-alarm" }],
+        text: "\"Not tonight, though.\" He doesn't take his eyes off the fire. \"The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them.\"",
       },
     ],
     next: [...[VEX_OFFERS(true)].flat(), ...[VEX_OFFERS(false)].flat()],
@@ -1859,6 +2053,10 @@ export const SCENES: Record<string, Scene> = {
         if: [{ kind: "flag", flag: "vargan-shaken" }],
         text: "He keeps his branded hand shut in a fist. His eyes keep going back to it.",
       },
+      {
+        if: [{ kind: "flag", flag: "den-alarm" }],
+        text: "The hall is full of raiders who heard you coming, and none of them is sitting down.",
+      },
     ],
     next: [
       {
@@ -1922,6 +2120,34 @@ export const SCENES: Record<string, Scene> = {
         },
       },
       ...[turnUnread([{ kind: 'notFlag', flag: 'vargan-shaken' }])].flat(),
+      {
+        id: "turn-carter",
+        label: "[Persuasion DC 10] \"The carter's girl is home. Your mother's house is still under the water.\"",
+        to: "vargan-turns",
+        hideWhenBlocked: true,
+        attempt: "turn",
+        requires: [
+          { kind: "flag", flag: "pens-settled" },
+          { kind: "notFlag", flag: "captives-taken" },
+          { kind: "npc", npc: "vex", notFate: ["turned"] },
+          { kind: "notFlag", flag: "vargan-shaken" },
+        ],
+        check: { skill: "persuasion", dc: 10, failTo: "boss" },
+      },
+      {
+        id: "turn-carter-alone",
+        label: "[Persuasion DC 10] \"The carter's girl is home. Your mother's house is still under the water.\"",
+        to: "vargan-turns-alone",
+        hideWhenBlocked: true,
+        attempt: "turn",
+        requires: [
+          { kind: "flag", flag: "pens-settled" },
+          { kind: "notFlag", flag: "captives-taken" },
+          { kind: "npc", npc: "vex", fate: "turned" },
+          { kind: "notFlag", flag: "vargan-shaken" },
+        ],
+        check: { skill: "persuasion", dc: 10, failTo: "boss-unguarded" },
+      },
       {
         id: "turn-shaken",
         label: "[Persuasion DC 10] \"She owns you too. Help us end her.\"",
