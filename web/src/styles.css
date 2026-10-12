@@ -4695,3 +4695,26 @@ button.category .count {
 .delve-require { display: flex; flex-direction: column; gap: 2px; }
 .delve-require textarea { width: 100%; box-sizing: border-box; font: 12px/1.3 ui-monospace, monospace; }
 .delve-error { color: var(--red, #e66); }
+/* Delve preview (?dev=recipes) */
+.dp { padding: 16px; max-width: 1400px; margin: 0 auto; }
+.dp-spec { width: 100%; box-sizing: border-box; font: 12px/1.35 ui-monospace, monospace; }
+.dp-row { display: flex; gap: 8px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+.dp-row input { width: 6em; }
+.dp-sum { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.dp-card { display: flex; flex-direction: column; gap: 4px; padding: 8px; border: 1px solid #ffffff22; border-radius: 8px; min-width: 0; }
+.dp-map { width: 100%; height: auto; background: #00000030; border-radius: 6px; }
+.dp-corr { fill: none; stroke: #8a7d63; stroke-width: 4; }
+.dp-corr.locked { stroke: #d65a4a; }
+.dp-corr.secret { stroke-dasharray: 3 4; }
+.dp-corr.oneway { stroke: #c9a24a; stroke-dasharray: 8 3; }
+.dp-corr.ambush { stroke: #a0617a; }
+.dp-room rect { fill: #3a3f52; stroke: #ffffff40; }
+.dp-room.fight rect { fill: #5a3a3a; }
+.dp-room.piece rect { fill: #3f6db0; }
+.dp-room.goal rect { fill: #b08a2f; }
+.dp-room.safe rect { fill: #3d8a5a; }
+.dp-room.entry rect { fill: #777; }
+.dp-key i { display: inline-block; width: 10px; height: 10px; margin: 0 3px 0 8px; border-radius: 2px; }
+.dp-key .piece { background: #3f6db0; } .dp-key .goal { background: #b08a2f; } .dp-key .safe { background: #3d8a5a; }
+.dp-key .fight { background: #5a3a3a; } .dp-key .locked-k { background: #d65a4a; } .dp-key .secret-k { border: 1px dashed #8a7d63; }
