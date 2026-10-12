@@ -63,7 +63,10 @@ describe('a shop that catches you', () => {
     const s = inTown(4, m);
     stealUntilCaught(s, m, 'armorer');
     const before = JSON.stringify(s.campaign.characters.map((c) => c.inventory));
-    for (let i = 0; i < 10; i++) { enterScene(s, m, 'armorer'); expect(s.sceneId).toBe('city'); }
+    // Back out onto the armourer's own street: a city's quarter, not its map.
+    const street = (m.scenes.armorer as { next: string }).next;
+    expect(street).toMatch(/^quarter-/);
+    for (let i = 0; i < 10; i++) { enterScene(s, m, 'armorer'); expect(s.sceneId).toBe(street); }
     expect(JSON.stringify(s.campaign.characters.map((c) => c.inventory))).toBe(before);
   });
 });

@@ -24,7 +24,7 @@ import { classScrollPool } from '../data/classes.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { ITEMS } from '../data/items.js';
-import { CAUGHT_STEALING, NIGHT, type Effect, type ExploreNode, type Module, type NpcRef, type Requirement, type Scene } from './types.js';
+import { CAUGHT_STEALING, NIGHT, type Effect, type ExploreMap, type ExploreNode, type Module, type NpcRef, type Requirement, type Scene } from './types.js';
 import type { EncounterBrief } from '../arena/encounter.js';
 import { generateEncounter } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
@@ -130,7 +130,7 @@ const BY_SIZE: Record<CitySize, { districts: DistrictKind[]; venues: VenueKind[]
   city: {
     districts: ['market', 'temple-quarter', 'warrens', 'gatehouse'],
     venues: ['inn', 'inn', 'general', 'armorer', 'weaponsmith', 'mage-guild', 'temple', 'thieves-guild', 'notice-board', 'gate'],
-    extra: [2, 4],
+    extra: [4, 7],
   },
 };
 
@@ -147,6 +147,16 @@ const HOME: Record<VenueKind, DistrictKind[]> = {
   'notice-board': ['gatehouse', 'market', 'green'],
   landmark: ['temple-quarter', 'warrens', 'market', 'green'],
   gate: ['gatehouse', 'green'],
+};
+
+/** A quarter, as the city's map shows it. */
+const QUARTER: Record<DistrictKind, { label: string; icon: string }> = {
+  market: { label: 'The Market', icon: 'tok-market' },
+  'temple-quarter': { label: 'Temple Quarter', icon: 'tok-temple' },
+  warrens: { label: 'The Warrens', icon: 'tok-house' },
+  gatehouse: { label: 'Gatehouse', icon: 'tok-gate' },
+  'noble-hill': { label: 'Noble Hill', icon: 'tok-lookout' },
+  green: { label: 'The Green', icon: 'tok-tree' },
 };
 
 /** District centres on the map (percent), by how many districts there are. */
@@ -184,6 +194,14 @@ const LANDMARKS: [string, string, string][] = [
   ['Market Cross', 'tok-crossing', 'A stone cross, worn faceless, where the roads meet. Folk touch it for luck as they pass and do not seem to know they are doing it.'],
   ['Hanging Tree', 'tok-tree', 'An oak with one bough worn smooth by rope. Nobody stands under it for long.'],
   ['Founder\'s Statue', 'tok-figure', 'A founder nobody now can name, holding up a sword that has been stolen and replaced with a broom handle.'],
+  ['Old Gallows', 'tok-danger', 'Two posts and a beam, the rope long gone. Children dare each other to touch it.'],
+  ['Horse Fair', 'tok-market', 'A muddy yard of pens and shouting, where a horse changes hands for twice what it is worth.'],
+  ['Bell Tower', 'tok-lookout', 'A tower with no bell in it. The story of where it went changes with whoever is telling it.'],
+  ['Stone Fountain', 'tok-well', 'A fountain whose water comes out cold in summer and warm in winter, and nobody knows why.'],
+  ['Burnt House', 'tok-ruin', 'A black shell of a house nobody has rebuilt. The neighbours do not say what happened.'],
+  ['Old Bridge', 'tok-bridge', 'A hump-backed bridge over a ditch that was a river once. Coins glint in the mud below.'],
+  ['Herb Garden', 'tok-tree', 'A walled garden of herbs, kept by someone you never quite see. It smells of mint and smoke.'],
+  ['Watchtower', 'tok-lookout', 'A squat tower on the old line of the wall. From the top you can see the roads for miles.'],
 ];
 
 /** Wares, by what kind of shop would sell them. Drawn from the one shop list
@@ -457,7 +475,7 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
   }
   const markers = BY_SIZE[size].venues.length + (spec.venues ?? []).filter((v) => !BY_SIZE[size].venues.includes(v)).length
     + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.length;
-  if (markers > MAX_PLACES) err(`${markers} places; a town holds at most ${MAX_PLACES}`);
+  if (markers > placesFor(size)) err(`${markers} places; a ${size} holds at most ${placesFor(size)}`);
   return {
     size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
     streets: spec.streets ?? size !== 'village',
@@ -477,6 +495,8 @@ export function apart(a: { x: number; y: number }, b: { x: number; y: number }):
 
 /** Most places on one map: past it, a phone screen is a mess of markers. */
 export const MAX_PLACES = 15;
+/** Most places in a town of a size: a city spreads its over its quarters. */
+export const placesFor = (size: CitySize) => (size === 'city' ? MAX_PLACES * 2 : MAX_PLACES);
 
 function draftCity(seed: number, spec: Required<CitySpec>): Module {
   const dice = new Dice(seedRng(seed));
@@ -489,8 +509,9 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   // The author's own markers count against the map's room too.
   const authored = spec.people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + spec.places.length;
   for (const v of spec.venues) if (!kinds.includes(v)) kinds.push(v);
-  for (let i = dice.int(...plan.extra); i > 0 && kinds.length + authored < MAX_PLACES; i--) kinds.push('landmark');
-  if (kinds.length > MAX_PLACES) throw new Error(`Bad city spec: ${kinds.length} places; at most ${MAX_PLACES}`);
+  const most = placesFor(spec.size);
+  for (let i = dice.int(...plan.extra); i > 0 && kinds.length + authored < most; i--) kinds.push('landmark');
+  if (kinds.length > most) throw new Error(`Bad city spec: ${kinds.length} places; at most ${most}`);
 
   // Districts, and each venue to the first of its homes the town has.
   const districts = plan.districts;
@@ -507,12 +528,25 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   for (const c of centres) {
     if (nearestOn(c, ground.streets).d > 10) ground.streets.push(wander(ground.square, c, () => groundDice.float(), 7, 4));
   }
+  /*
+   * A city is too big for one screen: its map shows the quarters, and each
+   * quarter is a street-level map of its own, with the room a whole map
+   * gives. A village or a town stays one map — quick is right for them.
+   */
+  const quartered = spec.size === 'city';
+  const grounds = quartered
+    ? districts.map(() => layGround('town', () => groundDice.float(), { feature: 'crossroads', wall: false }))
+    : [ground];
+  const mapOf = (d: number) => (quartered ? d : 0);
+  const hubOf = (d: number): Id => (quartered ? `quarter-${districts[d]}` : 'city');
   const home = (k: VenueKind) => HOME[k].find((d) => districts.includes(d)) ?? districts[0]!;
-  type Kind = VenueKind | 'person' | 'place';
+  type Kind = VenueKind | 'person' | 'place' | 'way';
   const placed: { id: Id; kind: Kind; d: number; x: number; y: number }[] = [];
   const counts = new Map<VenueKind, number>();
   const put = (id: Id, kind: Kind, d: number) => {
-    const [cx, cy] = kind === 'gate' ? ground.mainGate : centres[d]!;
+    const g = grounds[mapOf(d)]!;
+    const [cx, cy] = kind === 'gate' || (kind === 'way' && districts[d] !== 'gatehouse') ? g.mainGate
+      : quartered ? g.square : centres[d]!;
     /*
      * The free spot nearest the district's centre, from a grid over the whole
      * map, with a little jitter so two towns do not look stamped from one
@@ -525,10 +559,10 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     let best = Infinity;
     for (let x = 14; x <= 86; x += 4) {
       for (let y = 16; y <= 82; y += 3) {
-        if (!placed.every((p) => apart(p, { x, y })) || !dry([x, y], ground)) continue;
+        if (!placed.every((p) => mapOf(p.d) !== mapOf(d) || apart(p, { x, y })) || !dry([x, y], g)) continue;
         // On a street, as shops are — the thieves down a side street.
-        const off = nearestOn([x, y], ground.streets).d;
-        const street = kind === 'gate' ? off / 4 : kind === 'thieves-guild' ? Math.abs(off - 8) / 10 : Math.max(0, off - 4) / 10;
+        const off = nearestOn([x, y], g.streets).d;
+        const street = kind === 'gate' || kind === 'way' ? off / 4 : kind === 'thieves-guild' ? Math.abs(off - 8) / 10 : Math.max(0, off - 4) / 10;
         const score = Math.hypot((x - cx) / 22, (y - cy) / 14) + street + dice.float() * 0.6;
         if (score < best) { best = score; spot = [x, y]; }
       }
@@ -536,11 +570,16 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     if (!spot) throw new Reroll(`no room for ${id}`);
     placed.push({ id, kind, d, x: spot[0], y: spot[1] });
   };
+  // The way back to the city's map first, in every quarter, by the road in.
+  if (quartered) districts.forEach((dk, d) => put(`way-${dk}`, 'way', d));
   // The gate first: it belongs on the road in, wherever else is crowded.
   for (const kind of [...kinds.filter((k) => k === 'gate'), ...kinds.filter((k) => k !== 'gate')]) {
     const n = (counts.get(kind) ?? 0) + 1;
     counts.set(kind, n);
-    put(n === 1 ? kind : `${kind}-${n}`, kind, districts.indexOf(home(kind)));
+    // Landmarks spread round the town's quarters, not all in the first.
+    const homes = HOME[kind].filter((d) => districts.includes(d));
+    const d = kind === 'landmark' && homes.length ? homes[(n - 1) % homes.length]! : home(kind);
+    put(n === 1 ? kind : `${kind}-${n}`, kind, districts.indexOf(d));
   }
   // The author's own: people with a marker of their own, and places.
   for (const p of spec.people) {
@@ -560,7 +599,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   for (const group of byDistrict) {
     for (let i = 1; i < group.length; i++) { const [a, b] = near([group[i]!], group.slice(0, i)); roads.push([a.id, b.id]); }
   }
-  for (let i = 1; i < byDistrict.length; i++) {
+  for (let i = 1; i < byDistrict.length && !quartered; i++) {
     if (!byDistrict[i]!.length) continue;
     const [a, b] = near(byDistrict[i]!, byDistrict.slice(0, i).flat());
     roads.push([a.id, b.id]);
@@ -584,6 +623,8 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   };
   for (const p of placed) {
     if (p.kind === 'person' || p.kind === 'place') continue;
+    if (p.kind === 'way') continue;
+    ctx.hub = hubOf(p.d);
     const v = venue(p.kind, p.id, dice, ctx);
     nodes.push({ ...v.node, x: p.x, y: p.y });
     for (const s of v.scenes) scenes[s.id] = s;
@@ -604,7 +645,8 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
       if (wares?.kind === 'shop') Object.assign(wares, { npc });
       continue;
     }
-    const home = atVenue ? who.at : 'city';
+    const own = placed.find((x) => x.id === id);
+    const home = atVenue ? who.at : hubOf(own?.d ?? 0);
     scenes[id] = { id, kind: 'dialogue', npc, lines: who.lines, ...(atVenue ? { noBack: true } : {}),
       next: [
         ...(who.lead ? [{ id: 'ask', label: `Ask about ${who.lead.title.toLowerCase()}`, to: `${id}-told`, once: true, effects: [leadEffect(who.lead)] }] : []),
@@ -634,9 +676,9 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     const loot: Effect[] = !pl.loot ? [] : pl.loot === 'gold' ? [{ kind: 'gold', amount: 20 * spec.level }] : [{ kind: 'addItem', itemId: pl.loot }];
     scenes[id] = { id, kind: 'story', noBack: true, text: pl.text,
       next: [
-        ...(loot.length ? [{ id: 'take', label: 'Take what is there', to: 'city', once: true, effects: [...loot, ...sets] }] : []),
+        ...(loot.length ? [{ id: 'take', label: 'Take what is there', to: hubOf(p.d), once: true, effects: [...loot, ...sets] }] : []),
         ...(pl.way ? [{ id: 'on', label: pl.way.label ?? `Go on, past the ${pl.label.toLowerCase()}`, to: pl.way.to, ...(sets.length ? { effects: sets } : {}) }] : []),
-        { id: 'leave', label: 'Walk on', to: 'city', ...(sets.length ? { effects: sets } : {}) },
+        { id: 'leave', label: 'Walk on', to: hubOf(p.d), ...(sets.length ? { effects: sets } : {}) },
       ] };
     const node: ExploreNode = { id, label: pl.label, icon: pl.icon ?? 'tok-mystery', scene: id, x: p.x, y: p.y,
       ...(pl.hidden ? { hidden: { dc: pl.hidden } } : {}),
@@ -667,18 +709,59 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
       }, seedRng(Math.floor(dice.float() * 2 ** 31))).value;
       scenes[bid] = { id: bid, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: 'village',
         intro: ['Someone steps out of an alley ahead of you, and then someone else, behind.'], onWin: { to: 'city' } };
+      const at = placed.find((x) => x.id === n.id)!;
+      (scenes[bid] as { onWin: { to: Id } }).onWin.to = hubOf(at.d);
       n.wandering = { chance: 0.25, battleScene: bid };
     }
   }
   const entry = placed.find((p) => p.kind === 'gate') ?? placed[0]!;
+  // The way back up, in each quarter.
+  for (const p of placed) {
+    if (p.kind === 'way') nodes.push({ id: p.id, label: 'City map', icon: 'tok-tracks', scene: 'city', x: p.x, y: p.y });
+  }
+  /** One map's markers, roads and ground. */
+  function mapFor(m: number, title: string, at: Id): ExploreMap {
+    const g = grounds[m]!;
+    const mine = new Set(placed.filter((p) => mapOf(p.d) === m).map((p) => p.id));
+    const ns = nodes.filter((n) => mine.has(n.id));
+    return {
+      title, theme: 'village', art: { emoji: '🏘️' }, entry: [at], nodes: ns,
+      roads: roads.filter(([a, b]) => mine.has(a) && mine.has(b)),
+      ground: { feature: g.feature, ...(g.water ? { water: g.water } : {}), ...(g.wall ? { wall: g.wall } : {}),
+        streets: [...g.streets, ...ns.flatMap((n) => { const l = laneTo([n.x, n.y], g); return l ? [l] : []; })] },
+    };
+  }
+  /** A city's own map: its quarters, where its streets meet them. */
+  function cityOfQuarters(): ExploreMap {
+    const qs: ExploreNode[] = [];
+    districts.forEach((dk, d) => {
+      const [cx, cy] = centres[d]!;
+      let spot: [number, number] = [cx, cy]; let best = Infinity;
+      for (let x = 14; x <= 86; x += 4) for (let y = 16; y <= 82; y += 3) {
+        if (!qs.every((q) => apart(q, { x, y })) || !dry([x, y], ground)) continue;
+        const score = Math.hypot((x - cx) / 22, (y - cy) / 14) + nearestOn([x, y], ground.streets).d / 6;
+        if (score < best) { best = score; spot = [x, y]; }
+      }
+      qs.push({ id: `to-${dk}`, label: QUARTER[dk].label, icon: QUARTER[dk].icon, scene: hubOf(d), x: spot[0], y: spot[1] });
+    });
+    return {
+      title: town, theme: 'village', art: { emoji: '🏰' }, entry: [`to-gatehouse`], nodes: qs,
+      ground: { feature: ground.feature, ...(ground.water ? { water: ground.water } : {}), ...(ground.wall ? { wall: ground.wall } : {}),
+        streets: [...ground.streets, ...qs.flatMap((n) => { const l = laneTo([n.x, n.y], ground); return l ? [l] : []; })] },
+    };
+  }
   Object.assign(scenes, {
     start: { id: 'start', kind: 'story', text: [`${town} comes into sight: ${spec.size === 'village' ? 'a few roofs and a green' : spec.size === 'town' ? 'a market town behind a low wall' : 'walls, towers, and the smoke of a thousand chimneys'}.`],
       next: [{ id: 'in', label: `Go into ${town}`, to: 'city', effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
-    city: { id: 'city', kind: 'explore', map: { title: town, theme: 'village', art: { emoji: '🏘️' }, entry: [entry.id], roads, nodes,
-      ground: { feature: ground.feature, ...(ground.water ? { water: ground.water } : {}), ...(ground.wall ? { wall: ground.wall } : {}),
-        streets: [...ground.streets, ...nodes.flatMap((n) => { const l = laneTo([n.x, n.y], ground); return l ? [l] : []; })] } } },
+    city: { id: 'city', kind: 'explore', map: quartered ? cityOfQuarters() : mapFor(0, town, entry.id) },
     left: { id: 'left', kind: 'ending', outcome: 'victory', text: [`${town} falls away behind you.`] },
   } satisfies Record<Id, Scene>);
+  if (quartered) {
+    districts.forEach((dk, d) => {
+      const id = hubOf(d);
+      scenes[id] = { id, kind: 'explore', map: mapFor(d, `${town} · ${QUARTER[dk].label}`, dk === 'gatehouse' ? 'gate' : `way-${dk}`) };
+    });
+  }
   // Somewhere to come to after a beating — only in a town with a fight in it.
   const fights = Object.values(scenes).some((x) => x.kind === 'battle');
   if (fights) {

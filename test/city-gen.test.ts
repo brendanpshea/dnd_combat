@@ -12,10 +12,13 @@ import { WEAPONS } from '../src/data/weapons.js';
 import { ITEMS } from '../src/data/items.js';
 import type { ExploreMap, Module, Scene } from '../src/adventure/types.js';
 
+/** Every map a town has: one, or a city's map of quarters and each quarter's. */
+const mapsOf = (m: Module): ExploreMap[] => Object.values(m.scenes).flatMap((s) => (s.kind === 'explore' ? [s.map] : []));
+/** The town's places, wherever they stand: every marker but the ways between maps. */
 const mapOf = (m: Module): ExploreMap => {
-  const s = m.scenes.city;
-  if (s?.kind !== 'explore') throw new Error('no city map');
-  return s.map;
+  const maps = mapsOf(m);
+  if (!maps.length) throw new Error('no city map');
+  return { ...maps[0]!, nodes: maps.flatMap((x) => x.nodes).filter((n) => !/^(way|to)-/.test(n.id)) };
 };
 type Shop = Extract<Scene, { kind: 'shop' }>;
 const shop = (m: Module, id: string): Shop => {
@@ -40,7 +43,9 @@ describe('a generated town', () => {
     const [v, t, c] = CITY_SIZES.map(count);
     expect(Math.max(...v!)).toBeLessThan(Math.min(...c!));
     expect(Math.min(...t!)).toBeGreaterThan(Math.max(...v!) - 1);
-    for (const n of [...v!, ...t!, ...c!]) expect(n).toBeLessThanOrEqual(MAX_PLACES);
+    for (const n of [...v!, ...t!]) expect(n).toBeLessThanOrEqual(MAX_PLACES);
+    // A city has room on each quarter's map, not one screen for the lot.
+    for (let i = 1; i <= 20; i++) for (const map of mapsOf(generateCity(i, { size: 'city' }).module)) expect(map.nodes.length).toBeLessThanOrEqual(MAX_PLACES);
   });
 
   it('builds the venues a spec asks for, even in a village', () => {
@@ -51,8 +56,7 @@ describe('a generated town', () => {
   });
 
   it('lays its markers out on the map, apart, and joined by roads', () => {
-    for (const size of CITY_SIZES) for (let seed = 1; seed <= 20; seed++) {
-      const map = mapOf(generateCity(seed, { size }).module);
+    for (const size of CITY_SIZES) for (let seed = 1; seed <= 20; seed++) for (const map of mapsOf(generateCity(seed, { size }).module)) {
       for (const n of map.nodes) {
         expect(n.x).toBeGreaterThanOrEqual(14); expect(n.x).toBeLessThanOrEqual(86);
         expect(n.y).toBeGreaterThanOrEqual(16); expect(n.y).toBeLessThanOrEqual(82);
@@ -65,7 +69,9 @@ describe('a generated town', () => {
       for (const n of map.nodes) expect(n.label.length, n.label).toBeLessThanOrEqual(20);
       // No two markers with the same name (two "Market Cross"es, once).
       expect(new Set(map.nodes.map((n) => n.label)).size, `${size} seed ${seed}`).toBe(map.nodes.length);
-      // One town, not islands: every marker reachable along the roads.
+      // One town, not islands: every marker reachable along the roads. (A
+      // city's map of quarters is all ways in, and its streets join them.)
+      if (map.nodes.every((n) => n.id.startsWith('to-'))) continue;
       const seen = new Set([map.nodes[0]!.id]);
       for (let grew = true; grew;) {
         grew = false;

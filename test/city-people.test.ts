@@ -26,7 +26,14 @@ const SPEC: CitySpec = {
   rumours: [{ text: 'They say the old chapel has lights in it at night.', lead: { title: 'Lights in the Chapel', text: 'Lights, at night.', flag: 'saw-chapel' } }],
 };
 
-const mapOf = (m: Module): ExploreMap => { const s = m.scenes.city; if (s?.kind !== 'explore') throw new Error(); return s.map; };
+/** Every map a town has: one, or a city's map of quarters and each quarter's. */
+const mapsOf = (m: Module): ExploreMap[] => Object.values(m.scenes).flatMap((s) => (s.kind === 'explore' ? [s.map] : []));
+/** The town's places, wherever they stand: every marker but the ways between maps. */
+const mapOf = (m: Module): ExploreMap => {
+  const maps = mapsOf(m);
+  if (!maps.length) throw new Error('no city map');
+  return { ...maps[0]!, nodes: maps.flatMap((x) => x.nodes).filter((n) => !/^(way|to)-/.test(n.id)) };
+};
 const dialogue = (m: Module, id: string) => { const s = m.scenes[id]; if (s?.kind !== 'dialogue') throw new Error(`no dialogue '${id}'`); return s; };
 const node = (m: Module, id: string) => mapOf(m).nodes.find((n) => n.id === id)!;
 
@@ -157,7 +164,8 @@ describe('what the author cannot ask for', () => {
       [{ people: [{ name: 'X', at: 'inn', lines: ['a'] }, { name: 'x', at: 'temple', lines: ['b'] }] }, /two people called/],
       [{ places: [{ label: 'P', text: ['t'], fight: 'no-such-fight' }] }, /no encounter/],
       [{ people: [{ name: 'X', at: 'inn', lines: ['a'], when: ['met-x'] }] }, /'met-x', which nothing in the town sets/],
-      [{ size: 'city', places: Array.from({ length: 6 }, (_, i) => ({ label: `P${i}`, text: ['t'] })) }, /at most 15/],
+      [{ size: 'town', places: Array.from({ length: 7 }, (_, i) => ({ label: `P${i}`, text: ['t'] })) }, /at most 15/],
+      [{ size: 'city', places: Array.from({ length: 21 }, (_, i) => ({ label: `P${i}`, text: ['t'] })) }, /at most 30/],
     ];
     for (const [spec, why] of bad) expect(() => checkCitySpec(spec), JSON.stringify(spec)).toThrow(why);
     expect(() => checkCitySpec({ size: 'village', venues: ['mage-guild'], people: [{ name: 'X', at: 'mage-guild', lines: ['hi'] }] })).not.toThrow();

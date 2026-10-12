@@ -289,3 +289,17 @@ near-copies of famous names, unsayable shapes and a short blocklist. A place
 picks one style, so a town sounds like one town; names never repeat within
 it. Only people the player can talk to are named. Bosses get an epithet, and
 beast leaders get a growl name. Preview: `?dev=names`.
+
+## Geography and quarters
+
+`src/adventure/town-map.ts` lays a town's ground before any venue: a river,
+a coast or a crossroads; roads in from the gates to a square; a street for
+each district; a wall round anything bigger than a village. Venues go on
+the streets and off the water (the thieves down a side street, the gate on
+the road in). The map draws it all under its markers (`ExploreMap.ground`,
+visual only).
+
+A city is too big for one phone screen, so its map shows its quarters, and
+each quarter is a street-level map of its own with a "City map" way back
+up. A city holds up to twice the places a town can. Villages and towns stay
+on one map: they are hubs, and quick is right for them.

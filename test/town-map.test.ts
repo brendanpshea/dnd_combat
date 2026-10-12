@@ -53,3 +53,40 @@ describe('a town\'s ground', () => {
     }
   });
 });
+
+describe('a city\'s quarters', () => {
+  const m = generateCity(7, { size: 'city', level: 3 }).module;
+  const explore = (id: string) => { const s = m.scenes[id]; if (s?.kind !== 'explore') throw new Error(id); return s.map; };
+
+  it('puts one marker per quarter on the city\'s own map, the way in at the gatehouse', () => {
+    const top = explore('city');
+    expect(top.nodes.map((n) => n.scene).sort()).toEqual(['quarter-gatehouse', 'quarter-market', 'quarter-temple-quarter', 'quarter-warrens']);
+    expect(top.entry).toEqual(['to-gatehouse']);
+    expect(top.ground?.wall).toBeTruthy();
+  });
+
+  it('gives each quarter a street-level map with a way back up', () => {
+    for (const q of ['market', 'temple-quarter', 'warrens', 'gatehouse']) {
+      const map = explore(`quarter-${q}`);
+      expect(map.nodes.find((n) => n.id === `way-${q}`)?.scene).toBe('city');
+      expect(map.nodes.length).toBeGreaterThan(1);
+    }
+    expect(explore('quarter-gatehouse').nodes.some((n) => n.id === 'gate')).toBe(true);
+  });
+
+  it('sends every shop back out into its own quarter', () => {
+    for (const [qid, s] of Object.entries(m.scenes)) {
+      if (s.kind !== 'explore' || qid === 'city') continue;
+      for (const n of s.map.nodes) {
+        const scene = m.scenes[n.scene];
+        if (scene?.kind === 'shop') expect(scene.next, n.id).toBe(qid);
+      }
+    }
+  });
+
+  it('keeps a village and a town on one map', () => {
+    for (const size of ['village', 'town'] as const) {
+      expect(Object.values(generateCity(3, { size }).module.scenes).filter((s) => s.kind === 'explore')).toHaveLength(1);
+    }
+  });
+});
