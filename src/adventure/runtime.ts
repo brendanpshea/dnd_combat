@@ -923,7 +923,10 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
     : undefined;
   // The hours the walk takes, and the dark coming on while you walk.
   if (leg?.hours) walkHours(state, leg.hours);
-  if (leg?.battles.length) {
+  // The fights for a party of this level, if the leg keeps up with one.
+  const lv = partyLevelOf(state.campaign);
+  const pool = leg?.byLevel?.find((b) => lv >= b.from && (b.to === undefined || lv <= b.to))?.battles ?? leg?.battles;
+  if (leg && pool?.length) {
     const key = [...leg.between].sort().join('|');
     const met = state.legFights?.[key] ?? 0;
     const chance = leg.chance * 0.5 ** met * (dark ? 1.5 : 1);
@@ -931,7 +934,7 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
     const r = rollDie(c.rng, 1000); c.rng = r.state;
     if ((r.value - 1) / 1000 < chance) {
       (state.legFights ??= {})[key] = met + 1;
-      return enterScene(state, module, leg.battles[(r.value + met) % leg.battles.length]!);
+      return enterScene(state, module, pool[(r.value + met) % pool.length]!);
     }
   }
 

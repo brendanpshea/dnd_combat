@@ -138,7 +138,7 @@ export function moduleMap(module: Module): ModuleMap {
         }
         if (s.map.camp?.risky) edge(id, s.map.camp.risky.battleScene, 'danger', 'camp');
         for (const n of s.map.nodes) if (n.camp?.risky) edge(id, n.camp.risky.battleScene, 'danger', `camp at ${n.label}`);
-        for (const l of s.map.legs ?? []) for (const b of l.battles) edge(id, b, 'danger', 'the road');
+        for (const l of s.map.legs ?? []) for (const b of [...l.battles, ...(l.byLevel ?? []).flatMap((b) => b.battles)]) edge(id, b, 'danger', 'the road');
         break;
       case 'dungeon': {
         const d = s.dungeon;

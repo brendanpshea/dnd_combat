@@ -286,6 +286,9 @@ export interface ExploreMap {
    * comes back to the map — the party has arrived.
    */
   legs?: Array<{ between: [Id, Id]; chance: number; battles: SceneRef[];
+    /** Fights for a party of a level, in place of `battles` (which stay the
+     *  fallback): the road keeps up with a party that has grown. */
+    byLevel?: Array<{ from: number; to?: number; battles: SceneRef[] }>;
     /** How long the walk takes: the day wears on, and night falls on the road. */
     hours?: number }>;
   /** A county's lie of the land, drawn under its markers (overland.ts). */

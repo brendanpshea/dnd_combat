@@ -101,3 +101,21 @@ requirement the proofs treat as either-way):
   and will talk; goblins and kobolds bolt and leave their camp to you.
 
 So the goblins that jumped a level-1 party scatter before it at level 3.
+
+## A band of levels (built)
+
+A party starting at level 1 is level 3 before long, and a county built for
+one level is outgrown in an afternoon. So a county is built for a **band**:
+`level` (where the party starts) to `top` (default: two more at levels 1–2,
+where levels come fast and change a party most; one more after).
+
+- **Danger grows with distance.** The ground within 5 miles of the city is
+  a fair fight for the start of the band; it rises to the top by 14 miles,
+  and a level more behind a ridge (`via`). Camps and generated delves are
+  spread from near to far, a camp's band chosen for the level of its
+  ground, a delve built at it; a night in the wild is as dangerous as the
+  ground is far. A party pushing outward meets what it has grown into —
+  and one that wanders too far too soon meets a camp that likes its chances.
+- **The road keeps up.** Each leg carries fights for every level of the
+  band (`legs[].byLevel`); walking it, the party meets the ones for the
+  level it is now.
