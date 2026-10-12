@@ -674,6 +674,54 @@ its bands.
   to the ledger. Passing a ceiling means raising it in the same commit, with
   a reason.
 
+## Writing a chapter as stories
+
+A chapter's scenes can be written as text: `src/data/modules/<chapter>/*.story`,
+with one file per place, read in name order (`1-road.story`, `2-thornwick.story`, …).
+`npm run stories` builds them into `<chapter>/scenes.gen.ts`, which the chapter's
+`.ts` imports. Never edit the built file; a test fails while it is out of date.
+The chapter's `.ts` keeps what isn't scenes: its towns, delves, clock, carries
+and cast. Its `parts.ts` holds pieces several scenes share, which a story names
+as `@NAME` (or `@NAME('args')` for a helper).
+
+```
+# board
+art: 📜
+Here is the reeve's bounty in full, nailed up and gone grey at the edges.
+? not spy-seen | A line shown only while that holds.
+again:
+The reeve's bounty still hangs on the board.
+> Take the reeve's retainer up front → square/city  #ok
+  once
+  do +bounty; gold {bounty-retainer}
+  journal quest c-bounty: The Reeve's Bounty
+    The reeve pays for the chief dead.
+    stage Collect from the reeve | got-bounty
+    taken: bounty
+    resolved: got-bounty
+```
+
+- **Paragraphs:** one per line. They go to the kind's own field (a story's text,
+  a dialogue's lines, a fight's intro) until `again:` or `text:` switches.
+  `? reqs | text` shows a line only when the requirements hold; `?! reqs | text`
+  is what the line assumes.
+- **Choices:** `> label → scene  #id`. The id is what a save remembers, so keep
+  it when you reword a label. Under a choice: `once`, `hide`, `? requirements`,
+  `do effects`, `check skill dc → failTo` with `fail do …`, and `journal` blocks.
+- **Outcomes:** `won →` / `lost →` for fights, `success →` / `failure →` for
+  rolls. Under them go `do …` and their text lines. `parley skill dc > label`
+  and `approach id skill dc > label` take the same parts.
+- **Requirements:** `flag`, `not flag`, `gold N`, `class X`, `with X`,
+  `without X`, `item X`, `visited X`, `at X`, `npc X met`, `npc X fate Y`.
+- **Effects:** `+flag`, `-flag`, `gold N`, `xp N`, `item X x2`, `drop X`,
+  `day`, `join X`, `leave X`, `npc X met fate Y attitude N`.
+- **Numbers:** a number may be a fact's (`{bounty-retainer}`, `-{inn-room}`)
+  or what a fight would have paid (`avoided cutpurses`).
+- **Escape hatch:** anything without a shorthand is written as JSON (`{...}` in
+  a list, or `@key: {...}` for a property).
+- **Comments and literal text:** a line starting `//` is a comment. Start a
+  line of prose with `\` when it would otherwise read as one of the above.
+
 ## Checking your work
 
 Edit against `npm run check:story` (about 30 seconds): the typecheck, every

@@ -23,6 +23,7 @@
     "reference": "tsx scripts/reference.ts",
     "transcripts": "tsx scripts/transcripts.ts",
     "atlas": "tsx scripts/atlas.ts",
+    "stories": "tsx scripts/stories.ts",
     "balance": "tsx scripts/balance.ts",
     "art-registry": "tsx scripts/art-registry.ts",
     "svg-frame": "tsx scripts/svg-item-frame.ts",

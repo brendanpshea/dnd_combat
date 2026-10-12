@@ -1,6 +1,6 @@
 # The Hollow Road: design notes
 
-Why chapter one is built the way it is. The notes moved here from comments in `src/data/modules/hollow-road.ts`, so the chapter reads as story. Each heading names the scene or definition it explains (`scene › part` when it sits inside one).
+Why chapter one is built the way it is. The notes moved here from comments in the chapter's source (now `src/data/modules/hollow-road.ts` and `hollow-road/*.story`), so the chapter reads as story. Each heading names the scene or definition it explains (`scene › part` when it sits inside one).
 
 ## The chapter
 
@@ -433,3 +433,139 @@ pens (a war asset at the Wyrmcalling's council). What became of Wren,
 Vex, Vargan and the Reedwife is NPC state, which every later chapter sees
 without a carry. How each came to it (walked past, cowed, let go) stays
 here.
+
+## Short notes, by scene
+
+The one- and two-line comments that sat inside the scenes before they moved to `hollow-road/*.story`.
+
+- **`road-ambush`**
+  - Losing the very first fight must not skip the arrival in Thornwick (the module's defeat scene wakes you at Mira's hearth before you've met her).
+- **`thornwick`**
+  - === ACT 1 — THORNWICK (village hub) ===================================
+- **`tavern-meet`**
+  - The reeve's two scouts, out on the marsh road: found in time, or not. Given on every road, so proved from every state (no `takenBy`).
+- **`tavern`**
+  - Nothing left to read once the peddler is in the cells.
+  - A paid long rest: cheap, but a real gold sink and the place to re-prepare spells. Gated on having the coin; the effect deducts it before resting.
+- **`board`**
+  - `once` so the reeve's retainer can't be re-claimed by revisiting the board.
+- **`spy-confront`**
+  - A party sent by Mira (`know-spy`) has just looked his stall over in `spy-stalk`.
+  - Worded for a first stalk and for the evening after he saw you creeping up on him (`spy-slipped`, which says so itself).
+  - The whistle has gone up and his crew is closing: no strolling off now. `spy-seen`: he knows their faces, so Mira's quiet-approach tip is stale.
+- **`spy-stalk`**
+  - Mira's lead pays off: the party knows who he is, and he doesn't know them.
+- **`gate-blocked`**
+  - Before the peddler whistled: the warden doesn't know his face.
+  - {mira}'s read is still to be had only while the peddler hasn't shown his hand (the tavern's Insight is gone once he has, or once tried).
+  - After the whistle and the brawl at his stall, the whole square knows.
+- **`mill`**
+  - --- Optional: the mill bounty (Act 1 side fight) ------------------------
+- **`spy-ambush`**
+  - You picked them out first and stood between them and the gate, so nobody gets out to warn the den.
+- **`spy-balked`**
+  - Shouted down: the hired help decides this is not worth dying for.
+- **`spy-slipped`**
+  - A failed stalk: he sees you coming and slips away, and the party loses a day waiting for him to come back to his stall.
+- **`spy-pinched`**
+  - A failed read of the crowd: while you look for his crew, one of them robs you.
+- **`trailhead`**
+  - === ACT 2 — THE MARSH ROAD (wilderness) ==============================
+- **`road-out`**
+  - No milestone on the win: the fight's own XP is the reward. Staring the pack down is the clever way past, and pays what the fight would have.
+- **`tracks`**
+  - The tracks: a Survival roll, easier for a ranger. One try either way.
+- **`tracks-lost`**
+  - `trail-wet`: the hollow's ambush is sprung on the party, no Perception roll.
+- **`hollow-quiet`**
+  - Wren parts at the tree line whichever way the party comes up to it.
+  - Out of the den, or turned back at its wall: the marsh road home.
+- **`ravine`**
+  - Reached only if every line of attack fails (or is spent).
+- **`wounded`**
+  - No stepping back to the map: walking away from her is a choice (`leave`, `scout-walked-past`), never a quiet click that records nothing.
+- **`scout-left`**
+  - Walking past (not `met`): the party never learned her name.
+- **`scout-passed`**
+  - The marker after walking past, before the fifth morning: she's gone, and no telling how.
+- **`wren-parts`**
+  - She came as far as she said she would.
+- **`scout-fail`**
+  - A slip fails forward: she lives, but the bleeding costs the day, and the leg won't carry her through the marsh, so she can't guide.
+- **`scout-gone`**
+  - "Already done" beats: a finished location shows this instead of replaying its full scene (the explore node's sceneWhen routes here once its flag set).
+- **`scout-sent`**
+  - Sent home from here, or gone from the tree line above the hollow.
+- **`barrow`**
+  - --- Optional: the sunken barrow (Act 2 side fight, undead teaser) -------
+- **`thicket`**
+  - --- Optional: the webbed thicket (Act 2 side fight — hard, telegraphed) --
+- **`ambush-wet`**
+  - The wet way in (a failed read at the tracks): no chance to spot them.
+- **`ambush-wren`**
+  - Wren's one trick on the marsh road: she reads the reeds before anyone rolls.
+- **`hollow-won`**
+  - The reveal beat: the lizardfolk didn't choose the raiders — something in the marsh owns them, and now you know its name.
+- **`gate`**
+  - === ACT 3 — THE ASHFANG DEN (dungeon) ================================
+  - `den-entered` is set by every way in (a failed roll clears it again on the way to the gate fight), so a return trip only offers the way back in.
+  - A rogue's bonus: the water-gate's cheap lock, an easy roll and no alarm. One try: a snapped pick leaves the other ways in.
+- **`den-slipped`**
+  - In by the signal or over the wall: past the gate's enforcers without a blow, which earns what beating them would have.
+- **`gate-signal-blown`**
+  - The stolen signal, called wrong: the watch knows it has been sold. The party lies up in the reeds until the den settles, and the signal is gone.
+- **`gate-caught`**
+  - Caught on the wall: the gate-runners are waiting at the bottom of it.
+- **`den-pens-door`**
+  - The clock (see DAWNS): the Reedwife takes her due when the moon goes dark. Until then the pen holds people; after, it holds a shoe.
+- **`den-pens`**
+  - Freeing them is never free: a quiet lock that may fail, or a loud one that brings the watch. Leaving them is final (the event plays once).
+- **`pens-alarm`**
+  - The price of the captives: a hard fight with nothing in its pockets.
+  - The pens are played once: there is no coming back to them, so the fight is seen through, and losing it loses the captives.
+- **`den-pens-freed`**
+  - As with a pen left (`den-pens`): only a Wren who has met the company.
+- **`vex-parley`**
+  - One-way: whatever the party says (or doesn't), Vex has met them.
+- **`vargan-unread`**
+  - The read missed: his hand stays wrapped, and the talk is the harder one.
+- **`boss-approach`**
+  - The first meeting plays once; a party back from falling back or a wipe gets `again`, a short return.
+  - The jailer, planted where every winning route walks: a line that reads as a hag's grumble now and as the whole story in Part 2.
+  - A warlock knows a pact-mark when one sees it: the brand, named on an easier roll.
+  - Back after a wipe with the brand named and the talk not yet tried.
+- **`boss-shaken`**
+  - The same hall with Vargan's brand named: he loses the first round.
+- **`boss-unguarded`**
+  - The same hall with Vex's word kept: his guard finds somewhere else to be.
+- **`boss-unguarded-shaken`**
+  - Vex's guard gone *and* the brand named.
+- **`vargan-turns-alone`**
+  - The binding as a rite (BIND_HAG_RITE), split on Vex's bargain like the fight.
+- **`reedwife-fight`**
+  - The hag fights on without him, with the chief's guard and four raiders.
+  - No falling back: the hall behind you is the one where Vargan turned.
+- **`reedwife-fight-alone`**
+  - The same, with Hask gone: two raiders come in from the yard at her whistle, and her own branded marsh snake with them.
+- **`reedwife-lost`**
+  - Healed, but not a night (sameDay): Vargan's "Get up" is now, and no dawn (the dark moon's included) can come while the hag waits by the fire.
+- **`vargan-fate`**
+  - Turned on the hag: she is dead or bound, and the chief is alive. What becomes of him is the company's call, and the reeve pays only for a chief he gets to see.
+  - Mercy has a price: the reeve pays for a chief he gets to see, not one the company let walk.
+  - Dead is read only by text and the endings, so it is free.
+- **`aftermath`**
+  - What became of Vargan, if the company turned him on the hag.
+  - Let go: he came to pay for a chief, and there is no chief (see below).
+  - Drew the retainer at the board, then let him go (FREE_VARGAN): no sum named, since the loss takes only what the company still has.
+  - Back in Thornwick with the chief dead: there is no den to go back to, and walking into it would leave the ending behind for good.
+- **`aftermath-hub`**
+  - Where each claim comes back to: the same choices, without the homecoming.
+- **`defeat`**
+  - A total party wipe lands here (revived at half HP), not a hard game over — dragged back to Thornwick to lick wounds and try again.
+  - How the company got home, by where it fell (Part 2 has its own).
+  - (Dead, he was beaten first: no fight is left to lose after that.)
+- **`epilogue`**
+  - The town and the marsh, true on every road to here.
+  - Bound to the old price in the hall (BIND_HAG).
+  - Freed, by the company's hand or on {wren}'s word.
+  - Taken by the dark moon, never found, or left too long.

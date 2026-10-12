@@ -6,7 +6,7 @@
  * everywhere (test/canon-trilogy.test.ts checks those instead).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { TRILOGY_NPCS } from '../src/data/modules/npcs.js';
 import { TRILOGY_FACTS } from '../src/data/modules/canon.js';
 
@@ -28,10 +28,17 @@ describe('the trilogy names characters, places and groups only by token', () => 
   });
   for (const chapter of CHAPTERS) {
     it(chapter, () => {
-      const src = code(readFileSync(new URL(`../src/data/modules/${chapter}.ts`, import.meta.url), 'utf8'));
-      const typed = NAMES.flatMap((name) => {
-        const re = new RegExp(`(?<![\\w-])${escape(name)}(?![\\w-])`);
-        return src.split('\n').flatMap((line, i) => (re.test(line) ? [`${i + 1}: ${name}: ${line.trim().slice(0, 100)}`] : []));
+      // The chapter's file, and its folder's stories and parts, where it has one.
+      const dir = new URL(`../src/data/modules/${chapter}/`, import.meta.url);
+      const files = [new URL(`../src/data/modules/${chapter}.ts`, import.meta.url),
+        ...(existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.story') || f === 'parts.ts').map((f) => new URL(f, dir)) : [])];
+      const typed = files.flatMap((file) => {
+        const src = code(readFileSync(file, 'utf8'));
+        const short = file.pathname.split('/modules/')[1];
+        return NAMES.flatMap((name) => {
+          const re = new RegExp(`(?<![\\w-])${escape(name)}(?![\\w-])`);
+          return src.split('\n').flatMap((line, i) => (re.test(line) ? [`${short}:${i + 1}: ${name}: ${line.trim().slice(0, 100)}`] : []));
+        });
       });
       expect(typed).toEqual([]);
     });
