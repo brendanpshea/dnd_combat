@@ -231,6 +231,9 @@ export interface ExploreNode {
   wandering?: { chance: number; battleScene: SceneRef;
     /** The chance after dark instead (rolled again, once, at night). */
     night?: number };
+  /** The party level the place is a fair fight for: the map warns a party
+   *  that has not yet grown into it (⚠️ a level short, ☠️ two). */
+  danger?: number;
   /** Where the party sleeps standing here, in place of the map's own camp:
    *  an inn's village, or the open marsh. */
   camp?: CampRule;

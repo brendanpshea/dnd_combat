@@ -2,7 +2,8 @@
  * Generated towns: places, wares, people, and the road out.
  */
 import { describe, it, expect } from 'vitest';
-import { generateCity, cityFromId, checkCitySpec, apart, CITY_SIZES, MAX_PLACES } from '../src/adventure/city-gen.js';
+import { generateCity, cityFromId, checkCitySpec, apart, forSale, CITY_SIZES, MAX_PLACES } from '../src/adventure/city-gen.js';
+import { SPELLS } from '../src/data/spells.js';
 import { validateModule } from '../src/adventure/validate.js';
 import { runModule } from '../src/adventure/runner.js';
 import { newCampaign, SHOP_STOCK, isPermanentMagic } from '../src/campaign/campaign.js';
@@ -106,9 +107,25 @@ describe('what a town sells', () => {
     expect(shop(m, 'mage-guild').stock!.filter((id) => id.startsWith('scroll-')).length).toBeGreaterThan(30);
   });
 
-  it('a city has every ware the game sells somewhere in it', () => {
-    const sold = new Set(Object.values(m.scenes).flatMap((s) => (s.kind === 'shop' ? s.stock ?? [] : [])));
-    expect(SHOP_STOCK.filter((id) => !sold.has(id))).toEqual([]);
+  it('a city has every ware fit for its level somewhere in it, and nothing past it', () => {
+    const soldIn = (mod: Module) => new Set(Object.values(mod.scenes).flatMap((s) => (s.kind === 'shop' ? s.stock ?? [] : [])));
+    const sold = soldIn(m);
+    expect(SHOP_STOCK.filter((id) => forSale(id, 3) && !sold.has(id))).toEqual([]);
+    expect([...sold].filter((id) => !forSale(id, 3))).toEqual([]);
+    // Stocked for level 9, a city sells everything the game sells.
+    const all = soldIn(generateCity(3, { size: 'city', level: 3, stock: 9 }).module);
+    expect(SHOP_STOCK.filter((id) => !all.has(id))).toEqual([]);
+  });
+
+  it('sells a party only the scrolls it could cast, and the rarer goods later', () => {
+    const spellLevel = (id: string) => { const sp = spellOf(id); return sp ? SPELLS[sp]!.level : 0; };
+    const scrolls = SHOP_STOCK.filter((id) => spellOf(id));
+    expect(Math.max(...scrolls.filter((id) => forSale(id, 1)).map(spellLevel))).toBe(1);
+    expect(Math.max(...scrolls.filter((id) => forSale(id, 3)).map(spellLevel))).toBe(2);
+    expect(Math.max(...scrolls.filter((id) => forSale(id, 5)).map(spellLevel))).toBe(3);
+    expect(forSale('potion-healing', 1)).toBe(true);
+    expect(forSale('potion-greater-healing', 2)).toBe(false);
+    expect(forSale('potion-greater-healing', 3)).toBe(true);
   });
 
   it('hides the guild behind a door you have to notice', () => {

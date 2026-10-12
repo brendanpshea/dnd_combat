@@ -119,3 +119,16 @@ where levels come fast and change a party most; one more after).
 - **The road keeps up.** Each leg carries fights for every level of the
   band (`legs[].byLevel`); walking it, the party meets the ones for the
   level it is now.
+
+## Upgrading, and warnings (built)
+
+- **Shops by level** (`forSale`, every town): scrolls only of spells a
+  party of the stock level could cast (half the level, rounded up), uncommon
+  goods from level 3, rare from 5. `CitySpec.stock` sets the level a town
+  stocks for (default its own). A county's **city** stocks for the top of
+  the band; towns and villages for its start — going to the city is how to
+  upgrade.
+- **Warnings.** Camps and delves carry the level they are built for
+  (`ExploreNode.danger`); the map badges one beyond the party — ⚠️ a level,
+  ☠️ two or more — even before it is reached. Each town's inn names the
+  nearest two dangerous places ("Keep clear of … for now").
