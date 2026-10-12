@@ -32,7 +32,7 @@ export function refsOf(scene: Scene): Id[] {
         if (n.camp?.risky) refs.push(n.camp.risky.battleScene);
         n.sceneWhen?.forEach((w) => refs.push(w.to));
       });
-      scene.map.legs?.forEach((l) => refs.push(...l.battles));
+      scene.map.legs?.forEach((l) => refs.push(...[...l.battles, ...(l.byLevel ?? []).flatMap((b) => b.battles)]));
       if (scene.map.camp?.risky) refs.push(scene.map.camp.risky.battleScene);
       break;
     case 'dungeon': {

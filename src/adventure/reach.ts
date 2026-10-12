@@ -794,7 +794,7 @@ function searchModule(
         }
         if (s.map.camp?.risky) c.steps.push(step(s.map.camp.risky.battleScene, 'is attacked in camp'));
         for (const n of s.map.nodes) if (n.camp?.risky) c.steps.push(step(n.camp.risky.battleScene, `is attacked in camp at ${n.label}`));
-        for (const b of new Set((s.map.legs ?? []).flatMap((l) => l.battles))) c.steps.push(step(b, 'is attacked on the road'));
+        for (const b of new Set((s.map.legs ?? []).flatMap((l) => [...l.battles, ...(l.byLevel ?? []).flatMap((b) => b.battles)]))) c.steps.push(step(b, 'is attacked on the road'));
         c.travel = true;
         break;
       case 'dungeon': {

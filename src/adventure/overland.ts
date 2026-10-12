@@ -41,8 +41,16 @@ export type Terrain = 'plain' | 'forest' | 'hills' | 'marsh' | 'mountain' | 'wat
 export interface LandSpec {
   /** What kind of country (default: a river valley). */
   kind?: LandKind;
-  /** Party level the towns are stocked for (default 2). */
+  /** Party level the county starts at (default 2): the towns are stocked
+   *  for it, and the ground round the city is a fair fight for it. */
   level?: number;
+  /**
+   * The level the party may reach before it is done here (default: two more
+   * from levels 1–2, where a level comes quickly and changes a party most;
+   * one more after). Danger grows with distance from the city up to this:
+   * the far camps, delves and roads are for a party that has grown.
+   */
+  top?: number;
   /** Places the story needs, with where they must be. */
   places?: LandPlace[];
   /** Delves the county rolls for itself, beyond any the author names (default 2). */
@@ -340,6 +348,10 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   const cityAt = must(best((p) => miles(p, [50, 50]) * 0.5 + Math.abs(toWater(p) - 1) * 2 + flat(p) + wish(p, cityPl) + rng() * 0.5), 'the city');
   const city = put('city', cityAt, cityPl);
   const byId = (id: Id) => (id === 'city' ? city : places.find((q) => q.id === id));
+  /** The level the ground is a fair fight for: the start's round the city,
+   *  rising to the top's out past 14 miles, and one more behind a ridge. */
+  const levelAt = (p: Pt, behind = false) => Math.min(spec.top,
+    spec.level + Math.round(Math.max(0, Math.min(1, (miles(p, cityAt) - 5) / 9)) * (spec.top - spec.level)) + (behind ? 1 : 0));
   const free_ = authored.filter((pl) => pl.kind !== 'city' && !pl.via);
 
   // Towns half a day out, spread round the city, near water where they can.
@@ -386,31 +398,36 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   if (places.length < 5) throw new Reroll('too few places');
   placeBehind();
   // Delves and the author's places: out in the wild, off the roads.
-  const wildAt = (pl?: LandPlace) => best((p) => {
+  // `want`: miles from the city, so the wild's danger is spread near to far.
+  const wildAt = (pl?: LandPlace, want?: number) => best((p) => {
     const d = Math.min(...places.map((q) => miles(p, q.p)));
-    if (d < 3 || miles(p, cityAt) < 6) return Infinity;
-    return (g.at(p) === 'plain' ? 1 : 0) + Math.max(0, d - 6) + wish(p, pl, cityAt) + rng() * 1.5;
+    // Its road runs to the nearest settlement: not past a long morning.
+    const home = Math.min(...places.filter((q) => q.kind === 'city' || q.kind === 'town' || q.kind === 'village').map((q) => miles(p, q.p)));
+    if (d < 3 || home > 9 || miles(p, cityAt) < 6) return Infinity;
+    return (g.at(p) === 'plain' ? 1 : 0) + Math.max(0, d - 6) + wish(p, pl, cityAt) + (want ? Math.abs(miles(p, cityAt) - want) * 0.4 : 0) + rng() * 1.5;
   });
   for (const pl of free_.filter((x) => x.kind === 'delve' || x.kind === 'place' || x.kind === 'camp')) {
     const q = put(pl.kind, must(wildAt(pl), pl.label), pl);
     if (pl.kind === 'camp') q.faction = pl.faction ?? 'bandits';
   }
   // Camps: who lives rough on this ground, one band of each.
+  const spread = (i: number, n: number) => (n > 1 ? 7 + (i * 9) / (n - 1) : 10);
   for (let i = 0; i < spec.camps; i++) {
-    const at = wildAt();
+    const at = wildAt(undefined, spread(i, spec.camps));
     if (!at) break;
     const taken = new Set(places.map((q) => q.faction));
-    // Who lives on this ground, and is a fair fight, within a level, for
-    // the party this county is for.
-    const who = dice.shuffle(CAMP_FACTIONS.filter((f) => CAMPS[f]!.ground.includes(g.at(at)) && !taken.has(f)
-      && Math.abs(CAMPS[f]!.tier - spec.level) <= 1))[0];
+    // Who lives on this ground, and is a fair fight for a party come this
+    // far: the nearest tier first, a level either side at a pinch.
+    const L = levelAt(at);
+    const who = CAMP_FACTIONS.filter((f) => CAMPS[f]!.ground.includes(g.at(at)) && !taken.has(f) && Math.abs(CAMPS[f]!.tier - L) <= 1)
+      .map((f) => [f, Math.abs(CAMPS[f]!.tier - L) + rng() * 0.9] as const).sort((a, b) => a[1] - b[1])[0]?.[0];
     if (!who) continue;
     const q = put('camp', at, { id: `camp-${who}`, label: CAMPS[who]!.label, kind: 'camp' });
     delete q.from;
     q.faction = who;
   }
   placeBehind();
-  for (let i = 0; i < spec.delves; i++) { const at = wildAt(); if (at) put('delve', at); }
+  for (let i = 0; i < spec.delves; i++) { const at = wildAt(undefined, spread(i, spec.delves)); if (at) put('delve', at); }
   const lost = behind.find((pl) => !byId(pl.id));
   if (lost) throw new Reroll(`no room for ${lost.label} beyond ${byId(lost.via!)?.label ?? lost.via}`);
   // Roads: the cheapest way to join the settlements, then a few more where
@@ -445,7 +462,9 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   for (const q of places) {
     if (towns.includes(q)) continue;
     if (q.from?.via) { legs.push([byId(q.from.via)!, q]); continue; }
-    const near = towns.reduce((a, b) => (legCost(q.p, b.p, g) < legCost(q.p, a.p, g) ? b : a));
+    // The easiest walk among the settlements within a long morning of it.
+    const close = towns.filter((t) => miles(q.p, t.p) <= 9.5);
+    const near = (close.length ? close : towns).reduce((a, b) => (legCost(q.p, b.p, g) < legCost(q.p, a.p, g) ? b : a));
     legs.push([near, q]);
   }
 
@@ -557,7 +576,7 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
       embedded[pl.id] = { spec: { ...pl.from?.town, size: pl.kind, level: spec.level, name: pl.label, style }, onLeave: { to: 'land' } };
     } else if (pl.kind === 'delve') {
       const win: Effect[] = [{ kind: 'setFlag', flag: won(pl.id) }];
-      delves[pl.id] = { spec: { level: spec.level, theme: THEME[g.at(pl.p)], ...pl.from?.delve }, onWin: { to: 'land', effects: win }, onLeave: { to: 'land' } };
+      delves[pl.id] = { spec: { level: levelAt(pl.p, !!pl.from?.via), theme: THEME[g.at(pl.p)], ...pl.from?.delve }, onWin: { to: 'land', effects: win }, onLeave: { to: 'land' } };
       scenes[`${pl.id}-quiet`] = { id: `${pl.id}-quiet`, kind: 'story', noBack: true, text: [`${pl.label} is quiet now. Whatever held it holds it no longer.`],
         next: [{ id: 'on', label: 'Walk on', to: 'land' }] };
     } else if (pl.kind === 'camp') {
@@ -627,21 +646,23 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   // ground at its middle; a camp out in the wild, on the ground it is on.
   const posOf = (id: Id) => places.find((q) => q.id === id)!.p;
   const settled = (id: Id) => { const k = places.find((q) => q.id === id)!.kind; return k === 'city' || k === 'town' || k === 'village'; };
-  const foes = new Map<Terrain, Id[]>();
-  const fightsOn = (t: Terrain): Id[] => {
-    const had = foes.get(t);
+  // A road's fights, for each level of the band: the hills stay hills to
+  // a party that has grown.
+  const foes = new Map<string, Id[]>();
+  const fightsOn = (t: Terrain, L: number): Id[] => {
+    const had = foes.get(`${t}${L}`);
     if (had) return had;
     const ids = ROAD_FOES[t].slice(0, 2).map((f, n) => {
-      const id = `road-${t}-${n + 1}`;
+      const id = `road-${t}-${L}-${n + 1}`;
       const enc = generateEncounter({
-        budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
-        maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: FACTIONS[f]!.members,
+        budget: Math.round(evenBudgetFor(L) * shareFor('room', L)), maxMemberXp: memberCapFor(L),
+        maxCount: maxCountFor(L), partyLevel: L, members: FACTIONS[f]!.members,
       }, seedRng(Math.floor(rng() * 2 ** 31))).value;
       scenes[id] = { id, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: BATTLE_MAP[t],
         intro: [ROAD_INTRO[f] ?? 'Trouble on the road.'], onWin: { to: 'land' } };
       return id;
     });
-    foes.set(t, ids);
+    foes.set(`${t}${L}`, ids);
     return ids;
   };
   const roadLegs = paths.map(([a, b]) => {
@@ -653,16 +674,20 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
     const chance = Math.round(ROAD_CHANCE[t] * (road ? 0.6 : 1) * (near ? 0.5 : 1) * 100) / 100;
     // Three miles an hour on the flat, slower over rough ground.
     const hours = Math.max(0.5, Math.round((legCost(pa, pb, g) / 3) * 2) / 2);
-    return { between: [a, b] as [Id, Id], chance, battles: fightsOn(t), hours };
+    const levels = Array.from({ length: spec.top - spec.level + 1 }, (_, i) => spec.level + i);
+    return { between: [a, b] as [Id, Id], chance, battles: fightsOn(t, spec.level), hours,
+      ...(levels.length > 1 ? { byLevel: levels.map((L) => ({ from: L, ...(L < spec.top ? { to: L } : {}), battles: fightsOn(t, L) })) } : {}) };
   });
   for (const n of nodes) {
     if (settled(n.id)) { n.camp = {}; continue; }
+    // A night out in the wild is as dangerous as the ground is far.
     const t = g.at([n.x, n.y]);
-    const id = `night-${t}`;
+    const L = levelAt([n.x, n.y]);
+    const id = `night-${t}-${L}`;
     if (!scenes[id]) {
       const enc = generateEncounter({
-        budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
-        maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: FACTIONS[ROAD_FOES[t][0]!]!.members,
+        budget: Math.round(evenBudgetFor(L) * shareFor('room', L)), maxMemberXp: memberCapFor(L),
+        maxCount: maxCountFor(L), partyLevel: L, members: FACTIONS[ROAD_FOES[t][0]!]!.members,
       }, seedRng(Math.floor(rng() * 2 ** 31))).value;
       scenes[id] = { id, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: BATTLE_MAP[t],
         intro: ['Something comes at the fire out of the dark.'], onWin: { to: 'land' } };
@@ -685,8 +710,8 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
     left: { id: 'left', kind: 'ending', outcome: 'victory', text: [`${county} falls away behind you.`] },
   } satisfies Record<Id, Scene>);
   return {
-    id: `land-${seed}`, title: county, blurb: `A generated county (level ${spec.level}).`,
-    start: 'start', scenes, defeatScene: 'beaten', towns: embedded, ...(Object.keys(delves).length ? { delves } : {}), levelBand: { from: spec.level, to: spec.level },
+    id: `land-${seed}`, title: county, blurb: `A generated county (levels ${spec.level}–${spec.top}).`,
+    start: 'start', scenes, defeatScene: 'beaten', towns: embedded, ...(Object.keys(delves).length ? { delves } : {}), levelBand: { from: spec.level, to: spec.top },
   };
 }
 
@@ -733,7 +758,9 @@ export function checkLandSpec(spec: LandSpec): Required<LandSpec> {
   const camps = spec.camps ?? 3;
   if (!Number.isInteger(camps) || camps < 0 || camps > 4) err(`${camps} camps; 0–4`);
   for (const pl of places) if (pl.kind === 'camp' && pl.faction !== undefined && !CAMP_FACTIONS.includes(pl.faction)) err(`'${pl.id}': no camp of '${pl.faction}' (have ${CAMP_FACTIONS.join(', ')})`);
-  return { kind, level, places, delves, camps };
+  const top = spec.top ?? Math.min(5, level + (level <= 2 ? 2 : 1));
+  if (!Number.isInteger(top) || top < level || top > 5) err(`top level ${top}; from ${level} to 5`);
+  return { kind, level, top, places, delves, camps };
 }
 
 /** Every built county's id: `land-<seed>-<spec>`, so a saved run rebuilds it. */

@@ -3,7 +3,7 @@
  * and in play a band preys on a weaker party and bows before a stronger one.
  */
 import { describe, it, expect } from 'vitest';
-import { generateLand } from '../src/adventure/overland.js';
+import { generateLand, miles } from '../src/adventure/overland.js';
 import { startAdventure, enterScene, enterNode, choose } from '../src/adventure/runtime.js';
 import { newCampaign, LEVEL_XP } from '../src/campaign/campaign.js';
 import { encounterFor } from '../src/data/encounters.js';
@@ -14,17 +14,24 @@ const mapOf = (m: Module) => (m.scenes.land as { map: ExploreMap }).map;
 const campsOf = (m: Module) => mapOf(m).nodes.filter((n) => n.id.startsWith('camp-'));
 
 describe('a county\'s camps', () => {
-  it('are bands within a level of the party it is for', () => {
-    for (const level of [1, 3, 5]) {
-      const seen = new Set<string>();
-      for (let seed = 1; seed <= 6; seed++) {
-        for (const c of campsOf(generateLand(seed, { level }).module)) {
-          const who = c.id.replace(/^camp-/, '');
-          seen.add(who);
-          expect(Math.abs(TIER[who]! - level), `${who} at level ${level}`).toBeLessThanOrEqual(1);
+  it('are bands for the county\'s levels, the stronger farther from the city', () => {
+    for (const level of [1, 3]) {
+      const top = Math.min(5, level + (level <= 2 ? 2 : 1));
+      const near: number[] = [], far: number[] = [];
+      for (let seed = 1; seed <= 8; seed++) {
+        const m = generateLand(seed, { level }).module;
+        const map = mapOf(m);
+        const city = map.nodes.find((n) => n.id.startsWith('city-'))!;
+        for (const c of campsOf(m)) {
+          const tier = TIER[c.id.replace(/^camp-/, '')]!;
+          expect(tier, `${c.id} at levels ${level}–${top}`).toBeGreaterThanOrEqual(level - 1);
+          expect(tier).toBeLessThanOrEqual(top + 1);
+          (miles([c.x, c.y], [city.x, city.y]) < 10 ? near : far).push(tier);
         }
       }
-      expect(seen.size).toBeGreaterThan(0);
+      const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+      expect(near.length && far.length).toBeTruthy();
+      expect(mean(far), `level ${level}`).toBeGreaterThan(mean(near));
     }
   });
 
@@ -73,5 +80,49 @@ describe('a camp, met in play', () => {
     const s = meet(3, 'pack');
     expect(s.sceneId).toBe('pack-cowed');
     expect(m.scenes['pack-cowed']).toMatchObject({ next: [expect.objectContaining({ id: 'take', to: 'pack-quiet' })] });
+  });
+});
+
+describe('a county for a band of levels', () => {
+  it('runs from its level to two more at levels 1–2, one more after', () => {
+    expect(generateLand(1, { level: 1 }).module.levelBand).toEqual({ from: 1, to: 3 });
+    expect(generateLand(1, { level: 3 }).module.levelBand).toEqual({ from: 3, to: 4 });
+    expect(generateLand(1, { level: 2, top: 2 }).module.levelBand).toEqual({ from: 2, to: 2 });
+  });
+
+  it('puts its harder delves farther out', () => {
+    let rising = 0, n = 0;
+    for (let seed = 1; seed <= 8; seed++) {
+      const m = generateLand(seed, { level: 1 }).module;
+      const map = mapOf(m);
+      const city = map.nodes.find((x) => x.id.startsWith('city-'))!;
+      const ds = Object.entries(m.delves ?? {}).map(([id, d]) => {
+        const node = map.nodes.find((x) => x.id === id)!;
+        return { far: miles([node.x, node.y], [city.x, city.y]), level: d.spec.level! };
+      }).sort((a, b) => a.far - b.far);
+      for (const d of ds) { expect(d.level).toBeGreaterThanOrEqual(1); expect(d.level).toBeLessThanOrEqual(3); }
+      if (ds.length === 2) { n++; if (ds[1]!.level >= ds[0]!.level) rising++; }
+    }
+    expect(rising).toBe(n);
+  });
+
+  it('keeps its road fights up with the party as it grows', () => {
+    const m = generateLand(5, { level: 1 }).module;
+    const map = mapOf(m);
+    const leg = map.legs![0]!;
+    expect(leg.byLevel?.map((b) => b.from)).toEqual([1, 2, 3]);
+    // Walked at level 1 and at level 3, a sure fight: each meets its own.
+    const fightAt = (level: number) => {
+      leg.chance = 1;
+      const c = newCampaign(2); c.xp = LEVEL_XP[level - 1]!;
+      const s = startAdventure(c, m);
+      enterScene(s, m, m.start); enterScene(s, m, 'land');
+      s.exploredNodes.push(...map.nodes.map((x) => x.id));
+      (s.mapAt ??= {}).land = leg.between[0];
+      enterNode(s, m, leg.between[1]);
+      return s.sceneId;
+    };
+    expect(fightAt(1)).toMatch(/^road-\w+-1-/);
+    expect(fightAt(3)).toMatch(/^road-\w+-3-/);
   });
 });

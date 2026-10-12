@@ -357,7 +357,7 @@ export function validateModule(module: Module): string[] {
         if (n.wandering) entries.add(n.wandering.battleScene);
         if (n.camp?.risky) entries.add(n.camp.risky.battleScene);
       }
-      for (const l of sc.map.legs ?? []) for (const b of l.battles) entries.add(b);
+      for (const l of sc.map.legs ?? []) for (const b of [...l.battles, ...(l.byLevel ?? []).flatMap((b) => b.battles)]) entries.add(b);
     }
     if (sc.kind === 'dungeon') {
       for (const r of sc.dungeon.rooms) {
