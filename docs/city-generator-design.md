@@ -200,10 +200,57 @@ card):
 
 A test plays it through from arrival to ending on three seeds.
 
-## Step 4: factions, consequences, economy
+## Step 4, as built: theft noticed, and the economy measured
 
-- **Town factions:** the watch and the guild. **Reputation:** theft gets
-  noticed.
-- **Measure the economy:** can a level-N party, on what a delve pays, afford a
-  meaningful upgrade without buying its way out of difficulty? The delve
-  simulator already tracks gold.
+**Theft was unbounded.** Stealing is once per shop visit (Stealth and Sleight
+of Hand against DC 13; caught, a 50 gold fine), but a visit ended at the door.
+Walk out, walk back in, try again. Measured in generated towns: 60–68% of
+tries succeed, for an item worth 86–124 gold at list price. That is about +40
+gold of value a try, for ever, and a town has six shops.
+
+**Now, in the runtime (every shop, written or generated):**
+
+- **Caught, you are barred** from that shop for good. At the door you are
+  turned straight back out.
+- **The run counts it** in `caught-stealing`, the one flag the runtime sets
+  itself (`CAUGHT_STEALING`).
+- **Bounded.** A shop now yields about 1.5–2 items before it catches you,
+  and then never again.
+- **The validator** counts `caught-stealing` as written wherever there is a
+  shop, so a written story may read it.
+- **The splice** never renames it, so a town inside a story sees the same
+  count the runtime keeps.
+
+**In a generated town:**
+
+- **Caught twice, the watch is at the gate.** Pay a fine (75 × level), or
+  fight them (guards and veterans at a room fight's budget). Either way the
+  count is cleared.
+- **The thieves' guild is now a conversation**, not a bare shelf: its wares,
+  and, for anyone with a name to clear, 40 × level gold to clear it. That is
+  always cheaper than the watch, or nobody would go.
+
+**The economy, measured** (`scripts/delve-sim.ts` now records it). What one
+delve pays a careful party, in coin plus loot at the half-price shops pay:
+
+| Level | 1   | 2     | 3     | 4     | 5     |
+|-------|-----|-------|-------|-------|-------|
+| Pays  | 744 | 1,218 | 2,685 | 3,088 | 4,430 |
+
+**What that says:**
+
+- **The town's services are not where the economy bites.** An inn room is
+  1–5 gold, and temple healing 10 × level: 1–3% of a delve. That is by design.
+  Healing at the temple does not spend a day as a rest does, which is what it
+  is for in a story with a clock, and resting should not be a tax.
+- **The watch's fine was too small to matter.** At 25 × level it was 1–3% of
+  a delve, so theft cost nothing to walk away from. It is now 75 × level,
+  about a tenth of a delve.
+- **The spending is on wares:** scrolls (50–1,000), potions, and mundane
+  armour up to plate (1,500). A level-2 delve buys half-plate; plate is a
+  level-5 purchase, which is where the rarity tiers already put it.
+  Permanent magic stays unbuyable.
+
+**Not done:** time of day; new services (identification, curse removal,
+raising the dead); a reputation that carries between towns. The count is per
+run, and a sequel starts clean.

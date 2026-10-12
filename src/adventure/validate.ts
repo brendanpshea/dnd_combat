@@ -13,7 +13,7 @@ import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { isLocationArt, isNpcArt, isNodeToken } from '../data/adventure-art.js';
-import { HUB_REF, ROOM_MAP_REF, alwaysShown, type Module, type Requirement, type Effect, type Outcome, type SceneRef, type Para } from './types.js';
+import { HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, alwaysShown, type Module, type Requirement, type Effect, type Outcome, type SceneRef, type Para } from './types.js';
 import { refsOf, effectsOf, requirementsOf, skillsOf, parasOf, flagsWritten } from './graph.js';
 import { unresolvedTokens, isNpcFlag, hasUncompiledNpcState } from './npcs.js';
 import { checkDungeon } from './dungeon.js';
@@ -103,6 +103,8 @@ export function validateModule(module: Module): string[] {
 
   // Flag hygiene: every flag read somewhere must be written somewhere.
   const written = new Set<string>();
+  // The runtime counts a party caught stealing; any shop is a place to be caught.
+  if (Object.values(module.scenes).some((s) => s.kind === 'shop')) written.add(CAUGHT_STEALING);
   const read = new Set<string>();
   // A journal lead resolves when its `resolvedBy` flag fires — track where each
   // is opened so a lead that can never close is caught as an authoring error.

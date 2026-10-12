@@ -20,7 +20,7 @@
  * require them.
  */
 import type { Id } from '../engine/types.js';
-import type { EmbeddedDelve, EmbeddedTown, Module, Outcome, Scene } from './types.js';
+import { CAUGHT_STEALING, type EmbeddedDelve, type EmbeddedTown, type Module, type Outcome, type Scene } from './types.js';
 import type { AdventureState } from './runtime.js';
 import { generateSpecDelve } from './delve-spec.js';
 import { generateCity } from './city-gen.js';
@@ -83,7 +83,8 @@ function splice(
   const keep = new Set(reads);
   const name = (id: Id) => (id === 'start' ? at : own.has(id) ? `${at}/${id}` : id);
   const out = Object.values(scenes);
-  rewrite(out, name, (f) => exports[f] ?? (keep.has(f) ? f : `${at}/${f}`));
+  // The runtime's own flag is the runtime's, wherever the shop is.
+  rewrite(out, name, (f) => exports[f] ?? (keep.has(f) || f === CAUGHT_STEALING ? f : `${at}/${f}`));
   for (const sc of out) sc.id = name(sc.id);
   /*
    * The ways out, back to the story. Not scenes of their own: every route
