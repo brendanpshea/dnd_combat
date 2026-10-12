@@ -219,6 +219,9 @@ export interface ExploreNode {
   note?: string;
   /** A secret: revealed only if the party's passive Perception ≥ dc on arrival. */
   hidden?: { dc: number };
+  /** Not shown at all while `requires` does not hold (a shortcut to a
+   *  place once found), in place of a padlock. */
+  hideWhenBlocked?: true;
   /** Danger on the way: on entering, a `chance` (0–1) rng roll may divert to a
    *  battle scene first (its onWin should route back here). Rolled once per
    *  node — a fight already braved doesn't re-trigger. */

@@ -385,11 +385,21 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
        * nothing to walk away from.
        */
       const fine = 75 * ctx.level;
+      const walled = ctx.size !== 'village', bribe = 5 * ctx.level;
       const watched = { kind: 'count', flag: CAUGHT_STEALING, atLeast: 2 } as const;
       const cleared: Effect[] = [{ kind: 'clearFlag', flag: CAUGHT_STEALING }];
       return {
-        node: { id, label: `Leave ${ctx.town}`, icon: 'tok-gate', scene: id, sceneWhen: [{ if: [watched], to: `${id}-watch` }] },
+        node: { id, label: `Leave ${ctx.town}`, icon: 'tok-gate', scene: id, sceneWhen: [
+          { if: [watched], to: `${id}-watch` },
+          // A walled town bars its gates at dark: wait for morning, or pay.
+          ...(walled ? [{ if: [{ kind: 'flag', flag: NIGHT } as const], to: `${id}-shut` }] : []),
+        ] },
         scenes: [
+          ...(walled ? [{ id: `${id}-shut`, kind: 'story', text: ['The gates are barred for the night. A gatekeeper eyes you through the grille. "Dawn," he says. "Unless you make it worth my while."'],
+            next: [
+              { id: 'bribe', label: `Slip him ${bribe} gold`, to: id, requires: [{ kind: 'gold', atLeast: bribe }], effects: [{ kind: 'gold', amount: -bribe }] },
+              back('Wait for morning in town'),
+            ] } satisfies Scene] : []),
           { id, kind: 'story', text: [`The road out of ${ctx.town} runs on through the fields.`],
             next: [{ id: 'go', label: 'Take the road', to: 'left' }, back('Not yet')] },
           { id: `${id}-watch`, kind: 'story', text: ['The watch is on the gate, and they have your descriptions. "That\'s them. The ones from the shops."'],
@@ -744,6 +754,49 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
       }
       qs.push({ id: `to-${dk}`, label: QUARTER[dk].label, icon: QUARTER[dk].icon, scene: hubOf(d), x: spot[0], y: spot[1] });
     });
+    const spotNear = (cx: number, cy: number): [number, number] | undefined => {
+      let spot: [number, number] | undefined; let best = Infinity;
+      for (let x = 14; x <= 86; x += 4) for (let y = 16; y <= 82; y += 3) {
+        if (!qs.every((q) => apart(q, { x, y })) || !dry([x, y], ground)) continue;
+        const score = Math.hypot((x - cx) / 22, (y - cy) / 14);
+        if (score < best) { best = score; spot = [x, y]; }
+      }
+      return spot;
+    };
+    // What a city's own map shows besides its quarters: its castle, and
+    // the harbour or the bridge it grew up round.
+    const sights: [Id, string, string, [number, number], string][] = [
+      ['castle', 'The Castle', 'tok-ruin', [50, 18], 'The castle looks down on the city from its rock. The gate guards look at you, and look away: not today, and not for the likes of you — yet.'],
+    ];
+    const w = ground.water;
+    if (w?.kind === 'coast') {
+      const shore = w.points[Math.floor(w.points.length / 2)]!;
+      sights.push(['harbour', 'The Harbour', 'tok-crossing', [shore[0] + (w.side === 'left' ? 12 : -12), shore[1]], 'Masts and gulls and the smell of tar. Sailors who have seen the far side of the sea will tell you about it for the price of a drink.']);
+    } else if (w?.kind === 'river') {
+      const at = nearestOn(ground.square, [w.points]).at;
+      sights.push(['bridge', 'The Great Bridge', 'tok-bridge', [at[0], at[1] + (at[1] < ground.square[1] ? 9 : -9)], 'A bridge of nine arches, its parapets crowded with stalls and shrines. The river runs fast and brown beneath it.']);
+    }
+    for (const [id, label, icon, [cx, cy], text] of sights) {
+      const spot = spotNear(cx, cy);
+      if (!spot) continue;
+      scenes[id] = { id, kind: 'story', noBack: true, text: [text], next: [{ id: 'leave', label: 'Walk on', to: 'city' }] };
+      qs.push({ id, label, icon, scene: id, x: spot[0], y: spot[1] });
+    }
+    // Shortcuts: a shop once found is one tap from the city's map, by its
+    // quarter, and nothing at all until then.
+    const SHORT: VenueKind[] = ['inn', 'temple', 'general', 'armorer', 'weaponsmith', 'mage-guild'];
+    for (const kind of SHORT) {
+      const v = nodes.find((n) => n.id === kind);
+      const at = placed.find((p) => p.id === kind);
+      const q = at && qs.find((n) => n.id === `to-${districts[at.d]}`);
+      if (!v || !q) continue;
+      const spot = spotNear(q.x, q.y);
+      if (!spot) continue;
+      // No street fight on the shortcut: that was the walk, not the door.
+      const { wandering: _walk, ...door } = v;
+      qs.push({ ...door, id: `short-${kind}`, x: spot[0], y: spot[1], hideWhenBlocked: true,
+        requires: [{ kind: 'visited', scene: v.scene }, ...(v.requires ?? [])] });
+    }
     return {
       title: town, theme: 'village', art: { emoji: '🏰' }, entry: [`to-gatehouse`], nodes: qs,
       ground: { feature: ground.feature, ...(ground.water ? { water: ground.water } : {}), ...(ground.wall ? { wall: ground.wall } : {}),
