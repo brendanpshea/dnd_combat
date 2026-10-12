@@ -9,7 +9,8 @@
  * record's `introducedAt` feeds the reachability search's cast check.
  */
 import type { Id } from '../engine/types.js';
-import type { Module, NpcDef, NpcRef, CompanionDef, Requirement, Effect, CanonFact } from './types.js';
+import { weaveStage } from './staging.js';
+import type { Module, NpcDef, NpcRef, CompanionDef, Requirement, Effect, CanonFact, NpcStaging } from './types.js';
 
 /**
  * NPC state lives in campaign-wide flags under `npc.`: they carry, unprefixed,
@@ -21,6 +22,11 @@ export const npcFateFlag = (id: Id, fate: string) => `${NPC_FLAG_PREFIX}${id}.fa
 /** How a character feels about the company: a signed tally, 0 to begin. */
 export const npcAttitudeFlag = (id: Id) => `${NPC_FLAG_PREFIX}${id}.attitude`;
 export const isNpcFlag = (flag: string) => flag.startsWith(NPC_FLAG_PREFIX);
+/** The company's reputation, on each axis: a signed tally, carried like
+ *  every NPC flag into later chapters. */
+export const reputationFlag = (axis: 'empathy' | 'law') => `${NPC_FLAG_PREFIX}company.${axis}`;
+/** Where they are, when the story has moved them from home: one at a time. */
+export const npcAtFlag = (id: Id, place: Id) => `${NPC_FLAG_PREFIX}${id}.at.${place}`;
 
 /** A chapter's renamed flags (`renamedFlags`), as a later chapter inherited
  *  them: `module:flag` → the same new name. */
@@ -52,7 +58,14 @@ const EFFECT_LISTS = new Set(['effects', 'failEffects']);
  * NPC requirements and effects, compiled to the flags they stand for. Throws
  * on an NPC the registry doesn't know, or a fate it doesn't declare.
  */
-function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, key = ''): T {
+function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, key = '', stage: Record<Id, NpcStaging> = {}): T {
+  /** The places a staged NPC can be, home first; throws on any other. */
+  const placesOf = (id: Id, at: Id): Id[] => {
+    const all = stage[id]?.places.map((p) => p.scene);
+    if (!all) throw new Error(`${where}: '${id}' is moved or looked for, but not on this chapter's stage`);
+    if (!all.includes(at)) throw new Error(`${where}: '${id}' cannot be at '${at}' (their places: ${all.join(', ')})`);
+    return all;
+  };
   const npcOf = (id: Id, fate?: string) => {
     const npc = npcs[id];
     if (!npc) throw new Error(`${where}: unknown NPC '${id}'`);
@@ -60,9 +73,12 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
     return npc;
   };
   if (Array.isArray(value)) {
-    const items = value.map((v) => compileNpcState(v, npcs, where));
+    const items = value.map((v) => compileNpcState(v, npcs, where, '', stage));
     if (REQUIREMENT_LISTS.has(key)) {
       return items.flatMap((r: Requirement): Requirement[] => {
+        if (r?.kind === 'reputation') {
+          return (['empathy', 'law'] as const).flatMap((a) => (r[a] ? [{ kind: 'count' as const, flag: reputationFlag(a), ...r[a] }] : []));
+        }
         if (r?.kind !== 'npc') return [r];
         npcOf(r.npc, r.fate);
         for (const f of r.notFate ?? []) npcOf(r.npc, f);
@@ -72,11 +88,29 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
           ...(r.met === true ? [{ kind: 'flag' as const, flag: npcMetFlag(r.npc) }] : []),
           ...(r.met === false ? [{ kind: 'notFlag' as const, flag: npcMetFlag(r.npc) }] : []),
           ...(r.attitude ? [{ kind: 'count' as const, flag: npcAttitudeFlag(r.npc), ...r.attitude }] : []),
+          // At home is at none of the elsewheres; anywhere else, its flag.
+          ...(r.at !== undefined ? ((at: Id): Requirement[] => {
+            const all = placesOf(r.npc, at);
+            return at === all[0]
+              ? all.slice(1).map((p) => ({ kind: 'notFlag' as const, flag: npcAtFlag(r.npc, p) }))
+              : [{ kind: 'flag' as const, flag: npcAtFlag(r.npc, at) }];
+          })(r.at) : []),
         ];
       }) as T;
     }
     if (EFFECT_LISTS.has(key)) {
       return items.flatMap((e: Effect): Effect[] => {
+        // A deed: the company's name, and the mind of everyone who cares.
+        if (e?.kind === 'deed') {
+          const by = (a: 'empathy' | 'law') => e[a] ?? 0;
+          return [
+            ...(['empathy', 'law'] as const).filter((a) => by(a)).map((a) => ({ kind: 'addFlag' as const, flag: reputationFlag(a), amount: by(a) })),
+            ...Object.values(npcs).flatMap((n) => {
+              const moved = (n.values?.empathy ?? 0) * by('empathy') + (n.values?.law ?? 0) * by('law');
+              return moved ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(n.id), amount: moved, hearsay: true as const }] : [];
+            }),
+          ];
+        }
         if (e?.kind !== 'npc') return [e];
         const npc = npcOf(e.npc, e.fate);
         return [
@@ -87,6 +121,14 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
             ...(npc.fates ?? []).filter((f) => f !== e.fate).map((f) => ({ kind: 'clearFlag' as const, flag: npcFateFlag(e.npc, f) })),
             { kind: 'setFlag' as const, flag: npcFateFlag(e.npc, e.fate) },
           ] : []),
+          // A move: off every elsewhere, and onto the new one (home is none).
+          ...(e.at !== undefined ? (() => {
+            const all = placesOf(e.npc, e.at);
+            return [
+              ...all.slice(1).filter((p) => p !== e.at).map((p) => ({ kind: 'clearFlag' as const, flag: npcAtFlag(e.npc, p) })),
+              ...(e.at !== all[0] ? [{ kind: 'setFlag' as const, flag: npcAtFlag(e.npc, e.at) }] : []),
+            ];
+          })() : []),
         ];
       }) as T;
     }
@@ -94,7 +136,7 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
   }
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value)) out[k] = compileNpcState(v, npcs, where, k);
+    for (const [k, v] of Object.entries(value)) out[k] = compileNpcState(v, npcs, where, k, stage);
     return out as T;
   }
   return value;
@@ -127,7 +169,11 @@ export function withCanon(module: Module, canon: { npcs?: Record<Id, NpcDef>; fa
     return cap ? text.charAt(0).toUpperCase() + text.slice(1) : text;
   }));
   if (unknown.size) throw new Error(`${module.id}: unknown token(s) ${[...unknown].map((u) => `{${u}}`).join(', ')}`);
-  const compiled = compileNpcState(resolved, npcs, module.id);
+  // The stage first: what it weaves is NPC requirements and effects, and
+  // those compile to their flags with the rest. Its places are needed to
+  // compile a move.
+  const stage = resolved.stage ?? {};
+  const compiled = compileNpcState(weaveStage(resolved, npcs), npcs, module.id, '', stage);
   return { ...compiled, ...(canon.npcs ? { npcs } : {}), ...(canon.facts ? { facts } : {}) };
 }
 
