@@ -1,6 +1,6 @@
 # A text-first authoring format: proposal
 
-**Status:** proposal, for discussion before chapters two and three are reworked.
+**Status:** built (`src/adventure/story-format.ts`). Chapter one is written in it, as a folder of `.story` files, one per place (`src/data/modules/hollow-road/`). See the module-writing guide, "Writing a chapter as stories". The rest of this page is the proposal as it was made.
 
 ## The problem
 
