@@ -73,9 +73,9 @@ export interface Ground extends TownGround {
  * The ground for a town of a size. Villages get lanes and no wall; towns and
  * cities a wall, gates where the roads come through it, and a few more roads.
  */
-export function layGround(size: 'village' | 'town' | 'city', rng: () => number): Ground {
+export function layGround(size: 'village' | 'town' | 'city', rng: () => number, opts: { feature?: Feature; wall?: boolean } = {}): Ground {
   const roll = rng();
-  const feature: Feature = roll < 0.45 ? 'river' : roll < 0.7 ? 'coast' : 'crossroads';
+  const feature: Feature = opts.feature ?? (roll < 0.45 ? 'river' : roll < 0.7 ? 'coast' : 'crossroads');
   const coastSide = rng() < 0.5 ? 'left' : 'right';
   const square = pt(50 + (rng() - 0.5) * 14, 52 + (rng() - 0.5) * 10);
 
@@ -106,7 +106,7 @@ export function layGround(size: 'village' | 'town' | 'city', rng: () => number):
     ground.water = { kind: 'coast', side: coastSide, points: wander(pt(x, 0), pt(x, 100), rng, 6, 8) };
   }
 
-  if (size !== 'village') {
+  if (size !== 'village' && opts.wall !== false) {
     // A wall: a rough ellipse about the square, cut where the roads come in.
     const rx = size === 'city' ? 44 : 40, ry = size === 'city' ? 42 : 38;
     const ring: Pt[] = [];
