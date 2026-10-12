@@ -739,6 +739,10 @@ const b64 = (s: string) => btoa(String.fromCharCode(...new TextEncoder().encode(
 const unb64 = (s: string) => new TextDecoder().decode(
   Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)));
 
+/** A spec, as an id-safe string (and back): what a saved run rebuilds from. */
+export const encodeSpec = (spec: unknown): string => b64(JSON.stringify(spec));
+export const decodeSpec = (s: string): unknown => JSON.parse(unb64(s));
+
 /** A spec delve's id: everything it was made from. */
 export function specDelveId(seed: number, spec: DelveSpec): string {
   return `delve2-${seed}-${b64(JSON.stringify(spec))}`;
