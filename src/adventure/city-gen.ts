@@ -102,6 +102,15 @@ export interface CustomPlace {
    * names one of the story's scenes — a delve's door, most often.
    */
   way?: { to: Id; label?: string };
+  /**
+   * In a story: a scene of the story's own that plays on walking up, until
+   * `until` holds; then the place is only its `text`. `when` sends it to
+   * another of the story's scenes instead, first match wins.
+   */
+  event?: { scene: Id; until?: Requirement[]; when?: Array<{ if: Requirement[]; to: Id }> };
+  /** Stands in for one of the town's own venues (the inn, the gate): built
+   *  where that venue would be, and the venue is not built. */
+  replaces?: VenueKind;
 }
 
 /** A rumour the inn tells, before its own. */
@@ -128,6 +137,8 @@ export interface CitySpec {
   name?: string;
   /** The sound of its people's names (default: one rolled for the size). */
   style?: NameStyle;
+  /** A safe camp anywhere in town, as a story's home base has (default: rest at the inn). */
+  camp?: boolean;
 }
 
 /** What each size brings, before the spec adds anything. */
@@ -459,7 +470,12 @@ export function cityFromId(id: string): Module | undefined {
 /** How a town is being built: on its own (a dev-card town, which must pass
  *  every proof by itself), or inside a story, whose flags and scenes it may
  *  use and whose validator proves the whole (embed.ts, validateLive). */
-export interface CityOptions { story?: boolean }
+export interface CityOptions {
+  story?: boolean;
+  /** In a story, proved on its own (EmbeddedTown.proveApart): the story's
+   *  scenes stood in for, and the town validated as if alone. */
+  apart?: boolean;
+}
 
 export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<CitySpec> {
   const err = (m: string) => { throw new Error(`Bad city spec: ${m}`); };
@@ -491,12 +507,24 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
   }
   const labels = new Set<string>();
   for (const pl of places) {
-    if (!pl.label?.trim() || !pl.text?.length) err(`a place needs a label and some text`);
+    // A place that is only ever the story's scene needs no text of its own.
+    const always = pl.event && !pl.event.until?.length;
+    if (!pl.label?.trim() || (!pl.text?.length && !always)) err(`a place needs a label and some text`);
     if (labels.has(slug(pl.label))) err(`two places called '${pl.label}'`);
     labels.add(slug(pl.label));
     if (pl.district && !districts.includes(pl.district)) err(`'${pl.label}' is in '${pl.district}', which is not a district of a ${size} (${districts.join(', ')})`);
     if (typeof pl.fight === 'string' && !encounterFor(pl.fight)) err(`'${pl.label}': no encounter '${pl.fight}'`);
     if (pl.loot && pl.loot !== 'gold' && !ITEMS[pl.loot] && !itemPrice(pl.loot)) err(`'${pl.label}': no item '${pl.loot}'`);
+  }
+  const replaced = new Set<string>();
+  for (const pl of places) {
+    if (pl.event && !opts.story) err(`'${pl.label}' plays the story's '${pl.event.scene}', but a town on its own has no story`);
+    if (pl.replaces) {
+      if (!venues.has(pl.replaces)) err(`'${pl.label}' replaces the ${pl.replaces}, which a ${size} does not have`);
+      if (replaced.has(pl.replaces)) err(`two places replace the ${pl.replaces}`);
+      if (people.some((p) => p.at === pl.replaces)) err(`'${pl.label}' replaces the ${pl.replaces}, where someone stands`);
+      replaced.add(pl.replaces);
+    }
   }
   for (const pl of places) {
     if (pl.way && !opts.story) err(`'${pl.label}' leads on to '${pl.way.to}', but a town on its own has no story to lead into`);
@@ -513,9 +541,10 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
     if (!closers.has(f)) err(`'${w}' reads the flag '${f}', which nothing in the town sets`);
   }
   const markers = BY_SIZE[size].venues.length + (spec.venues ?? []).filter((v) => !BY_SIZE[size].venues.includes(v)).length
-    + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.length;
+    + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.filter((pl) => !pl.replaces).length;
   // "Leave <name>" is a marker's label, and a label wraps past 20.
-  if (spec.name !== undefined && !/^[A-Z][A-Za-z' -]{1,12}$/.test(spec.name)) err(`'${spec.name}': a town's name is 2–13 letters, capitalised`);
+  // (Or a story's own token for it, read as the story reads its names.)
+  if (spec.name !== undefined && !/^[A-Z][A-Za-z' -]{1,12}$/.test(spec.name) && !(opts.story && /^\{[a-z-]+\}$/.test(spec.name))) err(`'${spec.name}': a town's name is 2–13 letters, capitalised`);
   if (spec.lord !== undefined && (size !== 'city' || !spec.lord || spec.lord.length > 40)) err(`a lord holds a city, and is named in 1–40 characters`);
   if (spec.stock !== undefined && (!Number.isInteger(spec.stock) || spec.stock < level || spec.stock > 9)) err(`stock for level ${spec.stock}; from the town's level to 9`);
   if (spec.style !== undefined && !NAME_STYLES.includes(spec.style)) err(`no name style '${spec.style}'`);
@@ -523,7 +552,7 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
   return {
     size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
     streets: spec.streets ?? size !== 'village',
-    stock: spec.stock ?? 0, lord: spec.lord ?? '', name: spec.name ?? '', style: spec.style ?? ('' as NameStyle),
+    stock: spec.stock ?? 0, lord: spec.lord ?? '', name: spec.name ?? '', style: spec.style ?? ('' as NameStyle), camp: spec.camp ?? false,
   };
 }
 
@@ -552,9 +581,10 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   const rolled = placeName(style, () => dice.float(), 11, names);
   const town = spec.name || rolled;
   const plan = BY_SIZE[spec.size];
+  const replaced = new Set(spec.places.flatMap((pl) => (pl.replaces ? [pl.replaces] : [])));
   const kinds: VenueKind[] = [...plan.venues];
   // The author's own markers count against the map's room too.
-  const authored = spec.people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + spec.places.length;
+  const authored = spec.people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + spec.places.length - replaced.size;
   for (const v of spec.venues) if (!kinds.includes(v)) kinds.push(v);
   const most = placesFor(spec.size);
   for (let i = dice.int(...plan.extra); i > 0 && kinds.length + authored < most; i--) kinds.push('landmark');
@@ -620,7 +650,11 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   // The way back to the city's map first, in every quarter, by the road in.
   if (quartered) districts.forEach((dk, d) => put(`way-${dk}`, 'way', d));
   // The gate first: it belongs on the road in, wherever else is crowded.
+  // A place that stands in for the gate takes the gate's spot on the road in.
+  const gatePlace = spec.places.find((pl) => pl.replaces === 'gate');
+  if (gatePlace) put(`place-${slug(gatePlace.label)}`, 'gate', districts.indexOf(gatePlace.district ?? home('gate')));
   for (const kind of [...kinds.filter((k) => k === 'gate'), ...kinds.filter((k) => k !== 'gate')]) {
+    if (replaced.has(kind)) continue;
     const n = (counts.get(kind) ?? 0) + 1;
     counts.set(kind, n);
     // Landmarks spread round the town's quarters, not all in the first.
@@ -632,7 +666,11 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   for (const p of spec.people) {
     if (!VENUE_KINDS.includes(p.at as VenueKind)) put(`person-${slug(p.name)}`, 'person', districts.indexOf(p.at as DistrictKind));
   }
-  for (const pl of spec.places) put(`place-${slug(pl.label)}`, 'place', pl.district ? districts.indexOf(pl.district) : 0);
+  for (const pl of spec.places) {
+    if (pl === gatePlace) continue;
+    const d = pl.district ?? (pl.replaces ? home(pl.replaces) : districts[0]!);
+    put(`place-${slug(pl.label)}`, 'place', districts.indexOf(d));
+  }
 
   // Roads: within a district, each place to its nearest neighbour already
   // joined; then each district to the next, nearest pair to nearest pair.
@@ -669,7 +707,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     return generatedEncounterId(enc.members);
   };
   for (const p of placed) {
-    if (p.kind === 'person' || p.kind === 'place') continue;
+    if (p.kind === 'person' || p.kind === 'place' || p.id.startsWith('place-')) continue;
     if (p.kind === 'way') continue;
     ctx.hub = hubOf(p.d);
     const v = venue(p.kind, p.id, dice, ctx);
@@ -721,7 +759,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     const p = placed.find((x) => x.id === id)!;
     const sets: Effect[] = pl.sets ? [{ kind: 'setFlag', flag: pl.sets }] : [];
     const loot: Effect[] = !pl.loot ? [] : pl.loot === 'gold' ? [{ kind: 'gold', amount: 20 * spec.level }] : [{ kind: 'addItem', itemId: pl.loot }];
-    scenes[id] = { id, kind: 'story', noBack: true, text: pl.text,
+    if (!pl.event || pl.event.until?.length) scenes[id] = { id, kind: 'story', noBack: true, text: pl.text,
       next: [
         ...(loot.length ? [{ id: 'take', label: 'Take what is there', to: hubOf(p.d), once: true, effects: [...loot, ...sets] }] : []),
         ...(pl.way ? [{ id: 'on', label: pl.way.label ?? `Go on, past the ${pl.label.toLowerCase()}`, to: pl.way.to, ...(sets.length ? { effects: sets } : {}) }] : []),
@@ -730,7 +768,11 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     const node: ExploreNode = { id, label: pl.label, icon: pl.icon ?? 'tok-mystery', scene: id, x: p.x, y: p.y,
       ...(pl.hidden ? { hidden: { dc: pl.hidden } } : {}),
       ...(pl.when?.length ? { requires: needs(pl.when), note: 'Not now.' } : {}) };
-    if (pl.fight) {
+    if (pl.event) {
+      // The story's scene, until it is done; then the place is its text.
+      const { scene, until, when } = pl.event;
+      Object.assign(node, { scene, sceneWhen: [...(until?.length ? [{ if: until, to: id }] : []), ...(when ?? [])] });
+    } else if (pl.fight) {
       // A fight on the way in, once: won, the place is just the place.
       const fid = `${id}-fight`, won = `${id}-cleared`;
       scenes[fid] = { id: fid, kind: 'battle', encounterId: fightFor(pl.fight), mapId: 'village',
@@ -762,6 +804,10 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
       n.wandering = { chance: 0.25, battleScene: bid, night: 0.5 };
     }
   }
+  // No inn of its own, no waiting for nightfall: the shops simply keep hours.
+  if (replaced.has('inn')) {
+    for (const n of nodes) if (n.requires) n.requires = n.requires.filter((r) => !(r.kind === 'notFlag' && r.flag === NIGHT));
+  }
   const entry = placed.find((p) => p.kind === 'gate') ?? placed[0]!;
   // The way back up, in each quarter.
   for (const p of placed) {
@@ -773,7 +819,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     const mine = new Set(placed.filter((p) => mapOf(p.d) === m).map((p) => p.id));
     const ns = nodes.filter((n) => mine.has(n.id));
     return {
-      title, theme: 'village', art: { emoji: '🏘️' }, entry: [at], nodes: ns,
+      title, theme: 'village', art: { emoji: '🏘️' }, entry: [at], nodes: ns, ...(spec.camp ? { camp: {} } : {}),
       roads: roads.filter(([a, b]) => mine.has(a) && mine.has(b)),
       ground: { feature: g.feature, ...(g.water ? { water: g.water } : {}), ...(g.wall ? { wall: g.wall } : {}),
         streets: [...g.streets, ...ns.flatMap((n) => { const l = laneTo([n.x, n.y], g); return l ? [l] : []; })] },
@@ -850,7 +896,8 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     start: { id: 'start', kind: 'story', text: [`${town} comes into sight: ${spec.size === 'village' ? 'a few roofs and a green' : spec.size === 'town' ? 'a market town behind a low wall' : 'walls, towers, and the smoke of a thousand chimneys'}.`],
       next: [{ id: 'in', label: `Go into ${town}`, to: 'city', effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
     city: { id: 'city', kind: 'explore', map: quartered ? cityOfQuarters() : mapFor(0, town, entry.id) },
-    left: { id: 'left', kind: 'ending', outcome: 'victory', text: [`${town} falls away behind you.`] },
+    // (No way out of its own when the story keeps the gate.)
+    ...(replaced.has('gate') ? {} : { left: { id: 'left', kind: 'ending', outcome: 'victory', text: [`${town} falls away behind you.`] } }),
   } satisfies Record<Id, Scene>);
   if (quartered) {
     districts.forEach((dk, d) => {
@@ -872,6 +919,50 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
 
 class Reroll extends Error {}
 
+/**
+ * The town with the story's scenes stood in for, to prove it alone: each
+ * place's scene does what it waits on and comes back, and the way on (or the
+ * place that keeps the gate) is where the town is left behind.
+ */
+function withStandIns(module: Module, places: readonly CustomPlace[]): Module {
+  const scenes: Record<Id, Scene> = { ...module.scenes };
+  const stand = (id: Id, sc: Scene) => { if (!scenes[id]) scenes[id] = sc; };
+  const away: Scene = { id: '', kind: 'ending', outcome: 'victory', text: ['(The story goes on.)'] };
+  for (const pl of places) {
+    for (const w of pl.event?.when ?? []) {
+      stand(w.to, { id: w.to, kind: 'story', noBack: true, text: ['(The story\'s own scene.)'], next: [{ id: 'on', label: 'On', to: '@hub' }] });
+    }
+    if (pl.event) {
+      const sets = (pl.event.until ?? []).flatMap((q) => (q.kind === 'flag' ? [{ kind: 'setFlag' as const, flag: q.flag }] : []));
+      stand(pl.event.scene, pl.replaces === 'gate' ? { ...away, id: pl.event.scene }
+        : { id: pl.event.scene, kind: 'story', noBack: true, text: ['(The story\'s own scene.)'],
+            next: [{ id: 'on', label: 'On', to: '@hub', ...(sets.length ? { effects: sets } : {}) }] });
+    }
+    if (pl.way) stand(pl.way.to, { ...away, id: pl.way.to });
+  }
+  /*
+   * What the story outside the town might have done, as a marker that can
+   * do any of it: the story flags the places wait on, and the story scenes
+   * they ask after having seen.
+   */
+  const asks = places.flatMap((pl) => [...(pl.event?.until ?? []), ...(pl.event?.when ?? []).flatMap((w) => w.if)]);
+  const flags = [...new Set(asks.flatMap((r) => (r.kind === 'flag' || r.kind === 'notFlag' ? [r.flag] : [])))];
+  const seen = [...new Set(asks.flatMap((r) => (r.kind === 'visited' ? [r.scene] : [])))];
+  for (const v of seen) stand(v, { id: v, kind: 'story', noBack: true, text: ['(The story\'s own scene.)'], next: [{ id: 'on', label: 'On', to: '@hub' }] });
+  if (flags.length || seen.length) {
+    scenes['story-elsewhere'] = { id: 'story-elsewhere', kind: 'story', noBack: true, text: ['(Meanwhile, in the story.)'], next: [
+      ...flags.map((f) => ({ id: `set-${f}`, label: f, to: 'city', effects: [{ kind: 'setFlag' as const, flag: f }] })),
+      ...seen.map((v) => ({ id: `see-${v}`, label: v, to: v })),
+      { id: 'back', label: 'Back', to: '@hub' },
+    ] };
+    const city = scenes.city;
+    if (city?.kind === 'explore') {
+      scenes.city = { ...city, map: { ...city.map, nodes: [...city.map.nodes, { id: 'story-elsewhere', label: 'Elsewhere', icon: 'tok-mystery', scene: 'story-elsewhere', x: 50, y: 50 }] } };
+    }
+  }
+  return { ...module, scenes };
+}
+
 /** A playable, validated town. Deterministic in seed and spec. */
 export function generateCity(seed: number, spec: CitySpec = {}, opts: CityOptions = {}): { module: Module; rerolls: number } {
   const full = checkCitySpec(spec, opts);
@@ -884,7 +975,7 @@ export function generateCity(seed: number, spec: CitySpec = {}, opts: CityOption
     }
     // Inside a story the town is not a module of its own: the story's
     // validator proves it, spliced in, with the story's scenes and flags.
-    last = opts.story ? [] : validateModule(module);
+    last = opts.story && !opts.apart ? [] : validateModule(opts.apart ? withStandIns(module, full.places) : module);
     if (last.length === 0) return { module: { ...module, id: cityId(seed, spec) }, rerolls: attempt };
   }
   throw new Error(`No valid town for seed ${seed}: ${last.join('; ')}`);

@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-115 scenes · 172 versions · 2,618,566 states searched (with text conditions tracked).
+112 scenes · 169 versions · 2,495,026 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -213,29 +213,6 @@ A scarred caravan guard rolls her axe over on the table. "Every weapon's got a t
 
 - » **Nod your thanks**
 
-## `square` · explore
-
-<sub>reads: flag:mill-saved, flag:spy-caught, visited:spy-confront, flag:know-spy, visited:trail</sub>
-
-**Map:** Thornwick Square
-
-- **The Wander-Inn** → `tavern`
-- **Market** → `market`
-- **Notice Board** → `board`
-- **The Old Mill** → `mill`
-  - goes to `mill-done` instead when `mill-saved`
-- **Peddler's Stall** → `spy-confront`
-  - goes to `spy-gone` instead when `spy-caught`
-  - goes to `spy-confront` instead when been to `spy-confront`
-  - goes to `spy-stalk` instead when `know-spy`
-- **Leave for the Marsh Road** → `trailhead`
-  - goes to `gate-blocked` instead when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`
-  - goes to `trailhead-clear` instead when been to `trail`
-
-## `market` · shop
-
-"Coin's coin, and I'll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."
-
 ## `board` · story
 
 <sub>reads: return?</sub>
@@ -418,12 +395,6 @@ The cockatrices are still in the hedge, and this time they come out of it the mo
 *Won:*
 
 The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.
-
-## `mill-done` · story
-
-The mill's sails are turning again, and the miller waves from the door. The stone dog keeps its vigil by the gate, forever pointing at nothing.
-
-- » **Back to the square**
 
 ## `spy-bolts` · battle
 
@@ -809,12 +780,6 @@ The dead horse still lies across the trail.
 Wren is long gone to Thornwick for the reeve's men. The flies have the horse to themselves.
 
 - » **Keep to the trail**
-
-## `spy-gone` · story
-
-The peddler's stall stands bare, its awning taken down. He sits in the reeve's cells now, and the square has already moved on.
-
-- » **Turn back to the square**
 
 ## `barrow` · story
 
@@ -2075,7 +2040,7 @@ Wren pushes through the crowd on a crutch and hands you the reeve's purse of fif
 
 ## `defeat` · story
 
-<sub>reads: at:square, at:trail/delve, at:inner/delve, visited:trail, flag:den-entered, return?</sub>
+<sub>reads: at:square/city, at:trail/delve, at:inner/delve, visited:trail, flag:den-entered, return?</sub>
 
 **4 versions**
 
@@ -2216,7 +2181,7 @@ In.
   - goes to `ambush-wren` instead when Wren in the party
   - goes to `ambush-wet` instead when `trail-wet`
 - **The Hollow** → `hollow-quiet` <sub>open when `know-hag`; otherwise greyed</sub>
-- **Out** → `square`
+- **Out** → `square/city`
 
 ## `inner` · story
 
@@ -2240,17 +2205,33 @@ In.
 - **The Chief's Hall** → `boss-approach` <sub>open when `pit-won` · met Vex; otherwise greyed</sub>
 - **Out** → `hollow-quiet`
 
+## `square/city` · explore
+
+<sub>reads: flag:spy-caught, visited:spy-confront, flag:know-spy, visited:trail</sub>
+
+**Map:** Thornwick
+
+- **The Wander-Inn** → `tavern`
+- **Notice Board** → `board`
+- **The Old Mill** → `mill`
+- **Peddler's Stall** → `spy-confront` <sub>open when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`; otherwise greyed</sub>
+  - goes to `spy-confront` instead when been to `spy-confront`
+  - goes to `spy-stalk` instead when `know-spy`
+- **The Marsh Road** → `trailhead`
+  - goes to `gate-blocked` instead when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`
+  - goes to `trailhead-clear` instead when been to `trail`
+
 ## Dawns
 
 ### Day 4
 
-#### when not at `square` · not at `inner/delve` — or — `pens-settled` · never met Wren · not `scout-walked-past`
+#### when not at `square/city` · not at `inner/delve` — or — `pens-settled` · never met Wren · not `scout-walked-past`
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
-#### when not `pens-settled` · never met Vex · at `square` · never met Wren · not `scout-walked-past`
+#### when not `pens-settled` · never met Vex · at `square/city` · never met Wren · not `scout-walked-past`
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 

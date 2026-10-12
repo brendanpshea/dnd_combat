@@ -829,6 +829,11 @@ export interface EmbeddedTown {
   reads?: string[];
   /** Town flags handed back to the story, renamed: town name → story name. */
   exports?: Record<string, string>;
+  /** Proved in parts, as a delve can be (EmbeddedDelve.proveApart): the town
+   *  on its own when built, the story with only its outside. */
+  proveApart?: true;
+  /** What the story calls the place (for its outside, in maps and proofs). */
+  title?: string;
 }
 
 /** A generated dungeon a written story walks into (Module.delves). */

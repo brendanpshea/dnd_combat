@@ -415,28 +415,28 @@ const TRAVERSE: Module = {
 };
 
 describe('hubs and once-choices', () => {
-  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+  const hollow = expandModule(MODULES.find((m) => m.id === 'hollow-road')!, { seed: 1, flags: [] });
 
   it('entering an explore scene records it as the hub', () => {
     const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'square');
-    expect(state.hub).toBe('square');
+    enterScene(state, hollow, 'square/city');
+    expect(state.hub).toBe('square/city');
   });
 
   it('@hub routes back to the last explore scene', () => {
     const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'square');   // hub = square
+    enterScene(state, hollow, 'square/city');   // hub = square
     enterScene(state, hollow, 'board');    // wander into a sub-scene
     returnToHub(state, hollow);
-    expect(state.sceneId).toBe('square');
+    expect(state.sceneId).toBe('square/city');
   });
 
   it('hubReturn offers the hub from a sub-scene but not from the hub itself', () => {
     const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'square');
+    enterScene(state, hollow, 'square/city');
     enterScene(state, hollow, 'board');
-    expect(hubReturn(state, hollow)).toBe('square');
-    enterScene(state, hollow, 'square');
+    expect(hubReturn(state, hollow)).toBe('square/city');
+    enterScene(state, hollow, 'square/city');
     expect(hubReturn(state, hollow)).toBeNull(); // explore scene, and == hub
   });
 
@@ -616,7 +616,7 @@ describe('shop', () => {
 // --- Playtest fixes: defeat, finished locations, battle rewards --------------
 
 describe('defeat, finished locations, battle rewards', () => {
-  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+  const hollow = expandModule(MODULES.find((m) => m.id === 'hollow-road')!, { seed: 1, flags: [] });
 
   it('a lost battle with no onLoss routes to the module defeat scene, revived', () => {
     const c = newCampaign(1);
@@ -681,22 +681,22 @@ describe('defeat, finished locations, battle rewards', () => {
 
   it('the scene event marks a revisit (first visit false, return true)', () => {
     const s = startAdventure(newCampaign(1), hollow);
-    const first = enterScene(s, hollow, 'square');
-    expect(first.find((e) => e.type === 'scene' && e.sceneId === 'square')).toMatchObject({ revisit: false });
+    const first = enterScene(s, hollow, 'square/city');
+    expect(first.find((e) => e.type === 'scene' && e.sceneId === 'square/city')).toMatchObject({ revisit: false });
     enterScene(s, hollow, 'board');
-    const again = enterScene(s, hollow, 'square');
-    expect(again.find((e) => e.type === 'scene' && e.sceneId === 'square')).toMatchObject({ revisit: true });
+    const again = enterScene(s, hollow, 'square/city');
+    expect(again.find((e) => e.type === 'scene' && e.sceneId === 'square/city')).toMatchObject({ revisit: true });
   });
 });
 
 // --- Camp: rest + party management (Phase 4) ---------------------------------
 
 describe('camp', () => {
-  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+  const hollow = expandModule(MODULES.find((m) => m.id === 'hollow-road')!, { seed: 1, flags: [] });
 
   it('campRule reflects the location: safe town, risky marsh, risky den', () => {
     const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'square');
+    enterScene(state, hollow, 'square/city');
     expect(campRule(state, hollow)).toEqual({}); // safe
     // The marsh and the den as a run builds them (generated delves, spliced in).
     const live = expandModule(hollow, { seed: 1, flags: [] });
@@ -710,7 +710,7 @@ describe('camp', () => {
     // Inside a scene, a night's ambush (whose win goes back to the map) would
     // let the party skip a one-way scene: the pens, the cleared ridge.
     const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'square'); // hub = square (safe camp)
+    enterScene(state, hollow, 'square/city'); // hub = square (safe camp)
     expect(campRule(state, hollow)).toEqual({});
     enterScene(state, hollow, 'board');  // a scene opened from the square
     expect(campRule(state, hollow)).toBeNull();
@@ -720,7 +720,7 @@ describe('camp', () => {
     const c = newCampaign(1);
     c.characters[0]!.resources = { hp: 1 };
     const state = startAdventure(c, hollow);
-    enterScene(state, hollow, 'square');
+    enterScene(state, hollow, 'square/city');
     const events = campRest(state, hollow, 'long');
     const heal = events.find((e) => e.type === 'heal');
     expect(heal && heal.type === 'heal' && heal.amount).toBeGreaterThan(0);
@@ -778,7 +778,7 @@ describe('camp', () => {
 // --- M2: exploration, wandering, journal ------------------------------------
 
 describe('traversal maps (paths & frontier)', () => {
-  const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
+  const hollow = expandModule(MODULES.find((m) => m.id === 'hollow-road')!, { seed: 1, flags: [] });
   
   it('a fresh traversal map shows only its entry; the fork is still fogged', () => {
     const s = startAdventure(newCampaign(1), TRAVERSE);
@@ -811,7 +811,7 @@ describe('traversal maps (paths & frontier)', () => {
 
   it('a free-roam map (the town square) shows every node, none as frontier', () => {
     const s = startAdventure(newCampaign(1), hollow);
-    enterScene(s, hollow, 'square');
+    enterScene(s, hollow, 'square/city');
     const vis = exploreNodes(s, hollow);
     // informant is flag-gated so it may be blocked, but all non-secret nodes show.
     expect(vis.length).toBeGreaterThanOrEqual(4);
@@ -1175,11 +1175,9 @@ describe('The Hollow Road (M4)', () => {
   it('optional side fights are guarded against re-farming', () => {
     // Each optional battle sets a cleared flag, and its node routes to an
     // "already done" beat once set — same anti-grind shape as the den fights.
-    const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'square');
-    state.flags['mill-saved'] = true;
-    enterNode(state, hollow, 'mill');
-    expect(state.sceneId).toBe('mill-done');
+    // The mill is a place in the town: it plays until its flag, then is only its text.
+    const mill = hollow.towns!.square!.spec.places!.find((pl) => pl.event?.scene === 'mill')!;
+    expect(mill.event!.until).toEqual([{ kind: 'flag', flag: 'mill-saved' }]);
     // The marsh pair are rooms of the marsh's delve: each plays until its flag.
     for (const [scene, flag] of [['barrow', 'barrow-cleared'], ['thicket', 'thicket-cleared']] as const) {
       const room = hollow.delves!.trail!.spec.require!.find((r) => r.event?.scene === scene)!;
@@ -1394,7 +1392,7 @@ describe('auto-player', () => {
 
 describe('overworld dressing (roads + pawn position)', () => {
   it('town maps have an entry pawn-start and visual roads over real nodes', () => {
-    for (const [modId, hub] of [['hollow-road', 'square'], ['sunken-barrows', 'town'], ['wyrmcalling', 'warcamp']] as const) {
+    for (const [modId, hub] of [['sunken-barrows', 'town'], ['wyrmcalling', 'warcamp']] as const) {
       const mod = MODULES.find((m) => m.id === modId)!;
       const scene = mod.scenes[hub]!;
       if (scene.kind !== 'explore') throw new Error(`${hub} is not explore`);

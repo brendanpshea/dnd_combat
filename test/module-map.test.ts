@@ -15,11 +15,11 @@ describe('module map', () => {
     const m = moduleMap(hollow);
     const at = (id: string) => m.nodes.find((n) => n.id === id)!.location;
     expect(at('road')).toBeNull();            // the prologue
-    expect(at('square')).toBe('square');      // a location is its own group
-    expect(at('mill-fight')).toBe('square');
+    expect(at('square/city')).toBe('square/city'); // a location is its own group
+    expect(at('mill-fight')).toBe('square/city');
     expect(at('barrow-fight')).toBe('trail/delve');
     expect(at('vex-parley')).toBe('inner/delve');
-    expect(m.locations.map((l) => l.title)).toEqual(['Thornwick Square', 'The Marsh Road', 'The Ashfang Den']);
+    expect(m.locations.map((l) => l.title)).toEqual(['The Marsh Road', 'The Ashfang Den', 'Thornwick']);
   });
 
   it('folds the way back to a scene\'s own location into a mark, not an arrow', () => {
@@ -53,12 +53,12 @@ describe('places (scopes.ts)', () => {
   it('holds a place to what it declares it reads and hands on', async () => {
     const { checkPlaces } = await import('../src/adventure/scopes.js');
     expect(checkPlaces(hollow).errors).toEqual([]);
-    const sq = hollow.places!.square!;
-    const quiet = { ...hollow, places: { square: { ...sq, exports: sq.exports!.filter((f) => f !== 'bounty') } } };
-    expect(checkPlaces(quiet).errors).toContain("[place square] 'bounty' is read outside it: export it, or keep it in");
-    const deaf = { ...hollow, places: { square: { ...sq, reads: ['mira-read'] } } };
+    const sq = hollow.places!['square/city']!;
+    const quiet = { ...hollow, places: { 'square/city': { ...sq, exports: sq.exports!.filter((f) => f !== 'bounty') } } };
+    expect(checkPlaces(quiet).errors).toContain("[place square/city] 'bounty' is read outside it: export it, or keep it in");
+    const deaf = { ...hollow, places: { 'square/city': { ...sq, reads: ['mira-read'] } } };
     expect(checkPlaces(deaf).errors.some((e) => e.includes("reads 'know-spy'"))).toBe(true);
-    const tight = { ...hollow, places: { square: { ...sq, budget: 3 } } };
+    const tight = { ...hollow, places: { 'square/city': { ...sq, budget: 3 } } };
     expect(checkPlaces(tight).errors.some((e) => e.includes('over its budget of 3'))).toBe(true);
   });
 });

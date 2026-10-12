@@ -104,7 +104,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
   bram: {
     id: 'bram', name: 'Bram', portraitId: 'npc-merchant', emoji: '🧑‍🌾',
     introducedAt: {
-      'hollow-road': ['market'],
+      // (In {thornwick} he keeps the generated town's store, which says so.)
       'sunken-barrows': ['sb-market'],
       // His stores; "Bram's stores" at the wagons, "Bram's war-stores" in the
       // hospital tent, the hoard he will buy, the arrows he sells in the ending.

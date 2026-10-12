@@ -217,7 +217,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 **» Step out into the square**
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → Peddler's Stall
 
@@ -267,7 +267,79 @@ _+40 gold (136)_
 
 _Journal (lead): The Gate-Signal_
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Spindward's Stores
+
+<sub>scene `square/general`</sub>
+
+_The shop: Spindward's Stores (the route buys nothing)._
+
+"Coin's coin, and I'll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Smithy
+
+<sub>scene `square/smithy`</sub>
+
+_The shop: The Smithy (the route buys nothing)._
+
+The forge roars. "Steel or leather? I make both, and I make them to last."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Lantern Temple
+
+<sub>scene `square/temple`</sub>
+
+**Quillow Fisherby**
+
+> **Quillow** looks up from the altar. "Peace be on you. What do you need of the Lantern?"
+
+**» Ask for healing (10 gold)**
+
+_-10 gold (126)_
+
+<sub>scene `square/temple-healed`</sub>
+
+Warm hands, an old prayer, and your wounds close like they were never there.
+
+**» Give thanks**
+
+<sub>scene `square/temple` (again)</sub>
+
+**Quillow Fisherby**
+
+_(a paragraph shown before: “Quillow looks up from the altar. "Peace…”)_
+
+**» See what the temple sells**
+
+<sub>scene `square/temple-wares`</sub>
+
+_The shop: Lantern Temple (the route buys nothing)._
+
+"Scrolls of the faith, and the draughts the sisters brew."
+
+<sub>scene `square/temple` (again)</sub>
+
+**Quillow Fisherby**
+
+_(a paragraph shown before: “Quillow looks up from the altar. "Peace…”)_
+
+**» Leave the temple**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Stone Fountain
+
+<sub>scene `square/landmark`</sub>
+
+A fountain whose water comes out cold in summer and warm in winter, and nobody knows why.
+
+**» Walk on**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → The Wander-Inn
 
@@ -279,17 +351,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 **» Step out into the square**
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
-
-→ Market
-
-<sub>scene `market`</sub>
-
-_The shop: Thornwick Market (the route buys nothing)._
-
-"Coin's coin, and I'll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."
-
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → Notice Board
 
@@ -301,11 +363,11 @@ Someone has added a line at the bottom in a smaller, prouder hand: *"Thornwick d
 
 **» Take the reeve's retainer up front**
 
-_+25 gold (161)_
+_+25 gold (151)_
 
 _Journal (quest): The Reeve's Bounty_
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → The Old Mill
 
@@ -331,15 +393,15 @@ _Level up: 1 → 2_
 
 The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.
 
-_+35 gold (196)_
+_+35 gold (186)_
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
 **Dawn — day 3.**
 
-→ Leave for the Marsh Road
+→ The Marsh Road
 
 <sub>scene `trailhead`</sub>
 
@@ -399,7 +461,7 @@ The cold answers you. Two figures rise out of the grave-earth. One wears the for
 
 The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
 
-_+45 gold (241)_
+_+45 gold (231)_
 
 **↳ The Drowned Halls** <sub>(dungeon `trail/delve`)</sub>
 
@@ -553,7 +615,7 @@ _Level up: 2 → 3_
 
 The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
 
-_+60 gold (301)_
+_+60 gold (291)_
 
 _Gained: Potion of Healing_
 
@@ -573,7 +635,7 @@ Someone hid their best here: coin, and a flask of something red.
 
 **» Take it**
 
-_+55 gold (356)_
+_+55 gold (346)_
 
 _Gained: Potion of Greater Healing_
 
@@ -687,7 +749,7 @@ _(a paragraph shown before: “Someone hid their best here: coin, and…”)_
 
 **» Take it**
 
-_+70 gold (426)_
+_+70 gold (416)_
 
 _Gained: Potion of Greater Healing_
 
@@ -821,7 +883,7 @@ Three giant hyenas and three grey wolves the size of ponies lunge to the ends of
 
 The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
 
-_+30 gold (456)_
+_+30 gold (446)_
 
 _Gained: Potion of Healing_
 
@@ -857,7 +919,7 @@ A tent of stolen goods, heaped anyhow. A careful search turns up the best of it.
 
 Beneath the junk you find real coin and a caravan's lost potion. Stuffed in a sack at the bottom is the **Ashfang banner** itself. The reeve will pay extra for that.
 
-_+80 gold (536)_
+_+80 gold (526)_
 
 _Gained: Potion of Greater Healing_
 
@@ -885,7 +947,7 @@ The ogre crashes down across its own broken chains. The goaders and their champi
 
 Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
 
-_+40 gold (576)_
+_+40 gold (566)_
 
 **↳ The Ashen Kilns** <sub>(dungeon `inner/delve`)</sub>
 
@@ -927,7 +989,7 @@ The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-_+100 gold (676)_
+_+100 gold (666)_
 
 <sub>scene `vargan-beaten`</sub>
 
@@ -951,7 +1013,7 @@ Behind him, Mira catches your eye and very nearly smiles.
 
 **» Let the reeve settle the rest of the bounty**
 
-_+95 gold (771)_
+_+95 gold (761)_
 
 <sub>scene `claim-balance`</sub>
 
@@ -967,7 +1029,7 @@ The reeve has closed his ledger, and stands with his arms folded in case anyone 
 
 **» Unroll the Ashfang banner on the well**
 
-_+60 gold (831)_
+_+60 gold (821)_
 
 <sub>scene `claim-banner`</sub>
 
@@ -983,7 +1045,7 @@ Someone has hung the Ashfang banner from the well-rope, and the children are tak
 
 **» Look for Wren in the crowd**
 
-_+50 gold (881)_
+_+50 gold (871)_
 
 <sub>scene `claim-scout`</sub>
 
@@ -1091,7 +1153,7 @@ _Journal (clue): They Walk One Way_
 
 **» Take a room for the night (1 gold, long rest)**
 
-_-1 gold (880)_
+_-1 gold (870)_
 
 <sub>scene `inn-rest`</sub>
 
@@ -1131,7 +1193,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 **» Take the reeve's commission**
 
-_+60 gold (940)_
+_+60 gold (930)_
 
 _Journal (npc): Reeve Aldous_
 
@@ -1279,7 +1341,7 @@ She looks at the purses, then at you. "Those belonged to somebody's husband, som
 
 **» Keep the purses. The dead won't spend them**
 
-_+55 gold (995)_
+_+55 gold (985)_
 
 _Gained: Potion of Healing ×2_
 
@@ -1327,7 +1389,7 @@ Wren creeps round to the far bank and rattles her bow in the reeds there, the wa
 
 The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion. The pool is plain water now.
 
-_+85 gold (1080)_
+_+85 gold (1070)_
 
 _Gained: Potion of Greater Healing_
 
@@ -1449,7 +1511,7 @@ Old gold winks from the niches between the skulls. The barrow-lords took their w
 
 Behind a row of skulls, the builders left a hidden nook. Inside are coins stamped with kings with no names on them. There is also a flask of drink that has gone strong with age instead of sour.
 
-_+90 gold (1170)_
+_+90 gold (1160)_
 
 _Gained: Potion of Greater Healing_
 
@@ -1531,7 +1593,7 @@ The wight comes apart at the joints and lies down in its own armour. The cold li
 
 Under its slab lies a guardsman's pay that no one ever came to collect, old coins gone green in a rotted pouch.
 
-_+40 gold (1210)_
+_+40 gold (1200)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1561,7 +1623,7 @@ You pick his gold rings out of the dust where his hands fell.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
-_+60 gold (1270)_
+_+60 gold (1260)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1635,7 +1697,7 @@ The last ghoul falls among the candles, beside the two kneelers who rose to figh
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
-_+120 gold (1390)_
+_+120 gold (1380)_
 
 <sub>scene `marrow-spared`</sub>
 
@@ -1697,7 +1759,7 @@ At the edge of town Wren says "Thank you," fast, to the road, and walks on befor
 
 **» Go up to the reeve's hall**
 
-_+150 gold (1540)_
+_+150 gold (1530)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -1713,7 +1775,7 @@ Every night of the reburials the Wander-Inn fills with mourners, and the innkeep
 
 **» Spend the reeve's purse on a hot supper for the whole taproom (150 gold)**
 
-_-150 gold (1390)_
+_-150 gold (1380)_
 
 <sub>scene `sb-claim-round`</sub>
 
@@ -1987,7 +2049,7 @@ The wyrmling drops in the middle of a hiss, and its poison breath thins to a har
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
-_+75 gold (1465)_
+_+75 gold (1455)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2027,7 +2089,7 @@ The water-giant falls apart all at once. A hundred gallons of plain water run aw
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
-_+50 gold (1515)_
+_+50 gold (1505)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2057,7 +2119,7 @@ The horn sounds twice, and the gate opens on the ogre-mage's guard. Three orcs i
 
 The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate, and the fort's war-chest sits unguarded in the yard.
 
-_+130 gold (1645)_
+_+130 gold (1635)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2085,7 +2147,7 @@ The ettin lifts both its clubs. For once both heads want the same thing, and the
 
 The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
-_+140 gold (1785)_
+_+140 gold (1775)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2121,7 +2183,7 @@ Higher up the rock, something else is roosting. It is a lean grey drake with lea
 
 The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
-_+110 gold (1895)_
+_+110 gold (1885)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2147,7 +2209,7 @@ The drumming turns into thunder. Three boars the size of hay-carts come down the
 
 The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. A drover's torn purse hangs from the lead boar's tusk, still half full.
 
-_+40 gold (1935)_
+_+40 gold (1925)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2179,7 +2241,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (2030)_
+_+95 gold (2020)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2207,7 +2269,7 @@ The wyrmling's fire goes out from the inside, and it is finally, simply small. I
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
-_+120 gold (2150)_
+_+120 gold (2140)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2237,7 +2299,7 @@ You work down the rows with soft hands, gathering purses out of the grass. A hir
 
 The gorgon chews on and does not look up. You are back on the trail before your hands stop shaking.
 
-_+90 gold (2240)_
+_+90 gold (2230)_
 
 _Gained: Potion of Greater Healing_
 
@@ -2339,7 +2401,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (2440)_
+_+200 gold (2430)_
 
 <sub>scene `calling-won`</sub>
 
@@ -2363,7 +2425,7 @@ Your fighter sits down on the first barrel inside the gate, and does not get up 
 
 **» Accept the valley's purse**
 
-_+250 gold (2690)_
+_+250 gold (2680)_
 
 <sub>scene `wc-purse`</sub>
 

@@ -427,7 +427,7 @@ const scenes: Record<string, Scene> = {
       // spells. Gated on having the coin; the effect deducts it before resting.
       { id: 'room', label: 'Take a room for the night ({inn-room}, long rest)', to: 'inn-rest',
         requires: [{ kind: 'gold', atLeast: factValue('inn-room') }], effects: [{ kind: 'gold', amount: -factValue('inn-room') }] },
-      { id: 'leave', label: 'Step out into the square', to: 'square' },
+      { id: 'leave', label: 'Step out into the square', to: 'square/city' },
     ],
   },
   'inn-rest': {
@@ -516,55 +516,6 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Nod your thanks', to: 'regulars' }],
   },
 
-  square: {
-    id: 'square', kind: 'explore',
-    map: {
-      title: '{thornwick} Square', theme: 'stone', art: { imageId: 'loc-village', emoji: '⛲' },
-      camp: {}, // safe: rest freely in town
-      // Overworld dressing: the party pawn arrives at the inn, and lanes link
-      // the stops so the square reads as one place, not floating markers.
-      entry: ['inn'],
-      roads: [
-        ['inn', 'market'], ['market', 'board'], ['inn', 'mill'],
-        ['market', 'informant'], ['informant', 'gate'], ['board', 'gate'],
-      ],
-      nodes: [
-        { id: 'inn', x: 20, y: 30, label: 'The {wander-inn}', icon: 'tok-tavern', scene: 'tavern' },
-        { id: 'market', x: 40, y: 40, label: 'Market', icon: 'tok-market', scene: 'market' },
-        { id: 'board', x: 70, y: 28, label: 'Notice Board', icon: 'tok-notice', scene: 'board' },
-        // Optional side bounty: honest early XP for a party that helps out.
-        { id: 'mill', x: 12, y: 62, label: 'The Old Mill', icon: 'tok-figure', scene: 'mill',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'mill-saved' }], to: 'mill-done' }] },
-        // The peddler is always here to be dealt with, under a plain label: the
-        // map doesn't know he's the leak until Mira (the tavern Insight) says so.
-        // Walking up cold ends in a fight. A party that read the lead can stalk
-        // him first (`spy-stalk`) and take him before he whistles, but only
-        // while he hasn't seen them: once he has whistled at them (his crew
-        // fought, faced down or fallen back from), the stall is the
-        // confrontation again.
-        // The gate below won't open until he's caught, so no party skips him.
-        { id: 'informant', x: 48, y: 66, label: 'Peddler\'s Stall', icon: 'tok-figure', scene: 'spy-confront',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'spy-caught' }], to: 'spy-gone' },
-            { if: [{ kind: 'visited', scene: 'spy-confront' }], to: 'spy-confront' },
-            { if: [{ kind: 'flag', flag: 'know-spy' }], to: 'spy-stalk' }] },
-        { id: 'gate', x: 82, y: 78, label: 'Leave for the Marsh Road', icon: 'tok-gate', scene: 'trailhead',
-          sceneWhen: [{ if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-blocked' },
-            // The road out was fought (or faced down) already: don't replay it.
-            { if: [{ kind: 'visited', scene: 'trail' }], to: 'trailhead-clear' }] },
-      ],
-    },
-  },
-  // A raided village's market: healing, plain steel and road armour. Not much
-  // magic gets through when the Ashfang take every second cart.
-  market: { id: 'market', kind: 'shop', title: '{thornwick} Market', next: 'square',
-    stock: [
-      'potion-healing', 'potion-greater-healing', 'alchemists-fire', 'potion-poison-resistance',
-      'scroll-cure-wounds', 'scroll-healing-word', 'scroll-bless', 'scroll-protection-from-evil-and-good',
-      'dagger', 'handaxe', 'spear', 'battleaxe', 'warhammer', 'longbow',
-      'padded', 'leather', 'studded-leather', 'hide', 'chain-shirt', 'ring-mail', 'scale-mail', 'chain-mail',
-    ],
-    npc: speaker(NPCS.bram!, { label: '{bram} the Quartermaster' }),
-    intro: ['"Coin\'s coin, and I\'ll not ask where yours has been." **{bram}** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."'] },
   board: {
     id: 'board', kind: 'story', art: { emoji: '📜' },
     text: [
@@ -574,14 +525,14 @@ const scenes: Record<string, Scene> = {
     again: ['The reeve\'s bounty still hangs on the board, a little greyer at the edges than before.'],
     next: [
       // `once` so the reeve's retainer can't be re-claimed by revisiting the board.
-      { id: 'ok', label: 'Take the reeve\'s retainer up front', to: 'square', once: true,
+      { id: 'ok', label: 'Take the reeve\'s retainer up front', to: 'square/city', once: true,
         effects: [{ kind: 'setFlag', flag: 'bounty' }, { kind: 'gold', amount: factValue('bounty-retainer') },
           { kind: 'journal', entry: { id: 'c-bounty', kind: 'quest', takenBy: 'bounty', resolvedBy: 'got-bounty',
             stages: [
               { text: 'Bring down the {ashfang} chief', done: [{ kind: 'npc', npc: 'reedwife', met: true }] },
               { text: 'Collect from the reeve', done: [{ kind: 'flag', flag: 'got-bounty' }] },
             ], title: 'The Reeve\'s Bounty', body: 'The reeve pays for the {ashfang} chief dead, and pays extra for their banner brought back as proof. You took {bounty-retainer} gold of it up front.' } }] },
-      { id: 'leave', label: 'Leave it for now', to: 'square' },
+      { id: 'leave', label: 'Leave it for now', to: 'square/city' },
     ],
   },
   'spy-confront': {
@@ -620,7 +571,7 @@ const scenes: Record<string, Scene> = {
       'The reeve pays a purse for the town\'s leak. The gate-warden is already waving you over.',
     ],
     noBack: true,
-    next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
+    next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square/city',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
         { kind: 'journal', entry: { id: 'c-signal', kind: 'lead', resolvedBy: 'signal-spent', title: 'The Gate-Signal', body: 'You caught the {ashfang}\'s informant in the market and took the raiders\' gate-signal off him. Call it up to the watch-post at the den\'s gate, and the watch should open for you.' } }] }],
   },
@@ -636,7 +587,7 @@ const scenes: Record<string, Scene> = {
       'Signal or no signal, the reeve pays a purse for the town\'s leak. The gate-warden is already pushing through the crowd to collect him.',
     ],
     noBack: true,
-    next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square',
+    next: [{ id: 'ok', label: 'Hand him to the reeve', to: 'square/city',
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'gold', amount: 40 },
         { kind: 'journal', entry: { id: 'c-peddler', kind: 'clue', title: 'The Peddler\'s List', body: 'You caught the {ashfang}\'s informant in the market, but not quietly. One of his crew ran for the den, so the gate-signal he knew is no good now. You will need another way past the den\'s watch.' } }] }],
   },
@@ -680,7 +631,7 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'spy-seen' }],
         text: '"And don\'t tell me you don\'t know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road\'s yours."' },
     ],
-    next: [{ id: 'ok', label: 'Back into the square', to: 'square' }], noBack: true,
+    next: [{ id: 'ok', label: 'Back into the square', to: 'square/city' }], noBack: true,
   },
   // --- Optional: the mill bounty (Act 1 side fight) ------------------------
   mill: {
@@ -693,20 +644,15 @@ const scenes: Record<string, Scene> = {
     again: ['{osk} the miller still has his boat-hook in both hands. "Back, are you? The ugly things are still in my hedgerows, and my grain\'s still standing."'],
     next: [
       { id: 'help', label: 'Beat the hedgerows', to: 'mill-fight' },
-      { id: 'later', label: 'Leave him to his hedgerows', to: 'square' },
+      { id: 'later', label: 'Leave him to his hedgerows', to: 'square/city' },
     ],
   },
   'mill-fight': {
     id: 'mill-fight', kind: 'battle', encounterId: 'cockatrice-flock', mapId: 'open',
     intro: ['Two bat-winged things burst out of the hedge in a fury of beak and scale, hissing like geese. "Cockatrices!" the miller shouts from his door. "Mind the beaks!"'],
     again: ['The cockatrices are still in the hedge, and this time they come out of it the moment you reach the gate. Mind the bite.'],
-    onWin: { to: 'square', text: ['The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.'],
+    onWin: { to: 'square/city', text: ['The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.'],
       effects: [{ kind: 'setFlag', flag: 'mill-saved' }, { kind: 'gold', amount: 35 }] },
-  },
-  'mill-done': {
-    id: 'mill-done', kind: 'story', art: { emoji: '🌾' },
-    text: ['The mill\'s sails are turning again, and the miller waves from the door. The stone dog keeps its vigil by the gate, forever pointing at nothing.'],
-    next: [{ id: 'ok', label: 'Back to the square', to: 'square' }], noBack: true,
   },
 
   'spy-bolts': {
@@ -1011,12 +957,6 @@ const scenes: Record<string, Scene> = {
       '{wren} is long gone to {thornwick} for the reeve\'s men. The flies have the horse to themselves.',
     ],
     next: [{ id: 'ok', label: 'Keep to the trail', to: HUB_REF }], noBack: true,
-  },
-  'spy-gone': {
-    id: 'spy-gone', kind: 'story', art: { imageId: 'loc-village', emoji: '🕳️' },
-    assumes: [{ kind: 'flag', flag: 'spy-caught' }],
-    text: ['The peddler\'s stall stands bare, its awning taken down. He sits in the reeve\'s cells now, and the square has already moved on.'],
-    next: [{ id: 'ok', label: 'Turn back to the square', to: 'square' }], noBack: true,
   },
   // --- Optional: the sunken barrow (Act 2 side fight, undead teaser) -------
   barrow: {
@@ -1671,7 +1611,7 @@ const scenes: Record<string, Scene> = {
     text: [
       'You wake to lamplight and the crackle of {mira}\'s hearth. The last thing you remember is the ground coming up to meet you.',
       // How the company got home, by where it fell (Part 2 has its own).
-      { if: [{ kind: 'at', hub: 'square' }],
+      { if: [{ kind: 'at', hub: 'square/city' }],
         text: 'The reeve\'s men carried you in, she tells you, and then stood about in her taproom until she fed them.' },
       { if: [{ kind: 'at', hub: 'trail/delve' }],
         text: 'A reed-cutter found you face-down in the reeds and poled you home on his raft. He would not take a copper for it.' },
@@ -1691,7 +1631,7 @@ const scenes: Record<string, Scene> = {
     // loss out there or in the den is not the whole road again.
     // A party that fell inside the den goes straight back in, to the room it
     // fell in (as Part 2's barrow stair), not the whole marsh road again.
-    next: [{ id: 'up', label: 'Get back on your feet', to: 'square', effects: [{ kind: 'passDay' }] },
+    next: [{ id: 'up', label: 'Get back on your feet', to: 'square/city', effects: [{ kind: 'passDay' }] },
       { id: 'back', label: 'Go straight back out on the marsh road', to: 'trail', effects: [{ kind: 'passDay' }],
         requires: [{ kind: 'visited', scene: 'trail' }], hideWhenBlocked: true },
       { id: 'den', label: 'Go straight back into the den', to: 'inner', effects: [{ kind: 'passDay' }],
@@ -1850,7 +1790,43 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
    * dealt with (and how), the bounty taken, the mill saved.
    */
   places: {
-    square: { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
+    'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
+  },
+  /*
+   * {thornwick}: a village laid out fresh every run, its shops and the
+   * temple the generator's own. The story's places in it: {mira}'s inn, the
+   * reeve's notice board, the mill, the peddler's stall, and the gate, which
+   * stays shut until the peddler is caught.
+   */
+  towns: {
+    square: {
+      spec: {
+        size: 'village', level: 1, name: '{thornwick}', camp: true,
+        people: [{ name: '{bram}', at: 'general', keeps: true,
+          lines: ['"Coin\'s coin, and I\'ll not ask where yours has been." **{bram}** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."'] }],
+        places: [
+          { label: 'The {wander-inn}', replaces: 'inn', text: [], event: { scene: 'tavern' } },
+          { label: 'Notice Board', replaces: 'notice-board', icon: 'tok-notice', text: [], event: { scene: 'board' } },
+          { label: 'The Old Mill', icon: 'tok-figure',
+            text: ['The mill\'s sails are turning again, and the miller waves from the door. The stone dog keeps its vigil by the gate, forever pointing at nothing.'],
+            event: { scene: 'mill', until: [{ kind: 'flag', flag: 'mill-saved' }] } },
+          // Always there under a plain label: the map doesn't know he's the
+          // leak until {mira} says so. A party that read the lead can stalk
+          // him, until he has whistled at them.
+          { label: 'Peddler\'s Stall', icon: 'tok-figure',
+            text: ['The peddler\'s stall stands bare, its awning taken down. He sits in the reeve\'s cells now, and the square has already moved on.'],
+            event: { scene: 'spy-confront', until: [{ kind: 'flag', flag: 'spy-caught' }], when: [
+              { if: [{ kind: 'visited', scene: 'spy-confront' }], to: 'spy-confront' },
+              { if: [{ kind: 'flag', flag: 'know-spy' }], to: 'spy-stalk' }] } },
+          // Shut until the peddler is caught; the road out fought once.
+          { label: 'The Marsh Road', replaces: 'gate', icon: 'tok-gate', text: [], event: { scene: 'trailhead', when: [
+            { if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-blocked' },
+            { if: [{ kind: 'visited', scene: 'trail' }], to: 'trailhead-clear' }] } },
+        ],
+      },
+      onLeave: { to: 'trailhead' },
+      proveApart: true, title: '{thornwick}',
+    },
   },
   delves: {
   /*
@@ -1889,7 +1865,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
           exit: { to: 'hollow-quiet', label: 'On to the den' } },
       ],
     } as DelveSpec,
-    onWin: { to: 'hollow-quiet' }, onLeave: { to: 'square' },
+    onWin: { to: 'hollow-quiet' }, onLeave: { to: 'square/city' },
     proveApart: true, title: 'The Marsh Road',
   },
   inner: {
@@ -1918,7 +1894,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   // Part 1 of the trilogy (docs/trilogy-plan.md): a victory carries the
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
-  start: 'road', scenes, defeatScene: 'defeat', town: 'square',
+  start: 'road', scenes, defeatScene: 'defeat', town: 'square/city',
   // The clock: the Ashfang keep their captives for the Reedwife, and she
   // takes them when the moon goes dark. Six nights' sleep and they are gone.
   dawns: [
@@ -1934,7 +1910,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       // Woken on the marsh road or in town (`at` names no third map but the
       // den), or in the den itself, or on {mira}'s cot after falling there.
       ...(['square', 'trail'] as const).map((hub) => ({
-        if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub: hub === 'trail' ? 'trail/delve' : hub }],
+        if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub: hub === 'trail' ? 'trail/delve' : 'square/city' }],
         text: 'Somewhere out there the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' })),
       { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner/delve' }],
         text: 'Somewhere in the den the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },
