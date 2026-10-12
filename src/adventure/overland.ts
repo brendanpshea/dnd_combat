@@ -24,7 +24,7 @@ import type { EmbeddedDelve, EmbeddedTown, Effect, QuestSpec, Requirement, Explo
 import { apart, checkCitySpec, generateCity, type CitySize, type CitySpec } from './city-gen.js';
 import { checkSpec, generateSpecDelve, type DelveSpec, type SpecTheme } from './delve-spec.js';
 import { wander, toLine, nearestOn } from './town-map.js';
-import { placeName, type NameStyle } from './names.js';
+import { bossName, personName, placeName, type NameStyle } from './names.js';
 import { questObjectName, theObject } from './quest-objects.js';
 import { compileQuests } from './quests.js';
 import { encodeSpec, decodeSpec, shareFor } from './delve-spec.js';
@@ -70,18 +70,31 @@ export interface LandSpec {
  *   fetch   an object from a delve's hoard or a camp (fight, or trade), or
  *           bought from the city's thieves' guild
  *   scout   go and see some places, and come back
+ *   rescue  someone held at a camp or a delve (fight, ransom, or sneak
+ *           them out), brought back
+ *   arrest  a camp's leader (beat them, or talk them into coming quietly)
+ *           or whoever holds a delve, brought back
+ *   deliver something to another settlement's inn
+ *
+ * A rescued or arrested person travels as a named flag ("with you: Mara
+ * Vell"), not a companion in the fights: they cannot be killed by a stray
+ * blow, left behind, or sold — nothing strands the quest by accident.
  */
 export interface LandQuest {
   id: Id;
-  kind: 'defeat' | 'fetch' | 'scout';
+  kind: 'defeat' | 'fetch' | 'scout' | 'rescue' | 'arrest' | 'deliver';
   /** The settlement whose innkeeper gives it ('city', or a place id; default the city). */
   giver?: Id;
   /** The camp or delve (defeat, fetch). */
   target?: Id;
   /** The places to see (scout). */
   visit?: Id[];
-  /** What to fetch (default: a name made up for it). */
+  /** What to fetch, or deliver (default: a name made up for it). */
   object?: string;
+  /** Who to rescue or arrest (default: a name made up for them). */
+  person?: string;
+  /** Where to deliver it (deliver): a settlement's id, or 'city'. */
+  to?: Id;
   title?: string;
 }
 
@@ -773,8 +786,58 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
         thanks: ['You tell it all, and it is written down, and paid for.'] };
       continue;
     }
+    if (lq.kind === 'deliver') {
+      const dest = byId(lq.to!)!;
+      const name = lq.object ?? `sealed letter for ${dest.label}`;
+      const flag = `has-${lq.id}`, sent = `sent-${lq.id}`;
+      quests[lq.id] = { ...base, title: lq.title ?? `To ${dest.label}`,
+        summary: `Carry ${theObject(name)} to the inn at ${dest.label}, and come back.`,
+        offer: [`"This wants carrying to ${dest.label}, and I can't leave the bar. Take it to the inn there, and come back for your pay."`],
+        stages: [{ text: `Hand over ${theObject(name)} at ${dest.label}`, done: [{ kind: 'flag', flag: sent }] }],
+        objects: { [flag]: theObject(name) }, gives: [flag],
+        adds: [{ scene: `${dest.id}/inn`, choice: { id: `quest-${lq.id}-hand`, label: `Hand over ${theObject(name)}`, to: `${dest.id}/inn`,
+          requires: [{ kind: 'flag', flag }], effects: [{ kind: 'clearFlag', flag }, { kind: 'setFlag', flag: sent }] } }],
+        thanks: ['"Got there, did it? Good." You are paid, and given a drink besides.'] };
+      continue;
+    }
     const t = target!;
     const isCamp = t.kind === 'camp';
+    if (lq.kind === 'rescue' || lq.kind === 'arrest') {
+      const rescue = lq.kind === 'rescue';
+      const who = lq.person ?? (rescue ? personName(style, rng() < 0.5 ? 'female' : 'male', rng).full : bossName(style, rng() < 0.5 ? 'female' : 'male', rng));
+      const flag = `${rescue ? 'with' : 'prisoner'}-${lq.id}`;
+      const take: Effect = { kind: 'setFlag', flag };
+      const adds: QuestSpec['adds'] = [];
+      if (isCamp) {
+        adds.push({ battle: `${t.id}-fight`, effects: [take] });
+        const dc = 10 + 2 * L;
+        for (const sc of [t.id, `${t.id}-prey`, `${t.id}-cowed`]) {
+          if (!scenes[sc]) continue;
+          if (rescue) {
+            const ransom = 20 * L;
+            adds.push({ scene: sc, choice: { id: `quest-${lq.id}-ransom`, label: `Pay ${ransom} gold for ${who}`, to: 'land',
+              requires: [{ kind: 'gold', atLeast: ransom }, { kind: 'notFlag', flag }], effects: [{ kind: 'gold', amount: -ransom }, take] } });
+            adds.push({ scene: sc, choice: { id: `quest-${lq.id}-sneak`, label: `Slip ${who} out after dark`, to: 'land', attempt: `quest-${lq.id}-sneak`,
+              requires: [{ kind: 'notFlag', flag }], check: { skill: 'stealth', dc, failTo: `${t.id}-fight` }, effects: [take] } });
+          } else {
+            adds.push({ scene: sc, choice: { id: `quest-${lq.id}-talk`, label: `Talk ${who} into coming quietly`, to: `${t.id}-quiet`, attempt: `quest-${lq.id}-talk`,
+              requires: [{ kind: 'notFlag', flag }], check: { skill: 'persuasion', dc: dc + 2, failTo: `${t.id}-fight` },
+              effects: [take, { kind: 'setFlag', flag: won(t.id) }] } });
+          }
+        }
+      } else {
+        delves[t.id]!.onWin = { ...delves[t.id]!.onWin, effects: [...(delves[t.id]!.onWin.effects ?? []), take] };
+      }
+      quests[lq.id] = { ...base, title: lq.title ?? `${rescue ? 'Bring Home' : 'Arrest'} ${who.split(' ')[0]}`.slice(0, 40),
+        summary: rescue ? `${who} is held at ${t.label}. Bring them home.` : `${who} leads ${t.label}. Bring them back to answer for it.`,
+        offer: [rescue
+          ? `"They took ${who} to ${t.label}. Fight them, pay them, sneak in — I don't care how. Just bring them home."`
+          : `"${who}. Every robbery on the roads leads back to ${t.label}. Bring them here in chains — talked into it or dragged."`],
+        stages: [{ text: rescue ? `Free ${who}` : `Take ${who}`, done: [{ kind: 'flag', flag }] }],
+        objects: { [flag]: rescue ? who : `${who}, in chains` }, adds,
+        thanks: [rescue ? `${who} is home. There are tears, and then there is coin.` : `${who} is taken off to the cells, and you are paid.`] };
+      continue;
+    }
     if (lq.kind === 'defeat') {
       const adds: QuestSpec['adds'] = [];
       // Another way: cow them into clearing out, if they will be cowed.
@@ -892,17 +955,22 @@ export function checkLandSpec(spec: LandSpec): Required<LandSpec> {
     const at = (m: string) => err(`quest '${q.id}': ${m}`);
     if (!/^[a-z][a-z0-9-]*$/.test(q.id) || qids.has(q.id)) at('an id is lower-case letters, digits and dashes, and its own');
     qids.add(q.id);
-    if (!['defeat', 'fetch', 'scout'].includes(q.kind)) at(`no kind of quest '${q.kind}'`);
+    if (!['defeat', 'fetch', 'scout', 'rescue', 'arrest', 'deliver'].includes(q.kind)) at(`no kind of quest '${q.kind}'`);
     const giver = kindOf(q.giver ?? 'city');
     if (giver !== 'city' && giver !== 'town' && giver !== 'village') at(`its giver '${q.giver}' is not the city or one of the county's towns or villages`);
     if (q.kind === 'scout') {
       if (!q.visit?.length) at('a scouting quest needs places to visit');
       for (const v of q.visit ?? []) if (!kindOf(v)) at(`'${v}' is not one of the county's places`);
+    } else if (q.kind === 'deliver') {
+      const to = q.to ? kindOf(q.to) : undefined;
+      if (to !== 'city' && to !== 'town' && to !== 'village') at(`it delivers to '${q.to}', which is not the city or one of the county's towns or villages`);
+      if ((q.to ?? 'city') === (q.giver ?? 'city')) at('it delivers to where it was given');
     } else {
       const t = q.target ? kindOf(q.target) : undefined;
       if (t !== 'camp' && t !== 'delve') at(`its target '${q.target}' is not one of the county's camps or delves`);
     }
-    if (q.object !== undefined && (q.kind !== 'fetch' || !q.object || q.object.length > 36)) at('an object is for a fetch quest, and 1–36 characters');
+    if (q.object !== undefined && ((q.kind !== 'fetch' && q.kind !== 'deliver') || !q.object || q.object.length > 36)) at('an object is for a fetch or a delivery, and 1–36 characters');
+    if (q.person !== undefined && ((q.kind !== 'rescue' && q.kind !== 'arrest') || !q.person || q.person.length > 30)) at('a person is for a rescue or an arrest, and 1–30 characters');
   }
   return { kind, level, top, places, delves, camps, quests };
 }

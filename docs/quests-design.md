@@ -55,9 +55,23 @@ Jade Circlet", "the Frozen Diamond of Mirostov".
 The county's proof stubs each town with its inn and back room, so a quest
 given in a town is proved like any other.
 
+## Step 3 (built): rescue, arrest, deliver
+
+- **rescue** someone held at a camp — fight, pay a ransom (20 gold a
+  level), or *slip them out after dark* (Stealth; failing, the fight) — or
+  in a delve (win it).
+- **arrest** a camp's leader — beat them, or *talk them into coming
+  quietly* (Persuasion; it ends the camp too) — or whoever holds a delve.
+- **deliver** something to another settlement's inn, handed over on taking
+  the quest; back to the giver for the pay.
+
+A person rescued or arrested travels as a named flag ("with you: Mara
+Vell"; "Black Tom, in chains"), not a companion in the fights: nothing
+kills them by a stray blow, leaves them behind, or sells them. The proof
+holds as before — a county whose delivery could never arrive is refused.
+
 ## Next
 
-3. Rescue, deliver, arrest: escorted companions, carried parcels.
 4. Generation: a lord in the city's castle, trade givers, notice-board
    bounties; rewards by level (rarely permanent magic); subquests feeding a
    main quest by count.

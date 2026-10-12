@@ -93,3 +93,65 @@ describe('quest objects', () => {
   });
 });
 void legalChoices; void ({} as Module);
+
+describe('rescue, arrest and delivery', () => {
+  const spec: LandSpec = { level: 2, camps: 0, delves: 1, places: [
+    { id: 'reavers', label: 'Reaver Camp', kind: 'camp', faction: 'bandits', hostile: false },
+    { id: 'barrow', label: 'The Old Barrow', kind: 'delve' },
+    { id: 'ashford', label: 'Ashford', kind: 'town' },
+  ], quests: [
+    { id: 'mara', kind: 'rescue', target: 'reavers', person: 'Mara Vell' },
+    { id: 'tom', kind: 'arrest', target: 'barrow', person: 'Black Tom' },
+    { id: 'post', kind: 'deliver', to: 'ashford' },
+  ] };
+  const land = generateLand(5, spec).module;
+  const run = expandModule(land, { seed: 2, flags: [] });
+  const city = Object.keys(land.towns!).find((id) => land.towns![id]!.spec.size === 'city')!;
+  const sc = (id: string) => { const s = run.scenes[id]; if (s?.kind !== 'story' && s?.kind !== 'dialogue') throw new Error(id); return s; };
+
+  it('rescues by the sword, by coin, or by stealth', () => {
+    expect(land.quests!.mara!.objects).toEqual({ 'with-mara': 'Mara Vell' });
+    const ways = sc('reavers').next.map((c) => c.id);
+    expect(ways).toEqual(expect.arrayContaining(['quest-mara-ransom', 'quest-mara-sneak', 'fight']));
+    expect(sc('reavers').next.find((c) => c.id === 'quest-mara-sneak')?.check).toMatchObject({ skill: 'stealth', failTo: 'reavers-fight' });
+    const fight = run.scenes['reavers-fight'];
+    expect(fight?.kind === 'battle' && fight.onWin.effects).toEqual(expect.arrayContaining([{ kind: 'setFlag', flag: 'with-mara' }]));
+  });
+
+  it('pays a ransom and brings them home', () => {
+    const c = newCampaign(6); c.gold = 500;
+    const s = startAdventure(c, run);
+    enterScene(s, run, `${city}/inn`);
+    choose(s, run, 'ask-mara'); choose(s, run, 'accept');
+    enterScene(s, run, 'reavers');
+    choose(s, run, 'quest-mara-ransom');
+    expect(s.flags['with-mara']).toBe(true);
+    enterScene(s, run, `${city}/inn`);
+    choose(s, run, 'report-mara');
+    expect(s.flags['quest-mara-done']).toBe(true);
+    expect(s.flags['with-mara']).toBeFalsy();
+  });
+
+  it('arrests whoever holds a delve by winning it', () => {
+    expect(land.delves!.barrow!.onWin.effects).toEqual(expect.arrayContaining([{ kind: 'setFlag', flag: 'prisoner-tom' }]));
+    expect(land.quests!.tom!.objects).toEqual({ 'prisoner-tom': 'Black Tom, in chains' });
+  });
+
+  it('carries a parcel there and back, and it cannot be had any other way', () => {
+    const c = newCampaign(7);
+    const s = startAdventure(c, run);
+    enterScene(s, run, `${city}/inn`);
+    choose(s, run, 'ask-post'); choose(s, run, 'accept');
+    expect(s.flags['has-post']).toBe(true);              // handed over on taking it
+    enterScene(s, run, 'ashford/inn');
+    choose(s, run, 'quest-post-hand');
+    expect(s.flags['has-post']).toBeFalsy();
+    enterScene(s, run, `${city}/inn`);
+    expect(legalChoices(s, run).some((x) => x.choice.id === 'report-post' && !x.blocked)).toBe(true);
+  });
+
+  it('refuses a delivery to nowhere, or back where it came from', () => {
+    expect(() => checkLandSpec({ quests: [{ id: 'x', kind: 'deliver', to: 'nowhere' }] })).toThrow(/not the city or one of/);
+    expect(() => checkLandSpec({ quests: [{ id: 'x', kind: 'deliver', to: 'city' }] })).toThrow(/to where it was given/);
+  });
+});
