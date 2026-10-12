@@ -13,6 +13,7 @@
 import type { Id } from '../engine/types.js';
 import type { SkillId } from '../data/classes.js';
 import type { DelveSpec } from './delve-spec.js';
+import type { CitySpec } from './city-gen.js';
 import type { MapTheme } from '../data/maps.js';
 
 /** A run of prose. One entry = one paragraph/beat the UI reveals in turn. */
@@ -607,6 +608,19 @@ export interface Module {
    * scenes they become.
    */
   delves?: Record<Id, EmbeddedDelve>;
+  /** Generated towns in this written story, the same way (see embed.ts). */
+  towns?: Record<Id, EmbeddedTown>;
+}
+
+/** A generated town a written story walks into (Module.towns). */
+export interface EmbeddedTown {
+  spec: CitySpec;
+  /** Where the story goes when the party takes the road out. */
+  onLeave: Outcome;
+  /** Story flags the town reads (people and places there `when` them). */
+  reads?: string[];
+  /** Town flags handed back to the story, renamed: town name → story name. */
+  exports?: Record<string, string>;
 }
 
 /** A generated dungeon a written story walks into (Module.delves). */

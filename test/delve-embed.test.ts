@@ -151,7 +151,7 @@ describe('what validateLive refuses', () => {
 
   it('a story that starts inside a delve', () => {
     const m = variant((x) => { x.start = 'cellar'; });
-    expect(validateLive(m).join('\n')).toMatch(/cannot start inside a delve/);
+    expect(validateLive(m).join('\n')).toMatch(/cannot start inside a generated place/);
   });
 
   it('more story flags than it can afford to prove', () => {
@@ -161,6 +161,6 @@ describe('what validateLive refuses', () => {
 
   it('a delve named like a scene the story already has', () => {
     const m = variant((x) => { x.scenes.cellar = { id: 'cellar', kind: 'ending', outcome: 'victory', text: ['x'] }; });
-    expect(validateLive(m).join('\n')).toMatch(/both a scene and a delve/);
+    expect(validateLive(m).join('\n')).toMatch(/both a scene and a generated place/);
   });
 });

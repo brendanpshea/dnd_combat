@@ -46,8 +46,8 @@ test. Ids are `city-<seed>-<spec>`, so a saved run rebuilds the same town.
 | Size    | Districts                            | Places |
 |---------|--------------------------------------|--------|
 | village | green                                | 6–7    |
-| town    | market, temple quarter, gate         | 10–11  |
-| city    | market, temple quarter, warrens, gate | 12–14  |
+| town    | market, temple quarter, gatehouse         | 10–11  |
+| city    | market, temple quarter, warrens, gatehouse | 12–14  |
 
 Each venue kind has a preferred list of districts (`HOME`) and goes to the
 first one the town has. Markers are placed near their district's centre, far
@@ -147,12 +147,58 @@ On the dev card, an object in the JSON box is the rest of the town's spec.
 The town is built before the save slot is cleared, so a mistyped spec does not
 cost a run.
 
-## Step 3: composition
+## Step 3, as built: towns in stories, and the delves under them
 
-- Generalise `Module.delves` into generated places of both kinds, reusing the
-  roll, the namespacing, the flags in and out, and `validateLive`.
-- Towns link to delves: the sewers, the catacombs under the temple, the mine
-  the rumour was about.
+**`Module.towns`**, beside `Module.delves`: `{ spec, onLeave, reads?,
+exports? }` by the scene id the story links to. One splice now serves both
+kinds of generated place (`embed.ts`, `splice`):
+
+- the place's door becomes the story's scene, and everything else lives under
+  `<scene>/`;
+- the place's endings reroute straight to the story's scenes (a town's road
+  out to `onLeave`);
+- a beating inside lands inside.
+
+The run's roll, `liveModule`, the save reload and `validateLive` all cover
+towns too.
+
+**What a town in a story can do that one on its own cannot:**
+
+- **Lead on into the story.** `CustomPlace.way` adds a choice from the
+  place to one of the story's scenes, most often a delve's door. The demo's
+  sewer grate does this.
+- **Read story flags.** `when` on people and places, and leads closed by
+  story flags. A flag the town reads must be in `reads`, or the splice
+  renames it into the town and it is never set. `validateLive` says so by
+  name.
+- **Be returned to.** A delve's `onWin` may name `<town>/city`, so the party
+  climbs back out onto the town's map, not through its gate again.
+
+**What building it found:**
+
+- **The splice renamed `flag` but not a lead's `resolvedBy`.** A lead closed
+  by one of the town's own places waited forever on a name nothing set.
+  `resolvedBy` is now renamed with the flags (tested with a town-closed lead;
+  the demo's story-closed lead could not show it).
+- **`gate` was both a venue and a district.** "At the gate" meant the venue
+  when the author meant the district. The district is now `gatehouse`.
+- **People at a gate, notice board or landmark** had nowhere to stand (the
+  code would have crashed). They are now refused, with the reason.
+- **The cast check refused the first draft.** It put "Harbourmaster Wrenna"
+  on the map before anyone had met her. People with a marker take a `title`
+  ("The Harbourmaster") shown until met.
+
+**The demo**, *The Drowned Tunnels* (`src/data/modules/town-story.ts`, dev
+card):
+
+1. A written arrival leads into a generated port.
+2. The harbourmaster gives a lead.
+3. A grate in the market leads down into a generated undead-held delve.
+4. Winning it sets a story flag that closes the lead and brings a priest out
+   to thank you.
+5. The written ending knows which way it went.
+
+A test plays it through from arrival to ending on three seeds.
 
 ## Step 4: factions, consequences, economy
 

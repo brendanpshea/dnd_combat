@@ -21,7 +21,7 @@ const SPEC: CitySpec = {
   ],
   places: [
     { label: 'Old Chapel', district: 'temple-quarter', text: ['Cold stone, and steps going down.'], sets: 'saw-chapel', fight: { brief: 'mixed' } },
-    { label: 'Smugglers\' Cache', district: 'gate', hidden: 13, text: ['A loose flagstone, and a purse under it.'], loot: 'gold' },
+    { label: 'Smugglers\' Cache', district: 'gatehouse', hidden: 13, text: ['A loose flagstone, and a purse under it.'], loot: 'gold' },
   ],
   rumours: [{ text: 'They say the old chapel has lights in it at night.', lead: { title: 'Lights in the Chapel', text: 'Lights, at night.', flag: 'saw-chapel' } }],
 };
