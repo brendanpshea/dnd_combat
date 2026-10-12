@@ -276,6 +276,13 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     case 'companion': return (state.companions ?? []).some((x) => x.id === req.companion);
     case 'noCompanion': return !(state.companions ?? []).some((x) => x.id === req.companion);
     case 'at': return state.hub === req.hub;
+    // Compiled to tallies by withCanon; read here only in a module built
+    // without it.
+    case 'reputation': return (['empathy', 'law'] as const).every((a) => {
+      const b = req[a]; if (!b) return true;
+      const v = Number(state.flags[`npc.company.${a}`] ?? 0);
+      return (b.atLeast === undefined || v >= b.atLeast) && (b.below === undefined || v < b.below);
+    });
     case 'partyLevel': {
       const lv = partyLevelOf(c);
       return (req.atLeast === undefined || lv >= req.atLeast) && (req.below === undefined || lv < req.below);
@@ -334,6 +341,7 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'noCompanion': return 'Not while they\'re with you';
     case 'at': return 'Not from here';
     case 'count': return 'Not as things stand';
+    case 'reputation': return 'Not with the name you have made';
     case 'partyLevel': return unmet.atLeast !== undefined && partyLevelOf(state.campaign) < unmet.atLeast ? `Requires level ${unmet.atLeast}` : 'Not at your level';
     case 'npc': return 'Requires something you haven\'t done yet';
   }
@@ -434,6 +442,17 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       else state.flags[eff.to] = v;
       break;
     }
+    // Compiled by withCanon (with everyone's attitude); without it, the
+    // company's name alone.
+    case 'deed':
+      for (const a of ['empathy', 'law'] as const) {
+        if (!eff[a]) continue;
+        const f = `npc.company.${a}`;
+        const v = Number(state.flags[f] ?? 0) + eff[a]!;
+        state.flags[f] = v;
+        events.push({ type: 'flag', flag: f, value: v });
+      }
+      break;
     case 'addFlag': {
       const cur = state.flags[eff.flag];
       const value = (typeof cur === 'number' ? cur : cur === true ? 1 : 0) + eff.amount;

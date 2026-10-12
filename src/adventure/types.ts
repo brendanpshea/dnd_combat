@@ -63,7 +63,15 @@ export type Requirement =
    *  across the whole campaign (see NpcDef.fates). Compiled to flags by
    *  `withNpcs`. `fate`: is this; `notFate`: is none of these; `attitude`:
    *  how they feel about the company (a signed tally from 0) is in bounds. */
-  | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean; attitude?: { atLeast?: number; below?: number } }
+  | { kind: 'npc'; npc: Id; fate?: string; notFate?: string[]; met?: boolean; attitude?: { atLeast?: number; below?: number };
+      /** Where they are now (a place in the chapter's `stage`). */
+      at?: Id }
+  /**
+   * The company's name, on two axes, roughly the old alignments: empathy
+   * (kind, merciful; below zero, cruel) and law (keeps the rules and its
+   * word; below zero, breaks them). Bounds as `count`.
+   */
+  | { kind: 'reputation'; empathy?: { atLeast?: number; below?: number }; law?: { atLeast?: number; below?: number } }
   /** Where the party is: the map or dungeon it last entered (its hub). A dawn
    *  read in camp, or a defeat scene after a fight, is somewhere: say so. */
   | { kind: 'at'; hub: SceneRef }
@@ -99,7 +107,13 @@ export type Effect =
    *  how they feel about the company (signed): only where they saw it (the
    *  validator wants them met or with the party), unless `hearsay` says the
    *  deed reached them by word of mouth, on purpose. */
-  | { kind: 'npc'; npc: Id; fate?: string; met?: true; attitude?: number; hearsay?: true }
+  | { kind: 'npc'; npc: Id; fate?: string; met?: true; attitude?: number; hearsay?: true;
+      /** Move them: to a place in the chapter's `stage`. */
+      at?: Id }
+  /** Something the company did that people will talk about: kindness or
+   *  cruelty (`empathy`), rule-keeping or rule-breaking (`law`). Moves the
+   *  company's reputation, and the attitude of everyone who cares (NpcDef.values). */
+  | { kind: 'deed'; empathy?: number; law?: number }
   /** Add to a tally (signed; unset counts as 0). `hearsay`: see `npc`. */
   | { kind: 'addFlag'; flag: string; amount: number; hearsay?: true };
 
@@ -649,9 +663,55 @@ export interface NpcDef {
   /** What can become of them, besides carrying on: 'dead', 'jailed',
    *  'freed'… Requirements and effects may only name these. */
   fates?: string[];
+  /** What they care about: +1 thinks better of the company for kindness
+   *  (or rule-keeping), -1 for cruelty (or rule-breaking). Every deed moves
+   *  their attitude by it — word gets round. */
+  values?: { empathy?: number; law?: number };
+}
+
+/**
+ * A named NPC on this chapter's stage: where they can be, and what they say
+ * (staging.ts). The registry (NpcDef) says who someone is across the whole
+ * campaign; the stage, what they do in one chapter.
+ *
+ * Every place they can be offers "Talk to them" while they are there and not
+ * gone (dead, say). Talking opens their own conversation: a greeting by how
+ * things stand, then topics, each offered while it applies. The story moves
+ * them, changes their fate or their mind, with one effect; it never has to
+ * check, at every place, whether they are there to talk to.
+ */
+export interface NpcStaging {
+  /** Where they can be: scenes (a story or dialogue scene gets a "Talk to"
+   *  choice; an explore map, a marker at x, y). The first is home: where
+   *  they are until the story moves them. */
+  places: Array<{ scene: SceneRef; x?: number; y?: number }>;
+  /** Fates that take them off the stage: nobody talks to the dead. */
+  gone?: string[];
+  /** Said on greeting, every line whose `if` holds — the last, with no
+   *  `if`, the one that is always true. */
+  greet: Array<{ text: string; if?: Requirement[] }>;
+  topics: Array<{
+    id: Id; label: string; lines: string[];
+    requires?: Requirement[]; effects?: Effect[];
+    /** Talked about once, then not offered again (default). */
+    repeat?: true;
+    /** Where it leads, instead of back to the talk (a fight, a quest). */
+    to?: SceneRef;
+  }>;
+  /** When this holds, talking to them is the fight (or whatever it leads to). */
+  hostile?: { when: Requirement; to: SceneRef; label?: string };
+  /**
+   * They may join the company: when every one of `when` holds (attitude,
+   * reputation, a quest done), they say yes; else the first that does not
+   * hold says why not (`refuse`, one line per requirement of `when`).
+   * Joined, they are off the stage: they are with you.
+   */
+  join?: { companion: Id; when: Requirement[]; yes: string[]; refuse: string[][]; label?: string };
 }
 
 export interface Module {
+  /** NPCs on this chapter's stage (staging.ts). */
+  stage?: Record<Id, NpcStaging>;
   /** Quests, by id, compiled into the module's scenes (quests.ts). */
   quests?: Record<Id, QuestSpec>;
   id: Id;
