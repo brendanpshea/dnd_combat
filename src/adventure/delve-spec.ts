@@ -177,42 +177,10 @@ export const ROOM_RANGE: [number, number] = [5, 16];
  * boss, as a named foe should; 0.35 won 93–100%, no harder than a room.
  * Levels past 5 use the last entry, and are NOT measured.
  */
-export const SHARES: Record<FightRole, number[]> = {
-  room: [0.3],
-  elite: [0.45],
-  boss: [0.8, 0.65, 0.55, 0.55, 0.6],
-};
-
-/** The share of the even budget a fight of this role costs at this level. */
-export function shareFor(role: FightRole, level: number): number {
-  const t = SHARES[role];
-  return t[Math.min(Math.max(1, level), t.length) - 1]!;
-}
-
-/**
- * The most XP (a head, for a party of `partySize`) a delve's own fights can
- * pay, whatever its layout: every room but the entrance and the story's own
- * fights to the room budget (and the goal to the boss's, unless the story
- * takes it over), with the generator's ten per cent of slack. What a chapter
- * proved against the delve's outside counts in place of the fights it cannot see.
- */
-export function delveFightXpBound(spec: DelveSpec, partySize = 4): number {
-  const full = checkSpec(spec);
-  let total = 0;
-  for (let f = 1; f <= full.floors; f++) {
-    // Each floor is budgeted at the level the floors above can bring (a level a floor, at most).
-    const lvl = Math.min(MAX_LEVEL, full.level + f - 1);
-    const n = full.rooms || SIZE_ROOMS[full.size ?? 'medium'][1];
-    const story = full.require.filter((r) => (r.floor ?? (r.where === 'goal' ? full.floors : 1)) === f && r.event && !r.fight).length;
-    const goalTaken = full.require.some((r) => r.where === 'goal' && r.event && (r.floor ?? full.floors) === f);
-    // Capped: the filler, and each key's guard (the story holds the first floor's lock, if it has one).
-    const keys = (full.shape === 'keys' ? 2 : 1) - (f === 1 && full.lock ? 1 : 0);
-    const rooms = full.maxFights !== undefined ? Math.min(n - 1 - story, full.maxFights + keys) : n - 1 - story;
-    total += rooms * evenBudgetFor(lvl) * shareFor('room', lvl) * 1.1;
-    if (!goalTaken) total += evenBudgetFor(lvl) * shareFor('boss', lvl) * 1.1;
-  }
-  return Math.ceil(total / partySize);
-}
+// The budgets live on their own (delve-budget.ts), so the proofs can read
+// them without loading the generator.
+export { SHARES, shareFor, delveFightXpBound } from './delve-budget.js';
+import { shareFor } from './delve-budget.js';
 
 /** Throws on a spec no candidate could satisfy; returns it with defaults. */
 export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights'>> & Pick<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights'> {
