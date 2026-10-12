@@ -26,7 +26,7 @@
  */
 import type { Id } from '../engine/types.js';
 import { seedRng } from '../engine/rng.js';
-import { encounterFor, encounterXP, generatedEncounterId } from '../data/encounters.js';
+import { avoidedFightXP, encounterFor, encounterXP, generatedEncounterId } from '../data/encounters.js';
 import { ITEMS } from '../data/items.js';
 import { generateEncounter, type EncounterBrief } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
@@ -36,6 +36,10 @@ import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
 import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
 import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
+import { FACTIONS, canHold, factionsFor, type Faction } from '../data/factions.js';
+import { drawHistory, type History } from './delve-history.js';
+import { adjustedXp } from '../arena/encounter.js';
+import { MONSTER_XP } from '../data/monsters.js';
 
 export type SpecTheme = keyof typeof ROOMS;
 export const SPEC_THEMES = Object.keys(ROOMS) as SpecTheme[];
@@ -89,7 +93,15 @@ export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
   /** Rooms per floor (5–16); overrides `size`. */
   rooms?: number;
   floors?: number;
-  fights?: 'authored' | 'generated';
+  /** 'inhabitants': every fight is drawn from the factions that hold the
+   *  place, its goal headed by one of their leaders. Implies a history. */
+  fights?: 'authored' | 'generated' | 'inhabitants';
+  /** Who holds it (1–2 faction ids). Default, with 'inhabitants': drawn for
+   *  the theme. Two split each floor: the first before the lock, the second
+   *  past it. */
+  factions?: Id[];
+  /** Draw a past for the place: its title, its story, traces in the rooms. */
+  history?: boolean;
   require?: RequiredRoom[];
   pieces?: PiecePlacement[];
 }
@@ -137,14 +149,34 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & 
     if (typeof r.fight === 'string' && !encounterFor(r.fight)) err(`required room ${i}: no encounter '${r.fight}'`);
     if (r.loot && r.loot !== 'gold' && !ITEMS[r.loot]) err(`required room ${i}: no item '${r.loot}'`);
   }
+  const factions = spec.factions ?? [];
+  if (factions.length > 2) err(`at most two factions hold a place, not ${factions.length}`);
+  for (const id of factions) {
+    if (!FACTIONS[id]) err(`no faction '${id}' (have ${Object.keys(FACTIONS).join(', ')})`);
+    if (!canHold(FACTIONS[id]!, level)) err(`${id} cannot field a fight for a level ${level} party`);
+  }
+  if (new Set(factions).size !== factions.length) err('the same faction twice');
+  if (factions.length && spec.fights && spec.fights !== 'inhabitants') err(`factions given, but fights are '${spec.fights}'`);
   const pieces = spec.pieces ?? [];
   const keyed = new Set<number>();
+  const goalPieces = new Set<number>();
   for (const [i, pl] of pieces.entries()) {
     const piece = PIECES[pl.piece];
     if (!piece) err(`piece ${i}: no piece '${pl.piece}' (have ${Object.keys(PIECES).join(', ')})`);
-    const floor = pl.floor ?? 1;
+    const floor = pl.floor ?? (piece?.where === 'goal' ? floors : 1);
     if (!Number.isInteger(floor) || floor < 1 || floor > floors) err(`piece ${i} is on floor ${floor} of ${floors}`);
     if (pl.chance !== undefined && !(pl.chance >= 0 && pl.chance <= 1)) err(`piece ${i}: chance ${pl.chance} is not 0–1`);
+    const where = pl.where ?? piece!.where;
+    if ((where === 'goal') !== (piece!.where === 'goal')) {
+      err(piece!.where === 'goal' ? `piece ${i} (${pl.piece}) is a goal, and goes nowhere else` : `piece ${i} (${pl.piece}) cannot be a goal`);
+    }
+    if (where === 'goal') {
+      const gf = pl.floor ?? floors;
+      if (goalPieces.has(gf)) err(`two goal pieces on floor ${gf}`);
+      if (require.some((r) => r.where === 'goal' && (r.floor ?? floors) === gf)) err(`floor ${gf} has a goal piece and a required goal room`);
+      if (pl.chance !== undefined && pl.chance < 1) err(`piece ${i} (${pl.piece}) is a goal, so it cannot be left to chance`);
+      goalPieces.add(gf);
+    }
     if (piece!.gives?.includes('key')) {
       // A key must be reachable without itself, and there is one first lock.
       if ((pl.where ?? piece!.where) !== 'beforeLock') err(`piece ${i} (${pl.piece}) carries the key, so it must be beforeLock`);
@@ -162,7 +194,7 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & 
     if (n > minRooms - 4) err(`${n} required rooms on floor ${floor}; a floor of ${minRooms} has room for ${minRooms - 4}`);
   }
   return {
-    level, floors, require, pieces,
+    level, floors, require, pieces, factions, history: spec.history ?? false,
     theme: spec.theme ?? 'stone', shape: spec.shape ?? 'classic',
     rooms: spec.rooms ?? 0, fights: spec.fights ?? 'authored', rest: spec.rest ?? 'standard',
     ...(spec.size ? { size: spec.size } : {}),
@@ -301,15 +333,60 @@ function draftSpec(seed: number, spec: Full): Module {
   const dice = new Dice(seedRng(seed));
   const T = ROOMS[spec.theme];
   const scenes: Record<Id, Scene> = {};
-  const title = `The ${dice.pick(T.title)}`;
+  /*
+   * Who holds it, and where it came from. Drawn only when asked for, so a
+   * spec without them rolls exactly as it always did (the first roll of a
+   * plain spec delve is its title).
+   */
+  const peopled = spec.fights === 'inhabitants';
+  let holders: Faction[] = spec.factions.map((id) => FACTIONS[id]!);
+  let history: History | undefined;
+  let title: string;
+  if (peopled || spec.history) {
+    if (peopled && holders.length === 0) {
+      const fit = dice.shuffle([...factionsFor(spec.theme, spec.level)]);
+      holders = fit.slice(0, dice.chance(0.4) && fit.length > 1 ? 2 : 1);
+    }
+    history = drawHistory(spec.theme, dice, holders);
+    title = history.title;
+  } else {
+    title = `The ${dice.pick(T.title)}`;
+  }
   let level = spec.level;
   // The torch is set once the module exists, so its proof sees every scene.
   const goals: [Dungeon, Id, Id][] = [];
 
-  const fightOf = (lvl: number, boss: boolean | FightRole, brief?: EncounterBrief): Id => {
+  /** A faction's leader and an escort, to the boss budget. */
+  const leaderFight = (lvl: number, fac: Faction): Id | undefined => {
+    const budget = Math.round(evenBudgetFor(lvl) * BOSS_SHARE);
+    const cap = Math.min(memberCapFor(lvl), budget * 0.75);
+    const fits = fac.leaders.filter((m) => (MONSTER_XP[m] ?? Infinity) <= cap);
+    // Too low a level for any of its leaders: the biggest of its own that
+    // fits leads instead, so the goal is still THEM and not a stranger.
+    const stand = [...fac.members].filter((m) => (MONSTER_XP[m] ?? Infinity) <= cap)
+      .sort((a, b) => (MONSTER_XP[b] ?? 0) - (MONSTER_XP[a] ?? 0)).slice(0, 1);
+    const pool = fits.length ? fits : stand;
+    if (pool.length === 0) return undefined;
+    const leader = dice.pick(pool);
+    const escort = generateEncounter({
+      budget: Math.max(1, budget - (MONSTER_XP[leader] ?? 0) * 1.5), maxMemberXp: Math.min(memberCapFor(lvl), MONSTER_XP[leader] ?? 0),
+      maxCount: Math.max(1, maxCountFor(lvl) - 1), partyLevel: lvl, members: fac.members,
+    }, seedRng(Math.floor(dice.float() * 2 ** 31))).value.members;
+    // Trim the escort until the whole fight is inside the boss budget.
+    const out = [leader, ...escort];
+    while (out.length > 1 && adjustedXp(out) > budget * 1.1) out.pop();
+    return generatedEncounterId(out);
+  };
+
+  const fightOf = (lvl: number, boss: boolean | FightRole, brief?: EncounterBrief, fac?: Faction, only?: readonly Id[]): Id => {
     const role: FightRole = boss === true ? 'boss' : boss === false ? 'room' : boss;
+    if (fac && role === 'boss' && !only) {
+      const led = leaderFight(lvl, fac);
+      if (led) return led;
+    }
+    const members = only ?? fac?.members;
     // An elite has no authored pool of its own; it is built to its budget.
-    if (spec.fights === 'authored' && !brief && role !== 'elite') {
+    if (spec.fights === 'authored' && !brief && role !== 'elite' && !members) {
       const pools = encounterPools(lvl);
       return dice.pick(role === 'boss' ? pools.boss : pools.room);
     }
@@ -317,6 +394,7 @@ function draftSpec(seed: number, spec: Full): Module {
     const budget = Math.round(evenBudgetFor(lvl) * share);
     const enc = generateEncounter({
       budget, maxMemberXp: memberCapFor(lvl), maxCount: maxCountFor(lvl), partyLevel: lvl, ...(brief ? { brief } : {}),
+      ...(members ? { members } : {}),
     }, seedRng(Math.floor(dice.float() * 2 ** 31))).value;
     return generatedEncounterId(enc.members);
   };
@@ -326,16 +404,32 @@ function draftSpec(seed: number, spec: Full): Module {
     const last = f === spec.floors;
     const n = spec.rooms || dice.int(...SIZE_ROOMS[spec.size ?? 'medium']);
     const g = wire(spec.shape, n, dice, f, T.door);
-    const goal = g.main[g.main.length - 1]!;
-    const names = dice.shuffle([...T.rooms]);
+    let goal = g.main[g.main.length - 1]!;
+    /** A goal piece's floor keeps the generated goal in its graph (so every
+     *  "the last main room" reading stays right) but never builds it. */
+    let replacedGoal: Id | undefined;
+    const names = dice.shuffle([...holders.flatMap((h) => h.rooms), ...T.rooms]);
     let nameIdx = 0;
     const nextName = () => names[nameIdx++ % names.length]!;
     const sizeOf = (): RoomSize => dice.pick(['small', 'medium', 'medium', 'large'] as const);
     const pre = `f${f}-`;
     let floorXp = 0;
+    // Two holders split the floor at the lock; one holds all of it.
+    const factionOf = (roomId: Id): Faction | undefined =>
+      holders.length === 0 ? undefined : holders[holders.length > 1 && g.afterLock.has(roomId) ? 1 : 0];
+    /** A faction that talks offers it on its fights — never on the goal's. */
+    const parleyFor = (fac: Faction | undefined, win: Win, enc: Id) => fac?.parley ? { parley: {
+      ...(fac.parley.skill ? { skill: fac.parley.skill } : {}), dc: fac.parley.dc, label: fac.parley.label,
+      // Talked down, they hand over what they carried (a key) and the party
+      // is owed the fight's XP, as for every way past a fight
+      // (avoidedFightXP) — but no gold and no loot.
+      success: { to: '@hub', text: [fac.parley.success], effects: [
+        ...(win.effects ?? []).filter((e) => e.kind === 'setFlag'), { kind: 'xp' as const, amount: avoidedFightXP(enc) }] },
+    } } : {};
     const fight = (roomId: Id, enc: Id, win: Win): Id => {
       const id = `${pre}fight-${roomId}`;
-      scenes[id] = { id, kind: 'battle', encounterId: enc, mapId: '@room', onWin: win };
+      const talk = roomId === goal ? {} : parleyFor(factionOf(roomId), win, enc);
+      scenes[id] = { id, kind: 'battle', encounterId: enc, mapId: '@room', onWin: win, ...talk };
       floorXp += encounterXP(enc);
       return id;
     };
@@ -345,6 +439,10 @@ function draftSpec(seed: number, spec: Full): Module {
       return id;
     };
 
+    const goalOutcome = (): Win => (last
+      ? { to: 'won', text: ['The last of them falls, and the place is yours.'], effects: [{ kind: 'gold', amount: 60 + 20 * level }] }
+      : { to: '@hub', text: ['Past them, a stair goes down into the dark.'], effects: [{ kind: 'gold', amount: 20 + 10 * level }] });
+
     // Set pieces first: they bring rooms of their own, and the most demanding
     // claims go before anything else can take the corridors they need.
     let pieceGivesRest = false;
@@ -352,12 +450,51 @@ function draftSpec(seed: number, spec: Full): Module {
     const pieceRooms: DungeonRoom[] = [];
     // The first lock's flag, kept before a key piece can take over the key.
     const lockFlag = g.keys[0]?.flag;
-    const onFloor = spec.pieces.map((pl, i) => ({ pl, i })).filter(({ pl }) => (pl.floor ?? 1) === f);
-    onFloor.sort((a, b) => Number(!!PIECES[b.pl.piece]!.gives?.includes('key')) - Number(!!PIECES[a.pl.piece]!.gives?.includes('key')));
+    const onFloor = spec.pieces.map((pl, i) => ({ pl, i }))
+      .filter(({ pl }) => (pl.floor ?? (PIECES[pl.piece]!.where === 'goal' ? spec.floors : 1)) === f);
+    // The goal first, then the key, then the rest.
+    const rank = (id: Id) => (PIECES[id]!.where === 'goal' ? 2 : PIECES[id]!.gives?.includes('key') ? 1 : 0);
+    onFloor.sort((a, b) => rank(b.pl.piece) - rank(a.pl.piece));
     for (const { pl, i } of onFloor) {
       if (pl.chance !== undefined && !dice.chance(pl.chance)) continue;
       const piece = PIECES[pl.piece]!;
       const where = pl.where ?? piece.where;
+      if (where === 'goal') {
+        const local = `p${i}`;
+        const old = goal;
+        const built = piece.build({
+          floor: f, level, theme: spec.theme, dice, ...(factionOf(old) ? { faction: factionOf(old)! } : {}),
+          room: (r) => `${local}-${r}`, scene: (sc) => `${pre}${local}-${sc}`, flag: (fl) => `${pre}${local}-${fl}`,
+          fight: (role, brief, only) => fightOf(level, role, brief, factionOf(old), only),
+          param: (name, fallback) => pl.bind?.[name] ?? fallback,
+          goal: { win: goalOutcome() },
+        });
+        if (!built.goal || built.port.door) throw new Error(`goal piece '${piece.id}' must name its goal room and bring no door of its own`);
+        // Every corridor that led to the old goal now leads to the piece's
+        // door, locks and all.
+        for (const l of g.links) {
+          if (l.a === old) l.a = built.port.room;
+          if (l.b === old) l.b = built.port.room;
+        }
+        for (const l of built.links) { g.links.push(l); pieceLinks.add(l); }
+        for (const r of built.rooms) {
+          g.pieceRooms.add(r.id);
+          if (g.afterLock.has(old)) g.afterLock.add(r.id);
+          if (r.id === built.goal) {
+            r.goal = true;
+            if (!last) r.exit = { to: `delve-${f + 1}`, label: 'Down the stairs' };
+          }
+          pieceRooms.push(r);
+        }
+        for (const sc of built.scenes) {
+          if (scenes[sc.id]) throw new Error(`piece '${piece.id}' reuses scene id '${sc.id}'`);
+          scenes[sc.id] = sc;
+          if (sc.kind === 'battle' && sc.loot !== false) floorXp += encounterXP(sc.encounterId);
+        }
+        replacedGoal = old;
+        goal = built.goal;
+        continue;
+      }
       const degree = (r: Id) => g.links.filter((l) => l.a === r || l.b === r).length;
       const open = [...g.main.slice(0, -1), ...g.side].filter((id) => id !== 'cache' && !g.pieceRooms.has(id) && degree(id) < 3)
         .filter((id) => where === 'beforeLock' ? !g.afterLock.has(id)
@@ -383,7 +520,8 @@ function draftSpec(seed: number, spec: Full): Module {
       const built = piece.build({
         floor: f, level, theme: spec.theme, dice,
         room: (r) => `${local}-${r}`, scene: (sc) => `${pre}${local}-${sc}`, flag: (fl) => `${pre}${local}-${fl}`,
-        fight: (role, brief) => fightOf(level, role, brief),
+        ...(factionOf(anchor) ? { faction: factionOf(anchor)! } : {}),
+        fight: (role, brief, only) => fightOf(level, role, brief, factionOf(anchor), only),
         param: (name, fallback) => pl.bind?.[name] ?? fallback,
         ...(isKey ? { keyFlag: g.keys[0]!.flag } : {}),
       });
@@ -420,7 +558,7 @@ function draftSpec(seed: number, spec: Full): Module {
     for (const l of dice.shuffle(g.links.filter((x) => !x.door && !pieceLinks.has(x))).slice(0, dice.int(1, 2))) {
       const id = `${pre}ambush-${l.a}-${l.b}`;
       l.door = { ambush: { chance: 0.4, battle: id } };
-      scenes[id] = { id, kind: 'battle', encounterId: fightOf(level, false), mapId: '@room',
+      scenes[id] = { id, kind: 'battle', encounterId: fightOf(level, false, undefined, factionOf(l.a)), mapId: '@room',
         intro: ['Something moves in the dark ahead of the torchlight.'], onWin: { to: '@hub' } };
     }
 
@@ -437,9 +575,7 @@ function draftSpec(seed: number, spec: Full): Module {
         size: isGoal ? 'large' : id === 'cache' ? 'small' : sizeOf() };
       if (req?.text) room.firstVisit = [req.text];
       const key = keyOf.get(id);
-      const goalWin: Win = last
-        ? { to: 'won', text: ['The last of them falls, and the place is yours.'], effects: [{ kind: 'gold', amount: 60 + 20 * level }] }
-        : { to: '@hub', text: ['Past them, a stair goes down into the dark.'], effects: [{ kind: 'gold', amount: 20 + 10 * level }] };
+      const goalWin = goalOutcome();
       const win: Win = key
         ? { to: '@hub', text: ['One of them carried a heavy key.'], effects: [{ kind: 'setFlag', flag: key }] }
         : isGoal ? goalWin : { to: '@hub' };
@@ -447,9 +583,9 @@ function draftSpec(seed: number, spec: Full): Module {
       const reqFight = req?.fight;
       const must = !!key || isGoal;
       if (typeof reqFight === 'string') room.fight = fight(id, reqFight, win);
-      else if (reqFight) room.fight = fight(id, fightOf(level, reqFight.boss ?? isGoal, reqFight.brief), win);
-      else if (must) room.fight = fight(id, fightOf(level, isGoal), win);
-      else if (!req && id !== 'cache' && dice.chance(0.55)) room.fight = fight(id, fightOf(level, false), win);
+      else if (reqFight) room.fight = fight(id, fightOf(level, reqFight.boss ?? isGoal, reqFight.brief, factionOf(id)), win);
+      else if (must) room.fight = fight(id, fightOf(level, isGoal, undefined, factionOf(id)), win);
+      else if (!req && id !== 'cache' && dice.chance(0.55)) room.fight = fight(id, fightOf(level, false, undefined, factionOf(id)), win);
       if (isGoal) {
         room.goal = true;
         if (!last) room.exit = { to: `delve-${f + 1}`, label: 'Down the stairs' };
@@ -473,16 +609,22 @@ function draftSpec(seed: number, spec: Full): Module {
     g.main.forEach((id, i) => {
       if (i === 0) {
         rooms.push({ id, name: f === 1 ? 'Entrance' : 'Stair Foot', size: 'small',
-          firstVisit: [f === 1 ? T.enter : 'The stair ends, and the dark is deeper here.'],
+          firstVisit: [f === 1 ? T.enter : 'The stair ends, and the dark is deeper here.',
+            // The first sign of whoever holds this floor.
+            ...(factionOf(goal) ? [dice.pick(factionOf(goal)!.sign)] : [])],
           exit: f === 1 ? { to: 'outside', label: 'Back outside' } : { to: f === 2 ? 'delve' : `delve-${f - 1}`, label: 'Back up the stairs' } });
-      } else rooms.push(contents(id));
+      } else if (id !== replacedGoal) rooms.push(contents(id));
     });
     for (const id of g.side) rooms.push(contents(id));
+    // The past showing through, in rooms that have nothing else to say.
+    if (history) {
+      for (const r of rooms) if (!r.firstVisit && r.id !== g.main[0] && dice.chance(0.35)) r.firstVisit = [dice.pick(history.traces)];
+    }
     rooms.push(...pieceRooms);
 
     const campId = `${pre}camp-fight`;
     scenes[campId] = {
-      id: campId, kind: 'battle', encounterId: fightOf(level, false), mapId: '@room', loot: false,
+      id: campId, kind: 'battle', encounterId: fightOf(level, false, undefined, holders[0]), mapId: '@room', loot: false,
       intro: ['Your fire draws them out of the dark.'], onWin: { to: '@hub' },
     };
     // On a deeper floor a dead torch is not the end of the trip: you feel
@@ -503,7 +645,7 @@ function draftSpec(seed: number, spec: Full): Module {
   }
 
   Object.assign(scenes, {
-    start: { id: 'start', kind: 'story', text: [`The way into ${title} stands open.`], next: [{ id: 'in', label: 'Go in', to: 'delve',
+    start: { id: 'start', kind: 'story', text: [`The way into ${title} stands open.`, ...(history ? [history.story] : [])], next: [{ id: 'in', label: 'Go in', to: 'delve',
       effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
     outside: { id: 'outside', kind: 'story', text: ['Daylight, and air that does not smell of the deep.'], noBack: true,
       next: [{ id: 'in', label: 'Go back in', to: 'delve' }, { id: 'quit', label: 'Leave it for someone else', to: 'gave-up' }] },
@@ -517,7 +659,7 @@ function draftSpec(seed: number, spec: Full): Module {
 
   const module: Module = {
     id: `delve2-${seed}`, title,
-    blurb: `A generated delve (${spec.theme}, ${spec.shape}, ${spec.floors} floor${spec.floors > 1 ? 's' : ''}, level ${spec.level}).`,
+    blurb: history ? history.story : `A generated delve (${spec.theme}, ${spec.shape}, ${spec.floors} floor${spec.floors > 1 ? 's' : ''}, level ${spec.level}).`,
     start: 'start', scenes, defeatScene: 'fallen', levelBand: { from: spec.level, to: Math.max(spec.level, level) },
   };
   for (const [d, goal, out] of goals) {

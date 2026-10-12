@@ -22,9 +22,11 @@ import type { EncounterBrief } from '../arena/encounter.js';
 import type { DungeonDoor, DungeonLink, DungeonRoom, Effect, Outcome, Scene } from './types.js';
 import type { Dice } from './dungeon-gen.js';
 import type { SpecTheme } from './delve-spec.js';
+import type { Faction } from '../data/factions.js';
+import { avoidedFightXP } from '../data/encounters.js';
 
 /** Where on the floor a piece may be joined. */
-export type PieceWhere = 'any' | 'beforeLock' | 'afterLock' | 'main' | 'side';
+export type PieceWhere = 'any' | 'beforeLock' | 'afterLock' | 'main' | 'side' | 'goal';
 
 /** What a piece is asked to hold, in roles; the floor decides the monsters. */
 export type FightRole = 'room' | 'elite' | 'boss';
@@ -41,8 +43,14 @@ export interface PieceCtx {
   /** A flag, unique in the module. */
   flag(local: string): string;
   /** An encounter for this floor and role (authored or generated, as the
-   *  floor's fights are). */
-  fight(role: FightRole, brief?: EncounterBrief): Id;
+   *  floor's fights are; the holders' own, on a peopled floor). `only`
+   *  restricts it to these monsters, whatever the floor. */
+  fight(role: FightRole, brief?: EncounterBrief, only?: readonly Id[]): Id;
+  /** Who holds this part of the floor, if anyone does. */
+  faction?: Faction;
+  /** Set for a goal piece: what winning its last fight does (the stairs
+   *  down, or the end of the delve). */
+  goal?: { win: Outcome };
   /** A parameter from the spec's `bind`, or the fallback. */
   param(name: string, fallback: string): string;
   /** Set when this piece is the floor's key: the flag its lock wants. */
@@ -55,6 +63,8 @@ export interface PieceBuild {
   scenes: Scene[];
   /** The room the floor's corridor arrives at, and that corridor's door. */
   port: { room: Id; door?: DungeonDoor };
+  /** A goal piece's goal room. */
+  goal?: Id;
 }
 
 export interface Piece {
@@ -207,4 +217,70 @@ const valve: Piece = {
   },
 };
 
-export const PIECES: Record<Id, Piece> = Object.fromEntries([prisoner, shrine, warden, valve].map((p) => [p.id, p]));
+const cap = (x: string) => x[0]!.toUpperCase() + x.slice(1);
+
+/** The floor's goal as a lair: a guard post, and whoever leads the place. */
+const lair: Piece = {
+  id: 'lair',
+  name: 'The Lair',
+  blurb: 'The floor ends where its masters live: a guarded way in, and the leader of whoever holds the place.',
+  where: 'goal',
+  params: { name: 'what the lair is called' },
+  build(ctx) {
+    if (!ctx.goal) throw new Error('the lair is a goal piece');
+    const fac = ctx.faction;
+    const post = ctx.room('post');
+    const hall = ctx.room('hall');
+    const guards = ctx.scene('guards');
+    const boss = ctx.scene('boss');
+    const named = fac ? ctx.dice.pick(fac.names) : 'whatever rules here';
+    return {
+      port: { room: post },
+      goal: hall,
+      links: [{ a: post, b: hall }],
+      rooms: [
+        { id: post, name: 'Guard Post', size: 'medium', fight: guards,
+          firstVisit: [fac ? ctx.dice.pick(fac.sign) : 'Someone keeps watch here, and has for a long time.'] },
+        { id: hall, name: ctx.param('name', fac ? `${cap(fac.one.replace(/^(a|an|something) /, ''))} Lord's Hall` : 'Inner Sanctum'), size: 'large', fight: boss },
+      ],
+      scenes: [
+        battle(guards, ctx.fight('room'), { to: '@hub' }, [`The last of ${named} stand between you and their master.`]),
+        battle(boss, ctx.fight('boss'), ctx.goal.win, [fac ? `The leader of ${named} rises to meet you.` : 'Whatever rules this place rises to meet you.']),
+      ],
+    };
+  },
+};
+
+const RIVALS = ['veteran', 'priest', 'apprentice-mage', 'scout', 'spy', 'acolyte', 'knight', 'berserker'];
+
+/** Another company, here first, and not inclined to share. */
+const rivals: Piece = {
+  id: 'rivals',
+  name: 'Rival Company',
+  blurb: 'Another band of adventurers got here first. They will split the take — or fight you for it.',
+  where: 'any',
+  params: { name: 'what the rivals call themselves' },
+  build(ctx) {
+    const name = ctx.param('name', ctx.dice.pick(['the Gilded Blades', 'Hobb\'s Lot', 'the Lantern Company', 'the Brothers Varr']));
+    const camp = ctx.room('camp');
+    const fight = ctx.scene('rivals');
+    const share = 30 + 15 * ctx.level;
+    const enc = ctx.fight('elite', undefined, RIVALS);
+    return {
+      port: { room: camp },
+      links: [],
+      rooms: [{ id: camp, name: 'Rival Camp', size: 'medium', fight,
+        firstVisit: [`A campfire, bedrolls, and a stack of loot. And ${name}, already reaching for their weapons.`] }],
+      scenes: [{
+        id: fight, kind: 'battle', encounterId: enc, mapId: '@room',
+        intro: [`"Ours," says the one in front. "We were here first. But we could share, if you're the reasonable sort."`],
+        onWin: { to: '@hub', text: [`${cap(name)} will not be getting there first again.`], effects: [{ kind: 'gold', amount: share * 2 }] },
+        parley: { dc: 12, label: 'Split the take', success: { to: '@hub', text: [`Half the pile, counted out coin by coin. ${cap(name)} go up; you go on.`],
+          // A way past a fight pays its XP (avoidedFightXP), as everywhere.
+          effects: [{ kind: 'gold', amount: share }, { kind: 'xp', amount: avoidedFightXP(enc) }] } },
+      }],
+    };
+  },
+};
+
+export const PIECES: Record<Id, Piece> = Object.fromEntries([prisoner, shrine, warden, valve, lair, rivals].map((p) => [p.id, p]));

@@ -129,7 +129,7 @@ describe('placing pieces', () => {
 
   it('never hangs a piece off the goal, where the delve ends before you could walk in', () => {
     for (let seed = 1; seed <= 30; seed++) {
-      const { module } = generateSpecDelve(seed, { rooms: 6, pieces: Object.keys(PIECES).filter((p) => p !== 'warden').map((piece) => ({ piece })) });
+      const { module } = generateSpecDelve(seed, { rooms: 6, pieces: Object.values(PIECES).filter((p) => p.id !== 'warden' && p.where !== 'goal').map((p) => ({ piece: p.id })) });
       const d = floor(module);
       const goal = d.rooms.find((r) => r.goal)!.id;
       const ports = d.links.filter((l) => l.a === goal || l.b === goal).flatMap((l) => [l.a, l.b]);
