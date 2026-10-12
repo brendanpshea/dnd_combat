@@ -265,6 +265,19 @@ export interface ExploreMap {
   /** Where the party starts: required on a traversal map (with `paths`), and
    *  on any map it's where the party pawn stands on first arrival. */
   entry?: Id[];
+  /** A town's ground, drawn under its markers: water, wall, streets.
+   *  Purely visual, like `roads` (which a map with ground does not draw). */
+  ground?: TownGround;
+}
+
+/** Percent coordinates on the map. */
+export interface TownGround {
+  feature: 'river' | 'coast' | 'crossroads';
+  water?: { kind: 'river' | 'coast'; side?: 'left' | 'right'; points: Array<[number, number]> };
+  /** The town wall, as a line (closed where it meets itself). */
+  wall?: Array<[number, number]>;
+  /** Main streets, then the lanes off them to each door. */
+  streets: Array<Array<[number, number]>>;
 }
 
 // --- Dungeons ---------------------------------------------------------------
