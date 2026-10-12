@@ -35,7 +35,7 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // shared lists, near-duplicate lines merged, text-only flags dropped), from
   // 41 / 100 / 1.25M, 25 / 95 / 150k and 35 / 215 / 650k, to just above the
   // new spend: 36 / 89 / 1.19M, 23 / 84 / 97k and 34 / 203 / 559k.
-  'hollow-road': { flags: 37, conditional: 88, states: 1_200_000 },
+  'hollow-road': { flags: 38, conditional: 88, states: 1_350_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },

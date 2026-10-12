@@ -32,6 +32,7 @@
  *   - scenes no state reaches (gated shut, though something routes to them);
  *   - states that cannot reach a victory ending, with the shortest way there.
  */
+import { outsideOf } from './outside.js';
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Requirement, type Effect, type Scene } from './types.js';
 import { requirementsOf, effectsOf, parasOf, flagsWritten } from './graph.js';
@@ -375,7 +376,9 @@ export function checkModuleReach(module: Module, chapters: readonly Module[] = M
  * saved and left behind) is never searched, and carried choices do not count
  * against the 52 facts a state can hold.
  */
-function searchChapter(module: Module, chapters: readonly Module[], collect?: Collect, xp?: XpTrace): ReachReport {
+function searchChapter(whole: Module, chapters: readonly Module[], collect?: Collect, xp?: XpTrace): ReachReport {
+  // A delve proved apart is searched from outside (outside.ts).
+  const module = outsideOf(whole);
   const reads = carriedReads(module, collect);
   const prev = chapters.find((m) => m.sequel === module.id && m.id !== module.id);
   let handed: string[][];

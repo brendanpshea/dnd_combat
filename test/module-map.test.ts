@@ -18,7 +18,7 @@ describe('module map', () => {
     expect(at('square')).toBe('square');      // a location is its own group
     expect(at('mill-fight')).toBe('square');
     expect(at('barrow-fight')).toBe('trail');
-    expect(at('vex-parley')).toBe('inner');
+    expect(at('vex-parley')).toBe('inner/delve');
     expect(m.locations.map((l) => l.title)).toEqual(['Thornwick Square', 'The Marsh Road', 'The Ashfang Den']);
   });
 

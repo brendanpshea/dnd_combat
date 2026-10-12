@@ -31,6 +31,8 @@
  * Reedwife, a green hag, for coin and monsters. She branded him like the rest.
  */
 import type { Module, Scene, Effect, Choice, Para, Requirement } from '../../adventure/types.js';
+import { HUB_REF } from '../../adventure/types.js';
+import type { DelveSpec } from '../../adventure/delve-spec.js';
 import { withCanon, speaker, companionsFrom, npcMetFlag, npcFateFlag } from '../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS, TRILOGY_RENAMED_FATES } from './npcs.js';
 import { TRILOGY_FACTS, factValue } from './canon.js';
@@ -1286,57 +1288,6 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'inner', text: ['The big one goes down last, face-first in the mud at the foot of the wall.'],
       effects: [{ kind: 'setFlag', flag: 'den-entered' }, SIGNAL_SPENT] },
   },
-  // The den as a dungeon: rooms and links, laid out by the game. The spine is
-  // forced — yard → pit → Vex's fire → the chief's hall — so every party
-  // crosses the pit-brute and meets Vex before the throne. The kennels and the
-  // plunder tent hang off the yard; the tent is barred, and the kennel-master
-  // keeps its key. The gate is the way back out to the marsh road.
-  inner: {
-    id: 'inner', kind: 'dungeon',
-    dungeon: {
-      title: 'The {ashfang} Den', theme: 'ember', art: { imageId: 'loc-camp', emoji: '🔥' },
-      // Hostile ground, but you can bank a fire in a cleared corner and chance
-      // a rest — the watch may stumble on you (no recovery if they do).
-      // Enemy ground: two nights' sleep in the den in the chapter, then only short rests.
-      camp: { nights: 2, risky: { chance: 0.35, battleScene: 'den-camp-ambush' } },
-      entry: 'gate',
-      rooms: [
-        { id: 'gate', name: 'Gate', size: 'small', exit: { to: 'trail', label: 'Out to the marsh road' } },
-        { id: 'yard', name: 'Muster Yard', size: 'large',
-          firstVisit: ['Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.', { if: [{ kind: 'flag', flag: 'den-quiet' }],
-            text: 'No one at the fire has looked round yet. Behind the drying-racks there is room to sit, bind a cut and get your breath before anyone does.' },
-          // In past the horn (the gate stormed, or caught on the wall).
-          { if: [{ kind: 'notFlag', flag: 'den-quiet' }],
-            text: 'The den knows it has been broken into, and every eye in the yard is on the gate. Behind the drying-racks, out of the torchlight, there is a corner to bind a cut and get your breath while they watch the wrong end of the yard.' }] },
-        { id: 'kennel', name: 'Kennels', fight: 'den-hyenas' },
-        // What the hag is paid in: the captives, penned behind the kennels.
-        { id: 'pens', name: 'The Pens', size: 'small', event: { scene: 'den-pens-door' } },
-        { id: 'cache', name: 'Plunder Tent', size: 'small', search: 'cache' },
-        { id: 'muster', name: 'The Pit', fight: 'den-muster' },
-        { id: 'vex', name: 'A Lone Fire', size: 'small',
-          event: { scene: 'vex-parley', until: [{ kind: 'npc', npc: 'vex', met: true }] } },
-        // Whatever becomes of {vargan} here, the company leaves the den for good.
-        // The hall is settled once the {reedwife} is: dead or bound, both of
-        // which mark her `met` (BOSS_WON, REEDWIFE_WON, BIND_HAG). An `until`
-        // is all-of, so it reads that one mark rather than either fate, and
-        // the two fates leave the reach search one state, not two.
-        { id: 'throne', name: 'The Chief\'s Hall', size: 'large', goal: true,
-          event: { scene: 'boss-approach', until: [{ kind: 'npc', npc: 'reedwife', met: true }] } },
-      ],
-      links: [
-        { a: 'gate', b: 'yard' },
-        { a: 'yard', b: 'kennel' },
-        { a: 'kennel', b: 'pens' },
-        { a: 'yard', b: 'cache', door: {
-          locked: [{ kind: 'flag', flag: 'kennel-cleared' }],
-          note: 'Barred from inside — the kennel-master keeps the key.',
-          force: { skill: 'athletics', dc: 15 } } },
-        { a: 'yard', b: 'muster' },
-        { a: 'muster', b: 'vex' },
-        { a: 'vex', b: 'throne' },
-      ],
-    },
-  },
   'den-muster': {
     id: 'den-muster', kind: 'battle', encounterId: 'den-pit', mapId: 'ruins',
     intro: [
@@ -1345,17 +1296,8 @@ const scenes: Record<string, Scene> = {
       '"Fresh meat for the pit!" a goader bellows, and slips the ogre\'s chain.',
     ],
     again: ['The ogre is off its chain now, and it is not going back on. The two orc goaders whoop and drive it at you with their barbed poles. Their scarred champion comes round the ring behind it, greataxe high.'],
-    onWin: { to: 'inner', text: ['The ogre crashes down across its own broken chains. The goaders and their champion don\'t outlive it by much. The ogre\'s collar has worn a groove in its neck as deep as a thumb.', 'Under the champion\'s barrel is a fat purse: the takings from every fight he ever won in this pit.'],
-      effects: [{ kind: 'gold', amount: 40 }] },
-  },
-  'den-camp-ambush': {
-    id: 'den-camp-ambush', kind: 'battle',
-    // A night attack is a setback, not a payday: no XP or loot, so a
-    // risky camp can't be farmed by resting over and over.
-    loot: false, encounterId: 'den-watch', mapId: '@room',
-    intro: ['You\'ve barely banked the fire when a watch-patrol rounds the tents: an orc and two archers, blinking in the light. Five grey wolves the size of ponies strain at their leashes. The orc finds his voice first. He starts to shout, and slips the leashes.'],
-    again: ['Another patrol. They come round the drying-racks this time with their grey wolves already off the leash, and they have their blades out before they reach the fire.'],
-    onWin: { to: '@hub', text: ['You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.'] },
+    onWin: { to: HUB_REF, text: ['The ogre crashes down across its own broken chains. The goaders and their champion don\'t outlive it by much. The ogre\'s collar has worn a groove in its neck as deep as a thumb.', 'Under the champion\'s barrel is a fat purse: the takings from every fight he ever won in this pit.'],
+      effects: [{ kind: 'gold', amount: 40 }, { kind: 'setFlag', flag: 'pit-won' }] },
   },
   // The clock (see DAWNS): the Reedwife takes her due when the moon goes
   // dark. Until then the pen holds people; after, it holds a shoe.
@@ -1376,7 +1318,7 @@ const scenes: Record<string, Scene> = {
       'There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.',
       'The moon has gone dark, and the {reedwife} has come and gone. In the corner lies one small shoe.',
     ],
-    next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }],
+    next: [{ id: 'ok', label: 'Back to the den', to: HUB_REF }],
   },
   'den-pens': {
     id: 'den-pens', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
@@ -1409,7 +1351,7 @@ const scenes: Record<string, Scene> = {
     // The pens are played once: there is no coming back to them, so the fight
     // is seen through, and losing it loses the captives.
     noFlee: true,
-    onLoss: { to: 'inner', text: ['You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.'],
+    onLoss: { to: HUB_REF, text: ['You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
   },
   'den-pens-freed': {
@@ -1417,28 +1359,28 @@ const scenes: Record<string, Scene> = {
     text: ['The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.'],
     // As with a pen left (`den-pens`): only a Wren who has met the company.
     next: [
-      { id: 'ok', label: 'Back to the den', to: 'inner',
+      { id: 'ok', label: 'Back to the den', to: HUB_REF,
         effects: [{ kind: 'setFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
     ], noBack: true,
   },
   'den-pens-left': {
     id: 'den-pens-left', kind: 'story', art: { imageId: 'loc-camp', emoji: '⛓️' },
     text: ['"The reeve\'s men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, one bare foot tucked up in the straw.'],
-    next: [{ id: 'ok', label: 'Back to the den', to: 'inner' }], noBack: true,
+    next: [{ id: 'ok', label: 'Back to the den', to: HUB_REF }], noBack: true,
   },
   'den-hyenas': {
-    id: 'den-hyenas', kind: 'battle', encounterId: 'kennel-hyenas', mapId: '@room',
+    id: 'den-hyenas', kind: 'battle', encounterId: 'kennel-hyenas', mapId: 'ruins',
     intro: ['Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The {ashfang} raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.'],
     again: ['The hyenas and the grey wolves are loose in the kennels now. Their keeper is long gone, and they come for you at once.'],
-    onWin: { to: 'inner', text: ['The kennel falls quiet. In the straw you find a raider\'s stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.'],
+    onWin: { to: HUB_REF, text: ['The kennel falls quiet. In the straw you find a raider\'s stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.'],
       effects: [{ kind: 'setFlag', flag: 'kennel-cleared' }, { kind: 'gold', amount: 30 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
   },
-  cache: {
-    id: 'cache', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '📦' },
+  'den-cache': {
+    id: 'den-cache', kind: 'check', skill: 'investigation', dc: 12, art: { emoji: '📦' },
     intro: ['A tent of stolen goods, heaped anyhow. A careful search turns up the best of it.'],
-    success: { to: 'inner', text: ['Beneath the junk you find real coin and a caravan\'s lost potion. Stuffed in a sack at the bottom is the **{ashfang} banner** itself. The reeve will pay extra for that.'],
+    success: { to: HUB_REF, text: ['Beneath the junk you find real coin and a caravan\'s lost potion. Stuffed in a sack at the bottom is the **{ashfang} banner** itself. The reeve will pay extra for that.'],
       effects: [{ kind: 'gold', amount: 80 }, { kind: 'addItem', itemId: 'potion-greater-healing', qty: 1 }, { kind: 'setFlag', flag: 'looted' }] },
-    failure: { to: 'inner', text: ['You grab what\'s in reach before the noise draws eyes.'],
+    failure: { to: HUB_REF, text: ['You grab what\'s in reach before the noise draws eyes.'],
       effects: [{ kind: 'gold', amount: 25 }] },
   },
   'vex-parley': {
@@ -1472,7 +1414,7 @@ const scenes: Record<string, Scene> = {
     // take his place, so it is less than beating him would pay.
     // The journal holds for a {vex} bought with a pardon or cowed at
     // blade-point (`vex-threatened`), so it promises him nothing.
-    next: [{ id: 'ok', label: 'Go and face the chief', to: 'inner',
+    next: [{ id: 'ok', label: 'Go and face the chief', to: HUB_REF,
       effects: [{ kind: 'npc', npc: 'vex', met: true, fate: 'turned' },
         { kind: 'xp', amount: avoidedFightXP('ashfang-hall') - avoidedFightXP('ashfang-warlord-alone') },
         { kind: 'journal', entry: { id: 'n-vex', kind: 'npc', title: '{vex}, Turned', body: '{vex} the lieutenant has turned on the chief, and means to take the road out of the valley. {hask}, the chief\'s guard, answers to {vex}. He will stand aside when you face the chief, this once. After that, {vex} means to be gone.' } }] }],
@@ -1483,12 +1425,12 @@ const scenes: Record<string, Scene> = {
       '{vex} studies you a long moment, then shakes his head, almost sorry about it. "No. You\'d hang me the morning after, and we both know it."',
       '"Pity. I\'d have liked to see the far end of this valley." He melts back into the dark, toward the ridge above the den.',
     ],
-    next: [{ id: 'ok', label: 'Leave him to the dark', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
+    next: [{ id: 'ok', label: 'Leave him to the dark', to: HUB_REF, effects: [{ kind: 'npc', npc: 'vex', met: true }] }],
   },
   'vex-dismissed': {
     id: 'vex-dismissed', kind: 'story', noBack: true, art: { emoji: '🗡️' },
     text: ['"Suit yourself." {vex} turns back to his fire. "I won\'t help you. I won\'t get in your way, either."'],
-    next: [{ id: 'ok', label: 'Leave him to his fire', to: 'inner', effects: [{ kind: 'npc', npc: 'vex', met: true }, { kind: 'setFlag', flag: 'vex-rebuffed' }] }],
+    next: [{ id: 'ok', label: 'Leave him to his fire', to: HUB_REF, effects: [{ kind: 'npc', npc: 'vex', met: true }, { kind: 'setFlag', flag: 'vex-rebuffed' }] }],
   },
   // The read missed: his hand stays wrapped, and the talk is the harder one.
   'vargan-unread': {
@@ -1821,7 +1763,7 @@ const scenes: Record<string, Scene> = {
         text: 'The reeve\'s men carried you in, she tells you, and then stood about in her taproom until she fed them.' },
       { if: [{ kind: 'at', hub: 'trail' }],
         text: 'A reed-cutter found you face-down in the reeds and poled you home on his raft. He would not take a copper for it.' },
-      { if: [{ kind: 'at', hub: 'inner' }],
+      { if: [{ kind: 'at', hub: 'inner/delve' }],
         text: 'She does not know who carried you out of the den. At first light she found you on her step, laid side by side, with your weapons at your feet.' },
       // (Dead, he was beaten first: no fight is left to lose after that.)
       { assumes: [{ kind: 'npc', npc: 'vargan', notFate: ['dead'] }],
@@ -1841,7 +1783,7 @@ const scenes: Record<string, Scene> = {
       { id: 'back', label: 'Go straight back out on the marsh road', to: 'trail', effects: [{ kind: 'passDay' }],
         requires: [{ kind: 'visited', scene: 'trail' }], hideWhenBlocked: true },
       { id: 'den', label: 'Go straight back into the den', to: 'inner', effects: [{ kind: 'passDay' }],
-        requires: [{ kind: 'at', hub: 'inner' }, { kind: 'flag', flag: 'den-entered' }], hideWhenBlocked: true }], noBack: true,
+        requires: [{ kind: 'at', hub: 'inner/delve' }, { kind: 'flag', flag: 'den-entered' }], hideWhenBlocked: true }], noBack: true,
   },
 
   // The ending reads the run back: a short universal close, then one line for
@@ -1982,6 +1924,37 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   blurb: 'Break the {ashfang} raiders — through the village, the marsh, and their den. By blade or by wit.',
   cover: 'loc-village',
   levelBand: { from: 1, to: 3 },
+  /*
+   * The den: laid out fresh every run (delve-spec), held by the Ashfang's
+   * gnolls, with the chapter's own pieces built in where they belong — the
+   * pit and its champion, the kennels, the pens, the plunder tent, Vex at
+   * his fire on the way to the hall, and the hall itself as the goal, where
+   * the story takes over (boss-approach). Every way in through the gate
+   * comes to its door (`inner`); out is back to the marsh road.
+   */
+  delves: { inner: {
+    spec: {
+      // A spine: no lock and key of its own, so no flag the whole chapter's
+      // proof would have to carry twice over.
+      level: 2, theme: 'ember', shape: 'spine', rooms: 9, fights: 'inhabitants', factions: ['gnolls'],
+      require: [
+        { name: 'The Pit', where: 'main', event: { scene: 'den-muster', until: [{ kind: 'flag', flag: 'pit-won' }] } },
+        { name: 'A Lone Fire', where: 'main',
+          event: { scene: 'vex-parley', until: [{ kind: 'npc', npc: 'vex', met: true }] } },
+        // The kennels, and the plunder their keeper guarded.
+        { name: 'Kennels', event: { scene: 'den-hyenas', until: [{ kind: 'flag', flag: 'kennel-cleared' }] }, search: 'den-cache' },
+        // What the hag is paid in: the captives, penned behind the kennels.
+        { name: 'The Pens', event: { scene: 'den-pens-door' } },
+        // The hall is settled once the {reedwife} is: dead or bound, both of
+        // which mark her `met`.
+        { name: 'The Chief\'s Hall', where: 'goal',
+          event: { scene: 'boss-approach', until: [{ kind: 'npc', npc: 'reedwife', met: true }] } },
+      ],
+    } as DelveSpec,
+    onWin: { to: 'boss-approach' }, onLeave: { to: 'trail' },
+    // Proved in parts: its layout when built, the chapter with only its outside.
+    proveApart: true, title: 'The {ashfang} Den',
+  } },
   // Part 1 of the trilogy (docs/trilogy-plan.md): a victory carries the
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
@@ -2003,7 +1976,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       ...(['square', 'trail'] as const).map((hub) => ({
         if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub }],
         text: 'Somewhere out there the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' })),
-      { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner' }],
+      { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner/delve' }],
         text: 'Somewhere in the den the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },
       // The scout's deadline (the next dawn's `scout-bled-out`), while she is
       // still out there unfound: neither met nor stepped round.
