@@ -282,7 +282,9 @@ export interface ExploreMap {
    * and half again after dark; the battle is one of `battles`, whose onWin
    * comes back to the map — the party has arrived.
    */
-  legs?: Array<{ between: [Id, Id]; chance: number; battles: SceneRef[] }>;
+  legs?: Array<{ between: [Id, Id]; chance: number; battles: SceneRef[];
+    /** How long the walk takes: the day wears on, and night falls on the road. */
+    hours?: number }>;
   /** A county's lie of the land, drawn under its markers (overland.ts). */
   land?: LandGround;
 }

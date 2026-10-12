@@ -72,6 +72,11 @@ Runtime, for any map (`ExploreMap.legs`, `ExploreNode.camp`,
 - **Fix:** a map remembers where the party stood on it (`mapAt`): coming
   out of a county's town no longer puts the party back at the road in.
 
-## Next
+## Step 4 (built): the day on the road
 
-4. Travel time: legs take hours, night falls on the road.
+A leg may take `hours` (a county's: its walking cost at three miles an hour,
+so rough ground is slower). The party sets out at 8 am; past 8 pm it is
+night — the town flag, so a party that arrives late finds the shops shut and
+the gates barred — and at 8 the next morning, day again. A long rest, or
+sitting up at an inn till dawn, makes it morning; waiting at the inn for
+nightfall makes it dusk. The map's title shows the hour. No rations.

@@ -4733,3 +4733,4 @@ button.category .count {
 .adv-land-river { fill: none; stroke: rgba(90,150,210,.8); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .adv-coastline { fill: none; stroke: rgba(200,220,235,.6); stroke-width: 2; vector-effect: non-scaling-stroke; }
 .adv-land-glyphs .adv-land-bridge { opacity: .9; font-size: 16px; }
+.adv-clock { font-size: .8rem; opacity: .85; font-family: var(--body, inherit); }

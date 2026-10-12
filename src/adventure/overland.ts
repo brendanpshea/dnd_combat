@@ -590,7 +590,9 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
     const road = (settled(a) || a.startsWith('stop-') || a === 'road-in') && (settled(b) || b.startsWith('stop-') || b === 'road-in');
     const near = a === city.id || b === city.id;
     const chance = Math.round(ROAD_CHANCE[t] * (road ? 0.6 : 1) * (near ? 0.5 : 1) * 100) / 100;
-    return { between: [a, b] as [Id, Id], chance, battles: fightsOn(t) };
+    // Three miles an hour on the flat, slower over rough ground.
+    const hours = Math.max(0.5, Math.round((legCost(pa, pb, g) / 3) * 2) / 2);
+    return { between: [a, b] as [Id, Id], chance, battles: fightsOn(t), hours };
   });
   for (const n of nodes) {
     if (settled(n.id)) { n.camp = {}; continue; }

@@ -94,6 +94,9 @@ export interface AdventureState {
   /** Shops that caught the party stealing, by scene id: they will not serve
    *  it again. */
   barredShops?: Id[];
+  /** The hour of the day, on a map whose legs take time: 8 is morning; past
+   *  DUSK it is night; past a day's DUSK + 12 (the next morning), day again. */
+  hour?: number;
   /** Fights met on each road leg ("a|b"): each makes the next rarer. */
   legFights?: Record<string, number>;
   /** The run's roll for the module's generated dungeons (Module.delves): its
@@ -342,11 +345,14 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
         ? (typeof cur === 'number' ? cur + 1 : true)
         : eff.value;
       state.flags[eff.flag] = value;
+      // Nightfall by a story's say-so (waiting at the inn): the clock agrees.
+      if (eff.flag === NIGHT && state.hour !== undefined) state.hour = Math.max(state.hour, DUSK);
       events.push({ type: 'flag', flag: eff.flag, value });
       break;
     }
     case 'clearFlag':
       delete state.flags[eff.flag];
+      if (eff.flag === NIGHT && state.hour !== undefined) state.hour = MORNING;
       events.push({ type: 'flag', flag: eff.flag, value: false });
       break;
     case 'gold': {
@@ -879,6 +885,16 @@ export function exploreNodes(state: AdventureState, module: Module): VisibleNode
 
 /** Enter an explore node's scene (after its requirements). A wandering roll may
  *  divert to a battle first (rolled once per node, on the campaign rng). */
+export const MORNING = 8, DUSK = 20;
+
+/** Walk for some hours: night falls at dusk, and lifts at the next morning. */
+function walkHours(state: AdventureState, hours: number): void {
+  const h = (state.hour ?? MORNING) + hours;
+  if (h >= DUSK) state.flags[NIGHT] = true;
+  if (h >= MORNING + 24) { delete state.flags[NIGHT]; state.hour = h - 24; }
+  else state.hour = h;
+}
+
 export function enterNode(state: AdventureState, module: Module, nodeId: Id): AdventureEvent[] {
   const scene = currentScene(state, module);
   if (scene.kind !== 'explore') throw new Error('enterNode outside an explore scene');
@@ -900,6 +916,8 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
   const leg = from && from !== nodeId
     ? scene.map.legs?.find(({ between: [a, b] }) => (a === from && b === nodeId) || (a === nodeId && b === from))
     : undefined;
+  // The hours the walk takes, and the dark coming on while you walk.
+  if (leg?.hours) walkHours(state, leg.hours);
   if (leg?.battles.length) {
     const key = [...leg.between].sort().join('|');
     const met = state.legFights?.[key] ?? 0;
@@ -1722,6 +1740,7 @@ export function endDay(state: AdventureState, module: Module): AdventureEvent[] 
   state.day = day;
   // Morning: whatever the night was, it is over.
   delete state.flags[NIGHT];
+  if (state.hour !== undefined) state.hour = MORNING;
   const events: AdventureEvent[] = [{ type: 'dawn', day }];
   for (const d of module.dawns ?? []) {
     if (d.day !== day) continue;
