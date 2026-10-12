@@ -667,7 +667,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { emoji: "🌾" },
     text: [
-      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white, and the cockatrices come out of the far side hissing and blind, and keep going, over the field and away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.",
+      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.",
     ],
     next: [
       {
@@ -1294,7 +1294,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { emoji: "🪦" },
     text: [
-      "You kneel at the cracked capstone and say the words for the dead, slowly, the way they would have been said when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.",
+      "You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.",
     ],
     next: [
       {

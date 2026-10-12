@@ -22,6 +22,10 @@ const askedOf = (module: Module): Set<string> => new Set([
   ...Object.values(module.towns ?? {}).flatMap((t) => (t.spec.places ?? []).flatMap((pl) => (pl.event?.when ?? []).flatMap((w) => w.if))),
 ].flatMap((r) => (r.kind === 'flag' || r.kind === 'notFlag' ? [r.flag] : [])));
 
+/** A place's marker once its story is done: back to the map, and nothing else. */
+const doneScene = (hub: Id) => `${hub}-done`;
+const doneBeat = (hub: Id): Scene => ({ id: doneScene(hub), kind: 'story', text: ['(Done.)'], next: [{ id: 'ok', label: 'Back', to: hub }] });
+
 export function outsideOf(module: Module): Module {
   if (!Object.values(module.delves ?? {}).some((d) => d.proveApart) && !Object.values(module.towns ?? {}).some((t) => t.proveApart)) return module;
   const scenes: Record<Id, Scene> = { ...module.scenes };
@@ -50,7 +54,11 @@ export function outsideOf(module: Module): Module {
       // room on it has done what it waits on, as walking there would be.
       const before = r.where === 'goal'
         ? (d.spec.require ?? []).filter((x) => x.where === 'main').flatMap((x) => x.event?.until ?? []) : [];
-      if (r.event) at_(r.event.scene, 'e', [...until, ...before], r.event.when);
+      // A room done but ungated shows only itself once done: a cosmetic beat,
+      // which keeps its flag out of the proof and its pay to once (XP ceiling).
+      const doneIf = (r.event?.until ?? []).filter((q) => q.kind === 'flag');
+      const done = !gates && doneIf.length ? [{ if: doneIf, to: doneScene(hub) }] : [];
+      if (r.event) at_(r.event.scene, 'e', [...until, ...before], [...done, ...(r.event.when ?? [])]);
       if (r.search) at_(r.search, 's');
       // A way out is past the room's event: walking in plays it until it is done.
       if (r.exit) at_(r.exit.to, 'x', [...before, ...(gates ? r.event?.until ?? [] : [])]);
@@ -64,6 +72,7 @@ export function outsideOf(module: Module): Module {
     nodes.push({ id: 'fights', label: 'Its own fights', icon: 'tok-mystery', scene: fights, x: 90, y: 70 });
     scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };
     scenes[hub] = { id: hub, kind: 'explore', map: { title: d.title ?? 'Inside', art: { emoji: '🏚️' }, entry: ['out'], nodes } };
+    scenes[doneScene(hub)] = doneBeat(hub);
   }
   /*
    * A town the same way: a map with a marker for each of the story's places
@@ -87,9 +96,11 @@ export function outsideOf(module: Module): Module {
       if (pl.event) {
         const until = (pl.event.until ?? []).flatMap((q): Requirement[] =>
           q.kind === 'flag' && asked.has(q.flag) ? [{ kind: 'notFlag', flag: q.flag }] : q.kind === 'notFlag' && asked.has(q.flag) ? [{ kind: 'flag', flag: q.flag }] : []);
+        const doneIf = (pl.event.until ?? []).filter((q) => q.kind === 'flag' && !asked.has(q.flag));
+        const when = [...(doneIf.length ? [{ if: doneIf, to: doneScene(hub) }] : []), ...(pl.event.when ?? [])];
         pin(`e${i}`, pl.label, pl.event.scene, {
           ...(until.length ? { requires: until, hideWhenBlocked: true } : {}),
-          ...(pl.event.when?.length ? { sceneWhen: pl.event.when } : {}) });
+          ...(when.length ? { sceneWhen: when } : {}) });
       }
       if (pl.way) pin(`w${i}`, pl.label, pl.way.to);
     });
@@ -99,6 +110,7 @@ export function outsideOf(module: Module): Module {
       scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };
     }
     scenes[hub] = { id: hub, kind: 'explore', map: { title: t.title ?? 'Town', art: { emoji: '🏘️' }, entry: [nodes[0]!.id], nodes, ...(t.spec.camp ? { camp: {} } : {}) } };
+    scenes[doneScene(hub)] = doneBeat(hub);
   }
   const { delves: _, towns: __, ...rest } = module;
   return { ...rest, ...(Object.keys(delves).length ? { delves } : {}), ...(Object.keys(towns).length ? { towns } : {}), scenes };

@@ -280,7 +280,7 @@ again:
 # mill-smoked
 noBack: true
 art: 🌾
-You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white, and the cockatrices come out of the far side hissing and blind, and keep going, over the field and away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
+You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
 > Back to the square → square/city  #ok
   do +mill-saved; gold 35; xp avoided cockatrice-flock
 

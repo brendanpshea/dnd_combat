@@ -237,7 +237,7 @@ The barrow-mound still breathes cold air through its cracked capstone. Down in t
 # barrow-settled
 noBack: true
 art: 🪦
-You kneel at the cracked capstone and say the words for the dead, slowly, the way they would have been said when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
 > Back to the trail → @hub  #ok
   do +barrow-cleared; xp avoided barrow-haunt
 
