@@ -48,3 +48,17 @@ describe('module map', () => {
     expect(needsOf([{ kind: 'notFlag', flag: 'x' }, { kind: 'companion', companion: 'wren' }])).toBe('!x, +wren');
   });
 });
+
+describe('places (scopes.ts)', () => {
+  it('holds a place to what it declares it reads and hands on', async () => {
+    const { checkPlaces } = await import('../src/adventure/scopes.js');
+    expect(checkPlaces(hollow).errors).toEqual([]);
+    const sq = hollow.places!.square!;
+    const quiet = { ...hollow, places: { square: { ...sq, exports: sq.exports!.filter((f) => f !== 'bounty') } } };
+    expect(checkPlaces(quiet).errors).toContain("[place square] 'bounty' is read outside it: export it, or keep it in");
+    const deaf = { ...hollow, places: { square: { ...sq, reads: ['mira-read'] } } };
+    expect(checkPlaces(deaf).errors.some((e) => e.includes("reads 'know-spy'"))).toBe(true);
+    const tight = { ...hollow, places: { square: { ...sq, budget: 3 } } };
+    expect(checkPlaces(tight).errors.some((e) => e.includes('over its budget of 3'))).toBe(true);
+  });
+});

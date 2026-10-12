@@ -4,6 +4,7 @@
  * gotos, and typos that a scene graph makes easy to introduce.
  */
 import { outsideOf } from './outside.js';
+import { checkPlaces } from './scopes.js';
 import type { Id } from '../engine/types.js';
 import { CLASSES, SKILL_ABILITY, type SkillId } from '../data/classes.js';
 import { MONSTERS } from '../data/monsters.js';
@@ -560,5 +561,6 @@ export function validateModule(whole: Module): string[] {
     errors.push(...reach.errors);
   }
 
+  errors.push(...checkPlaces(whole).errors);
   return errors;
 }

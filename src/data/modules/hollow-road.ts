@@ -826,6 +826,9 @@ const scenes: Record<string, Scene> = {
         requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true },
       { id: 'wren', label: 'Make for the den\'s wall', to: 'wren-parts',
         requires: [{ kind: 'companion', companion: 'wren' }], hideWhenBlocked: true },
+      // Out of the den, or turned back at its wall: the marsh road home.
+      { id: 'back', label: 'Take the marsh road back', to: 'trail',
+        requires: [{ kind: 'noCompanion', companion: 'wren' }], hideWhenBlocked: true },
     ], noBack: true,
   },
   ravine: {
@@ -1234,7 +1237,7 @@ const scenes: Record<string, Scene> = {
     assumes: [{ kind: 'notFlag', flag: 'captives-taken' }],
     text: [
       'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.',
-      'The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one {door-price} each {door-midwinter}, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
+      'The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
       'A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.',
     ],
     // Freeing them is never free: a quiet lock that may fail, or a loud one
@@ -1841,6 +1844,14 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
    * the story takes over (boss-approach). Every way in through the gate
    * comes to its door (`inner`); out is back to the marsh road.
    */
+  /*
+   * Thornwick's square answers to what Mira told the party and its own
+   * errands; the rest of the chapter sees only what it hands on: the spy
+   * dealt with (and how), the bounty taken, the mill saved.
+   */
+  places: {
+    square: { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
+  },
   delves: {
   /*
    * The marsh road: small, walked carefully, laid out fresh every run. The
@@ -1900,7 +1911,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
           event: { scene: 'boss-approach', until: [{ kind: 'npc', npc: 'reedwife', met: true }] } },
       ],
     } as DelveSpec,
-    onWin: { to: 'boss-approach' }, onLeave: { to: 'trail' },
+    onWin: { to: 'boss-approach' }, onLeave: { to: 'hollow-quiet' },
     // Proved in parts: its layout when built, the chapter with only its outside.
     proveApart: true, title: 'The {ashfang} Den',
   } },
