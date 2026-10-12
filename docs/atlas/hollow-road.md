@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-121 scenes · 183 versions · 2,578,126 states searched (with text conditions tracked).
+124 scenes · 186 versions · 2,693,974 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -46,6 +46,8 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
   - **S18** “(The place's own fights.)”
 - `trail`, `inner`:
   - **S19** “In.”
+- `trail/delve-done`, `inner/delve-done`, `square/city-done`:
+  - **S20** “(Done.)”
 
 ## `road` · story
 
@@ -404,7 +406,7 @@ Osk the miller still has his boat-hook in both hands. "Back, are you? The ugly t
 
 ## `mill-smoked` · story
 
-You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white, and the cockatrices come out of the far side hissing and blind, and keep going, over the field and away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
+You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
 
 - » **Back to the square**
 
@@ -841,7 +843,7 @@ The barrow-mound still breathes cold air through its cracked capstone. Down in t
 
 ## `barrow-settled` · story
 
-You kneel at the cracked capstone and say the words for the dead, slowly, the way they would have been said when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
 
 - » **Back to the trail**
 
@@ -2296,7 +2298,7 @@ In.
 
 ## `trail/delve` · explore
 
-<sub>reads: flag:trail-read, flag:trail-known, flag:crossed-ravine, flag:npc.wren.fate.saved, companion:wren, flag:npc.wren.fate.lost, flag:scout-bled-out, flag:scout-walked-past, flag:know-hag, flag:trail-wet</sub>
+<sub>reads: flag:trail-read, flag:trail-known, flag:crossed-ravine, flag:npc.wren.fate.saved, companion:wren, flag:npc.wren.fate.lost, flag:scout-bled-out, flag:scout-walked-past, flag:barrow-cleared, flag:thicket-cleared, flag:know-hag, flag:trail-wet</sub>
 
 **Map:** The Marsh Road
 
@@ -2310,13 +2312,23 @@ In.
   - goes to `scout-dead` instead when `scout-bled-out`
   - goes to `scout-passed` instead when `scout-walked-past`
 - **A Sunken Barrow** → `barrow`
+  - goes to `trail/delve-done` instead when `barrow-cleared`
 - **Webbed Thicket** → `thicket` <sub>open when `trail-read` · `crossed-ravine`; otherwise greyed</sub>
+  - goes to `trail/delve-done` instead when `thicket-cleared`
 - **The Hollow** → `ambush` <sub>open when `trail-read` · `crossed-ravine` · not `know-hag`; otherwise greyed</sub>
   - goes to `ambush-wren` instead when Wren in the party
   - goes to `ambush-wet` instead when `trail-wet`
 - **The Hollow** → `hollow-quiet` <sub>open when `know-hag`; otherwise greyed</sub>
 - **Out** → `square/city`
 - **Its own fights** → `trail/fights`
+
+## `trail/delve-done` · story
+
+(Done.)
+
+<sub>(shared with: `inner/delve-done`, `square/city-done`)</sub>
+
+- » **Back**
 
 ## `inner/fights` · story
 
@@ -2336,28 +2348,38 @@ In.
 
 ## `inner/delve` · explore
 
-<sub>reads: flag:pit-won, flag:npc.vex.met, flag:npc.reedwife.met</sub>
+<sub>reads: flag:pit-won, flag:npc.vex.met, flag:kennel-cleared, flag:npc.reedwife.met</sub>
 
 **Map:** The Ashfang Den
 
 - **The Pit** → `den-muster` <sub>open when not `pit-won`; otherwise greyed</sub>
 - **A Lone Fire** → `vex-parley` <sub>open when never met Vex; otherwise greyed</sub>
 - **Kennels** → `den-hyenas`
+  - goes to `inner/delve-done` instead when `kennel-cleared`
 - **Kennels** → `den-cache`
 - **The Pens** → `den-pens-door`
 - **The Chief's Hall** → `boss-approach` <sub>open when `pit-won` · met Vex; otherwise greyed</sub>
 - **Out** → `hollow-quiet`
 - **Its own fights** → `inner/fights`
 
+## `inner/delve-done` · story
+
+(Done.)
+
+<sub>(shared with: `trail/delve-done`, `square/city-done`)</sub>
+
+- » **Back**
+
 ## `square/city` · explore
 
-<sub>reads: flag:spy-caught, visited:spy-confront, flag:know-spy, flag:den-alarm, visited:trail</sub>
+<sub>reads: flag:mill-saved, flag:spy-caught, visited:spy-confront, flag:know-spy, flag:den-alarm, visited:trail</sub>
 
 **Map:** Thornwick
 
 - **The Wander-Inn** → `tavern`
 - **Notice Board** → `board`
 - **The Old Mill** → `mill`
+  - goes to `square/city-done` instead when `mill-saved`
 - **Peddler's Stall** → `spy-confront` <sub>open when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`; otherwise greyed</sub>
   - goes to `spy-confront` instead when been to `spy-confront`
   - goes to `spy-stalk` instead when `know-spy`
@@ -2365,6 +2387,14 @@ In.
   - goes to `gate-blocked` instead when not been to `spy-confront` · not `know-spy` · not `den-alarm` — or — not `spy-caught` · not `den-alarm`
   - goes to `trailhead-clear` instead when been to `trail`
   - goes to `gate-slipped` instead when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`
+
+## `square/city-done` · story
+
+(Done.)
+
+<sub>(shared with: `trail/delve-done`, `inner/delve-done`)</sub>
+
+- » **Back**
 
 ## Never shown
 
