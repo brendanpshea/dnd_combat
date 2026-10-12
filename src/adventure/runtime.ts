@@ -1513,8 +1513,89 @@ export function campRule(state: AdventureState, module: Module): CampRule | null
   const scene = currentScene(state, module);
   const place = isHub(scene) ? scene : undefined;
   if (place?.kind === 'explore') return place.map.camp ?? null;
-  if (place?.kind === 'dungeon') return place.dungeon.camp ?? null;
+  if (place?.kind === 'dungeon') return place.dungeon.camp ?? (place.dungeon.rest ? {} : null);
   return null;
+}
+
+// --- Resting by room (Dungeon.rest) -----------------------------------------
+
+/** Whether resting here goes by room (a dungeon with a `rest` policy). The
+ *  story chapters' camps do not, and their rest panel is left as it was. */
+export function restsByRoom(state: AdventureState, module: Module): boolean {
+  const scene = currentScene(state, module);
+  return scene.kind === 'dungeon' && !!scene.dungeon.rest;
+}
+
+/** Torch a short rest burns: an hour, against a step's quarter of one or so. */
+export const SHORT_REST_TORCH = 2;
+
+/** One kind of rest, here and now: whether it is allowed, why not, and its price. */
+export interface RestOption {
+  ok: boolean;
+  /** Why not, in the player's terms ("Enemies nearby"). */
+  reason?: string;
+  /** Torch it burns. */
+  torch?: number;
+  /** The chance a long rest is broken up before it does any good (0-1). */
+  chance?: number;
+}
+
+const won = (state: AdventureState, ref: Id | undefined) => !ref || battleWonBefore(state, ref);
+
+/**
+ * What resting would mean where the party stands.
+ *
+ * Without a dungeon `rest` policy this is the old rule, unchanged: the camp
+ * allows both rests anywhere, with its fixed chance and nights limit.
+ *
+ * With one, the room decides, Baldur's Gate fashion:
+ *  - NOTHING with enemies nearby — an unbeaten fight in this room or in any
+ *    room a door leads to. This is what makes clearing a wing worth doing.
+ *  - A short rest burns torch: an hour is an hour, and a free short rest
+ *    after every fight hands back Second Wind and Action Surge for nothing.
+ *  - A long rest only in a safe room (or, `forgiving`, any restable room),
+ *    and its odds of being broken up shrink as the place is cleared: a dead
+ *    dungeon is a quiet one.
+ */
+export function restOptions(state: AdventureState, module: Module): { short: RestOption; long: RestOption } {
+  const rule = campRule(state, module);
+  const no = (reason: string): RestOption => ({ ok: false, reason });
+  if (!rule) return { short: no('No safe place to rest here.'), long: no('No safe place to rest here.') };
+  const scene = currentScene(state, module);
+  const d = scene.kind === 'dungeon' ? scene.dungeon : undefined;
+  const nights = nightsLeft(state, module);
+  if (!d?.rest) {
+    return {
+      short: { ok: true },
+      long: nights === 0 ? no('You have slept here as long as you dare.')
+        : { ok: true, ...(rule.risky ? { chance: rule.risky.chance } : {}) },
+    };
+  }
+  const p = dungeonProgress(state, scene.id, d);
+  const room = roomOf(d, p.at);
+  const level = room?.rest ?? 'short';
+  if (level === 'none') return { short: no('You cannot rest here.'), long: no('You cannot rest here.') };
+  const near = !won(state, room?.fight) || linksFrom(d, p.at).some(({ to }) => !won(state, roomOf(d, to)?.fight));
+  if (near) return { short: no('You cannot rest — enemies are nearby.'), long: no('You cannot rest — enemies are nearby.') };
+
+  const torchCost = d.torch ? SHORT_REST_TORCH : 0;
+  const short: RestOption = d.torch && (p.torch ?? 0) <= torchCost
+    ? no('Your torch would not last the hour.')
+    : { ok: true, ...(torchCost ? { torch: torchCost } : {}) };
+
+  let long: RestOption;
+  if (d.rest === 'harsh') long = no('There is no sleeping in a place like this.');
+  else if (d.rest === 'standard' && level !== 'safe') long = no('Not here — find somewhere you can bar the door.');
+  else if (nights === 0) long = no('You have slept here as long as you dare.');
+  else {
+    // The share of the place still awake, by its room fights.
+    const fights = d.rooms.filter((r) => r.fight);
+    const awake = fights.length ? fights.filter((r) => !won(state, r.fight)).length / fights.length : 0;
+    const base = rule.risky?.chance ?? 0;
+    const chance = base * (0.2 + 0.8 * awake) * (level === 'safe' ? 0.5 : 1);
+    long = { ok: true, ...(chance > 0 ? { chance } : {}) };
+  }
+  return { short, long };
 }
 
 /** Nights left to sleep at this camp: null when it sets no limit. */
@@ -1533,18 +1614,24 @@ export function campRest(
 ): AdventureEvent[] {
   const rule = campRule(state, module);
   if (!rule) throw new Error('No camp at this location');
-  if (variant === 'long' && nightsLeft(state, module) === 0) throw new Error('No nights left to sleep here');
+  const option = restOptions(state, module)[variant];
+  if (!option.ok) throw new Error(option.reason ?? 'Cannot rest here');
   const events: AdventureEvent[] = [];
   const c = state.campaign;
   // A risky long rest can be interrupted *before* you get any benefit — roll
   // first. Interrupted: you fight with the resources you already have and
   // recover nothing this night (bank the fire and try again after, at another
   // roll's risk). Short rests are never interrupted.
-  if (variant === 'long' && rule.risky) {
+  if (variant === 'long' && rule.risky && option.chance) {
     const r = rollDie(c.rng, 1000); c.rng = r.state;
-    if ((r.value - 1) / 1000 < rule.risky.chance) {
+    if ((r.value - 1) / 1000 < option.chance) {
       return enterScene(state, module, rule.risky.battleScene);
     }
+  }
+  // The hour a short rest takes, out of the torch.
+  if (option.torch) {
+    const scene = currentScene(state, module);
+    if (scene.kind === 'dungeon') dungeonProgress(state, scene.id, scene.dungeon).torch! -= option.torch;
   }
   // A night slept counts against the camp's limit; one broken up by a fight
   // (above) was never slept.

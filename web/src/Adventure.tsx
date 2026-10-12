@@ -31,7 +31,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft, battleWonBefore,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, restOptions, restsByRoom, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft, battleWonBefore,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
@@ -502,6 +502,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           campaign={campaign}
           camp={campRule(state, module)}
           nightsLeft={nightsLeft(state, module)}
+          rest={restsByRoom(state, module) ? restOptions(state, module) : undefined}
           onRest={(variant) => {
             const evs = campRest(state, module, variant);
             setCampOpen(false);

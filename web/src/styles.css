@@ -2949,6 +2949,10 @@ button.category .count {
 .adv-camp-rest { display: flex; flex-direction: column; gap: 6px; }
 .adv-rest-btns { display: flex; gap: 8px; }
 .adv-rest-btns button { flex: 1; }
+/* A rest that is not allowed has to LOOK it: these buttons share the bright
+   `.primary` fill, so a disabled one read as available and the reason under
+   it as a contradiction. Already true of the old "no nights left" case. */
+.adv-rest-btns button:disabled { opacity: .4; cursor: not-allowed; filter: grayscale(.6); }
 .adv-rest-warn { font-size: .82rem; color: var(--gold); margin: 0; }
 .adv-rest-warn.muted { color: var(--muted); }
 .adv-camp-notice { font-size: .85rem; color: var(--green); margin: 0; }
