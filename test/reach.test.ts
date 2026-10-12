@@ -180,8 +180,8 @@ describe('campaign bugs found by the fourth read-through', () => {
     expect(node(mod, map, id).requires ?? [], `${mod}:${id}`).toContainEqual({ kind: 'flag', flag });
 
   it('an obstacle cannot be stepped into and back out of to open the way past it', () => {
-    needs('hollow-road', 'trail', 'approach', 'crossed-ravine');
-    needs('hollow-road', 'trail', 'thicket', 'crossed-ravine');
+    // The marsh's ravine is its delve's lock: everything past it waits on the crossing.
+    expect(byId('hollow-road').delves!.trail!.spec.lock!.requires).toContainEqual({ kind: 'flag', flag: 'crossed-ravine' });
     for (const id of ['blueden', 'onihold']) needs('wyrmcalling', 'hills', id, 'seam-cleared');
     for (const id of ['redden', 'gorgonvale', 'steading']) needs('wyrmcalling', 'hills', id, 'oni-cleared');
   });

@@ -79,7 +79,7 @@ export interface RequiredRoom {
    * The story's flags in `until` stay the story's. On a goal room, it stands
    * in for the boss: the room is where the story takes over.
    */
-  event?: { scene: SceneRef; until?: Requirement[] };
+  event?: { scene: SceneRef; until?: Requirement[]; when?: Array<{ if: Requirement[]; to: SceneRef }> };
   /** In a story: what Search here enters, a scene of the story's own. */
   search?: SceneRef;
   /** In a story: a way out from here, into one of the story's scenes. */
@@ -118,6 +118,12 @@ export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
    *  the theme. Two split each floor: the first before the lock, the second
    *  past it. */
   factions?: Id[];
+  /**
+   * In a story: the first floor's lock is the story's, opened by its own
+   * flags (a ravine crossed, a trail read) — no key room. Rooms placed
+   * `afterLock` lie beyond it.
+   */
+  lock?: { requires: Requirement[]; note: string };
   /** Draw a past for the place: its title, its story, traces in the rooms. */
   history?: boolean;
   require?: RequiredRoom[];
@@ -173,7 +179,7 @@ export function shareFor(role: FightRole, level: number): number {
 }
 
 /** Throws on a spec no candidate could satisfy; returns it with defaults. */
-export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & { size?: DelveSpec['size'] } {
+export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'lock'>> & Pick<DelveSpec, 'size' | 'lock'> {
   const err = (m: string) => { throw new Error(`Bad delve spec: ${m}`); };
   const level = spec.level ?? 2;
   if (!Number.isInteger(level) || level < 1 || level > MAX_LEVEL) err(`level ${level} is not 1–${MAX_LEVEL}`);
@@ -246,6 +252,7 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & 
     theme: spec.theme ?? 'stone', shape: spec.shape ?? 'classic',
     rooms: spec.rooms ?? 0, fights: spec.fights ?? 'authored', rest: spec.rest ?? 'standard',
     ...(spec.size ? { size: spec.size } : {}),
+    ...(spec.lock ? { lock: spec.lock } : {}),
   };
 }
 
@@ -264,9 +271,9 @@ interface Graph {
   pieceRooms: Set<Id>;
 }
 
-function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: string): Graph {
+function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: string, story?: DelveSpec['lock']): Graph {
   const flag = (k: number) => `delve-key-${floor}${k ? `-${k + 1}` : ''}`;
-  const locked = (k: number): NonNullable<DungeonLink['door']> => ({
+  const locked = (k: number): NonNullable<DungeonLink['door']> => (story && k === 0 ? { locked: story.requires, note: story.note } : {
     locked: [{ kind: 'flag', flag: flag(k) }], note: door,
     ...(dice.chance(0.5) ? { force: { skill: 'athletics' as const, dc: dice.int(14, 17) } } : {}),
   });
@@ -313,6 +320,7 @@ function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: str
 
   // The keys: each hangs off the stretch before its own lock.
   lockAt.forEach((_, k) => {
+    if (story && k === 0) return;   // the story holds this one's key
     const room = k ? `key${k + 1}` : 'key';
     const anchor = shape === 'hub' ? 'm1' : dice.pick(before(k));
     hang(anchor, room);
@@ -464,7 +472,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const sceneId = f === 1 ? 'delve' : `delve-${f}`;
     const last = f === spec.floors;
     const n = spec.rooms || dice.int(...SIZE_ROOMS[spec.size ?? 'medium']);
-    const g = wire(spec.shape, n, dice, f, T.door);
+    const g = wire(spec.shape, n, dice, f, T.door, f === 1 ? spec.lock : undefined);
     let goal = g.main[g.main.length - 1]!;
     /** A goal piece's floor keeps the generated goal in its graph (so every
      *  "the last main room" reading stays right) but never builds it. */
@@ -510,7 +518,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const pieceLinks = new Set<DungeonLink>();
     const pieceRooms: DungeonRoom[] = [];
     // The first lock's flag, kept before a key piece can take over the key.
-    const lockFlag = g.keys[0]?.flag;
+    // (In a story the first lock is the story's: no key flag, its own door.)
+    const storyLock = f === 1 ? spec.lock : undefined;
+    const lockFlag = storyLock ? undefined : g.keys[0]?.flag;
     const onFloor = spec.pieces.map((pl, i) => ({ pl, i }))
       .filter(({ pl }) => (pl.floor ?? (PIECES[pl.piece]!.where === 'goal' ? spec.floors : 1)) === f);
     // The goal first, then the key, then the rest.
@@ -571,15 +581,16 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
        * what `afterLock` promises is "needs the key", and this keeps it.
        */
       let portDoor: DungeonLink['door'];
-      if (open.length === 0 && where === 'afterLock' && lockFlag) {
+      if (open.length === 0 && where === 'afterLock' && (lockFlag || storyLock)) {
         open.push(...[...g.main.slice(0, -1), ...g.side]
           .filter((id) => id !== 'cache' && !g.pieceRooms.has(id) && !g.afterLock.has(id) && degree(id) < 3));
-        portDoor = { locked: [{ kind: 'flag', flag: lockFlag }], note: T.door };
+        portDoor = storyLock ? { locked: storyLock.requires, note: storyLock.note } : { locked: [{ kind: 'flag', flag: lockFlag! }], note: T.door };
       }
       if (open.length === 0) throw new Reroll(`no ${where} corridor left on floor ${f} for ${piece.name}`);
       const anchor = dice.pick(open);
       const local = `p${i}`;
       const isKey = !!piece.gives?.includes('key');
+      if (isKey && storyLock) throw new Error(`${piece.name} would carry a key, but the story holds the first floor's lock`);
       const built = piece.build({
         floor: f, level, theme: spec.theme, dice,
         room: (r) => `${local}-${r}`, scene: (sc) => `${pre}${local}-${sc}`, flag: (fl) => `${pre}${local}-${fl}`,
@@ -753,8 +764,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     blurb: history ? history.story : `A generated delve (${spec.theme}, ${spec.shape}, ${spec.floors} floor${spec.floors > 1 ? 's' : ''}, level ${spec.level}).`,
     start: 'start', scenes, defeatScene: 'fallen', levelBand: { from: spec.level, to: Math.max(spec.level, level) },
   };
+  // Walked with the story's scenes stood in: a story's lock opens only through them.
+  const walked = withStandIns(module, spec.require);
   for (const [d, goal, out] of goals) {
-    const cost = goalCost(module, d, goal);
+    const cost = goalCost(walked, d, goal);
     if (cost !== undefined) d.torch = { length: cost + Math.max(4, Math.ceil(cost * 0.6)), out };
   }
   return module;
@@ -802,6 +815,9 @@ function withStandIns(module: Module, require: readonly RequiredRoom[]): Module 
   const scenes: Record<Id, Scene> = { ...module.scenes };
   const stand = (id: Id, sc: Scene) => { if (!scenes[id]) scenes[id] = sc; };
   for (const r of require) {
+    for (const w of r.event?.when ?? []) {
+      stand(w.to, { id: w.to, kind: 'story', noBack: true, text: ['(The story\'s own scene.)'], next: [{ id: 'on', label: 'On', to: '@hub' }] });
+    }
     if (r.event) {
       const sets = (r.event.until ?? []).flatMap((q) => (q.kind === 'flag' ? [{ kind: 'setFlag' as const, flag: q.flag }] : []));
       stand(r.event.scene, { id: r.event.scene, kind: 'story', noBack: true, text: ['(The story\'s own scene.)'],

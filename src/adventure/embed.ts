@@ -81,6 +81,11 @@ function splice(
   // Beaten inside, the party comes to inside the place, not wherever the
   // story's own defeat scene is.
   if (loss) for (const s of Object.values(scenes)) if (s.kind === 'battle' && !s.onLoss) s.onLoss = { to: loss };
+  // No torch in a story: half of any company sees in the dark, and the story
+  // has a clock of its own. Its "the torch dies" scenes go with it.
+  for (const s of Object.values(scenes)) {
+    if (s.kind === 'dungeon' && s.dungeon.torch) { delete scenes[s.dungeon.torch.out]; delete s.dungeon.torch; }
+  }
 
   const own = new Set(Object.keys(scenes));
   const keep = new Set(reads);
@@ -122,7 +127,8 @@ export function expandDelve(at: Id, delve: EmbeddedDelve, seed: number, story: R
   const built = generateSpecDelve(seed, delve.spec, story).module;
   // A required room's story scene waits on the story's own flags: those stay
   // the story's.
-  const own = (delve.spec.require ?? []).flatMap((r) => r.event?.until ?? []).flatMap((r) => ('flag' in r ? [r.flag] : []));
+  const own = (delve.spec.require ?? []).flatMap((r) => [...(r.event?.until ?? []), ...(r.event?.when ?? []).flatMap((w) => w.if)])
+    .flatMap((r) => ('flag' in r ? [r.flag] : []));
   return splice(at, built.scenes, { won: delve.onWin, 'gave-up': delve.onLeave }, 'fallen', [...(delve.reads ?? []), ...own], delve.exports);
 }
 

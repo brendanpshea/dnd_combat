@@ -17,7 +17,7 @@ describe('module map', () => {
     expect(at('road')).toBeNull();            // the prologue
     expect(at('square')).toBe('square');      // a location is its own group
     expect(at('mill-fight')).toBe('square');
-    expect(at('barrow-fight')).toBe('trail');
+    expect(at('barrow-fight')).toBe('trail/delve');
     expect(at('vex-parley')).toBe('inner/delve');
     expect(m.locations.map((l) => l.title)).toEqual(['Thornwick Square', 'The Marsh Road', 'The Ashfang Den']);
   });
@@ -29,7 +29,7 @@ describe('module map', () => {
       const from = m.nodes.find((n) => n.id === e.from)!;
       if (from.id !== from.location) expect(e.to, `${e.from} → ${e.to}`).not.toBe(from.location);
     }
-    expect(m.nodes.find((n) => n.id === 'barrow-done')!.returns).toBe(true);
+    expect(m.nodes.find((n) => n.id === 'tracks-read')!.returns).toBe(true);
   });
 
   it('keeps every other way, labelled with what it needs', () => {

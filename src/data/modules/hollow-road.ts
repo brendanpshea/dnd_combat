@@ -780,59 +780,6 @@ const scenes: Record<string, Scene> = {
         effects: [{ kind: 'xp', amount: avoidedFightXP('goblin-outriders') }] },
     },
   },
-  trail: {
-    id: 'trail', kind: 'explore',
-    map: {
-      title: 'The Marsh Road', theme: 'forest', art: { imageId: 'loc-marsh', emoji: '🌾' },
-      camp: { risky: { chance: 0.4, battleScene: 'camp-ambush' } }, // sleep here at your peril
-      // A traversal map: you start at the tracks and the trail forks — the
-      // sunken ravine ahead, a cry for help off to the south. The hollow reveals
-      // only once you've pushed on past the ravine.
-      entry: ['tracks'],
-      paths: [
-        ['tracks', 'ravine'], ['tracks', 'scout'], ['ravine', 'approach'],
-        ['scout', 'barrow'], ['ravine', 'thicket'],
-      ],
-      nodes: [
-        { id: 'tracks', x: 18, y: 55, label: 'Fresh Tracks', icon: 'tok-tracks', scene: 'tracks',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'trail-read' }], to: 'tracks-done' },
-            // The trapper's sketch from the inn round: no need to roll for the line.
-            { if: [{ kind: 'flag', flag: 'trail-known' }], to: 'tracks-mapped' }] },
-        { id: 'scout', x: 34, y: 82, label: 'A Cry for Help', mystery: 'A faint sound…', icon: 'tok-person', scene: 'wounded',
-          sceneWhen: [
-            { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'companion', companion: 'wren' }], to: 'scout-along' },
-            { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], to: 'scout-sent' },
-            // Covered where she died.
-            { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }], to: 'scout-gone' },
-            // Untended until the fifth morning (see `wounded`), walked past or not.
-            { if: [{ kind: 'flag', flag: 'scout-bled-out' }], to: 'scout-dead' },
-            { if: [{ kind: 'flag', flag: 'scout-walked-past' }], to: 'scout-passed' }] },
-        // Optional: a sunken barrow, spotted only by a sharp-eyed party.
-        { id: 'barrow', x: 52, y: 90, label: 'A Sunken Barrow', mystery: 'A low mound…', icon: 'tok-cave', scene: 'barrow',
-          hidden: { dc: 12 },
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'barrow-cleared' }], to: 'barrow-done' }] },
-        // Optional: a webbed thicket — plainly dangerous, plainly avoidable.
-        { id: 'thicket', x: 66, y: 70, label: 'Webbed Thicket', mystery: 'Pale shapes in the reeds…', icon: 'tok-tree', scene: 'thicket',
-          requires: [{ kind: 'flag', flag: 'crossed-ravine' }],
-          note: 'The ravine cuts the trail. The webs are beyond it.',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'thicket-cleared' }], to: 'thicket-done' }] },
-        { id: 'ravine', x: 52, y: 46, label: 'Sunken Ravine', icon: 'tok-crossing', scene: 'ravine',
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'crossed-ravine' }], to: 'ravine-done' }],
-          wandering: { chance: 0.5, battleScene: 'bog-toads' } },
-        { id: 'approach', x: 82, y: 34, label: 'The Hollow Ahead', icon: 'tok-cave', scene: 'ambush',
-          requires: [{ kind: 'flag', flag: 'trail-read' }, { kind: 'flag', flag: 'crossed-ravine' }],
-          note: 'The ravine cuts the trail, and past it the reeds hide the way to the hollow. Cross the ravine, and find the patrols\' tracks.',
-          // Once the ambush is broken the hollow is a walk, not a re-fightable
-          // reward loop — the return trip from a den retreat passes through
-          // quietly instead of re-rolling the battle (and its XP/treasure).
-          sceneWhen: [{ if: [{ kind: 'flag', flag: 'know-hag' }], to: 'hollow-quiet' },
-            // A scout who counted the den's watch-posts sees the ambush first.
-            { if: [{ kind: 'companion', companion: 'wren' }], to: 'ambush-wren' },
-            // Lost the dry line at the tracks: the party splashes in, heard.
-            { if: [{ kind: 'flag', flag: 'trail-wet' }], to: 'ambush-wet' }] },
-      ],
-    },
-  },
   // The tracks: a Survival roll, easier for a ranger. One try either way.
   tracks: {
     id: 'tracks', kind: 'story', art: { emoji: '👣' },
@@ -848,7 +795,7 @@ const scenes: Record<string, Scene> = {
   'tracks-read': {
     id: 'tracks-read', kind: 'story', art: { emoji: '👣' },
     text: ['The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You\'ve found the **safe path to the hollow**.'],
-    next: [{ id: 'ok', label: 'Follow the dry line', to: 'trail',
+    next: [{ id: 'ok', label: 'Follow the dry line', to: HUB_REF,
       effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 20 }] }],
     noBack: true,
   },
@@ -857,20 +804,15 @@ const scenes: Record<string, Scene> = {
     text: ['The prints tangle and double back on themselves until your eyes water, but they point roughly toward the hills. That\'s enough to find the hollow by, if not the dry way there.',
       'The wet way is slow and loud. You will come at the hollow splashing from one tussock to the next. Anything waiting in the reeds will hear you long before you see it.'],
     // `trail-wet`: the hollow's ambush is sprung on the party, no Perception roll.
-    next: [{ id: 'ok', label: 'Head for the hills', to: 'trail',
+    next: [{ id: 'ok', label: 'Head for the hills', to: HUB_REF,
       effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'setFlag', flag: 'trail-wet' }] }],
     noBack: true,
-  },
-  'tracks-done': {
-    id: 'tracks-done', kind: 'story', art: { emoji: '👣' },
-    text: ['The mud has told you all it can. Nothing new has passed this way since.'],
-    next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
   },
   'tracks-mapped': {
     id: 'tracks-mapped', kind: 'story', art: { emoji: '🗺️' },
     assumes: [{ kind: 'flag', flag: 'trail-known' }],
     text: ['The old trapper\'s ale-sketch was a good one. The reeds, the pools and the hollow in the hills all line up with the mud. The patrols\' dry line runs just where his finger traced it.'],
-    next: [{ id: 'ok', label: 'Follow the trapper\'s line', to: 'trail',
+    next: [{ id: 'ok', label: 'Follow the trapper\'s line', to: HUB_REF,
       effects: [{ kind: 'setFlag', flag: 'trail-read' }, { kind: 'xp', amount: 20 }] }],
     noBack: true,
   },
@@ -897,29 +839,24 @@ const scenes: Record<string, Scene> = {
     approaches: [
       { id: 'climb', label: 'Climb the sheer face',
         skill: 'athletics', dc: 13,
-        success: { to: 'trail', text: ['You haul each other up and over, hand over hand.'],
+        success: { to: HUB_REF, text: ['You haul each other up and over, hand over hand.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 30 }] },
         failure: { to: 'ravine', text: ['A hold crumbles and you slide back down in a clatter of stone. That way will not work.'] } },
       { id: 'scramble', label: 'Pick across the rubble where it lies shallowest',
         skill: 'acrobatics', dc: 12,
-        success: { to: 'trail', text: ['Light on your feet, you thread the shifting stones and reach the far lip.'],
+        success: { to: HUB_REF, text: ['Light on your feet, you thread the shifting stones and reach the far lip.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 30 }] },
         failure: { to: 'ravine', text: ['The loose stone gives all at once and you scramble back before it takes an ankle with it.'] } },
       { id: 'detour', label: 'Look for a gentler way round', hint: 'It will cost you time.',
         skill: 'survival', dc: 11,
-        success: { to: 'trail', text: ['You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.'],
+        success: { to: HUB_REF, text: ['You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.'],
           effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'xp', amount: 15 }] },
         failure: { to: 'ravine', text: ['You follow the lip of the ravine downstream for an hour, and it only gets deeper. You trudge back to where you started.'] } },
     ],
     // Reached only if every line of attack fails (or is spent).
-    success: { to: 'trail', effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }] },
-    failure: { to: 'trail', text: ['Every way across fights you. In the end you take the long, muddy detour downstream, miles out of your way. By the time you climb back onto the trail past the ravine, the light is gone. You have lost the whole day.'],
+    success: { to: HUB_REF, effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }] },
+    failure: { to: HUB_REF, text: ['Every way across fights you. In the end you take the long, muddy detour downstream, miles out of your way. By the time you climb back onto the trail past the ravine, the light is gone. You have lost the whole day.'],
       effects: [{ kind: 'setFlag', flag: 'crossed-ravine' }, { kind: 'passDay' }] },
-  },
-  'ravine-done': {
-    id: 'ravine-done', kind: 'story', art: { emoji: '🪨' },
-    text: ['The ravine lies behind you. Nothing waits here but the wind over the loose stone.'],
-    next: [{ id: 'ok', label: 'Leave the ravine behind', to: 'trail' }], noBack: true,
   },
   wounded: {
     id: 'wounded', kind: 'dialogue', npc: SCOUT, art: { emoji: '🤕' },
@@ -973,7 +910,7 @@ const scenes: Record<string, Scene> = {
       'You step around the horse. She doesn\'t call after you. She only watches you go, jaw still set.',
       'Behind you the reeds close over the trail. You don\'t look back.',
     ],
-    next: [{ id: 'ok', label: 'Keep walking', to: 'trail' }], noBack: true,
+    next: [{ id: 'ok', label: 'Keep walking', to: HUB_REF }], noBack: true,
   },
   // The marker after walking past, before the fifth morning: she's gone,
   // and no telling how.
@@ -981,7 +918,7 @@ const scenes: Record<string, Scene> = {
     id: 'scout-passed', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'flag', flag: 'scout-walked-past' }, { kind: 'notFlag', flag: 'scout-bled-out' }],
     text: ['The dead horse still lies across the trail. The scout is gone. A line of flattened reeds drags away toward {thornwick}, and you cannot tell who made it.'],
-    next: [{ id: 'ok', label: 'Leave the horse where it lies', to: 'trail' }], noBack: true,
+    next: [{ id: 'ok', label: 'Leave the horse where it lies', to: HUB_REF }], noBack: true,
   },
   'scout-saved': {
     id: 'scout-saved', kind: 'story', noBack: true, art: { emoji: '❤️‍🩹' },
@@ -993,7 +930,7 @@ const scenes: Record<string, Scene> = {
       // Sent home from here, she has the reeve's men on the marsh road long
       // before the den falls: the epilogue's pens slide reads it. Every rescue that lands here earns her +1, by
       // potion, prayer or a steady hand alike.
-      { id: 'ok', label: 'Send {wren} back to {thornwick}', to: 'trail', effects: [...WREN_SAVED, { kind: 'npc', npc: 'wren', attitude: 1 }] },
+      { id: 'ok', label: 'Send {wren} back to {thornwick}', to: HUB_REF, effects: [...WREN_SAVED, { kind: 'npc', npc: 'wren', attitude: 1 }] },
       // The Gold Box guide: she knows the marsh, and she owes you twice over.
       // Only as far as the den's gate: a party that has already been inside
       // (and could walk straight back in) sends her home instead.
@@ -1006,7 +943,7 @@ const scenes: Record<string, Scene> = {
     id: 'wren-joins', kind: 'story', noBack: true, art: { emoji: '🧭' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
     text: ['{wren} tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don\'t." She takes up her bow. "As far as their gate. Then I go for the reeve\'s men, and you had better still be alive when I get back."'],
-    next: [{ id: 'go', label: 'Follow {wren} into the marsh', to: 'trail' }],
+    next: [{ id: 'go', label: 'Follow {wren} into the marsh', to: HUB_REF }],
   },
   // She came as far as she said she would.
   'wren-parts': {
@@ -1025,7 +962,7 @@ const scenes: Record<string, Scene> = {
       'The bleeding stops at last, with the light already going. "**{wren}**," she says, grey to the lips. "In case you have to tell someone." She scratches the den\'s watch-posts into the mud, slower than she wants to. She is in no state to guide anyone anywhere today.',
       ...WREN_ON_VEX,
     ],
-    next: [{ id: 'ok', label: 'Send {wren} limping back to {thornwick}', to: 'trail',
+    next: [{ id: 'ok', label: 'Send {wren} limping back to {thornwick}', to: HUB_REF,
       effects: [...WREN_SAVED, { kind: 'passDay' }] }],
   },
   // The fifth morning came first: the scout under the horse died (Wren's
@@ -1045,7 +982,7 @@ const scenes: Record<string, Scene> = {
         text: 'She got the healing potion out of her belt at last. Her fingers are still closed round it, and the stopper is still in.' },
       'There is no one on the road to tell you her name.',
     ],
-    next: [{ id: 'ok', label: 'Cover her and go', to: 'trail',
+    next: [{ id: 'ok', label: 'Cover her and go', to: HUB_REF,
       effects: [{ kind: 'npc', npc: 'wren', fate: 'lost' }, { kind: 'setFlag', flag: 'scout-covered' }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] }],
   },
   // "Already done" beats: a finished location shows this instead of replaying
@@ -1054,13 +991,13 @@ const scenes: Record<string, Scene> = {
     id: 'scout-gone', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'npc', npc: 'wren', fate: 'lost' }],
     text: ['The dead horse still lies across the trail, white with frost. Beside it is the low mound of reeds where you covered the scout.'],
-    next: [{ id: 'ok', label: 'Leave her to her rest', to: 'trail' }], noBack: true,
+    next: [{ id: 'ok', label: 'Leave her to her rest', to: HUB_REF }], noBack: true,
   },
   'scout-along': {
     id: 'scout-along', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'companion', companion: 'wren' }],
     text: ['The dead horse still lies across the trail. {wren} walks past it without looking. "He was a good horse," she says, too quickly. "Come on."'],
-    next: [{ id: 'ok', label: 'Follow {wren} on', to: 'trail' }], noBack: true,
+    next: [{ id: 'ok', label: 'Follow {wren} on', to: HUB_REF }], noBack: true,
   },
   'scout-sent': {
     id: 'scout-sent', kind: 'story', art: { imageId: 'loc-marsh', emoji: '🐴' },
@@ -1070,7 +1007,7 @@ const scenes: Record<string, Scene> = {
       // Sent home from here, or gone from the tree line above the hollow.
       '{wren} is long gone to {thornwick} for the reeve\'s men. The flies have the horse to themselves.',
     ],
-    next: [{ id: 'ok', label: 'Keep to the trail', to: 'trail' }], noBack: true,
+    next: [{ id: 'ok', label: 'Keep to the trail', to: HUB_REF }], noBack: true,
   },
   'spy-gone': {
     id: 'spy-gone', kind: 'story', art: { imageId: 'loc-village', emoji: '🕳️' },
@@ -1088,20 +1025,15 @@ const scenes: Record<string, Scene> = {
     again: ['The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.'],
     next: [
       { id: 'in', label: 'Go down into the dark', to: 'barrow-fight' },
-      { id: 'leave', label: 'Leave the dead their peace', to: 'trail' },
+      { id: 'leave', label: 'Leave the dead their peace', to: HUB_REF },
     ],
   },
   'barrow-fight': {
     id: 'barrow-fight', kind: 'battle', encounterId: 'barrow-haunt', mapId: 'corridor',
     intro: ['The cold answers you. Two figures rise out of the grave-earth. One wears the form of a man, but it is nothing now but spite and winter air. It passes *through* the barrow stones to reach you. The other climbs up out of the grave-goods in rotten mail. It holds a green-bronze sword in its grey hand, and a cold light burns where its eyes should be.'],
     again: ['The two cold dead are waiting this time, down among the grave-goods. One is nothing but winter air, and one wears rotten mail and carries a sword. They come for you again.'],
-    onWin: { to: 'trail', text: ['The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.'],
+    onWin: { to: HUB_REF, text: ['The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.'],
       effects: [{ kind: 'setFlag', flag: 'barrow-cleared' }, { kind: 'gold', amount: 45 }] },
-  },
-  'barrow-done': {
-    id: 'barrow-done', kind: 'story', art: { emoji: '🪦' },
-    text: ['The barrow lies quiet now, and the air above the capstone is no colder than the marsh.'],
-    next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
   },
 
   // --- Optional: the webbed thicket (Act 2 side fight — hard, telegraphed) --
@@ -1114,38 +1046,15 @@ const scenes: Record<string, Scene> = {
     again: ['The grey webs still sheet the reeds, and the man-shaped bundles still hang in them. The spinners have not gone anywhere.'],
     next: [
       { id: 'in', label: 'Cut your way in', to: 'thicket-fight' },
-      { id: 'leave', label: 'Give the webs a wide berth', to: 'trail' },
+      { id: 'leave', label: 'Give the webs a wide berth', to: HUB_REF },
     ],
   },
   'thicket-fight': {
     id: 'thicket-fight', kind: 'battle', encounterId: 'spiders', mapId: 'marsh',
     intro: ['The silk trembles over your heads. Four giant spiders drop from the high webbing on every side.'],
     again: ['The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.'],
-    onWin: { to: 'trail', text: ['The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.'],
+    onWin: { to: HUB_REF, text: ['The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.'],
       effects: [{ kind: 'setFlag', flag: 'thicket-cleared' }, { kind: 'gold', amount: 60 }, { kind: 'addItem', itemId: 'potion-healing', qty: 1 }] },
-  },
-  'thicket-done': {
-    id: 'thicket-done', kind: 'story', art: { emoji: '🕸️' },
-    text: ['The torn webs hang slack and grey. Nothing spins in the thicket now.'],
-    next: [{ id: 'ok', label: 'Back to the trail', to: 'trail' }], noBack: true,
-  },
-
-  'bog-toads': {
-    id: 'bog-toads', kind: 'battle', encounterId: 'bog-toads', mapId: 'bog',
-    intro: ['The black water bulges, then heaves. Four giant toads haul themselves onto the mud bank, one after another. Each is wider than a shield. A tongue lashes out for the nearest of you.'],
-    onWin: { to: 'ravine', text: ['The last toad shudders and goes still, half in the water. You scrape off the slime and press on toward the ravine.'] },
-  },
-  'camp-ambush': {
-    id: 'camp-ambush', kind: 'battle',
-    // A night attack is a setback, not a payday: no XP or loot, so a
-    // risky camp can't be farmed by resting over and over.
-    loot: false, encounterId: 'marsh-dead', mapId: 'bog',
-    intro: ['You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are clawing up out of the mire beyond the fire. Behind them comes a fifth that reeks of something long dead. They come for the light on all fours, jaws working.'],
-    again: ['The dragging sound comes again, out in the dark. The marsh has more dead in it than you hoped, and they are crawling toward your fire, the one that reeks worst at their back.'],
-    // A risky camp can be broken up more than once: worded for any time.
-    onWin: { to: '@hub', text: [
-      'You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.',
-    ] },
   },
   ambush: {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
@@ -1761,7 +1670,7 @@ const scenes: Record<string, Scene> = {
       // How the company got home, by where it fell (Part 2 has its own).
       { if: [{ kind: 'at', hub: 'square' }],
         text: 'The reeve\'s men carried you in, she tells you, and then stood about in her taproom until she fed them.' },
-      { if: [{ kind: 'at', hub: 'trail' }],
+      { if: [{ kind: 'at', hub: 'trail/delve' }],
         text: 'A reed-cutter found you face-down in the reeds and poled you home on his raft. He would not take a copper for it.' },
       { if: [{ kind: 'at', hub: 'inner/delve' }],
         text: 'She does not know who carried you out of the den. At first light she found you on her step, laid side by side, with your weapons at your feet.' },
@@ -1932,7 +1841,47 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
    * the story takes over (boss-approach). Every way in through the gate
    * comes to its door (`inner`); out is back to the marsh road.
    */
-  delves: { inner: {
+  delves: {
+  /*
+   * The marsh road: small, walked carefully, laid out fresh every run. The
+   * tracks and the ravine before the story's own lock (the dry line read and
+   * the ravine crossed), the scout and the barrow off to the side, the webs
+   * and the hollow past it. The hollow is the goal, where the story takes
+   * over: its ambush, then on to the den's gate. Its rooms answer only to
+   * their own flags; the chapter sees its outside (proveApart).
+   */
+  trail: {
+    spec: {
+      level: 1, theme: 'bog', shape: 'classic', rooms: 10, fights: 'inhabitants', factions: ['wild'],
+      lock: { requires: [{ kind: 'flag', flag: 'trail-read' }, { kind: 'flag', flag: 'crossed-ravine' }],
+        note: 'The ravine cuts the trail, and past it the reeds hide the way to the hollow. Cross the ravine, and find the patrols\' tracks.' },
+      require: [
+        { name: 'Fresh Tracks', where: 'beforeLock', event: { scene: 'tracks', until: [{ kind: 'flag', flag: 'trail-read' }],
+          // The trapper's sketch from the inn round: no need to roll for the line.
+          when: [{ if: [{ kind: 'flag', flag: 'trail-known' }], to: 'tracks-mapped' }] } },
+        { name: 'Sunken Ravine', where: 'beforeLock', event: { scene: 'ravine', until: [{ kind: 'flag', flag: 'crossed-ravine' }] } },
+        // The scout: every visit says where she stands now.
+        { name: 'A Cry for Help', where: 'beforeLock', event: { scene: 'wounded', when: [
+          { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'companion', companion: 'wren' }], to: 'scout-along' },
+          { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], to: 'scout-sent' },
+          { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }], to: 'scout-gone' },
+          // Untended until the fifth morning (see `wounded`), walked past or not.
+          { if: [{ kind: 'flag', flag: 'scout-bled-out' }], to: 'scout-dead' },
+          { if: [{ kind: 'flag', flag: 'scout-walked-past' }], to: 'scout-passed' }] } },
+        { name: 'A Sunken Barrow', where: 'side', event: { scene: 'barrow', until: [{ kind: 'flag', flag: 'barrow-cleared' }] } },
+        { name: 'Webbed Thicket', where: 'afterLock', event: { scene: 'thicket', until: [{ kind: 'flag', flag: 'thicket-cleared' }] } },
+        { name: 'The Hollow', where: 'goal', event: { scene: 'ambush', until: [{ kind: 'flag', flag: 'know-hag' }], when: [
+          // A scout who counted the den's watch-posts sees the ambush first.
+          { if: [{ kind: 'companion', companion: 'wren' }], to: 'ambush-wren' },
+          // Lost the dry line at the tracks: the party splashes in, heard.
+          { if: [{ kind: 'flag', flag: 'trail-wet' }], to: 'ambush-wet' }] },
+          exit: { to: 'hollow-quiet', label: 'On to the den' } },
+      ],
+    } as DelveSpec,
+    onWin: { to: 'hollow-quiet' }, onLeave: { to: 'square' },
+    proveApart: true, title: 'The Marsh Road',
+  },
+  inner: {
     spec: {
       // A spine: no lock and key of its own, so no flag the whole chapter's
       // proof would have to carry twice over.
@@ -1974,7 +1923,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       // Woken on the marsh road or in town (`at` names no third map but the
       // den), or in the den itself, or on {mira}'s cot after falling there.
       ...(['square', 'trail'] as const).map((hub) => ({
-        if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub }],
+        if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub: hub === 'trail' ? 'trail/delve' : hub }],
         text: 'Somewhere out there the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' })),
       { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner/delve' }],
         text: 'Somewhere in the den the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },

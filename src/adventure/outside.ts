@@ -22,18 +22,26 @@ export function outsideOf(module: Module): Module {
     const hub = `${at}/delve`;
     const nodes: ExploreNode[] = [];
     (d.spec.require ?? []).forEach((r, i) => {
-      const until = (r.event?.until ?? []).flatMap((q): Requirement[] =>
+      // Whether an optional room is done is the delve's own business: nothing
+      // outside it asks, so its outside shows the event every time, and its
+      // flags stay out of the chapter's proof. Only the path (main, goal) gates.
+      const gates = r.where === 'main' || r.where === 'goal';
+      const until = (gates ? r.event?.until ?? [] : []).flatMap((q): Requirement[] =>
         q.kind === 'flag' ? [{ kind: 'notFlag', flag: q.flag }] : q.kind === 'notFlag' ? [{ kind: 'flag', flag: q.flag }] : []);
-      const at_ = (scene: Id, k: string, requires?: Requirement[]) =>
+      // Past a story's lock (the goal always is): only once the story opens it.
+      const past = d.spec.lock && (r.where === 'goal' || r.where === 'afterLock') ? d.spec.lock.requires : [];
+      const at_ = (scene: Id, k: string, requires: Requirement[] = [], when?: { if: Requirement[]; to: Id }[]) =>
         nodes.push({ id: `${k}${i}`, label: r.name ?? scene, icon: 'tok-mystery', scene, x: 10 + (nodes.length % 8) * 10, y: 20 + Math.floor(nodes.length / 8) * 20,
-          ...(requires?.length ? { requires, hideWhenBlocked: true } : {}) });
+          ...([...past, ...requires].length ? { requires: [...past, ...requires], hideWhenBlocked: true } : {}),
+          ...(when?.length ? { sceneWhen: when } : {}) });
       // The goal lies past the main path: reached only once each required
       // room on it has done what it waits on, as walking there would be.
       const before = r.where === 'goal'
         ? (d.spec.require ?? []).filter((x) => x.where === 'main').flatMap((x) => x.event?.until ?? []) : [];
-      if (r.event) at_(r.event.scene, 'e', [...until, ...before]);
+      if (r.event) at_(r.event.scene, 'e', [...until, ...before], r.event.when);
       if (r.search) at_(r.search, 's');
-      if (r.exit) at_(r.exit.to, 'x');
+      // A way out is past the room's event: walking in plays it until it is done.
+      if (r.exit) at_(r.exit.to, 'x', [...before, ...(gates ? r.event?.until ?? [] : [])]);
     });
     nodes.push({ id: 'out', label: 'Out', icon: 'tok-gate', scene: d.onLeave.to, x: 90, y: 90 });
     scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };

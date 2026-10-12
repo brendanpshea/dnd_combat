@@ -47,7 +47,7 @@ import {
   startAdventure, carryCompanyInto, carriedFlags, currentScene, enterScene, legalChoices, choose,
   rollSceneCheck, nightsLeft, battleWonBefore, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
   resolveShopOrRest, dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere,
-  leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, dungeonProgress,
+  leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, restOptions, dungeonProgress,
   endingText, dayOf, battleSurpriseOf, battleMap,
 } from '../src/adventure/runtime.js';
 import { ROOM_MAP_REF } from '../src/adventure/types.js';
@@ -57,6 +57,7 @@ import { seedRng } from '../src/engine/rng.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
 import { moduleById } from '../src/data/modules/index.js';
+import { expandModule } from '../src/adventure/embed.js';
 
 // --- Routes -----------------------------------------------------------------
 
@@ -715,7 +716,7 @@ function playChapter(
       case 'explore':
       case 'dungeon': {
         // Make camp first, if the route wants to and the place allows it.
-        if (campRule(state, module) && nightsLeft(state, module) !== 0 && campedAt !== step - 1 && route.camp({ fightsSinceRest, lostSinceRest })) {
+        if (campRule(state, module) && restOptions(state, module).long.ok && campedAt !== step - 1 && route.camp({ fightsSinceRest, lostSinceRest })) {
           campedAt = step;
           fightsSinceRest = 0; lostSinceRest = 0;
           t.line(`**» Make camp (long rest)** <sub>(day ${dayOf(state)})</sub>`);
@@ -799,7 +800,8 @@ export function renderRoute(route: Route, onBattle?: BattleObserver): string {
   const modules = route.chapters.map((id) => {
     const m = moduleById(id);
     if (!m) throw new Error(`Unknown module ${id}`);
-    return m;
+    // Its generated places laid out as a run with this seed lays them out.
+    return expandModule(m, { seed: route.seed, flags: [] });
   });
   const campaign: CampaignState = newCampaign(route.seed);
   campaign.partyReady = true;

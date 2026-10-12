@@ -31,7 +31,7 @@ import {
 import {
   HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, NIGHT,
   type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
-  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph, type Slide,
+  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph, type Slide, type DungeonRoom,
 } from './types.js';
 import { linkKey, linksFrom, roomOf } from './dungeon.js';
 import { isNpcFlag } from './npcs.js';
@@ -1038,7 +1038,12 @@ function enterDungeon(
  *  holds and that something doesn't yet: a confrontation still under way. */
 function standingEvent(state: AdventureState, d: Dungeon, p: DungeonProgress): Id | undefined {
   const ev = roomOf(d, p.at)?.event;
-  return ev?.until && !ev.until.every((r) => requirementMet(state, r)) ? ev.scene : undefined;
+  return ev?.until && !ev.until.every((r) => requirementMet(state, r)) ? eventScene(state, ev) : undefined;
+}
+
+/** The scene a room's event opens on, as things stand (its `when`). */
+function eventScene(state: AdventureState, ev: NonNullable<DungeonRoom['event']>): Id {
+  return ev.when?.find((w) => w.if.every((r) => requirementMet(state, r)))?.to ?? ev.scene;
 }
 
 /**
@@ -1074,7 +1079,7 @@ function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, 
       : p.played.includes(room.id);
     if (!done) {
       if (!room.event.until) p.played.push(room.id);
-      events.push(...enterScene(state, module, room.event.scene));
+      events.push(...enterScene(state, module, eventScene(state, room.event)));
     }
   }
   return events;

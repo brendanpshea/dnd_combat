@@ -276,7 +276,7 @@ export const ROOM_BOX: Record<RoomSize, { w: number; h: number }> = {
  */
 export function roomGrants(module: Module, room: DungeonRoom): Set<string> {
   const out = new Set<string>();
-  const start = [room.fight, room.event?.scene, room.search].filter((x): x is Id => !!x);
+  const start = [room.fight, room.event?.scene, ...(room.event?.when ?? []).map((w) => w.to), room.search].filter((x): x is Id => !!x);
   const seen = new Set<Id>();
   const q = [...start];
   while (q.length) {
