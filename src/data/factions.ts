@@ -33,6 +33,8 @@ export interface Faction {
   parley?: { skill?: SkillId; dc: number; label: string; success: string };
   /** Rooms they make their own. */
   rooms: string[];
+  /** Beasts, not people: a leader named like a boar, not a baron. */
+  beastly?: true;
   /** A line for the entrance: the first sign of them. */
   sign: string[];
 }
@@ -83,7 +85,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['A cold campfire, a dropped dice cup, and boot prints going down.'],
   },
   {
-    id: 'wild', names: ['the beasts of the deep wood', 'the things in the brush', 'the pack'], one: 'a beast',
+    id: 'wild', names: ['the beasts of the deep wood', 'the things in the brush', 'the pack'], one: 'a beast', beastly: true,
     themes: ['forest', 'bog'],
     members: ['wolf', 'giant-badger', 'giant-spider', 'dire-wolf', 'brown-bear', 'giant-boar', 'ettercap', 'owlbear'],
     leaders: ['giant-boar', 'ettercap', 'owlbear', 'giant-ape'],

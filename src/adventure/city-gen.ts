@@ -32,6 +32,7 @@ import { FACTIONS } from '../data/factions.js';
 import { shareFor } from './delve-spec.js';
 import { validateModule } from './validate.js';
 import { Dice } from './dungeon-gen.js';
+import { personName, placeName, styleFor, surname, type NameStyle } from './names.js';
 import { encodeSpec, decodeSpec } from './delve-spec.js';
 
 export type CitySize = 'village' | 'town' | 'city';
@@ -156,10 +157,6 @@ const CENTRES: [number, number][][] = [
   [[28, 26], [72, 26], [28, 74], [72, 74]],
 ];
 
-const NAME_HEAD = ['Ash', 'Stone', 'Mill', 'Ember', 'Hollow', 'King\'s', 'Salt', 'Bright', 'Raven', 'Oak', 'Fen', 'Thorn', 'Wolf', 'Copper'];
-const NAME_TAIL = ['ford', 'bridge', 'haven', 'mere', 'wick', 'gate', 'stead', 'holm', 'fall', 'cross', 'barrow', 'well'];
-const FIRST = ['Agna', 'Bertil', 'Corra', 'Dunstan', 'Edda', 'Fenn', 'Gisla', 'Hollis', 'Isolde', 'Jory', 'Kesta', 'Lom', 'Marta', 'Nils', 'Orrin', 'Pell', 'Quill', 'Rhosyn', 'Sabeth', 'Tobin', 'Ulla', 'Wendel'];
-const LAST = ['Ashby', 'Brack', 'Coldwell', 'Dray', 'Greaves', 'Hale', 'Inchcape', 'Marrow', 'Penhale', 'Rook', 'Tallow', 'Underhill', 'Vane'];
 // Short words: a long inn name wraps to three lines on a phone and runs into
 // the marker below it ("The Wandering Anchor" did).
 const INN_A = ['Gilded', 'Drowsy', 'Crooked', 'Silver', 'Blue', 'Lucky', 'Red', 'Old', 'Merry', 'Black'];
@@ -216,13 +213,17 @@ function wares() {
 
 interface Built { node: Omit<ExploreNode, 'x' | 'y'>; scenes: Scene[] }
 
-function person(dice: Dice, emoji: string): NpcRef & { first: string } {
-  const first = dice.pick(FIRST);
-  return { id: `${first.toLowerCase()}-${dice.int(100, 999)}`, name: `${first} ${dice.pick(LAST)}`, emoji, first };
+/** Someone who keeps a place: named in the town's style, never twice. */
+function person(dice: Dice, emoji: string, ctx: { style: NameStyle; names: Set<string> }): NpcRef & { first: string } {
+  const rng = () => dice.float();
+  const who = personName(ctx.style, dice.chance(0.5) ? 'female' : 'male', rng, ctx.names);
+  return { id: `${who.first.toLowerCase()}-${dice.int(100, 999)}`, name: who.full, emoji, first: who.first };
 }
 
 /** One venue: its marker, and the scenes behind it. */
-interface VenueCtx { town: string; size: CitySize; level: number; hub: Id; used: Set<string>; rumours: Rumour[]; watch: Id }
+interface VenueCtx { town: string; size: CitySize; level: number; hub: Id; used: Set<string>; rumours: Rumour[]; watch: Id;
+  /** The town's name style, and every name it has handed out. */
+  style: NameStyle; names: Set<string> }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -250,7 +251,7 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
       let name = `The ${dice.pick(INN_A)} ${dice.pick(INN_B)}`;
       while (ctx.used.has(name)) name = `The ${dice.pick(INN_A)} ${dice.pick(INN_B)}`;
       ctx.used.add(name);
-      const keeper = person(dice, '🍺');
+      const keeper = person(dice, '🍺', ctx);
       const room = ctx.size === 'village' ? 1 : ctx.size === 'town' ? 2 : 5;
       // The first inn tells the author's rumours first, and notes their leads.
       const told = id === 'inn' ? ctx.rumours : [];
@@ -281,19 +282,19 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
       };
     }
     case 'general':
-      return shop(`${dice.pick(LAST)}'s Stores`, W.general, person(dice, '🧺'), '"Rope, oil, a good knife, a healing draught. All honest."', 'tok-market');
+      return shop(`${surname(ctx.style, () => dice.float(), 9, ctx.names)}'s Stores`, W.general, person(dice, '🧺', ctx), '"Rope, oil, a good knife, a healing draught. All honest."', 'tok-market');
     case 'smithy':
-      return shop('The Smithy', [...W.weapons, ...W.armor], person(dice, '⚒️'), 'The forge roars. "Steel or leather? I make both, and I make them to last."', 'tok-fire');
+      return shop('The Smithy', [...W.weapons, ...W.armor], person(dice, '⚒️', ctx), 'The forge roars. "Steel or leather? I make both, and I make them to last."', 'tok-fire');
     case 'armorer':
-      return shop(`${dice.pick(LAST)}'s Armoury`, W.armor, person(dice, '🛡️'), '"Stand still. Arms out. No — you\'re a size bigger than you think."', 'tok-house');
+      return shop(`${surname(ctx.style, () => dice.float(), 9, ctx.names)}'s Armoury`, W.armor, person(dice, '🛡️', ctx), '"Stand still. Arms out. No — you\'re a size bigger than you think."', 'tok-house');
     case 'weaponsmith':
-      return shop('The Whetstone', W.weapons, person(dice, '⚔️'), '"Balanced, sharp, and nobody\'s ever brought one back."', 'tok-fire');
+      return shop('The Whetstone', W.weapons, person(dice, '⚔️', ctx), '"Balanced, sharp, and nobody\'s ever brought one back."', 'tok-fire');
     case 'mage-guild':
-      return shop('The Collegium', W.arcane, person(dice, '🔮'),
+      return shop('The Collegium', W.arcane, person(dice, '🔮', ctx),
         'Shelves of scroll-cases and a smell of hot ink. "We sell what may be written down and drunk. What must be earned, we do not sell."', 'tok-mystery');
     case 'temple': {
       const god = dice.pick(TEMPLE);
-      const priest = person(dice, '🕯️');
+      const priest = person(dice, '🕯️', ctx);
       const cost = 10 * ctx.level;
       return {
         node: { id, label: `${god} Temple`, icon: 'tok-temple', scene: id },
@@ -316,7 +317,8 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
       // Hidden until someone with a sharp eye spots the sign scratched on the
       // door. Its keeper sells what the shops will not, and — for less than
       // the watch would fine you — makes a name for theft go away.
-      const fence = person(dice, '🗝️');
+      // Whatever the town sounds like, its back room sounds like the alley.
+      const fence = person(dice, '🗝️', { ...ctx, style: 'alley' });
       // Cheaper than the watch's fine (see the gate), or nobody would come.
       const clean = 40 * ctx.level;
       return {
@@ -477,7 +479,10 @@ export const MAX_PLACES = 15;
 
 function draftCity(seed: number, spec: Required<CitySpec>): Module {
   const dice = new Dice(seedRng(seed));
-  const town = `${dice.pick(NAME_HEAD)}${dice.pick(NAME_TAIL)}`;
+  // One style for the whole town: its name, its people, its shops.
+  const style = styleFor(spec.size, 'village', () => dice.float());
+  const names = new Set<string>();
+  const town = placeName(style, () => dice.float(), 11, names);
   const plan = BY_SIZE[spec.size];
   const kinds: VenueKind[] = [...plan.venues];
   // The author's own markers count against the map's room too.
@@ -551,7 +556,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
     maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: WATCH,
   }, seedRng((seed ^ 0x9a7c) >>> 0)).value.members);
-  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch };
+  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch, style, names };
   const fightFor = (f: CustomPlace['fight']): Id => {
     if (typeof f === 'string') return f;
     const enc = generateEncounter({

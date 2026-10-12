@@ -36,6 +36,7 @@ import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
 import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
 import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
+import { beastName, bossName, styleFor } from './names.js';
 import { FACTIONS, canHold, factionsFor, type Faction } from '../data/factions.js';
 import { drawHistory, type History } from './delve-history.js';
 import { adjustedXp } from '../arena/encounter.js';
@@ -653,6 +654,15 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       if (isGoal) {
         room.goal = true;
         if (!last) room.exit = { to: `delve-${f + 1}`, label: 'Down the stairs' };
+        // Held by someone: their leader has a name. Only then — a plain delve
+        // rolls exactly as it always did.
+        const fac = factionOf(id);
+        const goalFight = room.fight ? scenes[room.fight] : undefined;
+        if (fac && goalFight?.kind === 'battle' && !goalFight.intro) {
+          const rng = () => dice.float();
+          const lord = fac.beastly ? beastName(rng) : bossName(styleFor('delve', spec.theme, rng), dice.chance(0.5) ? 'female' : 'male', rng);
+          goalFight.intro = [`${lord}, who leads ${dice.pick(fac.names)}, is waiting for you.`];
+        }
       }
       if (req?.rest) room.rest = req.rest;
       else if (safe.has(id)) Object.assign(room, { name: T.safe[0], rest: 'safe', firstVisit: [T.safe[1]] });

@@ -23,6 +23,7 @@ import type { DungeonDoor, DungeonLink, DungeonRoom, Effect, Outcome, Scene } fr
 import type { Dice } from './dungeon-gen.js';
 import type { SpecTheme } from './delve-spec.js';
 import type { Faction } from '../data/factions.js';
+import { beastName, bossName, personName, styleFor } from './names.js';
 import { avoidedFightXP } from '../data/encounters.js';
 
 /** Where on the floor a piece may be joined. */
@@ -84,7 +85,6 @@ export interface Piece {
 const battle = (id: Id, encounterId: Id, onWin: Outcome, intro?: string[]): Scene =>
   ({ id, kind: 'battle', encounterId, mapId: '@room', onWin, ...(intro ? { intro } : {}) });
 
-const PRISONERS = ['Wren the tinker', 'Old Hobb', 'Sister Maud', 'Tamsin the scout', 'Brother Ash', 'Kit Fennick'];
 
 /** A guarded cell, and someone in it worth getting out. */
 const prisoner: Piece = {
@@ -94,7 +94,9 @@ const prisoner: Piece = {
   where: 'any',
   params: { name: 'who is in the cell' },
   build(ctx) {
-    const who = ctx.param('name', ctx.dice.pick(PRISONERS));
+    // Someone from these parts, in the place's own style of name.
+    const rng = () => ctx.dice.float();
+    const who = ctx.param('name', personName(styleFor('delve', ctx.theme, rng), ctx.dice.chance(0.5) ? 'female' : 'male', rng).first);
     const cells = ctx.room('cells');
     const freed = ctx.flag('freed');
     const talk = ctx.scene('talk');
@@ -234,6 +236,10 @@ const lair: Piece = {
     const guards = ctx.scene('guards');
     const boss = ctx.scene('boss');
     const named = fac ? ctx.dice.pick(fac.names) : 'whatever rules here';
+    // The one the party has come for has a name: someone it may have to
+    // talk to, or at least hear named, before the end.
+    const rng = () => ctx.dice.float();
+    const lord = fac?.beastly ? beastName(rng) : bossName(styleFor('delve', ctx.theme, rng), ctx.dice.chance(0.5) ? 'female' : 'male', rng);
     return {
       port: { room: post },
       goal: hall,
@@ -245,7 +251,7 @@ const lair: Piece = {
       ],
       scenes: [
         battle(guards, ctx.fight('room'), { to: '@hub' }, [`The last of ${named} stand between you and their master.`]),
-        battle(boss, ctx.fight('boss'), ctx.goal.win, [fac ? `The leader of ${named} rises to meet you.` : 'Whatever rules this place rises to meet you.']),
+        battle(boss, ctx.fight('boss'), ctx.goal.win, [fac ? `${lord}, who leads ${named}, rises to meet you.` : `${lord}, who rules this place, rises to meet you.`]),
       ],
     };
   },

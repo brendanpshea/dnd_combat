@@ -277,3 +277,15 @@ companion is read back at 1 HP or more after a won fight, and a wipe revives
 the party. Each service needs its system first (unidentified magic loot,
 lasting curses, death that sticks). That is a decision about the game, not
 about towns.
+
+## Names
+
+Generated people, places and leaders are named by `src/adventure/names.ts`:
+order-3 character Markov chains, one per style (elvish, saxon, norse, isles,
+courtly, alley, hearth, gaelic, germanic, slavic, sorcery), trained on
+corpora in `src/data/names/` drawn from classic and modern fantasy plus
+historical Celtic, Germanic and Slavic names. Filters refuse corpus names,
+near-copies of famous names, unsayable shapes and a short blocklist. A place
+picks one style, so a town sounds like one town; names never repeat within
+it. Only people the player can talk to are named. Bosses get an epithet, and
+beast leaders get a growl name. Preview: `?dev=names`.
