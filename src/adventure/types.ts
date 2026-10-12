@@ -732,6 +732,12 @@ export interface NpcStaging {
 }
 
 export interface Module {
+  /**
+   * Its locations as places (scopes.ts), keyed by hub: the few story flags
+   * each reads from the chapter, the ones it hands back, and a cap on how
+   * many it answers to. Anything else it sets is its own.
+   */
+  places?: Record<Id, { reads: string[]; exports?: string[]; budget?: number }>;
   /** NPCs on this chapter's stage (staging.ts). */
   stage?: Record<Id, NpcStaging>;
   /** Quests, by id, compiled into the module's scenes (quests.ts). */

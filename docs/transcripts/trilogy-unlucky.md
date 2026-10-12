@@ -1099,7 +1099,25 @@ _(a paragraph shown before: “You come to outside, dragged clear by…”)_
 
 _(a paragraph shown before: “Daylight, and air that does not smell…”)_
 
-**» Go back in**
+**» Leave it for someone else**
+
+<sub>scene `hollow-quiet`</sub>
+
+The hollow lies quiet where you broke the Reedwife's ambush, with nothing left of it but flattened reeds and still water. The den's wooden wall waits ahead.
+
+**» Make for the den's wall**
+
+<sub>scene `gate` (again)</sub>
+
+_(a paragraph shown before: “A wall of lashed timber rings the…”)_
+
+**» Slip back in the way you left**
+
+<sub>scene `inner` (again)</sub>
+
+_(2 paragraphs shown before: “The way into The Ashen Deeps stands…” / “Built by dwarven smiths, until something answered…”)_
+
+**» Go in**
 
 **↳ The Ashen Deeps** <sub>(dungeon `inner/delve`)</sub>
 
@@ -1151,79 +1169,7 @@ Whatever was worth taking here went long ago.
 
 _(a paragraph shown before: “Daylight, and air that does not smell…”)_
 
-**» Leave it for someone else**
-
-<sub>scene `trail` (again)</sub>
-
-_(2 paragraphs shown before: “The way into The Drowned Mere stands…” / “Built by an abbey that stood on…”)_
-
-**» Go in**
-
-**↳ The Drowned Mere** <sub>(dungeon `trail/delve`)</sub>
-
-**→ Entrance** <sub>(room `m0`)</sub>
-
-→ Dry Loft
-
-**→ Dry Loft** <sub>(room `m1`)</sub>
-
-**» Make camp (long rest)** <sub>(day 8)</sub>
-
-**Dawn — day 9.**
-
-→ Drowned Crypt
-
-**→ Drowned Crypt** <sub>(room `m2`)</sub>
-
-→ Webbed Thicket
-
-**→ Webbed Thicket** <sub>(room `m3`)</sub>
-
-<sub>scene `thicket` (again)</sub>
-
-_(a paragraph shown before: “The grey webs still sheet the reeds,…”)_
-
-**» Cut your way in**
-
-<sub>scene `thicket-fight` (again)</sub>
-
-The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.
-
-**Battle:** Spider Nest <sub>(`spiders` on `marsh`)</sub>
-
-**» Fight — won**
-
-The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
-
-_+60 gold (345)_
-
-_Gained: Potion of Healing_
-
-**↳ The Drowned Mere** <sub>(dungeon `trail/delve`)</sub>
-
-→ The Hollow
-
-**→ The Hollow** <sub>(room `m4`)</sub>
-
-→ On to the den
-
-<sub>scene `hollow-quiet`</sub>
-
-The hollow lies quiet where you broke the Reedwife's ambush, with nothing left of it but flattened reeds and still water. The den's wooden wall waits ahead.
-
-**» Make for the den's wall**
-
-<sub>scene `gate` (again)</sub>
-
-_(a paragraph shown before: “A wall of lashed timber rings the…”)_
-
-**» Slip back in the way you left**
-
-<sub>scene `inner` (again)</sub>
-
-_(2 paragraphs shown before: “The way into The Ashen Deeps stands…” / “Built by dwarven smiths, until something answered…”)_
-
-**» Go in**
+**» Go back in**
 
 **↳ The Ashen Deeps** <sub>(dungeon `inner/delve`)</sub>
 
@@ -1305,9 +1251,103 @@ _(a paragraph shown before: “You come to outside, dragged clear by…”)_
 
 _(a paragraph shown before: “Daylight, and air that does not smell…”)_
 
-**» Go back in**
+**» Leave it for someone else**
+
+<sub>scene `hollow-quiet` (again)</sub>
+
+_(a paragraph shown before: “The hollow lies quiet where you broke…”)_
+
+**» Take the marsh road back**
+
+<sub>scene `trail` (again)</sub>
+
+_(2 paragraphs shown before: “The way into The Drowned Mere stands…” / “Built by an abbey that stood on…”)_
+
+**» Go in**
+
+**↳ The Drowned Mere** <sub>(dungeon `trail/delve`)</sub>
+
+**→ Entrance** <sub>(room `m0`)</sub>
+
+→ Dry Loft
+
+**→ Dry Loft** <sub>(room `m1`)</sub>
+
+**» Make camp (long rest)** <sub>(day 8)</sub>
+
+**Dawn — day 9.**
+
+→ Drowned Crypt
+
+**→ Drowned Crypt** <sub>(room `m2`)</sub>
+
+→ Webbed Thicket
+
+**→ Webbed Thicket** <sub>(room `m3`)</sub>
+
+<sub>scene `thicket` (again)</sub>
+
+_(a paragraph shown before: “The grey webs still sheet the reeds,…”)_
+
+**» Cut your way in**
+
+<sub>scene `thicket-fight` (again)</sub>
+
+The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.
+
+**Battle:** Spider Nest <sub>(`spiders` on `marsh`)</sub>
+
+**» Fight — won**
+
+The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
+
+_+60 gold (345)_
+
+_Gained: Potion of Healing_
+
+**↳ The Drowned Mere** <sub>(dungeon `trail/delve`)</sub>
+
+→ The Hollow
+
+**→ The Hollow** <sub>(room `m4`)</sub>
+
+→ On to the den
+
+<sub>scene `hollow-quiet` (again)</sub>
+
+_(a paragraph shown before: “The hollow lies quiet where you broke…”)_
+
+**» Make for the den's wall**
+
+<sub>scene `gate` (again)</sub>
+
+_(a paragraph shown before: “A wall of lashed timber rings the…”)_
+
+**» Slip back in the way you left**
+
+<sub>scene `inner` (again)</sub>
+
+_(2 paragraphs shown before: “The way into The Ashen Deeps stands…” / “Built by dwarven smiths, until something answered…”)_
+
+**» Go in**
 
 **↳ The Ashen Deeps** <sub>(dungeon `inner/delve`)</sub>
+
+**→ Entrance** <sub>(room `m0`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m1`)</sub>
+
+→ Entrance
+
+**→ Entrance** <sub>(room `m0`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m1`)</sub>
+
+→ Mould Room
 
 **→ Mould Room** <sub>(room `key`)</sub>
 
@@ -1343,99 +1383,13 @@ _+20 gold (365)_
 
 **→ Entrance** <sub>(room `m0`)</sub>
 
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `m1`)</sub>
-
-→ Mould Room
-
-**→ Mould Room** <sub>(room `key`)</sub>
-
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `m1`)</sub>
-
-→ Entrance
-
-**→ Entrance** <sub>(room `m0`)</sub>
-
 → Back outside
 
 <sub>scene `inner/outside` (again)</sub>
 
 _(a paragraph shown before: “Daylight, and air that does not smell…”)_
 
-**» Leave it for someone else**
-
-<sub>scene `trail` (again)</sub>
-
-_(2 paragraphs shown before: “The way into The Drowned Mere stands…” / “Built by an abbey that stood on…”)_
-
-**» Go in**
-
-**↳ The Drowned Mere** <sub>(dungeon `trail/delve`)</sub>
-
-**→ Entrance** <sub>(room `m0`)</sub>
-
-→ Dry Loft
-
-**→ Dry Loft** <sub>(room `m1`)</sub>
-
-**» Make camp (long rest)** <sub>(day 9)</sub>
-
-**Dawn — day 10.**
-
-→ Drowned Crypt
-
-**→ Drowned Crypt** <sub>(room `m2`)</sub>
-
-→ Search the room
-
-<sub>scene `trail/f1-find-m2`</sub>
-
-_(a paragraph shown before: “A pack left behind, with a potion…”)_
-
-**» Take it**
-
-_Gained: Potion of Healing_
-
-**↳ The Drowned Mere** <sub>(dungeon `trail/delve`)</sub>
-
-→ Webbed Thicket
-
-**→ Webbed Thicket** <sub>(room `m3`)</sub>
-
-→ Search the room
-
-_(a paragraph shown before: “Nothing turns up.…”)_
-
-→ The Hollow
-
-**→ The Hollow** <sub>(room `m4`)</sub>
-
-→ Search the room
-
-_(a paragraph shown before: “You sound the walls and lift what…”)_
-
-→ On to the den
-
-<sub>scene `hollow-quiet` (again)</sub>
-
-_(a paragraph shown before: “The hollow lies quiet where you broke…”)_
-
-**» Make for the den's wall**
-
-<sub>scene `gate` (again)</sub>
-
-_(a paragraph shown before: “A wall of lashed timber rings the…”)_
-
-**» Slip back in the way you left**
-
-<sub>scene `inner` (again)</sub>
-
-_(2 paragraphs shown before: “The way into The Ashen Deeps stands…” / “Built by dwarven smiths, until something answered…”)_
-
-**» Go in**
+**» Go back in**
 
 **↳ The Ashen Deeps** <sub>(dungeon `inner/delve`)</sub>
 
@@ -1501,7 +1455,7 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 
 **» [Insight DC 14] Look at his hands**
 
-`[Insight DC 14 — Elaine the Holy rolls 12 — failed]`
+`[Insight DC 14 — Elaine the Holy rolls 10 — failed]`
 
 <sub>scene `vargan-unread`</sub>
 
@@ -1759,7 +1713,7 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 **» [Religion DC 14] Speak his own liturgy back to him**
 
-`[Religion DC 14 — Morgan Le Fey rolls 12 — failed]`
+`[Religion DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 <sub>scene `chapel-unheard`</sub>
 
@@ -1811,7 +1765,7 @@ The corpse-lights still sway over the black water, warm as windows. Wren keeps a
 
 **» [Survival DC 13] Find the dry way round the pools**
 
-`[Survival DC 13 — Elaine the Holy rolls 9 — failed]`
+`[Survival DC 13 — Elaine the Holy rolls 10 — failed]`
 
 <sub>scene `lights-sunk`</sub>
 
@@ -1897,7 +1851,7 @@ The ground shivered once in the night, deep down under the fen, the way a door s
 
 The open graves are as the dead left them. In the bottom of the nearest, the clay still holds the shape of the body that lay there, pressed in like a boot-print. A healer's eye might read how it got up.
 
-`[Medicine DC 12 — Elaine the Holy rolls 11 — failed]`
+`[Medicine DC 12 — Elaine the Holy rolls 9 — failed]`
 
 You get mud, turf, and the underside of a churchyard. You trample the edges of three graves, and what they had to say is gone under your boots.
 
@@ -1925,7 +1879,7 @@ The old raised road runs out into the fog, the same as before. The fen waits at 
 
 **» [Insight DC 13] Read what is wearing him**
 
-`[Insight DC 13 — Elaine the Holy rolls 9 — failed]`
+`[Insight DC 13 — Elaine the Holy rolls 12 — failed]`
 
 <sub>scene `chapel-unread`</sub>
 
@@ -2079,19 +2033,19 @@ A loose stone skitters across the floor, and every pick in the cut stops. After 
 
 **» Say the burial words over them — Halden said these over every grave in Thornwick.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 11 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 8 — failed]`
 
 The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
 
 **» Pick up a tool and fall into step**
 
-`[Deception DC 13 — Ash the Sneaky rolls 3 — failed]`
+`[Deception DC 13 — Ash the Sneaky rolls 12 — failed]`
 
 You swing too fast. The living always do. The nearest digger stops and turns its empty face toward you, then slowly goes back to work.
 
 **» Let your cleric raise a holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Elaine the Holy rolls 5 — failed]`
+`[Religion DC 10 — Elaine the Holy rolls 3 — failed]`
 
 The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.
 
@@ -2133,13 +2087,21 @@ The ground shook again before dawn, longer this time, and hard enough to wake th
 
 → The Barrow-Guard
 
-<sub>scene `crypt-ambush`</sub>
+**→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
+<sub>scene `wights`</sub>
 
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
 
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+
+**Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
+
+**» [History DC 15] Relieve him of his post, the old way**
+
+`[History DC 15 — Morgan Le Fey rolls 9 — failed]`
+
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — lost**
 
@@ -2159,19 +2121,11 @@ A pair of small, muddy boots is drying by the fire, with a bow propped in the co
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-<sub>scene `wights`</sub>
+<sub>scene `wights` (again)</sub>
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
-
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides, heads turned toward you.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
-
-**» [History DC 15] Relieve him of his post, the old way**
-
-`[History DC 15 — Morgan Le Fey rolls 12 — failed]`
-
-You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — won**
 
@@ -2185,7 +2139,17 @@ _+40 gold (715)_
 
 **» Make camp (long rest)** <sub>(day 6)</sub>
 
-**Dawn — day 7.**
+<sub>scene `crypt-night`</sub>
+
+You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on the far wall begins to move. Two of the painted soldiers peel loose from it, grey and flat and cold, with green-bronze swords in their hands, and step down toward your fire.
+
+**Battle:** The Painted Dead <sub>(`painted-dead` on `corridor`)</sub>
+
+**» Fall back to The Undercrypt**
+
+_(a paragraph shown before: “You think better of it and fall…”)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → The King's Chamber
 
@@ -2289,25 +2253,25 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 15 — Morgan Le Fey rolls 8 — failed]`
+`[Religion DC 15 — Morgan Le Fey rolls 13 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — They are cut deeper than any prayer needs, and the door has shifted in its frame since.**
 
-`[Arcana DC 16 — Morgan Le Fey rolls 10 — failed]`
+`[Arcana DC 16 — Morgan Le Fey rolls 13 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They felt the ground shake, and they think their door is opening.**
 
-`[Persuasion DC 16 — Elaine the Holy rolls 7 — failed]`
+`[Persuasion DC 16 — Elaine the Holy rolls 13 — failed]`
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
 
 **» Let your wizard pick the lock the old masons cut — A ward, half-broken, and the door has shifted in its frame since.**
 
-`[Arcana DC 13 — Morgan Le Fey rolls 12 — failed]`
+`[Arcana DC 13 — Morgan Le Fey rolls 7 — failed]`
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
 
@@ -2709,7 +2673,7 @@ The manticore still lies along its ledge under the overhang. It opens one eye. "
 
 **» [Persuasion DC 11] "Have the hags paid you yet?"**
 
-`[Persuasion DC 11 — Elaine the Holy rolls 9 — failed]`
+`[Persuasion DC 11 — Elaine the Holy rolls 10 — failed]`
 
 <sub>scene `tollcliff-stung`</sub>
 
@@ -2735,7 +2699,7 @@ The drumming starts up under your boots again. The herd is still running its gul
 
 **» [Survival DC 11] Time the stampede**
 
-`[Survival DC 11 — Elaine the Holy rolls 6 — failed]`
+`[Survival DC 11 — Elaine the Holy rolls 7 — failed]`
 
 _-30 gold (1200)_
 
@@ -3151,31 +3115,31 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 **» Drag their hands out of the rock — Nettle has sunk her hands past the wrist now.**
 
-`[Athletics DC 17 — Arthur the Bold rolls 16 — failed]`
+`[Athletics DC 17 — Arthur the Bold rolls 10 — failed]`
 
 Nettle smiles at you the whole time you pull. You let go with burned palms.
 
 **» Sing a wrong note into the Calling**
 
-`[Arcana DC 15 — Morgan Le Fey rolls 14 — failed]`
+`[Arcana DC 15 — Morgan Le Fey rolls 7 — failed]`
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
 **» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 6 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 9 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
 **» Let your wizard read the old letters cut into the stone — One line of them runs unbroken all the way round the stone.**
 
-`[Arcana DC 12 — Morgan Le Fey rolls 9 — failed]`
+`[Arcana DC 12 — Morgan Le Fey rolls 11 — failed]`
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
 **» Find where the stone is weakest — The song is louder on one face of the stone than the others.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 11 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 

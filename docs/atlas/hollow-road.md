@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-115 scenes · 172 versions · 2,541,766 states searched (with text conditions tracked).
+115 scenes · 172 versions · 2,618,566 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -594,6 +594,7 @@ The hollow lies quiet where you broke the Reedwife's ambush, with nothing left o
 
 - » **Make for the den's wall** <sub>open when Wren not in the party; otherwise hidden</sub>
 - » **Make for the den's wall** <sub>open when Wren in the party; otherwise hidden</sub>
+- » **Take the marsh road back** <sub>open when Wren not in the party; otherwise hidden</sub>
 
 ## `ravine` · challenge
 
@@ -1181,7 +1182,7 @@ The moon has gone dark, and the Reedwife has come and gone. In the corner lies o
 
 There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.
 
-The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one lamb each midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
+The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a lamb every midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
 
 A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
 
@@ -2237,7 +2238,7 @@ In.
 - **Kennels** → `den-cache`
 - **The Pens** → `den-pens-door`
 - **The Chief's Hall** → `boss-approach` <sub>open when `pit-won` · met Vex; otherwise greyed</sub>
-- **Out** → `trail`
+- **Out** → `hollow-quiet`
 
 ## Dawns
 
