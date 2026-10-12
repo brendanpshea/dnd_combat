@@ -19,6 +19,7 @@ import {
 import { PIECES } from '../../src/adventure/delve-pieces.js';
 import { FACTIONS } from '../../src/data/factions.js';
 import { DELVE_STORY_MODULE } from '../../src/data/modules/delve-story.js';
+import { generateCity, cityFromId, CITY_SIZES, type CitySize } from '../../src/adventure/city-gen.js';
 import { DELVE_SLOT, savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { initAudio } from './sound.js';
 
@@ -48,11 +49,12 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
   const [holder, setHolder] = useState<string>('any');
   const [require, setRequire] = useState('');
   const [pieces, setPieces] = useState<string[]>([]);
+  const [citySize, setCitySize] = useState<CitySize>('town');
   const [error, setError] = useState('');
   const savedId = savedAdventureModule(DELVE_SLOT);
   const saved = !savedId ? undefined
     : savedId === DELVE_STORY_MODULE.id ? DELVE_STORY_MODULE
-    : specDelveFromId(savedId) ?? delveFromId(savedId);
+    : specDelveFromId(savedId) ?? delveFromId(savedId) ?? cityFromId(savedId);
   const resume = saved ? loadAdventureWeb(saved, DELVE_SLOT) : undefined;
 
   const start = () => {
@@ -125,6 +127,14 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
           deleteAdventureWeb(DELVE_SLOT);
           onPlay(DELVE_STORY_MODULE);
         }}>📖 {DELVE_STORY_MODULE.title}</button>
+      </div>
+      <Pick<CitySize> label="Town" value={citySize} options={CITY_SIZES} onPick={setCitySize} />
+      <div className="delve-row">
+        <button className="mini" onClick={() => {
+          initAudio();
+          deleteAdventureWeb(DELVE_SLOT);
+          onPlay(generateCity(Math.floor(Math.random() * 1e6), { size: citySize, level }).module);
+        }}>🏘️ New {citySize}</button>
       </div>
       {saved && resume && (
         <button className="mini" onClick={() => { initAudio(); onPlay(saved, resume); }}>
