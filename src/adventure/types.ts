@@ -135,7 +135,8 @@ export interface JournalEntry {
    *  stages (ticked as their requirements hold), and the objects it is about
    *  (flag → name: carried while the flag holds). */
   takenBy?: string;
-  failedBy?: string;
+  /** Failed when this flag — or any of these — is set. */
+  failedBy?: string | string[];
   stages?: Array<{ text: string; done: Requirement[] }>;
   objects?: Record<string, string>;
 }

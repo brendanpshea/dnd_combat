@@ -75,6 +75,8 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 _Journal (quest): Break the Ashfang_
 
+_Journal (quest): The Reeve's Scouts_
+
 <sub>scene `tavern`</sub>
 
 **Mira the Innkeeper**
@@ -121,7 +123,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 **» Back to your table**
 
-_Journal (lead): The Furtive Peddler_
+_Journal (quest): The Furtive Peddler_
 
 <sub>scene `tavern` (again)</sub>
 
@@ -563,7 +565,7 @@ You put the patrol down before the whole den wakes, and kick dirt over the fire.
 
 **» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
 
-_Journal (lead): The Pens Behind the Kennels_
+_Journal (quest): The Pens Behind the Kennels_
 
 `[Persuasion DC 9 — Elaine the Holy rolls 18 — passed]`
 

@@ -24,7 +24,7 @@ export function JournalDrawer(
 ) {
   const set = (f?: string) => { if (!f) return false; const v = flags[f]; return v === true || (typeof v === 'number' && v > 0); };
   const resolved = (e: JournalEntry) => set(e.resolvedBy);
-  const failed = (e: JournalEntry) => set(e.failedBy);
+  const failed = (e: JournalEntry) => (typeof e.failedBy === 'string' ? [e.failedBy] : e.failedBy ?? []).some(set);
   return (
     <div className="journal-scrim" onClick={onClose}>
       <div className="journal" onClick={(e) => e.stopPropagation()}>

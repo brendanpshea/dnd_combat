@@ -73,6 +73,8 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 _Journal (quest): Break the Ashfang_
 
+_Journal (quest): The Reeve's Scouts_
+
 <sub>scene `tavern`</sub>
 
 **Mira the Innkeeper**
@@ -217,7 +219,7 @@ Someone has added a line at the bottom in a smaller, prouder hand: *"Thornwick d
 
 _+25 gold (121)_
 
-_Journal (clue): The Reeve's Bounty_
+_Journal (quest): The Reeve's Bounty_
 
 **↳ Thornwick Square** <sub>(map `square`)</sub>
 

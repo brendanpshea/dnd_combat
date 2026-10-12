@@ -55,7 +55,10 @@ const SIGNAL_SPENT: Effect = { kind: 'setFlag', flag: 'signal-spent' };
 /** The pens, as a lead: Vex points the way, but only while the pen is still
  *  an open question (`pens-settled` unset). Looking in it, the dark moon, or
  *  the hag's death (no way back into the den after it) settles it. */
-const PENS_LEAD: Effect = { kind: 'journal', entry: { id: 'lead-pens', kind: 'lead', resolvedBy: 'pens-settled',
+// Proved from every state (no `takenBy`): its taking needs no flag of its own,
+// and each tracked flag doubles the search.
+const PENS_LEAD: Effect = { kind: 'journal', entry: { id: 'lead-pens', kind: 'quest', resolvedBy: 'pens-settled',
+  stages: [{ text: 'Find out what became of the captives', done: [{ kind: 'flag', flag: 'pens-settled' }] }],
   title: 'The Pens Behind the Kennels',
   body: 'Behind the kennels in the {ashfang} den is a pen where the chief keeps captives for the {reedwife}. She comes for them when the moon goes dark. Look in it.' } };
 
@@ -245,7 +248,10 @@ const AFTERMATH_CLAIMS: Choice[] = [
     [[{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'notFlag', flag: 'captives-taken' }],
       [{ kind: 'setFlag', flag: 'captives-freed' }]],
     [[{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'flag', flag: 'captives-taken' }], []],
-    [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }, { kind: 'notFlag', flag: 'scout-walked-past' }], []],
+    // Never found: the reeve's men find her, alive, and the company's quest
+    // for the scouts is someone else's doing (`scouts-unfound`).
+    [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }, { kind: 'notFlag', flag: 'scout-walked-past' }],
+      [{ kind: 'setFlag', flag: 'scouts-unfound' }]],
     [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }, { kind: 'flag', flag: 'scout-walked-past' }],
       [{ kind: 'npc', npc: 'wren', attitude: -2, hearsay: true }]],
     [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'flag', flag: 'scout-bled-out' }],
@@ -385,7 +391,19 @@ const scenes: Record<string, Scene> = {
       '"Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter\'s boy once. Years back, the spring the marsh rose, his mother\'s house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there\'s more, the kind no one says with the door open." She sets the cup down.',
     ],
     next: [{ id: 'sit', label: 'Pull up a stool', to: 'tavern',
-      effects: [{ kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the {ashfang}', body: '{mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them.' } }] }],
+      effects: [
+        { kind: 'journal', entry: { id: 'q-main', kind: 'quest', title: 'Break the {ashfang}', body: '{mira}, who keeps the {wander-inn}, begged your help against the {ashfang} raiders bleeding {thornwick} dry. Find where they den. Ask around the market and the marsh road, then end them.',
+          stages: [
+            { text: 'Find the {ashfang} den', done: [{ kind: 'visited', scene: 'gate' }] },
+            { text: 'End the chief, and whatever stands behind him', done: [{ kind: 'npc', npc: 'reedwife', met: true }] },
+          ] } },
+        // The reeve's two scouts, out on the marsh road: found in time, or
+        // not. Given on every road, so proved from every state (no `takenBy`).
+        { kind: 'journal', entry: { id: 'q-scouts', kind: 'quest', title: 'The Reeve\'s Scouts',
+          body: 'The reeve sent two scouts down the marsh road on grey horses, and neither came back. If one lies hurt out there, she has few nights left.',
+          stages: [{ text: 'Find the scouts on the marsh road', done: [{ kind: 'npc', npc: 'wren', fate: 'saved' }] }],
+          resolvedBy: npcFateFlag('wren', 'saved'), failedBy: [npcFateFlag('wren', 'lost'), 'scout-bled-out', 'scout-walked-past', 'scouts-unfound'] } },
+      ] }],
     noBack: true,
   },
   tavern: {
@@ -423,7 +441,8 @@ const scenes: Record<string, Scene> = {
     ],
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern',
       effects: [{ kind: 'setFlag', flag: 'know-spy' },
-        { kind: 'journal', entry: { id: 'lead-spy', kind: 'lead', resolvedBy: 'spy-caught',
+        { kind: 'journal', entry: { id: 'lead-spy', kind: 'quest', takenBy: 'know-spy', resolvedBy: 'spy-caught',
+          stages: [{ text: 'Catch the peddler, quietly if you can', done: [{ kind: 'flag', flag: 'spy-caught' }] }],
           title: 'The Furtive Peddler', body: '{mira} named a peddler who loiters by the market gate as the raiders\' informant. Find his stall in {thornwick} Square. Come at him quietly, before he can whistle up his crew.' } }] }],
   },
   'tavern-trail': {
@@ -555,7 +574,11 @@ const scenes: Record<string, Scene> = {
       // `once` so the reeve's retainer can't be re-claimed by revisiting the board.
       { id: 'ok', label: 'Take the reeve\'s retainer up front', to: 'square', once: true,
         effects: [{ kind: 'setFlag', flag: 'bounty' }, { kind: 'gold', amount: factValue('bounty-retainer') },
-          { kind: 'journal', entry: { id: 'c-bounty', kind: 'clue', title: 'The Reeve\'s Bounty', body: 'The reeve pays for the {ashfang} chief dead, and pays extra for their banner brought back as proof. You took {bounty-retainer} gold of it up front.' } }] },
+          { kind: 'journal', entry: { id: 'c-bounty', kind: 'quest', takenBy: 'bounty', resolvedBy: 'got-bounty',
+            stages: [
+              { text: 'Bring down the {ashfang} chief', done: [{ kind: 'npc', npc: 'reedwife', met: true }] },
+              { text: 'Collect from the reeve', done: [{ kind: 'flag', flag: 'got-bounty' }] },
+            ], title: 'The Reeve\'s Bounty', body: 'The reeve pays for the {ashfang} chief dead, and pays extra for their banner brought back as proof. You took {bounty-retainer} gold of it up front.' } }] },
       { id: 'leave', label: 'Leave it for now', to: 'square' },
     ],
   },

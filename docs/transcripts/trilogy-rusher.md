@@ -75,6 +75,8 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 _Journal (quest): Break the Ashfang_
 
+_Journal (quest): The Reeve's Scouts_
+
 <sub>scene `tavern`</sub>
 
 **Mira the Innkeeper**
@@ -121,7 +123,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 **» Back to your table**
 
-_Journal (lead): The Furtive Peddler_
+_Journal (quest): The Furtive Peddler_
 
 <sub>scene `tavern` (again)</sub>
 
@@ -223,7 +225,7 @@ Someone has added a line at the bottom in a smaller, prouder hand: *"Thornwick d
 
 _+25 gold (121)_
 
-_Journal (clue): The Reeve's Bounty_
+_Journal (quest): The Reeve's Bounty_
 
 **↳ Thornwick Square** <sub>(map `square`)</sub>
 
@@ -457,7 +459,7 @@ _+40 gold (201)_
 
 **» [Persuasion DC 13] Offer him the reeve's pardon and a road out**
 
-_Journal (lead): The Pens Behind the Kennels_
+_Journal (quest): The Pens Behind the Kennels_
 
 `[Persuasion DC 13 — Elaine the Holy rolls 10 — failed]`
 
