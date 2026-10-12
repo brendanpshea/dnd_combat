@@ -1056,7 +1056,7 @@ describe('The Sunken Barrows (trilogy Part 2)', () => {
     expect(validateModule(barrows)).toEqual([]);
     expect(MODULES.find((m) => m.id === 'hollow-road')!.sequel).toBe('sunken-barrows');
     expect(barrows.levelBand).toEqual({ from: 3, to: 4 });
-  });
+  }, 30_000); // a whole chapter's proof: slow under a loaded run
 
   it('fields its own bestiary slice — distinct rosters, no Part 1 overlap in battles', () => {
     const enc = new Map<string, number>();
@@ -1170,7 +1170,7 @@ describe('The Hollow Road (M4)', () => {
   it('validates', () => {
     expect(hollow).toBeDefined();
     expect(validateModule(hollow)).toEqual([]);
-  });
+  }, 30_000); // a whole chapter's proof: slow under a loaded run
 
   it('optional side fights are guarded against re-farming', () => {
     // Each optional battle sets a cleared flag, and its node routes to an

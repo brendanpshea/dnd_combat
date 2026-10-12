@@ -367,7 +367,7 @@ Past the last fence-post the road runs out into reeds and black water, and goes 
 
 **→ Entrance** <sub>(room `m0`)</sub>
 
-The road runs out into reeds and black water, and goes on as a line of planks and tussocks.
+Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.
 
 A reed stake by the path, and something tied to it that used to be a hare.
 
@@ -571,7 +571,7 @@ A tent nobody has slept in for a while, at the dark end of the lines. Quiet enou
 
 Your fire draws them out of the dark.
 
-**Battle:** gen:orc+gnoll+giant-hyena+bandit <sub>(`gen:orc+gnoll+giant-hyena+bandit` on `@room`)</sub>
+**Battle:** gen:bugbear+giant-hyena+bandit <sub>(`gen:bugbear+giant-hyena+bandit` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -967,7 +967,7 @@ _(a paragraph shown before: “Inside the wall the den is tents…”)_
 
 A raider looks up from the fire with his mouth full, and shouts with it.
 
-**Battle:** gen:gnoll+giant-hyena+worg+bandit <sub>(`gen:gnoll+giant-hyena+worg+bandit` on `@room`)</sub>
+**Battle:** gen:bugbear+giant-hyena+bandit <sub>(`gen:bugbear+giant-hyena+bandit` on `@room`)</sub>
 
 **» Fight — won**
 

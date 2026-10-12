@@ -351,7 +351,7 @@ Past the last fence-post the road runs out into reeds and black water, and goes 
 
 **→ Entrance** <sub>(room `m0`)</sub>
 
-The road runs out into reeds and black water, and goes on as a line of planks and tussocks.
+Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.
 
 A reed stake by the path, and something tied to it that used to be a hare.
 
@@ -371,9 +371,9 @@ The reeds open, and the road back to Thornwick runs dry under your boots.
 
 <sub>scene `trail/f1-ambush-m0-m1`</sub>
 
-Something moves in the dark ahead of the torchlight.
+The water is colder here than it should be, and it moves when you stop.
 
-**Battle:** gen:lizardfolk+giant-toad <sub>(`gen:lizardfolk+giant-toad` on `@room`)</sub>
+**Battle:** gen:zombie+zombie+zombie+zombie <sub>(`gen:zombie+zombie+zombie+zombie` on `@room`)</sub>
 
 **» Fight — lost**
 
@@ -1065,9 +1065,9 @@ The moon has gone dark, and the Reedwife has come and gone. In the corner lies o
 
 <sub>scene `inner/f1-fight-key`</sub>
 
-A raider looks up from the fire with his mouth full, and shouts with it.
+Something laughs behind the wood pile, high and wrong, and the raiders by it get up.
 
-**Battle:** gen:worg+orc+gnoll+orc <sub>(`gen:worg+orc+gnoll+orc` on `@room`)</sub>
+**Battle:** gen:berserker+scout <sub>(`gen:berserker+scout` on `@room`)</sub>
 
 **» [Intimidation DC 13] Tell them the chief is finished**
 
@@ -1113,9 +1113,9 @@ _(a paragraph shown before: “Inside the wall the den is tents…”)_
 
 <sub>scene `inner/f1-fight-key` (again)</sub>
 
-_(a paragraph shown before: “A raider looks up from the fire…”)_
+_(a paragraph shown before: “Something laughs behind the wood pile, high…”)_
 
-**Battle:** gen:worg+orc+gnoll+orc <sub>(`gen:worg+orc+gnoll+orc` on `@room`)</sub>
+**Battle:** gen:berserker+scout <sub>(`gen:berserker+scout` on `@room`)</sub>
 
 **» Fight — won**
 

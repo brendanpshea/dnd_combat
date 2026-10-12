@@ -413,7 +413,7 @@ Past the last fence-post the road runs out into reeds and black water, and goes 
 
 **→ Entrance** <sub>(room `m0`)</sub>
 
-The road runs out into reeds and black water, and goes on as a line of planks and tussocks.
+Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.
 
 A reed stake by the path, and something tied to it that used to be a hare.
 
@@ -787,9 +787,9 @@ Something spins here, and it has been eating well off the Ashfang's road. But th
 
 <sub>scene `trail/f1-ambush-m5-m6`</sub>
 
-Something moves in the dark ahead of the torchlight.
+Something heavy slides off a tussock into the water, and then the water comes for you.
 
-**Battle:** gen:lizardfolk+giant-toad <sub>(`gen:lizardfolk+giant-toad` on `@room`)</sub>
+**Battle:** gen:zombie+zombie+lizardfolk <sub>(`gen:zombie+zombie+lizardfolk` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -915,9 +915,9 @@ _Journal (npc): Vex, Turned_
 
 <sub>scene `inner/f1-fight-key`</sub>
 
-A raider looks up from the fire with his mouth full, and shouts with it.
+Two of them come out of a tent still buckling on stolen mail.
 
-**Battle:** gen:gnoll+orc+worg+gnoll <sub>(`gen:gnoll+orc+worg+gnoll` on `@room`)</sub>
+**Battle:** gen:ogre+worg <sub>(`gen:ogre+worg` on `@room`)</sub>
 
 **» [Intimidation DC 13] Tell them the chief is finished**
 
@@ -928,18 +928,6 @@ They look at each other, then at the gate. Nobody here was paid enough for this.
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 **→ Plunder Tent** <sub>(room `key`)</sub>
-
-→ Search the room
-
-<sub>scene `inner/f1-find-key`</sub>
-
-A few coins, dropped and forgotten.
-
-**» Take it**
-
-_+20 gold (235)_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → A Lone Fire
 
@@ -965,7 +953,7 @@ Three giant hyenas and three grey wolves the size of ponies lunge to the ends of
 
 The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
 
-_+30 gold (265)_
+_+30 gold (245)_
 
 _Gained: Potion of Healing_
 
@@ -991,7 +979,7 @@ The ogre crashes down across its own broken chains. The goaders and their champi
 
 Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
 
-_+40 gold (305)_
+_+40 gold (285)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
@@ -1177,7 +1165,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 **» Take the reeve's commission**
 
-_+60 gold (365)_
+_+60 gold (345)_
 
 _Journal (npc): Reeve Aldous_
 
@@ -1531,7 +1519,7 @@ You pick his gold rings out of the dust where his hands fell.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
-_+60 gold (425)_
+_+60 gold (405)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1595,7 +1583,7 @@ The last ghoul falls among the candles, beside the two kneelers who rose to figh
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
-_+120 gold (545)_
+_+120 gold (525)_
 
 <sub>scene `marrow-spared`</sub>
 
@@ -1661,7 +1649,7 @@ At the edge of town Wren says "Thank you," fast, to the road, and walks on befor
 
 **» Go up to the reeve's hall**
 
-_+150 gold (695)_
+_+150 gold (675)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -1851,7 +1839,7 @@ _Level up: 4 → 5_
 
 The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
-_+110 gold (805)_
+_+110 gold (785)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1903,7 +1891,7 @@ The wyrmling drops in the middle of a hiss, and its poison breath thins to a har
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
-_+75 gold (880)_
+_+75 gold (860)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1943,7 +1931,7 @@ The water-giant falls apart all at once. A hundred gallons of plain water run aw
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
-_+50 gold (930)_
+_+50 gold (910)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1975,7 +1963,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (1025)_
+_+95 gold (1005)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -2005,7 +1993,7 @@ Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and 
 
 **» Buy the pass (600 gold)**
 
-_-600 gold (425)_
+_-600 gold (405)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -2165,7 +2153,7 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 **» Accept the valley's purse**
 
-_+250 gold (675)_
+_+250 gold (655)_
 
 <sub>scene `vigil-purse`</sub>
 
