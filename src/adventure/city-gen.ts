@@ -33,7 +33,7 @@ import { FACTIONS } from '../data/factions.js';
 import { shareFor } from './delve-spec.js';
 import { validateModule } from './validate.js';
 import { Dice } from './dungeon-gen.js';
-import { personName, placeName, styleFor, surname, type NameStyle } from './names.js';
+import { NAME_STYLES, personName, placeName, styleFor, surname, type NameStyle } from './names.js';
 import { encodeSpec, decodeSpec } from './delve-spec.js';
 
 export type CitySize = 'village' | 'town' | 'city';
@@ -117,6 +117,10 @@ export interface CitySpec {
   rumours?: Rumour[];
   /** Street trouble in the rougher districts (default: towns and cities). */
   streets?: boolean;
+  /** The town's name, when a map around it already calls it something. */
+  name?: string;
+  /** The sound of its people's names (default: one rolled for the size). */
+  style?: NameStyle;
 }
 
 /** What each size brings, before the spec adds anything. */
@@ -485,10 +489,14 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
   }
   const markers = BY_SIZE[size].venues.length + (spec.venues ?? []).filter((v) => !BY_SIZE[size].venues.includes(v)).length
     + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.length;
+  // "Leave <name>" is a marker's label, and a label wraps past 20.
+  if (spec.name !== undefined && !/^[A-Z][A-Za-z' -]{1,12}$/.test(spec.name)) err(`'${spec.name}': a town's name is 2–13 letters, capitalised`);
+  if (spec.style !== undefined && !NAME_STYLES.includes(spec.style)) err(`no name style '${spec.style}'`);
   if (markers > placesFor(size)) err(`${markers} places; a ${size} holds at most ${placesFor(size)}`);
   return {
     size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
     streets: spec.streets ?? size !== 'village',
+    name: spec.name ?? '', style: spec.style ?? ('' as NameStyle),
   };
 }
 
@@ -511,9 +519,11 @@ export const placesFor = (size: CitySize) => (size === 'city' ? MAX_PLACES * 2 :
 function draftCity(seed: number, spec: Required<CitySpec>): Module {
   const dice = new Dice(seedRng(seed));
   // One style for the whole town: its name, its people, its shops.
-  const style = styleFor(spec.size, 'village', () => dice.float());
+  const rolledStyle = styleFor(spec.size, 'village', () => dice.float());
+  const style = spec.style || rolledStyle;
   const names = new Set<string>();
-  const town = placeName(style, () => dice.float(), 11, names);
+  const rolled = placeName(style, () => dice.float(), 11, names);
+  const town = spec.name || rolled;
   const plan = BY_SIZE[spec.size];
   const kinds: VenueKind[] = [...plan.venues];
   // The author's own markers count against the map's room too.

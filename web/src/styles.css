@@ -4726,3 +4726,9 @@ button.category .count {
 .adv-river { fill: none; stroke: rgba(70,130,180,.6); stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .adv-street { fill: none; stroke: rgba(240,232,210,.55); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .adv-wall { fill: none; stroke: rgba(35,28,22,.85); stroke-width: 6; stroke-dasharray: 10 3; vector-effect: non-scaling-stroke; }
+
+/* A county: terrain squares under faint glyphs, river and coast on top. */
+.adv-land-glyphs { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.adv-land-glyphs span { position: absolute; transform: translate(-50%, -50%); font-size: 14px; opacity: .45; }
+.adv-land-river { fill: none; stroke: rgba(90,150,210,.8); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.adv-coastline { fill: none; stroke: rgba(200,220,235,.6); stroke-width: 2; vector-effect: non-scaling-stroke; }

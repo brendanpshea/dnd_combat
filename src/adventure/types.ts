@@ -271,6 +271,18 @@ export interface ExploreMap {
   /** A town's ground, drawn under its markers: water, wall, streets.
    *  Purely visual, like `roads` (which a map with ground does not draw). */
   ground?: TownGround;
+  /** A county's lie of the land, drawn under its markers (overland.ts). */
+  land?: LandGround;
+}
+
+/** Terrain in squares, row by row, a letter each (p f h m M w), and the
+ *  river and sea over it, in percent coordinates. Visual only. */
+export interface LandGround {
+  cols: number;
+  rows: number;
+  cells: string;
+  river?: Array<[number, number]>;
+  sea?: { side: 'left' | 'right'; points: Array<[number, number]> };
 }
 
 /** Percent coordinates on the map. */
