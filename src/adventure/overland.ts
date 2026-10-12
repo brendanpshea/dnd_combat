@@ -573,7 +573,10 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   });
   for (const pl of places) {
     if (pl.kind === 'city' || pl.kind === 'town' || pl.kind === 'village') {
-      embedded[pl.id] = { spec: { ...pl.from?.town, size: pl.kind, level: spec.level, name: pl.label, style }, onLeave: { to: 'land' } };
+      // The city sells for the top of the band: going there is how to
+      // upgrade. Towns and villages sell for where the party starts.
+      embedded[pl.id] = { spec: { ...pl.from?.town, size: pl.kind, level: spec.level, ...(pl.kind === 'city' && spec.top > spec.level ? { stock: spec.top } : {}),
+        name: pl.label, style }, onLeave: { to: 'land' } };
     } else if (pl.kind === 'delve') {
       const win: Effect[] = [{ kind: 'setFlag', flag: won(pl.id) }];
       delves[pl.id] = { spec: { level: levelAt(pl.p, !!pl.from?.via), theme: THEME[g.at(pl.p)], ...pl.from?.delve }, onWin: { to: 'land', effects: win }, onLeave: { to: 'land' } };
@@ -642,6 +645,24 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
       scenes[pl.id] = { id: pl.id, kind: 'story', noBack: true, text: [pl.text!], next: [{ id: 'on', label: 'Walk on', to: 'land' }] };
     }
   }
+  // Warnings. A place built for a stronger party says so on the map — the
+  // UI marks it against the party's level as it is — and the innkeepers
+  // nearest it tell anyone who will listen.
+  const dangerOf = (q: Place): number | undefined =>
+    q.kind === 'camp' ? CAMPS[q.faction!]!.tier : q.kind === 'delve' ? delves[q.id]?.spec.level : undefined;
+  for (const n of nodes) {
+    const q = places.find((x) => x.id === n.id)!;
+    const d = dangerOf(q);
+    if (d !== undefined) n.danger = d;
+  }
+  for (const [id, town] of Object.entries(embedded)) {
+    const here = places.find((q) => q.id === id)!;
+    const near = places.filter((q) => (dangerOf(q) ?? 0) > spec.level)
+      .sort((a, b) => miles(a.p, here.p) - miles(b.p, here.p)).slice(0, 2);
+    const warn = near.map((q) => ({ text: `"Keep clear of ${q.label} for now," says someone at the bar, not joking. "That's no place for the green. Come back with a few more scars."` }));
+    if (warn.length) town.spec = { ...town.spec, rumours: [...warn, ...(town.spec.rumours ?? [])] };
+  }
+
   // Trouble on the roads and at night, by the ground: a leg rolls on the
   // ground at its middle; a camp out in the wild, on the ground it is on.
   const posOf = (id: Id) => places.find((q) => q.id === id)!.p;

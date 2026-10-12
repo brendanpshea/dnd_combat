@@ -126,3 +126,32 @@ describe('a county for a band of levels', () => {
     expect(fightAt(3)).toMatch(/^road-\w+-3-/);
   });
 });
+
+import { expandModule } from '../src/adventure/embed.js';
+
+describe('going to the city to upgrade, and being warned off', () => {
+  const m = generateLand(6, { level: 1 }).module;
+  const map = mapOf(m);
+
+  it('stocks the city for the top of the band, the towns and villages for its start', () => {
+    for (const [id, t] of Object.entries(m.towns!)) {
+      if (t.spec.size === 'city') expect(t.spec.stock, id).toBe(3);
+      else expect(t.spec.stock, id).toBeUndefined();
+    }
+  });
+
+  it('marks every camp and delve with the level it is built for', () => {
+    for (const n of map.nodes) {
+      if (n.id.startsWith('camp-')) expect(n.danger).toBe(TIER[n.id.replace(/^camp-/, '')]);
+      if (m.delves?.[n.id]) expect(n.danger).toBe(m.delves[n.id]!.spec.level);
+    }
+    expect(map.nodes.some((n) => (n.danger ?? 0) > 1)).toBe(true);
+  });
+
+  it('has the innkeepers warn of what is beyond the party, by name', () => {
+    const dangerous = map.nodes.filter((n) => (n.danger ?? 0) > 1).map((n) => n.label);
+    const live = expandModule(m, { seed: 1, flags: [] });
+    const said = JSON.stringify(Object.values(live.scenes).filter((s) => /\/inn-talk$/.test(s.id)));
+    expect(dangerous.some((label) => said.includes(`Keep clear of ${label}`))).toBe(true);
+  });
+});

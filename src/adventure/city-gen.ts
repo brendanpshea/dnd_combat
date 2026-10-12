@@ -24,6 +24,7 @@ import { classScrollPool } from '../data/classes.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { ITEMS } from '../data/items.js';
+import { SPELLS } from '../data/spells.js';
 import { CAUGHT_STEALING, NIGHT, type Effect, type ExploreMap, type ExploreNode, type Module, type NpcRef, type Requirement, type Scene } from './types.js';
 import type { EncounterBrief } from '../arena/encounter.js';
 import { generateEncounter } from '../arena/encounter.js';
@@ -117,6 +118,9 @@ export interface CitySpec {
   rumours?: Rumour[];
   /** Street trouble in the rougher districts (default: towns and cities). */
   streets?: boolean;
+  /** The level its shops stock for (default: its level). A county's city
+   *  sells for the top of the county's band: going there is how to upgrade. */
+  stock?: number;
   /** The town's name, when a map around it already calls it something. */
   name?: string;
   /** The sound of its people's names (default: one rolled for the size). */
@@ -210,8 +214,24 @@ const LANDMARKS: [string, string, string][] = [
 
 /** Wares, by what kind of shop would sell them. Drawn from the one shop list
  *  the game sells from, so nothing here can be unobtainable or new. */
-function wares() {
-  const sold = SHOP_STOCK.filter((id) => itemPrice(id) !== undefined);
+/**
+ * What is for sale to a party of a level: scrolls of spells it could cast
+ * (half its level, rounded up — the 5e slot table), and uncommon goods only
+ * from level 3, rare from 5. A village at level 1 selling a scroll of a
+ * fifth-level spell was a shortcut past everything a party is meant to earn.
+ */
+export function forSale(id: Id, level: number): boolean {
+  const it = ITEMS[id];
+  const t = it?.targeting;
+  const spell = t && 'spellId' in t ? SPELLS[t.spellId] : undefined;
+  if (spell && spell.level > Math.ceil(level / 2)) return false;
+  if (it?.rarity === 'uncommon' && level < 3) return false;
+  if (it?.rarity !== undefined && it.rarity !== 'common' && it.rarity !== 'uncommon' && level < 5) return false;
+  return true;
+}
+
+function wares(level: number) {
+  const sold = SHOP_STOCK.filter((id) => itemPrice(id) !== undefined && forSale(id, level));
   const mundane = (id: Id) => !isMagicalWare(id);
   // A scroll is sold by whoever's faith or craft it belongs to: the temple
   // the divine ones, the guild everything else — so a town with both sells
@@ -244,7 +264,9 @@ function person(dice: Dice, emoji: string, ctx: { style: NameStyle; names: Set<s
 }
 
 /** One venue: its marker, and the scenes behind it. */
-interface VenueCtx { town: string; size: CitySize; level: number; hub: Id; used: Set<string>; rumours: Rumour[]; watch: Id;
+interface VenueCtx { town: string; size: CitySize; level: number;
+  /** The level its wares are for (see forSale). */
+  stock: number; hub: Id; used: Set<string>; rumours: Rumour[]; watch: Id;
   /** The town's name style, and every name it has handed out. */
   style: NameStyle; names: Set<string> }
 
@@ -261,7 +283,7 @@ const needs = (when: string[] | undefined): Requirement[] =>
   (when ?? []).map((w) => (w.startsWith('!') ? { kind: 'notFlag', flag: w.slice(1) } : { kind: 'flag', flag: w }));
 
 function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
-  const W = wares();
+  const W = wares(ctx.stock);
   const back = (label = 'Back out into the street') => ({ id: 'leave', label, to: ctx.hub });
   // Shops keep the day's hours: shuttered after dark.
   const shop = (title: string, stock: Id[], who: NpcRef, intro: string, icon: string): Built => ({
@@ -491,12 +513,13 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
     + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.length;
   // "Leave <name>" is a marker's label, and a label wraps past 20.
   if (spec.name !== undefined && !/^[A-Z][A-Za-z' -]{1,12}$/.test(spec.name)) err(`'${spec.name}': a town's name is 2–13 letters, capitalised`);
+  if (spec.stock !== undefined && (!Number.isInteger(spec.stock) || spec.stock < level || spec.stock > 9)) err(`stock for level ${spec.stock}; from the town's level to 9`);
   if (spec.style !== undefined && !NAME_STYLES.includes(spec.style)) err(`no name style '${spec.style}'`);
   if (markers > placesFor(size)) err(`${markers} places; a ${size} holds at most ${placesFor(size)}`);
   return {
     size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
     streets: spec.streets ?? size !== 'village',
-    name: spec.name ?? '', style: spec.style ?? ('' as NameStyle),
+    stock: spec.stock ?? 0, name: spec.name ?? '', style: spec.style ?? ('' as NameStyle),
   };
 }
 
@@ -632,7 +655,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
     maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: WATCH,
   }, seedRng((seed ^ 0x9a7c) >>> 0)).value.members);
-  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch, style, names };
+  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, stock: spec.stock || spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch, style, names };
   const fightFor = (f: CustomPlace['fight']): Id => {
     if (typeof f === 'string') return f;
     const enc = generateEncounter({

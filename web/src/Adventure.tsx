@@ -55,6 +55,7 @@ import { markModuleCompleted } from './adventureProgress.js';
 import { moduleById } from '../../src/data/modules/index.js';
 import { liveModule } from '../../src/adventure/embed.js';
 import { NIGHT } from '../../src/adventure/types.js';
+import { partyLevelOf } from '../../src/campaign/campaign.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -1155,6 +1156,12 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
                   : <span>{glyph}</span>}
               </span>
               {explored && !here && !blocked && <span className="adv-node-done" aria-hidden>✓</span>}
+              {/* Built for a stronger party: say so, even before it is reached. */}
+              {node.danger !== undefined && node.danger > partyLevelOf(state.campaign) && (
+                <span className="adv-node-danger" title={node.danger - partyLevelOf(state.campaign) >= 2 ? 'Deadly at your level' : 'Dangerous at your level'}>
+                  {node.danger - partyLevelOf(state.campaign) >= 2 ? '☠️' : '⚠️'}
+                </span>
+              )}
               {shownLabel && <span className="adv-node-label">{shownLabel}</span>}
             </button>
           );
