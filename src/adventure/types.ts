@@ -113,6 +113,46 @@ export interface JournalEntry {
   /** For a `lead`: the flag whose firing closes it. When that flag is set the
    *  journal shows the lead as followed up, so open threads read as progress. */
   resolvedBy?: string;
+  /** For a `quest`: the flag set on taking it (the proofs check that a quest
+   *  taken can always still be finished), the one its failing sets, its
+   *  stages (ticked as their requirements hold), and the objects it is about
+   *  (flag → name: carried while the flag holds). */
+  takenBy?: string;
+  failedBy?: string;
+  stages?: Array<{ text: string; done: Requirement[] }>;
+  objects?: Record<string, string>;
+}
+
+/**
+ * A quest: an offer from someone, stages to get through, a reward on
+ * reporting back. Compiled (quests.ts) into ordinary choices, scenes, flags
+ * and a journal entry: the runtime and the save see nothing new.
+ *
+ * What derails a quest is designed out, not policed:
+ *   - its objects are flags, not items: nothing to sell, drop or drink;
+ *   - stages are requirements, not a sequence: done early is done;
+ *   - the proofs check that a quest taken can always still be finished.
+ */
+export interface QuestSpec {
+  title: string;
+  /** The journal's line on it. */
+  summary: string;
+  /** Who offers it, and where: a story or dialogue scene the offer and the
+   *  report are added to (before its last choice, the way out). */
+  giver: { scene: SceneRef; name: string };
+  offer: Para[];
+  stages: Array<{ text: string; done: Requirement[] }>;
+  /** What it is about, by flag: "has-chalice" → "the Silver Chalice". */
+  objects?: Record<string, string>;
+  /** Objects handed over on taking it (a parcel to deliver). */
+  gives?: string[];
+  /** Offered only while these hold. */
+  offeredWhen?: Requirement[];
+  reward: Effect[];
+  thanks: Para[];
+  /** A flag the story sets when the quest is lost — by a choice made, never
+   *  an accident. Lost, the journal says so, and the proofs let it rest. */
+  failsOn?: string;
 }
 
 /** Where a check/branch lands, plus what it does on the way. */
@@ -606,6 +646,8 @@ export interface NpcDef {
 }
 
 export interface Module {
+  /** Quests, by id, compiled into the module's scenes (quests.ts). */
+  quests?: Record<Id, QuestSpec>;
   id: Id;
   title: string;
   blurb: string;

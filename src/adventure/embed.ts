@@ -25,6 +25,7 @@ import type { AdventureState } from './runtime.js';
 import { generateSpecDelve } from './delve-spec.js';
 import { generateCity } from './city-gen.js';
 import { validateModule } from './validate.js';
+import { compileQuests } from './quests.js';
 
 /** Keys whose string value names a scene. */
 const SCENE_REF_KEYS = new Set(['to', 'fight', 'search', 'scene', 'battle', 'battleScene', 'out', 'failTo', 'next']);
@@ -130,7 +131,7 @@ const placesOf = (m: Module): { at: Id; reads: string[] }[] => [
   ...Object.entries(m.delves ?? {}).map(([at, d]) => ({ at, reads: d.reads ?? [] })),
   ...Object.entries(m.towns ?? {}).map(([at, t]) => ({ at, reads: t.reads ?? [] })),
 ];
-const generates = (m: Module) => !!(m.delves || m.towns);
+const generates = (m: Module) => !!(m.delves || m.towns || m.quests);
 
 /** The roll a run makes for its module's delves, made once and kept in the save. */
 export function rollDelves(module: Module, state: AdventureState, seed: number): void {
@@ -161,7 +162,8 @@ export function expandModule(module: Module, roll: { seed: number; flags: readon
   for (const [at, delve] of Object.entries(module.delves ?? {})) add(at, expandDelve(at, delve, (roll.seed ^ hash(at)) >>> 0, story));
   for (const [at, town] of Object.entries(module.towns ?? {})) add(at, expandTown(at, town, (roll.seed ^ hash(at)) >>> 0));
   const { delves: _, towns: __, ...rest } = module;
-  const live: Module = { ...rest, scenes };
+  // Quests last: a quest may be given in a spliced town, or about a delve.
+  const live: Module = compileQuests({ ...rest, scenes });
   mine.set(key, live);
   return live;
 }
