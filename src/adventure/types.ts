@@ -283,6 +283,8 @@ export interface LandGround {
   cells: string;
   river?: Array<[number, number]>;
   sea?: { side: 'left' | 'right'; points: Array<[number, number]> };
+  /** Where a road crosses the river with no stop of its own. */
+  bridges?: Array<[number, number]>;
 }
 
 /** Percent coordinates on the map. */

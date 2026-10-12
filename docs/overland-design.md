@@ -25,12 +25,35 @@ it, roads between, terrain under it all. `src/adventure/overland.ts`.
 - **Proof.** In parts: the county with each town a stub, and each town on
   its own. Whole, nine towns' flags overrun the reachability search.
 
+## Step 2 (built): built round a story
+
+`LandSpec.places` names what the story needs; the map is built round them,
+and a spec it cannot honour is refused at once, saying why.
+
+- **Kinds:** `city`, `town`, `village` (whole generated towns, with their
+  own `town` spec), `delve` (a spec delve, spliced in like a story's; its
+  theme from its ground), `place` (a story scene), `camp`.
+- **`terrain`, `far`:** the ground it stands on; at least so many miles
+  from the city.
+- **`via`:** reached only through another place. It hangs off that place
+  alone, lies beyond it from the city, nearer it than anything else; and a
+  ridge is drawn round it, open only toward its gate, so the map says why.
+- **`after`:** closed (padlocked, with the author's `note`) until the party
+  has been to that place, or — a delve — won it (`won-<id>`).
+
+**Fewer settlements, more wild.** City, two towns, three villages: enough
+to shop and rest, not so many they repeat. The rest is wild: two delves
+and three **camps** (`camps`), one band each of whoever lives on that
+ground — bandits, goblins, kobolds, gnolls, lizardfolk. Some fight on
+sight; some let you sit at the fire and tell you something; you cannot
+tell from the road. Beaten, a camp is cold ashes and some coin.
+
+**Rivers.** A road over the river gets a ford, bridge or ferry stop, named
+for the nearer place, where there is room; otherwise a bridge drawn on the
+road. A town on the river is its own crossing.
+
 ## Next
 
-2. Author specs: required places (named towns, delves, custom places),
-   constraints ("only through X" — every route to it passes X, justified by
-   a ridge or a river with one crossing; "locked until a flag" — a washed-out
-   bridge), delves spliced in like towns.
 3. Encounters on the road: per leg walked, by terrain, party level and
    road/no road, falling off after a fight; terrain-based camping risk;
    night streets in rough quarters.
