@@ -39,7 +39,7 @@ export interface DelveOptions {
   rest?: RestPolicy;
 }
 
-const ROOMS: Record<DelveTheme, { title: string[]; rooms: string[]; goal: string; door: string; enter: string; safe: [string, string] }> = {
+export const ROOMS: Record<DelveTheme | 'forest' | 'village', { title: string[]; rooms: string[]; goal: string; door: string; enter: string; safe: [string, string] }> = {
   stone: {
     title: ['Broken Keep', 'Old Cistern', 'Warden\'s Hold', 'Sunless Mine'],
     rooms: ['Guardroom', 'Cistern', 'Collapsed Hall', 'Armory', 'Well Chamber', 'Barracks', 'Storeroom', 'Gallery', 'Cells', 'Pillared Hall', 'Stair Hall', 'Kitchens'],
@@ -64,14 +64,28 @@ const ROOMS: Record<DelveTheme, { title: string[]; rooms: string[]; goal: string
     safe: ['Dry Loft', 'A loft above the waterline, reached by one ladder you can pull up. Dry enough to sleep.'],
     goal: 'Drowned Altar', door: 'A swollen door, locked and slick with weed.', enter: 'Black water stands in the doorway. The walls sweat.',
   },
+  // Spec-only themes: not in DELVE_THEMES, so a classic delve never draws
+  // them and every classic seed still builds the dungeon it always did.
+  forest: {
+    title: ['Thornwood Hollow', 'Greenmarch Ruin', 'Wolfwater Glade', 'Briar Barrow'],
+    rooms: ['Clearing', 'Bramble Path', 'Hollow Oak', 'Fern Gully', 'Ruined Lodge', 'Mossy Ring', 'Old Shrine', 'Deadfall', 'Stream Ford', 'Woodcutter\'s Camp', 'Badger Sett', 'Bone Glade'],
+    safe: ['Hunter\'s Blind', 'A blind of woven branches, high in an oak. Nothing below will see a fire this small.'],
+    goal: 'Heart Tree', door: 'A wall of thorn, too thick to walk through.', enter: 'The trees close overhead, and the path goes on without the daylight.',
+  },
+  village: {
+    title: ['Hollowmere', 'Ashby Green', 'Lantern Row', 'Crowfield'],
+    rooms: ['Market Square', 'Smithy', 'Inn Common Room', 'Mill', 'Granary', 'Chapel', 'Well Yard', 'Tannery', 'Cooper\'s Shed', 'Reeve\'s House', 'Stable', 'Bakehouse'],
+    safe: ['Locked Cellar', 'A cellar with a stout door and a bar for it. You could sleep here, in turns.'],
+    goal: 'Manor Hall', door: 'The manor gate, chained.', enter: 'The village is shuttered and silent. Every door is shut, and something is watching.',
+  },
 };
 
-const SIZE_ROOMS: Record<NonNullable<DelveOptions['size']>, [number, number]> = {
+export const SIZE_ROOMS: Record<NonNullable<DelveOptions['size']>, [number, number]> = {
   small: [6, 7], medium: [8, 10], large: [11, 13],
 };
 
 /** A little rng helper that threads the state. */
-class Dice {
+export class Dice {
   constructor(public state: RngState) {}
   float(): number { const r = next(this.state); this.state = r.state; return r.value; }
   int(lo: number, hi: number): number { return lo + Math.floor(this.float() * (hi - lo + 1)); }
@@ -84,7 +98,7 @@ class Dice {
 }
 
 /** Encounters fit for a room, and for the boss, at `level`. */
-function encounterPools(level: number): { room: Id[]; boss: Id[] } {
+export function encounterPools(level: number): { room: Id[]; boss: Id[] } {
   const all = Object.values(ENCOUNTERS);
   const room = all.filter((e) => e.suggestedLevel >= Math.max(1, level - 1) && e.suggestedLevel <= level).map((e) => e.id);
   const bossLevel = Math.min(level + 1, Math.max(...all.map((e) => e.suggestedLevel)));

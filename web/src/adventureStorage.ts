@@ -23,7 +23,7 @@ export const SLOT_COUNT = 3;
 export const DELVE_SLOT = SLOT_COUNT;
 /** The slot a module's run lives in: the delve slot, or the active company. */
 export function slotFor(moduleId: string): number {
-  return moduleId.startsWith('delve-') ? DELVE_SLOT : activeSlot();
+  return /^delve2?-/.test(moduleId) ? DELVE_SLOT : activeSlot();
 }
 const LEGACY_KEY = 'dnd-adventure-save';
 const ACTIVE_KEY = 'dnd-adventure-active-slot';

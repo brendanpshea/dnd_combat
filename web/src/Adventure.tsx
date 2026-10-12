@@ -22,7 +22,7 @@ import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
 import { spellSheet } from './gameInfo.js';
 import { MONSTERS } from '../../src/data/monsters.js';
-import { buildEncounter, ENCOUNTERS } from '../../src/data/encounters.js';
+import { buildEncounter, ENCOUNTERS, encounterFor } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
@@ -219,7 +219,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       // again from. Taken here, as the intro opens, so it holds the party
       // exactly as it walked up — before the dice, and before any parley.
       if (scene.kind === 'battle') {
-        saveCheckpointWeb(state, ENCOUNTERS[scene.encounterId]?.name ?? 'a fight');
+        saveCheckpointWeb(state, encounterFor(scene.encounterId)?.name ?? 'a fight');
       }
     }
     setShopFocus('all'); // a fresh shop starts on the whole party
@@ -366,7 +366,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
 
   // --- Battle scene: a pre-fight intro, then the shared Battle component ---
   if (scene.kind === 'battle') {
-    const enc = ENCOUNTERS[scene.encounterId];
+    const enc = encounterFor(scene.encounterId);
     // The door of the fight — unless a parley or a sneak is mid-roll, whose
     // dice and result play over the backdrop below before the door returns.
     if (armedBattle !== scene.id && !dice && overlays.length === 0) {
@@ -449,7 +449,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
           }
           readBackCompanions(state, Object.values(combat.state.combatants));
           setArmedBattle(null); // re-arm the intro if a later fight reuses this
-          setLostFight(won ? null : (ENCOUNTERS[battleScene.encounterId]?.name ?? 'the fight'));
+          setLostFight(won ? null : (encounterFor(battleScene.encounterId)?.name ?? 'the fight'));
           // Loot ceremony (won fights with rewards), then the onWin/onLoss beat.
           const outcome = resolveBattle(state, module, won);
           markRevisit(outcome);
@@ -699,7 +699,7 @@ function BattleIntro(
     onFight: () => void; onParley: () => void; onSneak: () => void; onFallBack: () => void; onExit: () => void;
   },
 ) {
-  const enc = ENCOUNTERS[scene.encounterId];
+  const enc = encounterFor(scene.encounterId);
   // Distinct monster types in roster order, with how many of each.
   const roster: Array<{ id: string; count: number }> = [];
   for (const id of enc?.members ?? []) {

@@ -17,7 +17,7 @@ import type { Id } from '../engine/types.js';
 import { abilityMod, cellAt, type Combatant, type GridState, type Position } from '../engine/types.js';
 import { blocksMovement } from '../engine/grid.js';
 import { buildMonster } from '../data/monsters.js';
-import { ENCOUNTERS } from '../data/encounters.js';
+import { ENCOUNTERS, encounterFor } from '../data/encounters.js';
 import { MONSTERS } from '../data/monsters.js';
 import { rollDie } from '../engine/rng.js';
 import { MAPS, type MapData } from '../data/maps.js';
@@ -1291,7 +1291,7 @@ const doorKey = (sceneId: Id, what: 'parley' | 'sneak') => `${sceneId}:@${what}`
 
 /** How hard the roster is to creep up on: its keenest passive Perception. */
 export function sneakDc(encounterId: Id): number {
-  const members = ENCOUNTERS[encounterId]?.members ?? [];
+  const members = encounterFor(encounterId)?.members ?? [];
   let best = 10;
   for (const id of members) {
     const m = MONSTERS[id];

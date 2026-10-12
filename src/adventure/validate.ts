@@ -6,7 +6,7 @@
 import type { Id } from '../engine/types.js';
 import { CLASSES, SKILL_ABILITY, type SkillId } from '../data/classes.js';
 import { MONSTERS } from '../data/monsters.js';
-import { ENCOUNTERS } from '../data/encounters.js';
+import { ENCOUNTERS, encounterFor } from '../data/encounters.js';
 import { MAPS } from '../data/maps.js';
 import { ITEMS } from '../data/items.js';
 import { WEAPONS } from '../data/weapons.js';
@@ -27,7 +27,7 @@ function skillExists(id: string): boolean {
   return Object.prototype.hasOwnProperty.call(SKILL_ABILITY, id as SkillId);
 }
 function encounterExists(id: Id): boolean {
-  return !!(ENCOUNTERS[id] || MONSTERS[id]);
+  return !!(encounterFor(id) || MONSTERS[id]);
 }
 
 /**
