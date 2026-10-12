@@ -1351,6 +1351,13 @@ export function parleyBattle(state: AdventureState, module: Module, actorIdx?: n
     : rollFor(state, skill, p.dc, roller, events);
   if (success) {
     delete state.battleSurprise;
+    // A room's fight talked down is settled, as one won is: walking back in
+    // must not spring it again.
+    const d = hubDungeon(state, module);
+    if (d) {
+      const at = dungeonProgress(state, d.id, d.dungeon);
+      if (roomOf(d.dungeon, at.at)?.fight === scene.id && !at.cleared.includes(at.at)) at.cleared.push(at.at);
+    }
     events.push(...applyOutcome(state, module, p.success));
   } else if (p.failure) {
     events.push(...applyOutcome(state, module, p.failure));

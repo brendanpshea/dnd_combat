@@ -17,10 +17,12 @@ import {
   type DelveSpec, type DelveShape, type SpecTheme, type RequiredRoom,
 } from '../../src/adventure/delve-spec.js';
 import { PIECES } from '../../src/adventure/delve-pieces.js';
+import { FACTIONS } from '../../src/data/factions.js';
 import { DELVE_SLOT, savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { initAudio } from './sound.js';
 
 type Size = NonNullable<DelveSpec['size']>;
+type Fights = NonNullable<DelveSpec['fights']>;
 
 function Pick<T extends string | number>({ label, value, options, onPick }: {
   label: string; value: T; options: readonly T[]; onPick(v: T): void;
@@ -41,7 +43,8 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
   const [shape, setShape] = useState<DelveShape>('classic');
   const [floors, setFloors] = useState(1);
   const [size, setSize] = useState<Size>('medium');
-  const [fights, setFights] = useState<'authored' | 'generated'>('authored');
+  const [fights, setFights] = useState<Fights>('authored');
+  const [holder, setHolder] = useState<string>('any');
   const [require, setRequire] = useState('');
   const [pieces, setPieces] = useState<string[]>([]);
   const [error, setError] = useState('');
@@ -67,6 +70,7 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
           level, shape, floors, fights, size, ...(theme === 'any' ? { theme: SPEC_THEMES[seed % SPEC_THEMES.length]! } : { theme }),
           ...(rooms.length ? { require: rooms } : {}),
           ...(picked.length ? { pieces: picked } : {}),
+          ...(fights === 'inhabitants' && holder !== 'any' ? { factions: [holder] } : {}),
           ...extra,
         }).module;
       setError('');
@@ -89,7 +93,10 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
         <Pick<DelveShape> label="Shape" value={shape} options={DELVE_SHAPES} onPick={setShape} />
         <Pick<Size> label="Size" value={size} options={['small', 'medium', 'large'] as const} onPick={setSize} />
         <Pick<number> label="Floors" value={floors} options={Array.from({ length: MAX_FLOORS }, (_, i) => i + 1)} onPick={setFloors} />
-        <Pick<'authored' | 'generated'> label="Fights" value={fights} options={['authored', 'generated'] as const} onPick={setFights} />
+        <Pick<Fights> label="Fights" value={fights} options={['authored', 'generated', 'inhabitants'] as const} onPick={setFights} />
+        {fights === 'inhabitants' && (
+          <Pick<string> label="Held by" value={holder} options={['any', ...Object.keys(FACTIONS)]} onPick={setHolder} />
+        )}
         <div className="delve-row">
           <span className="muted">Set pieces</span>
           {Object.values(PIECES).map((p) => {

@@ -110,6 +110,7 @@ export function DelvePreview() {
               });
               return (
                 <>
+                  {!m.blurb.startsWith('A generated') && <small className="muted">{m.blurb}</small>}
                   <small>{m.title} · {r.rerolls} rerolls · {floors.reduce((a, d) => a + d.rooms.length, 0)} rooms · levels {m.levelBand?.from}–{m.levelBand?.to}</small>
                   <small>{shares.length} fights, {(shares.reduce((a, x) => a + x, 0) / Math.max(1, shares.length)).toFixed(2)}× even on average (at the start level)</small>
                   {floors.map((d) => <FloorMap key={d.title} d={d} />)}

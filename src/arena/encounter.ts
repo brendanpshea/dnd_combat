@@ -116,6 +116,13 @@ export interface GenerateOptions {
    */
   partyLevel?: number;
   /**
+   * Draw only from these monsters (a faction's list). Everything else —
+   * budget, headcount, caps, reach, brief — works as it does over the whole
+   * roster. If none of them fits under the member cap, the restriction is
+   * dropped rather than fielding nothing.
+   */
+  members?: readonly Id[];
+  /**
    * Field only these creature types, ignoring any that cannot afford a member
    * at this budget.
    *
@@ -383,7 +390,21 @@ function generateOnce(
   const cap = opts.maxMemberXp ?? Infinity;
   // Filter first, so type choice, headcount and every slot all see the same
   // pool — a type whose cheapest member is over the cap must not be offered.
-  const roster = arenaRoster(opts.partyLevel).filter((m) => m.xp <= cap);
+  const open = arenaRoster(opts.partyLevel).filter((m) => m.xp <= cap);
+  let roster = open;
+  if (opts.members) {
+    // Only if the list can actually field something at this budget; a
+    // restriction that leaves no type to choose would field nothing at all.
+    /*
+     * A faction is its own flavour: its members are drawn as ONE pool, not
+     * as one or two creature types. Kept by type, gnolls at 1st level are a
+     * lone gnoll (fiend) and a lone hyena (beast), neither type has the two
+     * members a type needs to be chosen, and the faction fielded strangers.
+     */
+    const only = open.filter((m) => opts.members!.includes(m.id));
+    const one = only.map((m) => ({ ...m, type: only[0]!.type }));
+    if (only.length > 0 && affordableTypes(one, opts.budget, opts.soloShare ?? DEFAULTS.soloShare).length > 0) roster = one;
+  }
   let rng = state;
 
   const all = affordableTypes(roster, opts.budget, soloShare);

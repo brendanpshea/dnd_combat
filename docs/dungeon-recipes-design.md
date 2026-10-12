@@ -420,3 +420,36 @@ What shipped, and where it departed from the design above:
   last floor's goal can never be entered, because winning that fight ends the
   delve, and the validator does not flag it. Placement never anchors a piece
   on the goal (tested), but the check belongs in the validator.
+
+## 13. Step 2 as built
+
+- **Ten factions** (`src/data/factions.ts`), each with members, leaders, room
+  names, signs and, for those that talk, a parley. Every theme has at least two
+  holders at every level from 1 to 5 (tested).
+- **`fights: 'inhabitants'`.** Every fight on the floor is drawn from its holders:
+  rooms, the key, ambushes, broken nights and set pieces. The goal is a leader
+  with an escort, built to the boss budget. Two holders split a floor at the
+  lock.
+- **`generateEncounter({ members })`.** A faction is drawn as ONE pool, not by
+  creature type. By type, gnolls at 1st level are a lone gnoll and a lone hyena,
+  neither type qualifies, and the faction silently fielded strangers in every
+  fight. Calls without `members` run the old code path unchanged.
+- **Leader fallback.** Below the level any leader can be fielded at, the
+  faction's biggest member that fits leads instead, so the goal is still
+  *them*.
+- **Parley pays XP, unlike §5's sketch.** The house rule (validator,
+  `avoidedFightXP`) is that every way past a fight pays the fight's XP. A
+  talked-down fight pays it, plus any key, but no gold or loot. A talk-down in a
+  dungeon room now also clears the room; before this it sprang again on the
+  next visit (runtime fix, tested). The goal's leader never parleys.
+- **No truce flag yet.** Each fight is talked down on its own. Making one talk
+  open a faction's whole territory needs fights that a flag can stand down,
+  which the runtime does not have.
+- **History** (`delve-history.ts`): builders, then calamity, then holders. It
+  supplies the title, the start scene's story, the menu blurb, and traces in a
+  third of the quiet rooms. Drawn with `inhabitants` or `history: true`; a
+  plain spec rolls exactly as before (hash-pinned).
+- **Goal pieces.** `lair` (guard post, then leader's hall) replaces the
+  generated goal. Corridors that led to the old goal now lead to the lair's
+  door, locks included, and the old goal is never built. **`rivals`** is
+  another company that splits the take or fights for it.
