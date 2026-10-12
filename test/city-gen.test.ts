@@ -54,12 +54,15 @@ describe('a generated town', () => {
     for (const size of CITY_SIZES) for (let seed = 1; seed <= 20; seed++) {
       const map = mapOf(generateCity(seed, { size }).module);
       for (const n of map.nodes) {
-        expect(n.x).toBeGreaterThanOrEqual(8); expect(n.x).toBeLessThanOrEqual(92);
-        expect(n.y).toBeGreaterThanOrEqual(10); expect(n.y).toBeLessThanOrEqual(82);
+        expect(n.x).toBeGreaterThanOrEqual(14); expect(n.x).toBeLessThanOrEqual(86);
+        expect(n.y).toBeGreaterThanOrEqual(16); expect(n.y).toBeLessThanOrEqual(82);
       }
       for (const a of map.nodes) for (const b of map.nodes) {
         if (a !== b) expect(apart(a, b), `${size} seed ${seed}: ${a.id} on ${b.id}`).toBe(true);
       }
+      // Labels short enough to stay on two lines of a phone map (a three-line
+      // label runs into the marker below it).
+      for (const n of map.nodes) expect(n.label.length, n.label).toBeLessThanOrEqual(20);
       // No two markers with the same name (two "Market Cross"es, once).
       expect(new Set(map.nodes.map((n) => n.label)).size, `${size} seed ${seed}`).toBe(map.nodes.length);
       // One town, not islands: every marker reachable along the roads.

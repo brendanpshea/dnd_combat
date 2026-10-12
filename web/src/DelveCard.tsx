@@ -19,7 +19,7 @@ import {
 import { PIECES } from '../../src/adventure/delve-pieces.js';
 import { FACTIONS } from '../../src/data/factions.js';
 import { DELVE_STORY_MODULE } from '../../src/data/modules/delve-story.js';
-import { generateCity, cityFromId, CITY_SIZES, type CitySize } from '../../src/adventure/city-gen.js';
+import { generateCity, cityFromId, CITY_SIZES, type CitySize, type CitySpec } from '../../src/adventure/city-gen.js';
 import { DELVE_SLOT, savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { initAudio } from './sound.js';
 
@@ -131,9 +131,20 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
       <Pick<CitySize> label="Town" value={citySize} options={CITY_SIZES} onPick={setCitySize} />
       <div className="delve-row">
         <button className="mini" onClick={() => {
-          initAudio();
-          deleteAdventureWeb(DELVE_SLOT);
-          onPlay(generateCity(Math.floor(Math.random() * 1e6), { size: citySize, level }).module);
+          // The JSON box, when it holds an object, is the rest of the town's
+          // spec: people, places, rumours, venues, streets. Built BEFORE the
+          // save is cleared, so a mistyped spec does not cost a run.
+          try {
+            const raw: unknown = require.trim() ? JSON.parse(require) : {};
+            const extra = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as CitySpec : {};
+            const town = generateCity(Math.floor(Math.random() * 1e6), { size: citySize, level, ...extra }).module;
+            initAudio();
+            deleteAdventureWeb(DELVE_SLOT);
+            onPlay(town);
+            setError('');
+          } catch (e) {
+            setError((e as Error).message);
+          }
         }}>🏘️ New {citySize}</button>
       </div>
       {saved && resume && (
