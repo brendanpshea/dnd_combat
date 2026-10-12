@@ -4,7 +4,8 @@
  * module, and neither may import the splicer that builds the delves.
  */
 import type { Id } from '../engine/types.js';
-import type { EmbeddedDelve, ExploreNode, Module, Requirement, Scene } from './types.js';
+import type { EmbeddedDelve, EmbeddedTown, ExploreNode, Module, Requirement, Scene } from './types.js';
+import { refsOf, requirementsOf } from './graph.js';
 
 /**
  * The story with each `proveApart` delve as only what the story sees of it:
@@ -14,7 +15,7 @@ import type { EmbeddedDelve, ExploreNode, Module, Requirement, Scene } from './t
  * covered when it was built.
  */
 export function outsideOf(module: Module): Module {
-  if (!Object.values(module.delves ?? {}).some((d) => d.proveApart)) return module;
+  if (!Object.values(module.delves ?? {}).some((d) => d.proveApart) && !Object.values(module.towns ?? {}).some((t) => t.proveApart)) return module;
   const scenes: Record<Id, Scene> = { ...module.scenes };
   const delves: Record<Id, EmbeddedDelve> = {};
   for (const [at, d] of Object.entries(module.delves ?? {})) {
@@ -47,7 +48,42 @@ export function outsideOf(module: Module): Module {
     scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };
     scenes[hub] = { id: hub, kind: 'explore', map: { title: d.title ?? 'Inside', art: { emoji: '🏚️' }, entry: ['out'], nodes } };
   }
-  const { delves: _, ...rest } = module;
-  return { ...rest, ...(Object.keys(delves).length ? { delves } : {}), scenes };
+  /*
+   * A town the same way: a map with a marker for each of the story's places
+   * in it (shown until done, as walking up to it would play it), its ways on,
+   * and the road out unless the story keeps the gate. Its shops, streets and
+   * people are the town's own business.
+   */
+  const towns: Record<Id, EmbeddedTown> = {};
+  for (const [at, t] of Object.entries(module.towns ?? {})) {
+    if (!t.proveApart) { towns[at] = t; continue; }
+    const hub = `${at}/city`;
+    const nodes: ExploreNode[] = [];
+    const pin = (id: string, label: string, scene: Id, extra: Partial<ExploreNode> = {}) =>
+      nodes.push({ id, label, icon: 'tok-mystery', scene, x: 10 + (nodes.length % 8) * 10, y: 20 + Math.floor(nodes.length / 8) * 20, ...extra });
+    // A place done is only its text: whether it is done matters to the
+    // chapter only where something else on its paths asks the same flag.
+    const asked = new Set([...Object.values(module.scenes).filter((sc) => sc.kind !== 'ending').flatMap(requirementsOf),
+      ...(t.spec.places ?? []).flatMap((pl) => (pl.event?.when ?? []).flatMap((w) => w.if))]
+      .flatMap((r) => (r.kind === 'flag' || r.kind === 'notFlag' ? [r.flag] : [])));
+    (t.spec.places ?? []).forEach((pl, i) => {
+      if (pl.event) {
+        const until = (pl.event.until ?? []).flatMap((q): Requirement[] =>
+          q.kind === 'flag' && asked.has(q.flag) ? [{ kind: 'notFlag', flag: q.flag }] : q.kind === 'notFlag' && asked.has(q.flag) ? [{ kind: 'flag', flag: q.flag }] : []);
+        pin(`e${i}`, pl.label, pl.event.scene, {
+          ...(until.length ? { requires: until, hideWhenBlocked: true } : {}),
+          ...(pl.event.when?.length ? { sceneWhen: pl.event.when } : {}) });
+      }
+      if (pl.way) pin(`w${i}`, pl.label, pl.way.to);
+    });
+    if (!(t.spec.places ?? []).some((pl) => pl.replaces === 'gate')) pin('out', 'Out', t.onLeave.to);
+    // The door, if the story walks in by it rather than straight onto the map.
+    if (Object.values(module.scenes).some((sc) => refsOf(sc).includes(at))) {
+      scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };
+    }
+    scenes[hub] = { id: hub, kind: 'explore', map: { title: t.title ?? 'Town', art: { emoji: '🏘️' }, entry: [nodes[0]!.id], nodes, ...(t.spec.camp ? { camp: {} } : {}) } };
+  }
+  const { delves: _, towns: __, ...rest } = module;
+  return { ...rest, ...(Object.keys(delves).length ? { delves } : {}), ...(Object.keys(towns).length ? { towns } : {}), scenes };
 }
 

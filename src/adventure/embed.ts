@@ -134,8 +134,11 @@ export function expandDelve(at: Id, delve: EmbeddedDelve, seed: number, story: R
 
 /** One town, as scenes for the host (see `splice`). */
 export function expandTown(at: Id, town: EmbeddedTown, seed: number): Record<Id, Scene> {
-  const built = generateCity(seed, town.spec, { story: true }).module;
-  return splice(at, built.scenes, { left: town.onLeave }, built.scenes.beaten ? 'beaten' : undefined, town.reads, town.exports);
+  const built = generateCity(seed, town.spec, { story: true, ...(town.proveApart ? { apart: true } : {}) }).module;
+  // A place's story scene waits on the story's own flags: those stay the story's.
+  const own = (town.spec.places ?? []).flatMap((pl) => [...(pl.event?.until ?? []), ...(pl.event?.when ?? []).flatMap((w) => w.if)])
+    .flatMap((r) => ('flag' in r ? [r.flag] : []));
+  return splice(at, built.scenes, { left: town.onLeave }, built.scenes.beaten ? 'beaten' : undefined, [...(town.reads ?? []), ...own], town.exports);
 }
 
 /** Every generated place a module names, by the scene the story links to. */
@@ -207,7 +210,7 @@ export function validateLive(module: Module, seeds: readonly number[] = [1, 2, 3
   if (!generates(module)) return validateModule(module);
   // Every delve proved apart, and nothing else generated: the story's
   // outside of them, once, and each built (its own proof) for every seed.
-  if (Object.values(module.delves ?? {}).every((d) => d.proveApart) && !module.towns) {
+  if (Object.values(module.delves ?? {}).every((d) => d.proveApart) && Object.values(module.towns ?? {}).every((t) => t.proveApart)) {
     const errors = validateModule(compileQuests(module));
     for (const seed of seeds) {
       try { expandModule(module, { seed, flags: [] }); } catch (e) { errors.push(`[seed ${seed}] ${(e as Error).message}`); }

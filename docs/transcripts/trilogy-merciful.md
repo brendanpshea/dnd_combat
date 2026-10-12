@@ -85,9 +85,9 @@ _Journal (quest): The Reeve's Scouts_
 
 **» Step out into the square**
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
-→ Leave for the Marsh Road
+→ The Marsh Road
 
 <sub>scene `gate-blocked`</sub>
 
@@ -99,7 +99,49 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 **» Back into the square**
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Fishellby's Stores
+
+<sub>scene `square/general`</sub>
+
+_The shop: Fishellby's Stores (the route buys nothing)._
+
+"Coin's coin, and I'll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Smithy
+
+<sub>scene `square/smithy`</sub>
+
+_The shop: The Smithy (the route buys nothing)._
+
+The forge roars. "Steel or leather? I make both, and I make them to last."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Forge Temple
+
+<sub>scene `square/temple`</sub>
+
+**Coriol of Perrego**
+
+> **Coriol** looks up from the altar. "Peace be on you. What do you need of the Forge?"
+
+**» Leave the temple**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Horse Fair
+
+<sub>scene `square/landmark`</sub>
+
+A muddy yard of pens and shouting, where a horse changes hands for twice what it is worth.
+
+**» Walk on**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → The Wander-Inn
 
@@ -243,17 +285,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 **» Step out into the square**
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
-
-→ Market
-
-<sub>scene `market`</sub>
-
-_The shop: Thornwick Market (the route buys nothing)._
-
-"Coin's coin, and I'll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."
-
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → Notice Board
 
@@ -265,7 +297,7 @@ Someone has added a line at the bottom in a smaller, prouder hand: *"Thornwick d
 
 **» Leave it for now**
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → The Old Mill
 
@@ -291,7 +323,7 @@ The second cockatrice flops still. The miller pays up gladly, prods the stone do
 
 _+35 gold (131)_
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → Peddler's Stall
 
@@ -343,13 +375,13 @@ _+40 gold (171)_
 
 _Journal (lead): The Gate-Signal_
 
-**↳ Thornwick Square** <sub>(map `square`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
 **Dawn — day 3.**
 
-→ Leave for the Marsh Road
+→ The Marsh Road
 
 <sub>scene `trailhead`</sub>
 

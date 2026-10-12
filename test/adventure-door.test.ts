@@ -21,7 +21,7 @@ import { makeCombatant } from './helpers.js';
 /** A party at `sceneId`, having walked in from Thornwick Square. */
 function at(sceneId: string, seed = 7) {
   const state = startAdventure(newCampaign(seed), HOLLOW);
-  enterScene(state, HOLLOW, 'square');
+  enterScene(state, HOLLOW, 'square/city');
   enterScene(state, HOLLOW, sceneId);
   return state;
 }

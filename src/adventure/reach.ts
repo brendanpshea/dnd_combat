@@ -546,7 +546,10 @@ function searchModule(
   // (a `count`), which no bit can hold: a marker may route on the valley's
   // regard, and both ways are searched.
   const untracked = (r: Requirement) => r.kind === 'count' || r.kind === 'partyLevel' ||
-    ((r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`) && !settled.has(r.flag));
+    ((r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`) && !settled.has(r.flag)) ||
+    // Read only by a cosmetic redirect, so never made a fact: either way.
+    (r.kind === 'visited' && !facts.has(`visited:${r.scene}`)) ||
+    ((r.kind === 'companion' || r.kind === 'noCompanion') && !facts.has(`companion:${r.companion}`));
   const factNames = [...facts.keys()];
 
   // Tallies tracked exactly, for the atlas only (see `ReachRun.tallies`).

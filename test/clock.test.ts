@@ -101,9 +101,10 @@ describe('the clock', () => {
 describe('the shipped clocks', () => {
   it('the Hollow Road: the captives are gone after the sixth night', async () => {
     const { MODULES } = await import('../src/data/modules/index.js');
-    const m = MODULES.find((x) => x.id === 'hollow-road')!;
+    const { expandModule } = await import('../src/adventure/embed.js');
+    const m = expandModule(MODULES.find((x) => x.id === 'hollow-road')!, { seed: 1, flags: [] });
     const s = startAdventure(newCampaign(1), m);
-    enterScene(s, m, 'square');
+    enterScene(s, m, 'square/city');
     for (let n = 0; n < 5; n++) campRest(s, m, 'long');
     expect(s.flags['captives-taken']).toBeUndefined();
     campRest(s, m, 'long');
