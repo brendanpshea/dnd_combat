@@ -52,9 +52,26 @@ tell from the road. Beaten, a camp is cold ashes and some coin.
 for the nearer place, where there is room; otherwise a bridge drawn on the
 road. A town on the river is its own crossing.
 
+## Step 3 (built): trouble on the road
+
+Runtime, for any map (`ExploreMap.legs`, `ExploreNode.camp`,
+`wandering.night`):
+
+- **Legs.** Walking a leg between two nodes rolls its `chance` every
+  time — halved for each fight already met on that leg, and half again at
+  night. Won, the party has arrived. In a county a leg rolls on the ground
+  at its middle (plain 12%, forest 22%, hills 20%, marsh 28%), less on a
+  road between towns (×0.6) and near the city (×0.5), for a fight of who
+  lives there (bandits and gnolls on the plain, wolves in the forest,
+  goblins and kobolds in the hills, lizardfolk and hags in the marsh).
+- **Camping by the ground.** A node's own camp rule overrides the map's: a
+  night in a town is safe; one in the wild is a roll on that ground.
+- **Night streets.** A town's rough-street fight rolls once by day and once
+  more after dark, at twice the chance.
+- **Beaten on the road:** you come to by the roadside.
+- **Fix:** a map remembers where the party stood on it (`mapAt`): coming
+  out of a county's town no longer puts the party back at the road in.
+
 ## Next
 
-3. Encounters on the road: per leg walked, by terrain, party level and
-   road/no road, falling off after a fight; terrain-based camping risk;
-   night streets in rough quarters.
 4. Travel time: legs take hours, night falls on the road.

@@ -29,8 +29,10 @@ export function refsOf(scene: Scene): Id[] {
       scene.map.nodes.forEach((n) => {
         refs.push(n.scene);
         if (n.wandering) refs.push(n.wandering.battleScene);
+        if (n.camp?.risky) refs.push(n.camp.risky.battleScene);
         n.sceneWhen?.forEach((w) => refs.push(w.to));
       });
+      scene.map.legs?.forEach((l) => refs.push(...l.battles));
       if (scene.map.camp?.risky) refs.push(scene.map.camp.risky.battleScene);
       break;
     case 'dungeon': {

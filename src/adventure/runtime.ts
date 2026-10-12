@@ -49,6 +49,8 @@ export interface AdventureState {
   /** The explore node the party most recently entered — their position on a
    *  traversal map ("you are here"), and what reveals the next frontier. */
   lastNode?: Id;
+  /** Where the party stands on each map it has walked (scene → node). */
+  mapAt?: Record<Id, Id>;
   journal: JournalEntry[];
   /** Scene ids whose once-per-scene Guidance has been spent (checks after the
    *  first in a scene get no cleric +1d4). */
@@ -92,6 +94,8 @@ export interface AdventureState {
   /** Shops that caught the party stealing, by scene id: they will not serve
    *  it again. */
   barredShops?: Id[];
+  /** Fights met on each road leg ("a|b"): each makes the next rarer. */
+  legFights?: Record<string, number>;
   /** The run's roll for the module's generated dungeons (Module.delves): its
    *  seed, and the flags they read as they stood when it was made. */
   delveRoll?: { seed: number; flags: string[] };
@@ -821,8 +825,12 @@ function neighbours(paths: Array<[Id, Id]> | undefined, nodeId: Id): Id[] {
 
 /** The party's current node on this map: the last one they entered if it lives
  *  here, else the first entry (traversal) or none (free-roam). */
-function positionNode(state: AdventureState, map: { nodes: ExploreNode[]; entry?: Id[] }): Id | undefined {
+function positionNode(state: AdventureState, map: { nodes: ExploreNode[]; entry?: Id[] }, sceneId?: Id): Id | undefined {
   const ids = new Set(map.nodes.map((n) => n.id));
+  // Where the party last stood on THIS map: a county's town has a map of its
+  // own, and coming back out of it must not put the party back at the start.
+  const mine = sceneId ? state.mapAt?.[sceneId] : undefined;
+  if (mine && ids.has(mine)) return mine;
   if (state.lastNode && ids.has(state.lastNode)) return state.lastNode;
   return map.entry?.[0];
 }
@@ -834,7 +842,7 @@ export function exploreNodes(state: AdventureState, module: Module): VisibleNode
   if (scene.kind !== 'explore') return [];
   const map = scene.map;
   const passive = partyPassivePerception(state.campaign);
-  const here = positionNode(state, map);
+  const here = positionNode(state, map, scene.id);
   const traversal = !!map.paths; // presence of edges = a path map
 
   // On a traversal map, the "known" set is the entries plus the neighbours of
@@ -881,14 +889,36 @@ export function enterNode(state: AdventureState, module: Module, nodeId: Id): Ad
   if (scene.map.paths && !exploreNodes(state, module).some((v) => v.node.id === nodeId)) {
     throw new Error(`Node ${nodeId} is beyond the frontier`);
   }
+  const from = positionNode(state, scene.map, scene.id);
   if (!state.exploredNodes.includes(nodeId)) state.exploredNodes.push(nodeId);
   state.lastNode = nodeId; // you are here now
+  (state.mapAt ??= {})[scene.id] = nodeId;
+  const dark = !!state.flags[NIGHT];
 
-  if (node.wandering && !state.wanderingRolled.includes(nodeId)) {
-    state.wanderingRolled.push(nodeId);
+  // Trouble on the road there: rolled every walk, rarer for each fight
+  // already met on that leg, likelier at night. Won, the party has arrived.
+  const leg = from && from !== nodeId
+    ? scene.map.legs?.find(({ between: [a, b] }) => (a === from && b === nodeId) || (a === nodeId && b === from))
+    : undefined;
+  if (leg?.battles.length) {
+    const key = [...leg.between].sort().join('|');
+    const met = state.legFights?.[key] ?? 0;
+    const chance = leg.chance * 0.5 ** met * (dark ? 1.5 : 1);
     const c = state.campaign;
     const r = rollDie(c.rng, 1000); c.rng = r.state;
-    if ((r.value - 1) / 1000 < node.wandering.chance) {
+    if ((r.value - 1) / 1000 < chance) {
+      (state.legFights ??= {})[key] = met + 1;
+      return enterScene(state, module, leg.battles[(r.value + met) % leg.battles.length]!);
+    }
+  }
+
+  // Once by day, and once more by night where the streets turn worse.
+  const roll = dark && node.wandering?.night !== undefined ? `${nodeId}#night` : nodeId;
+  if (node.wandering && !state.wanderingRolled.includes(roll)) {
+    state.wanderingRolled.push(roll);
+    const c = state.campaign;
+    const r = rollDie(c.rng, 1000); c.rng = r.state;
+    if ((r.value - 1) / 1000 < (roll === nodeId ? node.wandering.chance : node.wandering.night!)) {
       return enterScene(state, module, node.wandering.battleScene);
     }
   }
@@ -1543,7 +1573,11 @@ export function campRule(state: AdventureState, module: Module): CampRule | null
   // a night's ambush (whose win goes back to the map) skip a one-way scene.
   const scene = currentScene(state, module);
   const place = isHub(scene) ? scene : undefined;
-  if (place?.kind === 'explore') return place.map.camp ?? null;
+  if (place?.kind === 'explore') {
+    const here = positionNode(state, place.map, place.id);
+    const at = here ? place.map.nodes.find((n) => n.id === here) : undefined;
+    return at?.camp ?? place.map.camp ?? null;
+  }
   if (place?.kind === 'dungeon') return place.dungeon.camp ?? (place.dungeon.rest ? {} : null);
   return null;
 }
