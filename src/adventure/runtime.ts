@@ -29,7 +29,7 @@ import {
   attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
 } from '../campaign/campaign.js';
 import {
-  HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING,
+  HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, NIGHT,
   type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
   type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph,
 } from './types.js';
@@ -197,6 +197,9 @@ export function carryCompanyInto(
 export function carriedFlags(module: Module, state: AdventureState): Record<string, boolean | number> {
   const out: Record<string, boolean | number> = {};
   for (const [k, v] of Object.entries(state.flags)) if (k.includes(':') || isNpcFlag(k)) out[k] = v;
+  // A name for theft travels: the next chapter's towns have heard.
+  const caught = state.flags[CAUGHT_STEALING];
+  if (typeof caught === 'number' && caught > 0) out[CAUGHT_STEALING] = caught;
   for (const f of module.carries ?? []) {
     const v = state.flags[f];
     if (v === true || (typeof v === 'number' && v > 0)) out[`${module.id}:${f}`] = v;
@@ -1523,6 +1526,8 @@ export function shopSteal(state: AdventureState, module: Module): AdventureEvent
     const n = state.flags[CAUGHT_STEALING];
     state.flags[CAUGHT_STEALING] = (typeof n === 'number' ? n : 0) + 1;
     events.push({ type: 'text', paragraphs: ['"Thief!" You are bundled out of the door, and you will not be let back in.'] });
+    // Out, now: not left standing at a counter that will not serve you.
+    events.push(...resolveShopOrRest(state, module));
   }
   return events;
 }
@@ -1680,6 +1685,8 @@ export const dayOf = (state: AdventureState): number => state.day ?? 1;
 export function endDay(state: AdventureState, module: Module): AdventureEvent[] {
   const day = dayOf(state) + 1;
   state.day = day;
+  // Morning: whatever the night was, it is over.
+  delete state.flags[NIGHT];
   const events: AdventureEvent[] = [{ type: 'dawn', day }];
   for (const d of module.dawns ?? []) {
     if (d.day !== day) continue;

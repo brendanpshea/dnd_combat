@@ -33,6 +33,12 @@ function stealUntilCaught(s: ReturnType<typeof inTown>, m: Module, shop: string)
   }
   return false;
 }
+/** Wait at the inn for dark (the back room keeps night hours). */
+function nightfall(s: ReturnType<typeof inTown>, m: Module): void {
+  enterNode(s, m, 'inn');
+  choose(s, m, 'dusk');
+  choose(s, m, 'leave');
+}
 const shown = (s: ReturnType<typeof inTown>, m: Module) => legalChoices(s, m).filter((o) => !o.blocked).map((o) => o.choice.id);
 
 describe('a shop that catches you', () => {
@@ -104,10 +110,14 @@ describe('the thieves\' guild', () => {
 
   it('offers to clear a name only to someone who has one, and for less than the watch', () => {
     const s = inTown(6, m);
-    enterNode(s, m, 'thieves-guild');
-    expect(shown(s, m)).not.toContain('clean');
-    choose(s, m, 'leave');
+    // Caught in daylight (the shops are shut at night)...
     stealUntilCaught(s, m, 'general');
+    const s2 = inTown(6, m);
+    nightfall(s2, m);
+    enterNode(s2, m, 'thieves-guild');
+    expect(shown(s2, m)).not.toContain('clean');
+    // ...and to the back room after dark, to be rid of it.
+    nightfall(s, m);
     enterNode(s, m, 'thieves-guild');
     expect(shown(s, m)).toContain('clean');
     const gold = s.campaign.gold;

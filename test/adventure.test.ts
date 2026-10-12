@@ -557,7 +557,9 @@ describe('shop', () => {
       enterScene(s, m, 'mart');
       const events = shopSteal(s, m);
       expect(shopVisitOf(s, 'mart').stealUsed).toBe(true);
-      expect(() => shopSteal(s, m)).toThrow(/already/i);
+      // Once a visit: a second try is refused — or, caught, the party is not
+      // even in the shop any more to try (thrown out on the spot).
+      expect(() => shopSteal(s, m)).toThrow(/already|on a/i);
       const grabbed = events.find((e) => e.type === 'item');
       if (grabbed && grabbed.type === 'item') {
         expect(stock).toContain(grabbed.itemId); // never something the shop doesn't sell
@@ -579,6 +581,8 @@ describe('shop', () => {
       if (fine && fine.type === 'gold') {
         expect(fine.amount).toBeLessThan(0);
         expect(c.gold).toBeLessThan(100);
+        // Thrown out on the spot: back to wherever the shop's door leads.
+        expect(s.sceneId).not.toBe('mart');
         return; // found a caught case
       }
     }

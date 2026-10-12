@@ -54,6 +54,7 @@ import { partingBlows } from '../../src/engine/rules/movement.js';
 import { markModuleCompleted } from './adventureProgress.js';
 import { moduleById } from '../../src/data/modules/index.js';
 import { liveModule } from '../../src/adventure/embed.js';
+import { NIGHT } from '../../src/adventure/types.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -1086,7 +1087,9 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
     return (
       // Markers sit directly on the full-bleed location backdrop (the stage).
       <div className="adv-explore">
-        <h2 className="adv-maptitle">{scene.map.title}</h2>
+        {/* After dark (a town's inn passes the time): the title says so, or
+            the only sign is a row of padlocks. */}
+        <h2 className="adv-maptitle">{scene.map.title}{state.flags[NIGHT] ? ' · 🌙 night' : ''}</h2>
 
         {/* Roads everywhere: a traversal map draws its gating paths (frontier
             edges fade), a free-roam town draws its purely visual roads — either

@@ -385,6 +385,17 @@ export const ROOM_MAP_REF = '@room';
  */
 export const CAUGHT_STEALING = 'caught-stealing';
 
+/**
+ * Night: set by a scene (waiting for dark at an inn), cleared by the runtime
+ * at every dawn — a long rest ends the night along with the day. Towns shut
+ * their shops and open their back rooms by it. Like CAUGHT_STEALING, never
+ * namespaced by a splice: there is one sky over a story and its towns.
+ */
+export const NIGHT = 'night';
+
+/** The flags the runtime itself writes or clears: a splice leaves them be. */
+export const RUNTIME_FLAGS: readonly string[] = [CAUGHT_STEALING, NIGHT];
+
 export type Scene =
   // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
   // beat the player shouldn't be able to walk away from.

@@ -251,6 +251,29 @@ delve pays a careful party, in coin plus loot at the half-price shops pay:
   level-5 purchase, which is where the rarity tiers already put it.
   Permanent magic stays unbuyable.
 
-**Not done:** time of day; new services (identification, curse removal,
-raising the dead); a reputation that carries between towns. The count is per
-run, and a sequel starts clean.
+## After step 4: night, a travelling name, thrown out on the spot
+
+**Thrown out on the spot.** Caught stealing, the party is walked out of the
+shop by the runtime, the same way Leave does, instead of standing at a counter
+that will not serve it.
+
+**Night** (`NIGHT`, a second runtime-owned flag):
+
+- set by waiting for nightfall at an inn, and cleared by every dawn (a long
+  rest), or by sitting up by the fire until morning, so a party with no coin
+  for a room is never stuck in the dark;
+- after dark the shops are shuttered and the thieves' guild answers its door
+  only then; the temple, the inn and the gate keep no hours;
+- the map title says it is night;
+- never renamed by a splice: one sky over a story and its towns.
+
+**A name for theft travels.** `caught-stealing` carries into the next chapter
+with the company, so its towns have heard.
+
+**Not done, and why.** Identification, curse removal and raising the dead
+have nothing to act on in this game as it stands. No item is ever
+unidentified, no curse outlasts a fight, and nobody stays dead: every hero and
+companion is read back at 1 HP or more after a won fight, and a wipe revives
+the party. Each service needs its system first (unidentified magic loot,
+lasting curses, death that sticks). That is a decision about the game, not
+about towns.

@@ -23,7 +23,7 @@ import { classScrollPool } from '../data/classes.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { ITEMS } from '../data/items.js';
-import { CAUGHT_STEALING, type Effect, type ExploreNode, type Module, type NpcRef, type Requirement, type Scene } from './types.js';
+import { CAUGHT_STEALING, NIGHT, type Effect, type ExploreNode, type Module, type NpcRef, type Requirement, type Scene } from './types.js';
 import type { EncounterBrief } from '../arena/encounter.js';
 import { generateEncounter } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
@@ -239,8 +239,9 @@ const needs = (when: string[] | undefined): Requirement[] =>
 function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
   const W = wares();
   const back = (label = 'Back out into the street') => ({ id: 'leave', label, to: ctx.hub });
+  // Shops keep the day's hours: shuttered after dark.
   const shop = (title: string, stock: Id[], who: NpcRef, intro: string, icon: string): Built => ({
-    node: { id, label: title, icon, scene: id },
+    node: { id, label: title, icon, scene: id, requires: [{ kind: 'notFlag', flag: NIGHT }], note: 'Shuttered for the night.' },
     scenes: [{ id, kind: 'shop', title, stock, npc: who, intro: [intro], next: ctx.hub }],
   });
   switch (kind) {
@@ -263,6 +264,13 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
               { id: 'room', label: `Take a room for the night (${room} gold, long rest)`, to: `${id}-rest`,
                 requires: [{ kind: 'gold', atLeast: room }], effects: [{ kind: 'gold', amount: -room }] },
               { id: 'talk', label: 'Ask what folk are saying', to: `${id}-talk` },
+              // Time, at the one place that keeps it: the shops shut at dark,
+              // the back rooms open. A room ends the night (dawn clears it); so
+              // does sitting up, for a party with no coin for one.
+              { id: 'dusk', label: 'Wait here for nightfall', to: id, requires: [{ kind: 'notFlag', flag: NIGHT }], hideWhenBlocked: true,
+                effects: [{ kind: 'setFlag', flag: NIGHT }] },
+              { id: 'dawn', label: 'Sit up by the fire until morning', to: id, requires: [{ kind: 'flag', flag: NIGHT }], hideWhenBlocked: true,
+                effects: [{ kind: 'clearFlag', flag: NIGHT }] },
               back(),
             ] },
           { id: `${id}-rest`, kind: 'rest', variant: 'long', next: id,
@@ -313,7 +321,9 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
       const clean = 40 * ctx.level;
       return {
         node: { id, label: 'The Back Room', icon: 'tok-mystery', scene: id,
-          hidden: { dc: ctx.size === 'village' ? 12 : ctx.size === 'town' ? 13 : 14 } },
+          hidden: { dc: ctx.size === 'village' ? 12 : ctx.size === 'town' ? 13 : 14 },
+          // Its business is done after dark.
+          requires: [{ kind: 'flag', flag: NIGHT }], note: 'Nobody answers the knock. Come back after dark.' },
         scenes: [
           { id, kind: 'dialogue', npc: fence, lines: [`"You found the door. That's the test." **${fence.first}** smiles with no warmth in it. "Coin buys what you need, and nobody asks."`],
             next: [
