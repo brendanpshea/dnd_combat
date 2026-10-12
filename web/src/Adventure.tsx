@@ -53,6 +53,7 @@ import { saveAdventureWeb, deleteAdventureWeb, saveCheckpointWeb, loadCheckpoint
 import { partingBlows } from '../../src/engine/rules/movement.js';
 import { markModuleCompleted } from './adventureProgress.js';
 import { moduleById } from '../../src/data/modules/index.js';
+import { liveModule } from '../../src/adventure/embed.js';
 
 interface Props {
   Battle: ComponentType<BattleProps>;
@@ -118,13 +119,17 @@ function AdventurePlayer({ Battle, module, resume, onExit, onContinue }: Props &
         onBegin={() => {
           campaignRef.current!.partyReady = true;
           const s = startAdventure(campaignRef.current!, module);
-          enterScene(s, module, module.start);
+          // Roll its generated dungeons now, once, for this run.
+          const live = liveModule(module, s, Math.floor(Math.random() * 2 ** 31));
+          enterScene(s, live, live.start);
           setState(s);
         }}
       />
     );
   }
-  return <AdventureGame Battle={Battle} module={module} state={state} onExit={onExit} onContinue={onContinue} />;
+  // The module as this run plays it: its generated dungeons built from the
+  // roll in the save (a module without any is returned as written).
+  return <AdventureGame Battle={Battle} module={liveModule(module, state)} state={state} onExit={onExit} onContinue={onContinue} />;
 }
 
 function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { module: Module; state: AdventureState }) {

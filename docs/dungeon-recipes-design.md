@@ -453,3 +453,57 @@ What shipped, and where it departed from the design above:
   generated goal. Corridors that led to the old goal now lead to the lair's
   door, locks included, and the old goal is never built. **`rivals`** is
   another company that splits the take or fights for it.
+
+## 14. Step 3 as built: the spike's answer, and the bridge
+
+**The spike (§10.1).** A seed in the module id was rejected: the menu,
+completion, sequels and save slots all match modules by id and would each
+have had to learn to strip it. Instead:
+
+- `Module.delves` names generated dungeons by the scene id the story links to.
+- A run's **roll** (`AdventureState.delveRoll`: a seed, plus the story flags
+  the delves read) is made once and kept in the save.
+- `liveModule(module, state)` expands the module from its roll into ordinary
+  scenes, cached per module and roll. The runtime, saves and UI never see
+  anything new. A save made inside the dungeon reloads to the same dungeon,
+  because `parseAdventure` checks it against the live module.
+- `validateLive` is the proof. The written module alone cannot pass
+  `validateModule` (its story links to scenes only a roll builds), so this
+  validates the expansions for several seeds, under every combination of the
+  flags the delves read. Reads are capped at 4.
+
+**The splice** (`expandDelve`):
+
+- The delve's door becomes the story's scene. Everything else lives under
+  `<scene>/`: scene ids, scene references and flags.
+- A delve's `reads` keep their story names, so its scenes may require them.
+- `exports` rename generated flags to story flags.
+- The delve's victory and giving-up are not scenes of their own: every route to
+  them leads straight to the story's `onWin` / `onLeave`, carrying the story's
+  effects. A wipe inside lands outside the delve.
+
+**Two bugs the validator caught on the first expansion:**
+
+- `structuredClone` keeps object sharing, and the generator shares effect
+  objects between a fight and its parley. The rewrite renamed one key flag
+  twice (`cellar/cellar/delve-key-2`), so floor 2 could never be opened. Now
+  cloned through JSON (tested).
+- A "you gave up" page between the delve and the story's ending was a dead end.
+  It is removed by the rerouting above.
+
+**What the snapshot means.** Flags are read when the roll is made: at the start
+of the run, so they are what earlier chapters carried in. "If you freed the
+captives in chapter one, the cellar has a shrine" works (tested). A flag set
+earlier in the *same* chapter cannot change what is generated; it can only be
+read in play. Rolling lazily, at the delve's door, would lift that, but it
+needs the runtime to know a roll is due.
+
+**Not yet:**
+
+- A delve module in the shipped registry. The registry-wide tests (reach,
+  ledger, XP traces, module map) read raw scenes, and would each need to read
+  `liveModule` instances. The demo, *Beneath Hollowmere*
+  (`src/data/modules/delve-story.ts`), lives on the dev delve card instead.
+- `level: 'party'`: a delve's level is fixed by its author.
+- Export names are the generator's (`f2-p1-freed`). They are predictable from
+  the spec, but an author has to know the scheme.

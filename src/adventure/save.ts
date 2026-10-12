@@ -8,6 +8,7 @@
 import { parseCampaign } from '../campaign/campaign.js';
 import type { AdventureState } from './runtime.js';
 import type { Module } from './types.js';
+import { liveModule } from './embed.js';
 
 export const ADVENTURE_SAVE_VERSION = 1;
 
@@ -33,11 +34,14 @@ export function savedModuleId(json: string): string | undefined {
 /** Parse a save and validate it against `module`. Returns undefined if the
  *  blob is malformed, belongs to another module, or points at a scene the
  *  module no longer has. */
-export function parseAdventure(json: string, module: Module): AdventureState | undefined {
+export function parseAdventure(json: string, written: Module): AdventureState | undefined {
   try {
     const raw = JSON.parse(json) as AdventureSave;
     const state = raw?.state;
-    if (!state || state.moduleId !== module.id) return undefined;
+    if (!state || state.moduleId !== written.id) return undefined;
+    // A run inside a generated dungeon stands in scenes only its own roll
+    // builds: check the save against the module as this run plays it.
+    const module = liveModule(written, state);
     if (!module.scenes[state.sceneId]) return undefined;
     // A hub the module no longer has would load fine and then throw on the
     // first "leave". Forget it instead; the next explore scene sets it again.

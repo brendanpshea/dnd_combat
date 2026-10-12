@@ -85,6 +85,12 @@ export interface PiecePlacement {
   chance?: number;
   /** The piece's parameters: a prisoner's name, a warden's title. */
   bind?: Record<string, string>;
+  /**
+   * Story flags that decide whether it is built at all, when the delve sits
+   * in a written story (Module.delves): each must be set, or with a leading
+   * '!' must not be. A standalone delve has no story, so reads none set.
+   */
+  when?: string[];
 }
 
 export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
@@ -329,7 +335,7 @@ class Reroll extends Error {}
 
 type Win = Extract<Scene, { kind: 'battle' }>['onWin'];
 
-function draftSpec(seed: number, spec: Full): Module {
+function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module {
   const dice = new Dice(seedRng(seed));
   const T = ROOMS[spec.theme];
   const scenes: Record<Id, Scene> = {};
@@ -456,6 +462,8 @@ function draftSpec(seed: number, spec: Full): Module {
     const rank = (id: Id) => (PIECES[id]!.where === 'goal' ? 2 : PIECES[id]!.gives?.includes('key') ? 1 : 0);
     onFloor.sort((a, b) => rank(b.pl.piece) - rank(a.pl.piece));
     for (const { pl, i } of onFloor) {
+      // Decided by the story before any dice: an unbuilt piece rolls nothing.
+      if (pl.when && !pl.when.every((w) => (w.startsWith('!') ? !story.has(w.slice(1)) : story.has(w)))) continue;
       if (pl.chance !== undefined && !dice.chance(pl.chance)) continue;
       const piece = PIECES[pl.piece]!;
       const where = pl.where ?? piece.where;
@@ -696,13 +704,15 @@ export function specDelveFromId(id: string): Module | undefined {
  * the spec. Throws at once on a spec that cannot be met; otherwise tries
  * candidates until one passes every proof.
  */
-export function generateSpecDelve(seed: number, spec: DelveSpec = {}): { module: Module; rerolls: number } {
+export function generateSpecDelve(
+  seed: number, spec: DelveSpec = {}, story: ReadonlySet<string> = new Set(),
+): { module: Module; rerolls: number } {
   const full = checkSpec(spec);
   let last: string[] = [];
   for (let attempt = 0; attempt < 40; attempt++) {
     let module: Module;
     try {
-      module = draftSpec(seed * 41 + attempt, full);
+      module = draftSpec(seed * 41 + attempt, full, story);
     } catch (e) {
       if (!(e instanceof Reroll)) throw e;
       last = [e.message];

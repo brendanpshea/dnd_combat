@@ -89,6 +89,9 @@ export interface AdventureState {
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
+  /** The run's roll for the module's generated dungeons (Module.delves): its
+   *  seed, and the flags they read as they stood when it was made. */
+  delveRoll?: { seed: number; flags: string[] };
 }
 
 /** A party's progress through one dungeon. Links are named by `linkKey`. */
