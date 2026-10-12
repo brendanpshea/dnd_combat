@@ -43,6 +43,7 @@ const SIM_TESTS = [
   'test/caster-variants.test.ts',
   'test/arena.test.ts',
   'test/sim-ai.test.ts',
+  'test/delve-calibration.test.ts',
 ];
 
 const ci = !!process.env.CI;

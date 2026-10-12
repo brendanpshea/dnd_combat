@@ -129,11 +129,29 @@ export const ROOM_RANGE: [number, number] = [5, 16];
  * last entry). Mutable so scripts/delve-sim.ts can sweep them; nothing in the
  * game writes to it.
  */
+/*
+ * MEASURED (scripts/delve-sim.ts): whole one-floor delves played through by a
+ * careful player, every fight the real engine with the greedy AI on both
+ * sides, HP and slots carried, resting by the dungeon's rules. The targets:
+ * a room nearly always won, a named foe usually, a boss more often than not
+ * at the first try (~75–85%), and a delve cleared ~85%+ of the time.
+ *
+ * The boss share started at a flat 0.65, matched to the authored pools. Played
+ * through, that was far too easy at 1st level (97% first try) and too hard at
+ * 3rd–4th (62–63%): a party's reserves, not its paper strength, decide a boss
+ * at the end of a dungeon, and they scale differently by level. Swept per
+ * level at n=40, then confirmed on 40 fresh seeds per cell — first-try boss
+ * wins, generated / inhabitants:
+ *   L1 83 / 83   L2 93 / 83   L3 82 / 75   L4 89 / 77   L5 84 / 83
+ * Delves cleared 78–98%. Rooms 94–100% at 0.3, so they stay.
+ * Elite (the warden, a rival company): 0.45 wins 83–95% — between room and
+ * boss, as a named foe should; 0.35 won 93–100%, no harder than a room.
+ * Levels past 5 use the last entry, and are NOT measured.
+ */
 export const SHARES: Record<FightRole, number[]> = {
   room: [0.3],
-  // A set piece's named foe: between the two. NOT calibrated or measured.
   elite: [0.45],
-  boss: [0.65],
+  boss: [0.8, 0.65, 0.55, 0.55, 0.6],
 };
 
 /** The share of the even budget a fight of this role costs at this level. */
@@ -394,7 +412,12 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     // asking the generator for an escort out of nothing crashed it.
     const left = budget - (MONSTER_XP[leader] ?? 0) * 1.5;
     const escortSeed = Math.floor(dice.float() * 2 ** 31);
-    const escort = left < 50 ? [] : generateEncounter({
+    // ...and so does one that leaves less than its cheapest follower costs:
+    // asked to spend 50 XP on wild beasts, the generator falls back to the
+    // whole roster and a kobold joins the giant ape.
+    const cheapest = Math.min(...fac.members.map((m) => MONSTER_XP[m] ?? Infinity));
+    // (The generator spends at most three quarters of a budget on one body.)
+    const escort = left * 0.75 < cheapest ? [] : generateEncounter({
       budget: left, maxMemberXp: Math.min(memberCapFor(lvl), MONSTER_XP[leader] ?? 0),
       maxCount: Math.max(1, maxCountFor(lvl) - 1), partyLevel: lvl, members: fac.members,
     }, seedRng(escortSeed)).value.members;

@@ -507,3 +507,62 @@ needs the runtime to know a roll is due.
 - `level: 'party'`: a delve's level is fixed by its author.
 - Export names are the generator's (`f2-p1-freed`). They are predictable from
   the spec, but an author has to know the scheme.
+
+## 15. Step 4: whole delves, measured
+
+**The harness.** `scripts/delve-sim.ts` plays whole delves. Every fight is the
+real engine with the greedy AI on both sides, on the board the game draws for
+that room. HP, slots and items carry from fight to fight. The player is
+careful, not clever:
+
+- explores every reachable room before the goal, and searches everything;
+- rests when below 70% HP or 50% of its spell slots, walking back to a quiet
+  room first and to a safe room for a night;
+- tops up before the boss;
+- walks back in after a wipe, up to three wipes;
+- never parleys or sneaks.
+
+It runs at about 0.3 s a delve. `test/delve-calibration.test.ts` is the
+nightly tripwire.
+
+**What it found, in order:**
+
+1. **Parties lose to attrition, not to strength.** Fresh parties win 100% of
+   room-sized fights and 90–100% of boss-sized ones at every level. Inside a
+   delve, level-3 to level-5 parties lost room fights 15–25% of the time.
+2. **A safe room on the goal's doorstep can never be slept in.** Resting is
+   refused beside a fight still to be had, and the goal's fight is had last. 74
+   of 200 classic delves, and about 8% of spec delves, had one. The party
+   could not sleep before the boss or after a wipe. It is moved one room back
+   without another roll, so only those delves changed (verified one by one).
+   Level-3 clears went from 40% to 63% on this alone.
+3. **One boss share does not fit every level.** At a flat 0.65 the first-try
+   boss win was 97% at level 1 and 62–63% at levels 3–4. Swept per level, then
+   confirmed on fresh seeds: `boss: [0.8, 0.65, 0.55, 0.55, 0.6]`. That gives
+   75–93% first-try boss wins in every level and mode, and 78–98% of delves
+   cleared.
+4. **Elite is right at 0.45**, now measured. It wins 83–95%, between rooms
+   (~97%) and bosses. At 0.35 it is no harder than a room.
+5. **Factions ran out of fight at high level.** Kobolds at level 5 could not
+   spend a tenth of a room budget (boss fights at 0.23 of even, 100% won).
+   Factions gained a stronger leader tier; a faction must fill 60% of a room
+   fight to hold a level; leaders are chosen for their share of the fight.
+   Two crashes and leaks came with it, both fixed and tested: an escort
+   asked to spend almost nothing crashed the generator, or fell back to
+   strangers (a kobold beside a giant ape).
+
+**Authored fights are the open problem.** Delves drawing from the written
+encounters clear only ~60% of the time at every level. Their bosses are
+erratic: fresh-party wins range from 0% to 100% with no relation to XP.
+`kennel-hyenas` at 0.62 of even wins 0%; `corpse-lights` at 1.52 wins 100%.
+They were written for particular story moments, not as interchangeable
+bosses. The classic delve (the card's default) still uses them; switching its
+default to generated fights is the obvious fix, but it changes what "New
+delve" gives, so it is not done here.
+
+**Limits of the measurement:**
+
+- One player model, greedy AI for the party, and one-floor delves for the
+  tuning (multi-floor delves inherit the per-level table).
+- Above level 5 is unmeasured.
+- 40 delves a cell is about ±7 points.
