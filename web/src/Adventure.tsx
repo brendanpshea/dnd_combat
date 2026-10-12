@@ -1351,6 +1351,7 @@ function LandArt({ g }: { g: LandGround }) {
           if (!LAND_GLYPH[c] || (col + row) % 2) return null;
           return <span key={i} style={{ left: `${(col + 0.5) * w}%`, top: `${(row + 0.5) * h}%` }}>{LAND_GLYPH[c]}</span>;
         })}
+        {(g.bridges ?? []).map(([x, y], i) => <span key={`b${i}`} className="adv-land-bridge" style={{ left: `${x}%`, top: `${y}%` }}>🌉</span>)}
       </div>
     </>
   );
