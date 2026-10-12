@@ -70,8 +70,25 @@ Vell"; "Black Tom, in chains"), not a companion in the fights: nothing
 kills them by a stray blow, leaves them behind, or sells them. The proof
 holds as before — a county whose delivery could never arrive is refused.
 
-## Next
+## Step 4 (built): the county writes its own
 
-4. Generation: a lord in the city's castle, trade givers, notice-board
-   bounties; rewards by level (rarely permanent magic); subquests feeding a
-   main quest by count.
+- **A lord.** Every county's city has one (Count, Baron, Margrave,
+  Countess, Baroness or Lady, named in the county's style), receiving in
+  the castle on the city's map (`CitySpec.lord`). Quests can be given
+  there (`at: 'castle'`), on a notice board (`'notice-board'`) or at an inn.
+- **Generated quests** (`generated`, default 4), from what the county holds,
+  never about a place the author already has a quest on: the lord's on its
+  delves (defeat, fetch, arrest; paid double), bounties on the notice board
+  of the town nearest each camp (defeat, rescue, arrest, fetch), a delivery
+  from the city, a scouting trip.
+- **Something permanent, rarely.** One of the lord's quests also hands over
+  a piece of permanent magic (uncommon; rare in a county that reaches
+  level 5) — the only source besides the arena.
+- **A main quest** (`main: { title, needs }`): the lord's, earned by the
+  county's work. Every side quest — the author's or generated — adds a
+  favour; with `needs` of them, it can be reported, for a large reward and
+  a piece of permanent magic.
+
+**Proofs, in parts.** Each quest is proved alone with the county (their
+flags together multiplied past the search's limit); the main quest with a
+stand-in for the favours the side quests earn.

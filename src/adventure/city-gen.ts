@@ -121,6 +121,9 @@ export interface CitySpec {
   /** The level its shops stock for (default: its level). A county's city
    *  sells for the top of the county's band: going there is how to upgrade. */
   stock?: number;
+  /** Who holds the city, receiving in its castle ("Count Aldric Vane"):
+   *  a city only. Quests are given there. */
+  lord?: string;
   /** The town's name, when a map around it already calls it something. */
   name?: string;
   /** The sound of its people's names (default: one rolled for the size). */
@@ -513,13 +516,14 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
     + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.length;
   // "Leave <name>" is a marker's label, and a label wraps past 20.
   if (spec.name !== undefined && !/^[A-Z][A-Za-z' -]{1,12}$/.test(spec.name)) err(`'${spec.name}': a town's name is 2–13 letters, capitalised`);
+  if (spec.lord !== undefined && (size !== 'city' || !spec.lord || spec.lord.length > 40)) err(`a lord holds a city, and is named in 1–40 characters`);
   if (spec.stock !== undefined && (!Number.isInteger(spec.stock) || spec.stock < level || spec.stock > 9)) err(`stock for level ${spec.stock}; from the town's level to 9`);
   if (spec.style !== undefined && !NAME_STYLES.includes(spec.style)) err(`no name style '${spec.style}'`);
   if (markers > placesFor(size)) err(`${markers} places; a ${size} holds at most ${placesFor(size)}`);
   return {
     size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
     streets: spec.streets ?? size !== 'village',
-    stock: spec.stock ?? 0, name: spec.name ?? '', style: spec.style ?? ('' as NameStyle),
+    stock: spec.stock ?? 0, lord: spec.lord ?? '', name: spec.name ?? '', style: spec.style ?? ('' as NameStyle),
   };
 }
 
@@ -812,8 +816,13 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     }
     for (const [id, label, icon, [cx, cy], text] of sights) {
       const spot = spotNear(cx, cy);
-      if (!spot) continue;
-      scenes[id] = { id, kind: 'story', noBack: true, text: [text], next: [{ id: 'leave', label: 'Walk on', to: 'city' }] };
+      if (!spot) { if (id === 'castle' && spec.lord) throw new Reroll('no room for the castle'); continue; }
+      // A lord in the castle: an audience, where the city's work is given out.
+      scenes[id] = id === 'castle' && spec.lord
+        ? { id, kind: 'dialogue', npc: { id: 'lord', name: spec.lord, emoji: '👑' }, noBack: true,
+            lines: [`You are shown up to the hall. **${spec.lord}** looks up from a table of papers. "Adventurers. Good. There is always work."`],
+            next: [{ id: 'leave', label: 'Take your leave', to: 'city' }] }
+        : { id, kind: 'story', noBack: true, text: [text], next: [{ id: 'leave', label: 'Walk on', to: 'city' }] };
       qs.push({ id, label, icon, scene: id, x: spot[0], y: spot[1] });
     }
     // Shortcuts: a shop once found is one tap from the city's map, by its

@@ -25,6 +25,8 @@ import { apart, checkCitySpec, generateCity, type CitySize, type CitySpec } from
 import { checkSpec, generateSpecDelve, type DelveSpec, type SpecTheme } from './delve-spec.js';
 import { wander, toLine, nearestOn } from './town-map.js';
 import { bossName, personName, placeName, type NameStyle } from './names.js';
+import { MAGIC_SPOILS } from '../campaign/campaign.js';
+import { ITEMS } from '../data/items.js';
 import { questObjectName, theObject } from './quest-objects.js';
 import { compileQuests } from './quests.js';
 import { encodeSpec, decodeSpec, shareFor } from './delve-spec.js';
@@ -61,6 +63,16 @@ export interface LandSpec {
   camps?: number;
   /** Quests, given at a town's inn, about the county's places. */
   quests?: LandQuest[];
+  /** Quests the county writes for itself from what is in it (default 4):
+   *  the lord's (delves, and the best pay), bounties on the notice boards
+   *  (camps), and the innkeepers' (deliveries, scouting). */
+  generated?: number;
+  /**
+   * The county's main quest, from its lord: earn their favour by doing the
+   * county's work — `needs` quests done, any of them, the author's or the
+   * generated — and then the reward. Each side quest done adds a favour.
+   */
+  main?: { title: string; summary?: string; offer?: string[]; needs?: number };
 }
 
 /**
@@ -83,8 +95,11 @@ export interface LandSpec {
 export interface LandQuest {
   id: Id;
   kind: 'defeat' | 'fetch' | 'scout' | 'rescue' | 'arrest' | 'deliver';
-  /** The settlement whose innkeeper gives it ('city', or a place id; default the city). */
+  /** The settlement that gives it ('city', or a place id; default the city). */
   giver?: Id;
+  /** Who there: the innkeeper (default), the notice board, or — in the
+   *  city — its lord, at the castle. */
+  at?: 'inn' | 'notice-board' | 'castle';
   /** The camp or delve (defeat, fetch). */
   target?: Id;
   /** The places to see (scout). */
@@ -345,6 +360,10 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
     throw new Reroll('no name');
   };
   const county = nameOf();
+  // Whoever holds the county, from the castle in its city.
+  const lordly = dice.pick(['Count', 'Baron', 'Margrave', 'Countess', 'Baroness', 'Lady']);
+  const lordName = personName(style, /ess$|Lady/.test(lordly) ? 'female' : 'male', rng, names);
+  const lord = `${lordly} ${lordName.first} ${lordName.last}`.length <= 40 ? `${lordly} ${lordName.first} ${lordName.last}` : `${lordly} ${lordName.first}`;
   const places: Place[] = [];
   const free = (p: Pt) => places.every((q) => apart({ x: q.p[0], y: q.p[1] }, { x: p[0], y: p[1] }));
   const best = (score: (p: Pt) => number): Pt | undefined => {
@@ -615,7 +634,7 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
       // The city sells for the top of the band: going there is how to
       // upgrade. Towns and villages sell for where the party starts.
       embedded[pl.id] = { spec: { ...pl.from?.town, size: pl.kind, level: spec.level, ...(pl.kind === 'city' && spec.top > spec.level ? { stock: spec.top } : {}),
-        name: pl.label, style }, onLeave: { to: 'land' } };
+        ...(pl.kind === 'city' ? { lord } : {}), name: pl.label, style }, onLeave: { to: 'land' } };
     } else if (pl.kind === 'delve') {
       const win: Effect[] = [{ kind: 'setFlag', flag: won(pl.id) }];
       delves[pl.id] = { spec: { level: levelAt(pl.p, !!pl.from?.via), theme: THEME[g.at(pl.p)], ...pl.from?.delve }, onWin: { to: 'land', effects: win }, onLeave: { to: 'land' } };
@@ -757,14 +776,40 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   scenes.beaten = { id: 'beaten', kind: 'story', noBack: true, text: ['You come to by the roadside, bruised, robbed of a little coin and more pride. Someone has dragged you clear of the road, and gone.'],
     next: [{ id: 'up', label: 'Get up', to: 'land' }] };
 
-  // The author's quests, written out.
+  // The county's own quests, from what is in it: the lord's on its delves,
+  // bounties on its camps, the innkeepers' errands. Never a place the
+  // author already has a quest on.
+  const claimed = new Set(spec.quests.flatMap((q) => [q.target, ...(q.visit ?? [])].filter(Boolean) as Id[]));
+  const settlements = places.filter((q) => q.kind === 'city' || q.kind === 'town' || q.kind === 'village');
+  const nearestTown = (q: Place) => settlements.reduce((a, b) => (miles(b.p, q.p) < miles(a.p, q.p) ? b : a));
+  const ideas: LandQuest[] = [];
+  for (const d of dice.shuffle(places.filter((q) => q.kind === 'delve' && !claimed.has(q.id)))) {
+    ideas.push({ id: `g-${d.id}`, kind: dice.pick(['defeat', 'fetch', 'arrest'] as const), target: d.id, at: 'castle' });
+  }
+  for (const c of dice.shuffle(places.filter((q) => q.kind === 'camp' && !claimed.has(q.id)))) {
+    ideas.push({ id: `g-${c.id}`, kind: dice.pick(['defeat', 'rescue', 'arrest', 'fetch'] as const), target: c.id, giver: nearestTown(c).id, at: 'notice-board' });
+  }
+  const far = settlements.filter((q) => q.kind !== 'city');
+  if (far.length) ideas.push({ id: 'g-post', kind: 'deliver', to: dice.pick(far).id, giver: city.id });
+  const wild = places.filter((q) => (dangerOf(q) ?? 0) > 0 && !claimed.has(q.id));
+  if (wild.length >= 2) ideas.push({ id: 'g-look', kind: 'scout', visit: dice.shuffle(wild).slice(0, 2).map((q) => q.id), giver: dice.pick(far.length ? far : [city]).id });
+  // A mix: the lord's first (there is one at most per delve), then the rest.
+  const made = [...ideas.filter((q) => q.at === 'castle').slice(0, 2), ...dice.shuffle(ideas.filter((q) => q.at !== 'castle'))].slice(0, spec.generated);
+  // One of the lord's, the best paid, also hands over something permanent.
+  const spoils = MAGIC_SPOILS.filter((id) => ITEMS[id]?.rarity === (spec.top >= 5 ? 'rare' : 'uncommon'));
+  const prize = made.find((q) => q.at === 'castle');
+
   const quests: Record<Id, QuestSpec> = {};
-  for (const lq of spec.quests) {
+  const favour: Effect[] = spec.main ? [{ kind: 'addFlag', flag: 'favour', amount: 1 }] : [];
+  for (const lq of [...spec.quests, ...made]) {
     const giver = byId(lq.giver ?? 'city')!;
     const target = lq.target ? byId(lq.target) : undefined;
     const L = target ? dangerOf(target) ?? spec.level : spec.level;
-    const reward: Effect[] = [{ kind: 'gold', amount: 25 * L }, { kind: 'xp', amount: 75 * L }];
-    const base = { giver: { scene: `${giver.id}/inn`, name: 'the innkeeper' }, reward };
+    const at = lq.at ?? 'inn';
+    const lordly_ = at === 'castle';
+    const reward: Effect[] = [{ kind: 'gold', amount: (lordly_ ? 50 : 25) * L }, { kind: 'xp', amount: 75 * L }, ...favour,
+      ...(lq === prize && spoils.length ? [{ kind: 'addItem', itemId: dice.pick(spoils) } as Effect] : [])];
+    const base = { giver: { scene: `${giver.id}/${at}`, name: lordly_ ? lord : at === 'notice-board' ? 'the notice board' : 'the innkeeper' }, reward };
     if (lq.kind === 'scout') {
       const sites = lq.visit!.map((v) => byId(v)!);
       // Seeing a place is taking note of it, in whichever state it is found:
@@ -884,6 +929,17 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
       thanks: [`You set ${theObject(name)} on the bar, and the innkeeper pays without another word.`] };
   }
 
+  // The main quest: the lord's favour, earned by the county's work.
+  if (spec.main) {
+    const needs = spec.main.needs ?? 3;
+    quests.main = { title: spec.main.title, giver: { scene: `${city.id}/castle`, name: lord },
+      summary: spec.main.summary ?? `Earn ${lord}'s trust by doing the county's work.`,
+      offer: spec.main.offer ?? [`"I need people I can trust, and I do not know you yet. Do the county's work — what my people need doing — and come back to me. Then we will talk of the real task."`],
+      stages: [{ text: `Do the county's work (${needs})`, done: [{ kind: 'count', flag: 'favour', atLeast: needs }] }],
+      reward: [{ kind: 'gold', amount: 100 * spec.top }, { kind: 'xp', amount: 150 * spec.top }, ...(spoils.length ? [{ kind: 'addItem', itemId: dice.pick(spoils) } as Effect] : [])],
+      thanks: [`${lord} hears you out, and nods slowly. "Then you are the ones." What comes next is the real work.`] };
+  }
+
   const sights = [g.sea ? 'the sea' : 'a river', ...new Set([...g.cells].map((c) => ({ f: 'forest', h: 'hills', m: 'marsh', M: 'mountains' } as Record<string, string>)[c]).filter(Boolean))];
   Object.assign(scenes, {
     start: { id: 'start', kind: 'story', text: [`The road crests a rise, and ${county} lies below you: ${sights.slice(0, -1).join(', ')}${sights.length > 1 ? ' and ' : ''}${sights.at(-1)}, and the smoke of ${city.label} in the middle of it.`],
@@ -972,7 +1028,12 @@ export function checkLandSpec(spec: LandSpec): Required<LandSpec> {
     if (q.object !== undefined && ((q.kind !== 'fetch' && q.kind !== 'deliver') || !q.object || q.object.length > 36)) at('an object is for a fetch or a delivery, and 1–36 characters');
     if (q.person !== undefined && ((q.kind !== 'rescue' && q.kind !== 'arrest') || !q.person || q.person.length > 30)) at('a person is for a rescue or an arrest, and 1–30 characters');
   }
-  return { kind, level, top, places, delves, camps, quests };
+  const generated = spec.generated ?? 4;
+  if (!Number.isInteger(generated) || generated < 0 || generated > 8) err(`${generated} generated quests; 0–8`);
+  for (const q of quests) if (q.at === 'castle' && (q.giver ?? 'city') !== 'city' && kindOf(q.giver!) !== 'city') err(`quest '${q.id}': only the city has a castle`);
+  if (spec.main && (!spec.main.title || spec.main.title.length > 40)) err('the main quest needs a title, of 1–40 characters');
+  if (spec.main?.needs !== undefined && (!Number.isInteger(spec.main.needs) || spec.main.needs < 1 || spec.main.needs > quests.length + generated)) err(`the main quest needs ${spec.main.needs} quests done, of ${quests.length + generated}`);
+  return { kind, level, top, places, delves, camps, quests, generated, ...(spec.main ? { main: spec.main } : {}) } as Required<LandSpec>;
 }
 
 /** Every built county's id: `land-<seed>-<spec>`, so a saved run rebuilds it. */
@@ -999,10 +1060,10 @@ export function proveLand(module: Module): string[] {
   const stubs: Record<Id, Scene> = {};
   for (const [at, t] of Object.entries(module.towns ?? {})) {
     stubs[at] = { id: at, kind: 'story', noBack: true, text: ['A town.'], next: [
-      { id: 'inn', label: 'Inn', to: `${at}/inn` }, { id: 'guild', label: 'Guild', to: `${at}/thieves-guild` },
+      ...['inn', 'thieves-guild', 'notice-board', ...(t.spec.lord ? ['castle'] : [])].map((room) => ({ id: room, label: room, to: `${at}/${room}` })),
       { id: 'out', label: 'Leave', to: t.onLeave.to },
     ] };
-    for (const room of ['inn', 'thieves-guild']) {
+    for (const room of ['inn', 'thieves-guild', 'notice-board', ...(t.spec.lord ? ['castle'] : [])]) {
       stubs[`${at}/${room}`] = { id: `${at}/${room}`, kind: 'story', noBack: true, text: ['Inside.'], next: [{ id: 'back', label: 'Back', to: at }] };
     }
   }
@@ -1014,16 +1075,32 @@ export function proveLand(module: Module): string[] {
       { id: 'out', label: 'Leave', to: d.onLeave.to },
     ] };
   }
-  const { towns: _, delves: __, ...rest } = module;
-  let errors: string[];
-  try { errors = validateModule(compileQuests({ ...rest, scenes: { ...module.scenes, ...stubs } })); } catch (e) { errors = [(e as Error).message]; }
+  const { towns: _, delves: __, quests: qs, ...rest } = module;
+  // Quests in parts too: each touches the county only through its own
+  // flags (and a favour, which the proofs take as able to go either way),
+  // and together their flags multiply past what the search can walk.
+  const errors = new Set<string>();
+  // The main quest alone: the side quests that earn its favour stand in as
+  // one way, in some town, to earn some.
+  const [firstTown] = Object.keys(module.towns ?? {});
+  const favours: Record<Id, Scene> = firstTown ? { [firstTown]: { ...(stubs[firstTown] as Extract<Scene, { kind: 'story' }>),
+    next: [{ id: 'favour', label: 'The county\'s work', to: firstTown, effects: [{ kind: 'addFlag', flag: 'favour', amount: 1 }] },
+      ...(stubs[firstTown] as Extract<Scene, { kind: 'story' }>).next] } } : {};
+  const prove = (quests?: Module['quests']) => {
+    try {
+      const main = !!quests?.main;
+      for (const e of validateModule(compileQuests({ ...rest, ...(quests ? { quests } : {}), scenes: { ...module.scenes, ...stubs, ...(main ? favours : {}) } }))) errors.add(e);
+    } catch (e) { errors.add((e as Error).message); }
+  };
+  if (!qs) prove();
+  for (const [id, q] of Object.entries(qs ?? {})) prove({ [id]: q });
   for (const [at, t] of Object.entries(module.towns ?? {})) {
-    try { generateCity(1, t.spec); } catch (e) { errors.push(`${at}: ${(e as Error).message}`); }
+    try { generateCity(1, t.spec); } catch (e) { errors.add(`${at}: ${(e as Error).message}`); }
   }
   for (const [at, d] of Object.entries(module.delves ?? {})) {
-    try { generateSpecDelve(1, d.spec); } catch (e) { errors.push(`${at}: ${(e as Error).message}`); }
+    try { generateSpecDelve(1, d.spec); } catch (e) { errors.add(`${at}: ${(e as Error).message}`); }
   }
-  return errors;
+  return [...errors];
 }
 
 /** A playable, proven county. Deterministic in seed and spec. */
