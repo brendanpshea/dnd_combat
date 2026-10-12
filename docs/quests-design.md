@@ -30,10 +30,33 @@ unless that choice sets `failsOn`.
 The journal lists quests open-first, with stages ticking off as they come
 true, what is carried, and done / failed.
 
+## Step 2 (built): defeat, fetch, scout
+
+`QuestSpec.adds` — what a quest adds elsewhere, offered only while it is in
+hand: a choice in any story or dialogue scene, or effects on a battle's win.
+The other ways through are made of these.
+
+`LandSpec.quests` writes a quest from a line (`{ id, kind, giver, target |
+visit, object? }`), given and turned in at a settlement's inn, rewarded by
+the target's level (25 gold and 75 XP a level):
+
+- **defeat** a camp — fight, or *Tell them to clear out* (Intimidation,
+  DC 10 + 2 × level; failing, they fight) — or a delve, by winning it.
+- **fetch** an object — from a delve's hoard (on winning), a camp's (on
+  beating it, or bought from a calm or cowed camp), or from the city's
+  thieves' guild, dearer and no questions asked.
+- **scout** places — *Take note of what you see* there, in whatever state
+  the place is found (a camp may be prey, cowed or cold ashes).
+
+**Object names** (`quest-objects.ts`): long and self-describing, proper
+nouns in the county's name style — "the Tome of Silent Winters", "Etainne's
+Jade Circlet", "the Frozen Diamond of Mirostov".
+
+The county's proof stubs each town with its inn and back room, so a quest
+given in a town is proved like any other.
+
 ## Next
 
-2. Types defeat, fetch, scout on existing pieces (won flags, delve finds,
-   visits), with alternative ways (talk, pay, sneak); quest object names.
 3. Rescue, deliver, arrest: escorted companions, carried parcels.
 4. Generation: a lord in the city's castle, trade givers, notice-board
    bounties; rewards by level (rarely permanent magic); subquests feeding a

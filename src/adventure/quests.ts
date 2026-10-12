@@ -78,5 +78,20 @@ function weave(scenes: Record<Id, Scene>, id: Id, q: QuestSpec): void {
     ] },
     { id: 'decline', label: 'Not now', to: giver.id },
   ] };
+  // Elsewhere: choices while the quest is in hand, before each scene's way
+  // out; and what a battle's win now also does.
+  for (const add of q.adds ?? []) {
+    if ('choice' in add) {
+      const sc = scenes[add.scene];
+      if (!sc || (sc.kind !== 'story' && sc.kind !== 'dialogue')) throw new Error(`quest '${id}': no story or dialogue '${add.scene}' to add a choice to`);
+      const more = [...sc.next];
+      more.splice(Math.max(0, more.length - 1), 0, { ...add.choice, hideWhenBlocked: true, requires: [...open, ...(add.choice.requires ?? [])] });
+      scenes[sc.id] = { ...sc, next: more };
+    } else {
+      const sc = scenes[add.battle];
+      if (sc?.kind !== 'battle') throw new Error(`quest '${id}': no battle '${add.battle}' to add to`);
+      scenes[sc.id] = { ...sc, onWin: { ...sc.onWin, effects: [...(sc.onWin.effects ?? []), ...add.effects] } };
+    }
+  }
   scenes[thanks] = { id: thanks, kind: 'story', noBack: true, text: q.thanks, next: [{ id: 'ok', label: 'Go on', to: giver.id }] };
 }

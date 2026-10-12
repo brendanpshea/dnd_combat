@@ -20,11 +20,13 @@
 import type { Id } from '../engine/types.js';
 import { Dice } from './dungeon-gen.js';
 import { seedRng } from '../engine/rng.js';
-import type { EmbeddedDelve, EmbeddedTown, Effect, Requirement, ExploreNode, LandGround, Module, Scene } from './types.js';
+import type { EmbeddedDelve, EmbeddedTown, Effect, QuestSpec, Requirement, ExploreNode, LandGround, Module, Scene } from './types.js';
 import { apart, checkCitySpec, generateCity, type CitySize, type CitySpec } from './city-gen.js';
 import { checkSpec, generateSpecDelve, type DelveSpec, type SpecTheme } from './delve-spec.js';
 import { wander, toLine, nearestOn } from './town-map.js';
 import { placeName, type NameStyle } from './names.js';
+import { questObjectName, theObject } from './quest-objects.js';
+import { compileQuests } from './quests.js';
 import { encodeSpec, decodeSpec, shareFor } from './delve-spec.js';
 import { generateEncounter } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
@@ -57,6 +59,30 @@ export interface LandSpec {
   delves?: number;
   /** Camps it rolls for itself — bandits, goblins, gnolls; some hostile (default 3). */
   camps?: number;
+  /** Quests, given at a town's inn, about the county's places. */
+  quests?: LandQuest[];
+}
+
+/**
+ * A quest about the county, in a line: the generator writes the offer, the
+ * stages, the reward (by the target's level) and the other ways through.
+ *   defeat  a camp (fight, or cow them into leaving) or a delve (win it)
+ *   fetch   an object from a delve's hoard or a camp (fight, or trade), or
+ *           bought from the city's thieves' guild
+ *   scout   go and see some places, and come back
+ */
+export interface LandQuest {
+  id: Id;
+  kind: 'defeat' | 'fetch' | 'scout';
+  /** The settlement whose innkeeper gives it ('city', or a place id; default the city). */
+  giver?: Id;
+  /** The camp or delve (defeat, fetch). */
+  target?: Id;
+  /** The places to see (scout). */
+  visit?: Id[];
+  /** What to fetch (default: a name made up for it). */
+  object?: string;
+  title?: string;
 }
 
 export type LandPlaceKind = 'city' | 'town' | 'village' | 'delve' | 'place' | 'camp';
@@ -718,6 +744,83 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   scenes.beaten = { id: 'beaten', kind: 'story', noBack: true, text: ['You come to by the roadside, bruised, robbed of a little coin and more pride. Someone has dragged you clear of the road, and gone.'],
     next: [{ id: 'up', label: 'Get up', to: 'land' }] };
 
+  // The author's quests, written out.
+  const quests: Record<Id, QuestSpec> = {};
+  for (const lq of spec.quests) {
+    const giver = byId(lq.giver ?? 'city')!;
+    const target = lq.target ? byId(lq.target) : undefined;
+    const L = target ? dangerOf(target) ?? spec.level : spec.level;
+    const reward: Effect[] = [{ kind: 'gold', amount: 25 * L }, { kind: 'xp', amount: 75 * L }];
+    const base = { giver: { scene: `${giver.id}/inn`, name: 'the innkeeper' }, reward };
+    if (lq.kind === 'scout') {
+      const sites = lq.visit!.map((v) => byId(v)!);
+      // Seeing a place is taking note of it, in whichever state it is found:
+      // a camp's marker may open on its prey, its cowed or its cold ashes.
+      const saw = (x: Place) => `saw-${lq.id}-${x.id}`;
+      const adds: QuestSpec['adds'] = sites.flatMap((x) => Object.values(scenes)
+        .filter((sc) => (sc.id === x.id || (sc.id.startsWith(`${x.id}-`) && !sc.id.endsWith('-fight'))) && (sc.kind === 'story' || sc.kind === 'dialogue'))
+        .map((sc) => ({ scene: sc.id, choice: { id: `quest-${lq.id}-note`, label: 'Take note of what you see', to: sc.id,
+          requires: [{ kind: 'notFlag', flag: saw(x) }] as Requirement[], effects: [{ kind: 'setFlag', flag: saw(x) }] as Effect[] } })));
+      // A town's or a delve's door is spliced in after; note it there too.
+      for (const x of sites) if (!adds.some((a) => 'scene' in a && a.scene === x.id)) {
+        adds.push({ scene: x.id, choice: { id: `quest-${lq.id}-note`, label: 'Take note of what you see', to: x.id,
+          requires: [{ kind: 'notFlag', flag: saw(x) }], effects: [{ kind: 'setFlag', flag: saw(x) }] } });
+      }
+      quests[lq.id] = { ...base, title: lq.title ?? `Eyes on ${sites[0]!.label}`,
+        summary: `Go and see ${sites.map((x) => x.label).join(', ')}, and come back with what you saw.`,
+        offer: [`"Folk want to know what's become of ${sites.map((x) => x.label).join(' and ')}. Go and look, and tell me. I'll make it worth the walk."`],
+        stages: sites.map((x) => ({ text: `See ${x.label}`, done: [{ kind: 'flag', flag: saw(x) }] })), adds,
+        thanks: ['You tell it all, and it is written down, and paid for.'] };
+      continue;
+    }
+    const t = target!;
+    const isCamp = t.kind === 'camp';
+    if (lq.kind === 'defeat') {
+      const adds: QuestSpec['adds'] = [];
+      // Another way: cow them into clearing out, if they will be cowed.
+      if (isCamp) {
+        const dc = 10 + 2 * L;
+        for (const sc of [t.id, `${t.id}-prey`, `${t.id}-cowed`]) {
+          if (!scenes[sc]) continue;
+          adds.push({ scene: sc, choice: { id: `quest-${lq.id}-cow`, label: 'Tell them to clear out of the county', to: `${t.id}-quiet`, attempt: `quest-${lq.id}-cow`,
+            check: { skill: 'intimidation', dc, failTo: `${t.id}-fight` }, effects: [{ kind: 'setFlag', flag: won(t.id) }] } });
+        }
+      }
+      quests[lq.id] = { ...base, title: lq.title ?? `Clear ${t.label}`,
+        summary: `${t.label} is trouble for the county. End it — by the sword, or by making them go.`,
+        offer: [`"${t.label}. They've been trouble too long. Deal with them, and there's coin in it."`],
+        stages: [{ text: `Deal with ${t.label}`, done: [{ kind: 'flag', flag: won(t.id) }] }],
+        ...(adds.length ? { adds } : {}),
+        thanks: ['"Good riddance," says the innkeeper, and counts out your reward.'] };
+      continue;
+    }
+    // Fetch: the object is in the hoard, at the camp, or for sale to the
+    // right buyer in the city.
+    const name = lq.object ?? questObjectName(rng, style);
+    const flag = `has-${lq.id}`;
+    const adds: QuestSpec['adds'] = [];
+    if (isCamp) {
+      adds.push({ battle: `${t.id}-fight`, effects: [{ kind: 'setFlag', flag }] });
+      const price = 15 * L;
+      for (const sc of [t.id, `${t.id}-cowed`]) {
+        if (!scenes[sc]) continue;
+        adds.push({ scene: sc, choice: { id: `quest-${lq.id}-trade`, label: `Offer ${price} gold for ${theObject(name)}`, to: 'land',
+          requires: [{ kind: 'gold', atLeast: price }, { kind: 'notFlag', flag }], effects: [{ kind: 'gold', amount: -price }, { kind: 'setFlag', flag }] } });
+      }
+    } else {
+      delves[t.id]!.onWin = { ...delves[t.id]!.onWin, effects: [...(delves[t.id]!.onWin.effects ?? []), { kind: 'setFlag', flag }] };
+    }
+    const fence = 40 * L;
+    adds.push({ scene: `${city.id}/thieves-guild`, choice: { id: `quest-${lq.id}-fence`, label: `Ask after ${theObject(name)} (${fence} gold)`, to: `${city.id}/thieves-guild`,
+      requires: [{ kind: 'gold', atLeast: fence }, { kind: 'notFlag', flag }], effects: [{ kind: 'gold', amount: -fence }, { kind: 'setFlag', flag }] } });
+    quests[lq.id] = { ...base, title: lq.title ?? `${theObject(name).replace(/^the /, 'The ')}`.slice(0, 40),
+      summary: `Bring back ${theObject(name)}, last heard of at ${t.label}.`,
+      offer: [`"There's ${theObject(name)}, and it was taken to ${t.label}. Bring it back here. Or find who'll sell it to you — I don't ask how."`],
+      stages: [{ text: `Get ${theObject(name)}`, done: [{ kind: 'flag', flag }] }],
+      objects: { [flag]: theObject(name) }, adds,
+      thanks: [`You set ${theObject(name)} on the bar, and the innkeeper pays without another word.`] };
+  }
+
   const sights = [g.sea ? 'the sea' : 'a river', ...new Set([...g.cells].map((c) => ({ f: 'forest', h: 'hills', m: 'marsh', M: 'mountains' } as Record<string, string>)[c]).filter(Boolean))];
   Object.assign(scenes, {
     start: { id: 'start', kind: 'story', text: [`The road crests a rise, and ${county} lies below you: ${sights.slice(0, -1).join(', ')}${sights.length > 1 ? ' and ' : ''}${sights.at(-1)}, and the smoke of ${city.label} in the middle of it.`],
@@ -732,7 +835,7 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   } satisfies Record<Id, Scene>);
   return {
     id: `land-${seed}`, title: county, blurb: `A generated county (levels ${spec.level}–${spec.top}).`,
-    start: 'start', scenes, defeatScene: 'beaten', towns: embedded, ...(Object.keys(delves).length ? { delves } : {}), levelBand: { from: spec.level, to: spec.top },
+    start: 'start', scenes, defeatScene: 'beaten', ...(Object.keys(quests).length ? { quests } : {}), towns: embedded, ...(Object.keys(delves).length ? { delves } : {}), levelBand: { from: spec.level, to: spec.top },
   };
 }
 
@@ -781,7 +884,27 @@ export function checkLandSpec(spec: LandSpec): Required<LandSpec> {
   for (const pl of places) if (pl.kind === 'camp' && pl.faction !== undefined && !CAMP_FACTIONS.includes(pl.faction)) err(`'${pl.id}': no camp of '${pl.faction}' (have ${CAMP_FACTIONS.join(', ')})`);
   const top = spec.top ?? Math.min(5, level + (level <= 2 ? 2 : 1));
   if (!Number.isInteger(top) || top < level || top > 5) err(`top level ${top}; from ${level} to 5`);
-  return { kind, level, top, places, delves, camps };
+  const quests = spec.quests ?? [];
+  if (quests.length > 6) err(`${quests.length} quests; at most 6`);
+  const qids = new Set<string>();
+  const kindOf = (id: Id) => (id === 'city' ? 'city' : places.find((p) => p.id === id)?.kind);
+  for (const q of quests) {
+    const at = (m: string) => err(`quest '${q.id}': ${m}`);
+    if (!/^[a-z][a-z0-9-]*$/.test(q.id) || qids.has(q.id)) at('an id is lower-case letters, digits and dashes, and its own');
+    qids.add(q.id);
+    if (!['defeat', 'fetch', 'scout'].includes(q.kind)) at(`no kind of quest '${q.kind}'`);
+    const giver = kindOf(q.giver ?? 'city');
+    if (giver !== 'city' && giver !== 'town' && giver !== 'village') at(`its giver '${q.giver}' is not the city or one of the county's towns or villages`);
+    if (q.kind === 'scout') {
+      if (!q.visit?.length) at('a scouting quest needs places to visit');
+      for (const v of q.visit ?? []) if (!kindOf(v)) at(`'${v}' is not one of the county's places`);
+    } else {
+      const t = q.target ? kindOf(q.target) : undefined;
+      if (t !== 'camp' && t !== 'delve') at(`its target '${q.target}' is not one of the county's camps or delves`);
+    }
+    if (q.object !== undefined && (q.kind !== 'fetch' || !q.object || q.object.length > 36)) at('an object is for a fetch quest, and 1–36 characters');
+  }
+  return { kind, level, top, places, delves, camps, quests };
 }
 
 /** Every built county's id: `land-<seed>-<spec>`, so a saved run rebuilds it. */
@@ -803,8 +926,18 @@ export function landFromId(id: string): Module | undefined {
  * and each town on its own, as the town generator proves every town.
  */
 export function proveLand(module: Module): string[] {
-  const stubs: Record<Id, Scene> = Object.fromEntries(Object.entries(module.towns ?? {}).map(([at, t]) =>
-    [at, { id: at, kind: 'story', noBack: true, text: ['A town.'], next: [{ id: 'out', label: 'Leave', to: t.onLeave.to }] } satisfies Scene]));
+  // A town's stub has its inn and its back room — quests are given and
+  // turned in there — and a way out.
+  const stubs: Record<Id, Scene> = {};
+  for (const [at, t] of Object.entries(module.towns ?? {})) {
+    stubs[at] = { id: at, kind: 'story', noBack: true, text: ['A town.'], next: [
+      { id: 'inn', label: 'Inn', to: `${at}/inn` }, { id: 'guild', label: 'Guild', to: `${at}/thieves-guild` },
+      { id: 'out', label: 'Leave', to: t.onLeave.to },
+    ] };
+    for (const room of ['inn', 'thieves-guild']) {
+      stubs[`${at}/${room}`] = { id: `${at}/${room}`, kind: 'story', noBack: true, text: ['Inside.'], next: [{ id: 'back', label: 'Back', to: at }] };
+    }
+  }
   // A delve's stub can be won or walked away from: what lies after it
   // waits on the win.
   for (const [at, d] of Object.entries(module.delves ?? {})) {
@@ -814,7 +947,8 @@ export function proveLand(module: Module): string[] {
     ] };
   }
   const { towns: _, delves: __, ...rest } = module;
-  const errors = validateModule({ ...rest, scenes: { ...module.scenes, ...stubs } });
+  let errors: string[];
+  try { errors = validateModule(compileQuests({ ...rest, scenes: { ...module.scenes, ...stubs } })); } catch (e) { errors = [(e as Error).message]; }
   for (const [at, t] of Object.entries(module.towns ?? {})) {
     try { generateCity(1, t.spec); } catch (e) { errors.push(`${at}: ${(e as Error).message}`); }
   }
