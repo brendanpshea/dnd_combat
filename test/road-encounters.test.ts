@@ -125,3 +125,46 @@ describe('a town\'s streets', () => {
   });
 });
 void currentScene;
+
+import { campRest, MORNING } from '../src/adventure/runtime.js';
+import { miles } from '../src/adventure/overland.js';
+
+describe('the day on the road', () => {
+  const timed = (hours: number) => { const m = road(0); (m.scenes.map as { map: ExploreMap }).map.legs![0]!.hours = hours; return m; };
+
+  it('wears on as the party walks, and night falls on the road', () => {
+    const m = timed(5);
+    const s = walk(5, m);
+    enterNode(s, m, 'b'); enterNode(s, m, 't');       // there: 1 pm
+    expect(s.hour).toBe(MORNING + 5);
+    expect(s.flags[NIGHT]).toBeFalsy();
+    enterNode(s, m, 'a'); enterScene(s, m, 'map');      // back: 6 pm
+    enterNode(s, m, 'b');                               // and out again: 11 pm
+    expect(s.hour).toBe(MORNING + 15);
+    expect(s.flags[NIGHT]).toBe(true);
+  });
+
+  it('turns to morning after a night on the road, or a night\'s sleep', () => {
+    const m = timed(12);
+    const s = walk(6, m);
+    enterNode(s, m, 'b'); enterNode(s, m, 't');         // 8 pm: night
+    expect(s.flags[NIGHT]).toBe(true);
+    campRest(s, m, 'long');                             // a safe-ish sleep at B (may be broken up)
+    if (s.sceneId === 'map') { expect(s.hour).toBe(MORNING); expect(s.flags[NIGHT]).toBeFalsy(); }
+    const t = walk(7, m);
+    enterNode(t, m, 'b'); enterNode(t, m, 't'); enterNode(t, m, 'a'); enterScene(t, m, 'map');
+    expect(t.hour).toBe(MORNING);                       // walked through the night
+    expect(t.flags[NIGHT]).toBeFalsy();
+  });
+
+  it('takes a county\'s legs at a walking pace', () => {
+    const m = generateLand(4).module;
+    const map = (m.scenes.land as { map: ExploreMap }).map;
+    for (const l of map.legs!) {
+      const [a, b] = l.between.map((id) => { const n = map.nodes.find((x) => x.id === id)!; return [n.x, n.y] as [number, number]; });
+      const d = miles(a!, b!);
+      expect(l.hours!).toBeGreaterThanOrEqual(Math.max(0.5, Math.floor(d / 3)));
+      expect(l.hours!).toBeLessThanOrEqual(Math.max(1, d * 1.2));
+    }
+  });
+});

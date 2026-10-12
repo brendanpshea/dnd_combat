@@ -1089,7 +1089,9 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
       <div className="adv-explore">
         {/* After dark (a town's inn passes the time): the title says so, or
             the only sign is a row of padlocks. */}
-        <h2 className="adv-maptitle">{scene.map.title}{state.flags[NIGHT] ? ' · 🌙 night' : ''}</h2>
+        <h2 className="adv-maptitle">{scene.map.title}{state.flags[NIGHT] ? ' · 🌙 night' : ''}
+          {/* On a map whose roads take time, the time it is. */}
+          {scene.map.legs?.some((l) => l.hours) && !state.flags[NIGHT] && <small className="adv-clock"> · {clock(state.hour ?? 8)}</small>}</h2>
 
         {/* Roads everywhere: a traversal map draws its gating paths (frontier
             edges fade), a free-roam town draws its purely visual roads — either
@@ -1355,4 +1357,10 @@ function LandArt({ g }: { g: LandGround }) {
       </div>
     </>
   );
+}
+
+/** "2 pm", from an hour of the day (8 is morning; may run past 24). */
+function clock(hour: number): string {
+  const h = Math.floor(hour) % 24;
+  return `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}`;
 }
