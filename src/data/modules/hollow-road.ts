@@ -124,25 +124,18 @@ const turnUnread = (also: Requirement[]): Choice[] => [
     check: { skill: 'persuasion', dc: 14, failTo: 'boss-unguarded' } },
 ];
 /** Marching him down to the reeve (`spared`). {wren} asked for something to
- *  arrest, and thinks the better of the company for it, but only if she knows
- *  the company at all (`met`: pulled out from under the horse). */
+ *  arrest, and thinks the better of the company for it — if she knows the
+ *  company at all (pulled out from under the horse): regard moves only in
+ *  someone met, by the engine's rule, not a twin of the choice. */
 const BIND_VARGAN: Choice[] = [
   { id: 'reeve', label: 'Bind him and march him down to the reeve', to: 'aftermath',
-    requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
-  { id: 'reeve-unmet', label: 'Bind him and march him down to the reeve', to: 'aftermath',
-    requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
-    effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }] },
 ];
 /** Finishing him on his knees (`dead`). {wren} thinks the worse of the
- *  company for it, but, as with binding him, only if she knows it at all. */
+ *  company for it, as with binding him, if she knows it. */
 const END_VARGAN: Choice[] = [
   { id: 'end', label: 'End it here', to: 'aftermath',
-    requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
-  { id: 'end-unmet', label: 'End it here', to: 'aftermath',
-    requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
-    effects: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }] },
 ];
 /** Letting him go: `spared` too, as far as the rest of the campaign cares,
  *  and `vargan-let-go` for this chapter's square and ending. The reeve pays nothing for a chief he cannot see, so the
@@ -1376,15 +1369,11 @@ const scenes: Record<string, Scene> = {
       { id: 'pick', label: '[Sleight of Hand DC 13] Work the padlock open quietly', to: 'den-pens-freed',
         once: true, check: { skill: 'sleight-of-hand', dc: 13, failTo: 'pens-alarm' } },
       { id: 'hack', label: 'Hack through the stakes, and never mind the noise', to: 'pens-alarm' },
-      // The pen moves {wren}'s regard only if she has met the company: a Wren
-      // it never met hasn't heard (design-decisions: regard follows what an
-      // NPC saw). One saved after the den misses it; that is the smaller cost.
+      // The pen moves {wren}'s regard only if she has met the company (the
+      // engine's rule: regard follows what an NPC saw). One saved after the
+      // den misses it; that is the smaller cost.
       { id: 'leave', label: 'Leave them for the reeve\'s men', to: 'den-pens-left',
-        requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'captives-left' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
-      { id: 'leave-unmet', label: 'Leave them for the reeve\'s men', to: 'den-pens-left',
-        requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
-        effects: [{ kind: 'setFlag', flag: 'captives-left' }] },
     ],
     noBack: true,
   },
@@ -1405,10 +1394,8 @@ const scenes: Record<string, Scene> = {
     text: ['The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.'],
     // As with a pen left (`den-pens`): only a Wren who has met the company.
     next: [
-      { id: 'ok', label: 'Back to the den', to: 'inner', requires: [{ kind: 'npc', npc: 'wren', met: true }], hideWhenBlocked: true,
+      { id: 'ok', label: 'Back to the den', to: 'inner',
         effects: [{ kind: 'setFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
-      { id: 'ok-unmet', label: 'Back to the den', to: 'inner', requires: [{ kind: 'npc', npc: 'wren', met: false }], hideWhenBlocked: true,
-        effects: [{ kind: 'setFlag', flag: 'captives-freed' }] },
     ], noBack: true,
   },
   'den-pens-left': {
@@ -1847,48 +1834,55 @@ const scenes: Record<string, Scene> = {
       // The chief, then the den, then the scout, then the inn, building to the
       // pens: every victory ends on one of the captives' slides.
       // Dead in his hall, or after it: every victory leaves him one fate.
-      { if: [{ kind: 'flag', flag: 'vargan-shaken' }, { kind: 'npc', npc: 'vargan', fate: 'dead' }],
-        text: 'Round the bonfire they tell it in low voices: the {ashfang} chief wore the hag\'s brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.' },
-      { if: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'notFlag', flag: 'vargan-let-go' }],
-        text: 'The reeve does not hang {vargan}. He sends him out to cut reeds on the common land until the drowned houses stand again. {vargan} has not missed a day.' },
-      { if: [{ kind: 'notFlag', flag: 'vargan-shaken' }, { kind: 'npc', npc: 'vargan', fate: 'dead' }],
-        text: 'The reed-cutters bury {vargan} at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.' },
-      { if: [{ kind: 'flag', flag: 'vargan-let-go' }],
-        text: 'The reeve keeps his bounty, and says so loudly. Before the month is out, a man with a scarred hand is cutting reeds in the shallows below the water-meadows. The reeve watches him from his window, and does not send the watch.' },
-      { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
-        text: 'At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.' },
-      // Not turned: refused the company, he went up to the ridge
-      // (`vex-refuses`); refused by it, he stayed at his fire (`vex-dismissed`,
-      // `vex-rebuffed`).
-      { if: [{ kind: 'npc', npc: 'vex', met: true, notFate: ['turned'] }, { kind: 'notFlag', flag: 'vex-rebuffed' }],
-        text: '{vex} watched the end of it from the ridge above the den. At dawn he walks down into {thornwick} alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
-      { if: [{ kind: 'npc', npc: 'vex', met: true }, { kind: 'flag', flag: 'vex-rebuffed' }],
-        text: '{vex} sat out the end of it at his own fire, the bare blade across his knees. At dawn he walks down into {thornwick} alone and lays it on the reeve\'s table. He asks for a cell with a window.' },
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
-        text: 'At dawn {wren} limps out ahead of the reeve\'s men to round up what\'s left of the {ashfang}. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.' },
-      // Stepped round her, or never found at all, before the fifth morning:
-      // she lived (Part 2's limping {wren}, with no fate).
-      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved', 'lost'] }, { kind: 'flag', flag: 'scout-walked-past' }],
-        text: 'The reeve\'s men bring a scout in from the marsh road on a door. The other scout, who lost her horse in the fen and walked home the long way round, walks beside it. Whether the one on the door lives, nobody at the bonfire will say.' },
-      { if: [{ kind: 'npc', npc: 'wren', notFate: ['saved', 'lost'] }, { kind: 'notFlag', flag: 'scout-walked-past' }],
-        text: 'The other scout lost her horse in the fen and walked home the long way round. She leads the reeve\'s men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den\'s wall scratched into the mud.' },
-      // After it, the scout the reeve's men find is the one who died there
-      // (`lost`), unless the company covered her (`scout-covered`).
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }, { kind: 'notFlag', flag: 'scout-walked-past' }, { kind: 'notFlag', flag: 'scout-covered' }],
-        text: 'Out on the marsh road, the reeve\'s men lift a dead horse off one of their own scouts. She died under it alone, with a healing potion at her belt that she could never reach.' },
-      // Stepped round her, and the fifth morning came before anyone else did.
-      { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }, { kind: 'flag', flag: 'scout-walked-past' }, { kind: 'notFlag', flag: 'scout-covered' }],
-        text: 'The reeve\'s men find a scout in the reeds off the marsh road, a hundred yards from a dead horse. She had been crawling toward {thornwick}.' },
+      // One card, first case that holds: let go is spared too, so it comes
+      // before plain spared.
+      { thread: 'vargan', cases: [
+        { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }, { kind: 'flag', flag: 'vargan-shaken' }],
+          text: 'Round the bonfire they tell it in low voices: the {ashfang} chief wore the hag\'s brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.' },
+        { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }],
+          text: 'The reed-cutters bury {vargan} at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.' },
+        { if: [{ kind: 'flag', flag: 'vargan-let-go' }],
+          text: 'The reeve keeps his bounty, and says so loudly. Before the month is out, a man with a scarred hand is cutting reeds in the shallows below the water-meadows. The reeve watches him from his window, and does not send the watch.' },
+        { if: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }],
+          text: 'The reeve does not hang {vargan}. He sends him out to cut reeds on the common land until the drowned houses stand again. {vargan} has not missed a day.' },
+      ] },
+      // Turned; or, not turned, he refused the company and went up to the
+      // ridge (`vex-refuses`), or it refused him and he stayed at his fire
+      // (`vex-dismissed`, `vex-rebuffed`).
+      { thread: 'vex', cases: [
+        { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
+          text: 'At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.' },
+        { if: [{ kind: 'npc', npc: 'vex', met: true }, { kind: 'flag', flag: 'vex-rebuffed' }],
+          text: '{vex} sat out the end of it at his own fire, the bare blade across his knees. At dawn he walks down into {thornwick} alone and lays it on the reeve\'s table. He asks for a cell with a window.' },
+        { if: [{ kind: 'npc', npc: 'vex', met: true }],
+          text: '{vex} watched the end of it from the ridge above the den. At dawn he walks down into {thornwick} alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
+      ] },
+      // The scout: saved; lost under the horse (the company covered her, and
+      // there is nothing more to tell; or stepped round her, and she crawled;
+      // or nobody came); or neither, and she lived (Part 2's limping {wren}).
+      { thread: 'wren', cases: [
+        { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
+          text: 'At dawn {wren} limps out ahead of the reeve\'s men to round up what\'s left of the {ashfang}. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.' },
+        { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }, { kind: 'flag', flag: 'scout-covered' }], text: '' },
+        { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }, { kind: 'flag', flag: 'scout-walked-past' }],
+          text: 'The reeve\'s men find a scout in the reeds off the marsh road, a hundred yards from a dead horse. She had been crawling toward {thornwick}.' },
+        { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }],
+          text: 'Out on the marsh road, the reeve\'s men lift a dead horse off one of their own scouts. She died under it alone, with a healing potion at her belt that she could never reach.' },
+        { if: [{ kind: 'flag', flag: 'scout-walked-past' }],
+          text: 'The reeve\'s men bring a scout in from the marsh road on a door. The other scout, who lost her horse in the fen and walked home the long way round, walks beside it. Whether the one on the door lives, nobody at the bonfire will say.' },
+        { text: 'The other scout lost her horse in the fen and walked home the long way round. She leads the reeve\'s men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den\'s wall scratched into the mud.' },
+      ] },
       // Mira's thanks are earned, as her near-smile in the square is: the
       // captives out, the scout brought home, or the mill turning again, and
       // never from a company that killed a beaten man in front of her town.
       // Otherwise she pours, and takes the coin like anyone's.
-      ...MIRA_WARM.map((when) => ({ if: [{ kind: 'npc' as const, npc: 'vargan', notFate: ['dead'] }, ...when],
-        text: '{mira} pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.' })),
-      { if: [{ kind: 'npc', npc: 'vargan', notFate: ['dead'] }, ...MIRA_COOL],
-        text: '{mira} pours your round and takes your coin for it. "Town\'s still standing," she allows, and moves off down the bar.' },
-      { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }],
-        text: '{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.' },
+      { thread: 'mira', cases: [
+        { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }],
+          text: '{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.' },
+        ...MIRA_WARM.map((when) => ({ if: when,
+          text: '{mira} pours the first round on the house, and the second when she thinks you aren\'t counting. "Don\'t go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.' })),
+        { text: '{mira} pours your round and takes your coin for it. "Town\'s still standing," she allows, and moves off down the bar.' },
+      ] },
       { if: [{ kind: 'flag', flag: 'got-banner' }],
         text: 'By the week\'s end the {ashfang} banner hangs upside down over {mira}\'s bar, still spattered with the children\'s mud.' },
       { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }],

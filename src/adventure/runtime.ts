@@ -540,7 +540,8 @@ export function endingText(state: AdventureState, scene: Extract<Scene, { kind: 
   const slides = (scene.slides ?? []).flatMap((sl): Para[] => {
     if ('if' in sl) return [sl];
     const hit = sl.cases.find((c) => (c.if ?? []).every((r) => requirementMet(state, r)));
-    return hit ? [hit.text] : [];
+    // An empty case is "nothing more to tell": it holds the thread silent.
+    return hit && hit.text ? [hit.text] : [];
   });
   return paragraphsFor(state, [...scene.text, ...slides]);
 }
