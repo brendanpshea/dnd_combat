@@ -8,7 +8,11 @@ import {
   fleeBattle, battleSurpriseOf, resolveBattle, sneakDc,
 } from '../src/adventure/runtime.js';
 import { newCampaign } from '../src/campaign/campaign.js';
-import { HOLLOW_ROAD_MODULE as HOLLOW } from '../src/data/modules/hollow-road.js';
+import { HOLLOW_ROAD_MODULE } from '../src/data/modules/hollow-road.js';
+import { expandModule } from '../src/adventure/embed.js';
+
+// As a run lays it out: its marsh and den are generated places.
+const HOLLOW = expandModule(HOLLOW_ROAD_MODULE, { seed: 1, flags: [] });
 import { validateModule } from '../src/adventure/validate.js';
 import { partingBlows } from '../src/engine/rules/movement.js';
 import { Combat } from '../src/engine/combat.js';
@@ -95,7 +99,7 @@ describe('the choices at a fight\'s door', () => {
   });
 
   it('the modules with parleys still validate', () => {
-    expect(validateModule(HOLLOW)).toEqual([]);
+    expect(validateModule(HOLLOW_ROAD_MODULE)).toEqual([]);
   }, 30_000);
 });
 

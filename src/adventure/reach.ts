@@ -818,7 +818,8 @@ function searchModule(
         const d = s.dungeon;
         for (const r of d.rooms) {
           if (r.fight) c.steps.push(step(r.fight, `walks into ${r.name}`));
-          if (r.event) c.events.push({ until: r.event.until ? mask(r.event.until) : null, to: r.event.scene, label: `walks into ${r.name}` });
+          // Each scene the event can open on (taken as possible, every one).
+          if (r.event) for (const to of [r.event.scene, ...(r.event.when ?? []).map((w) => w.to)]) c.events.push({ until: r.event.until ? mask(r.event.until) : null, to, label: `walks into ${r.name}` });
           if (r.search) c.steps.push(step(r.search, `searches ${r.name}`));
           if (r.exit) c.steps.push(step(r.exit.to, `leaves by ${r.name}`));
         }

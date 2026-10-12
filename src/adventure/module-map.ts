@@ -146,7 +146,7 @@ export function moduleMap(whole: Module): ModuleMap {
         const d = s.dungeon;
         for (const r of d.rooms) {
           if (r.fight) edge(id, r.fight, 'go', r.name);
-          if (r.event) edge(id, r.event.scene, 'go', r.name);
+          if (r.event) for (const to of new Set([r.event.scene, ...(r.event.when ?? []).map((w) => w.to)])) edge(id, to, 'go', r.name);
           if (r.search) edge(id, r.search, 'go', `${r.name} (search)`);
           if (r.exit) edge(id, r.exit.to, 'go', r.exit.label ?? r.name);
         }

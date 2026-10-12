@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-120 scenes · 180 versions · 2,532,870 states searched (with text conditions tracked).
+115 scenes · 172 versions · 2,541,766 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -42,6 +42,8 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `reedwife-lost`, `reedwife-lost-alone`:
   - **S16** “The hag's cold fingers close over your eyes, and the …”
   - **S17** “You wake behind the throne, where somebody dragged you. Vargan …”
+- `trail`, `inner`:
+  - **S18** “In.”
 
 ## `road` · story
 
@@ -555,32 +557,6 @@ You hold his eye and draw steel slow, and let him count your blades. The cackle 
 
 The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."
 
-## `trail` · explore
-
-<sub>reads: flag:trail-read, flag:trail-known, flag:npc.wren.fate.saved, companion:wren, flag:npc.wren.fate.lost, flag:scout-bled-out, flag:scout-walked-past, flag:barrow-cleared, flag:crossed-ravine, flag:thicket-cleared, flag:know-hag, flag:trail-wet</sub>
-
-**Map:** The Marsh Road
-
-- **Fresh Tracks** → `tracks`
-  - goes to `tracks-done` instead when `trail-read`
-  - goes to `tracks-mapped` instead when `trail-known`
-- **A Cry for Help** <sub>(“A faint sound…” until entered)</sub> → `wounded`
-  - goes to `scout-along` instead when Wren in the party
-  - goes to `scout-sent` instead when Wren saved
-  - goes to `scout-gone` instead when Wren lost
-  - goes to `scout-dead` instead when `scout-bled-out`
-  - goes to `scout-passed` instead when `scout-walked-past`
-- **A Sunken Barrow** <sub>(“A low mound…” until entered)</sub> → `barrow` <sub>(secret)</sub>
-  - goes to `barrow-done` instead when `barrow-cleared`
-- **Webbed Thicket** <sub>(“Pale shapes in the reeds…” until entered)</sub> → `thicket` <sub>open when `crossed-ravine`; otherwise greyed</sub> <sub>— “The ravine cuts the trail. The webs are beyond it.”</sub>
-  - goes to `thicket-done` instead when `thicket-cleared`
-- **Sunken Ravine** → `ravine`
-  - goes to `ravine-done` instead when `crossed-ravine`
-- **The Hollow Ahead** → `ambush` <sub>open when `trail-read` · `crossed-ravine`; otherwise greyed</sub> <sub>— “The ravine cuts the trail, and past it the reeds hide the way to the hollow. Cross the ravine, and find the patrols' tracks.”</sub>
-  - goes to `hollow-quiet` instead when `know-hag`
-  - goes to `ambush-wren` instead when Wren in the party
-  - goes to `ambush-wet` instead when `trail-wet`
-
 ## `tracks` · story
 
 <sub>reads: class:ranger?</sub>
@@ -603,12 +579,6 @@ The prints tangle and double back on themselves until your eyes water, but they 
 The wet way is slow and loud. You will come at the hollow splashing from one tussock to the next. Anything waiting in the reeds will hear you long before you see it.
 
 - » **Head for the hills**
-
-## `tracks-done` · story
-
-The mud has told you all it can. Nothing new has passed this way since.
-
-- » **Back to the trail**
 
 ## `tracks-mapped` · story
 
@@ -698,12 +668,6 @@ You follow the lip of the ravine downstream for an hour, and it only gets deeper
 - » **Climb the sheer face** [Athletics DC 13]
 - » **Pick across the rubble where it lies shallowest** [Acrobatics DC 12]
 - » **Look for a gentler way round** [Survival DC 11] — _It will cost you time._
-
-## `ravine-done` · story
-
-The ravine lies behind you. Nothing waits here but the wind over the loose stone.
-
-- » **Leave the ravine behind**
 
 ## `wounded` · dialogue · Wounded Scout
 
@@ -896,12 +860,6 @@ The two cold dead are waiting this time, down among the grave-goods. One is noth
 
 The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
 
-## `barrow-done` · story
-
-The barrow lies quiet now, and the air above the capstone is no colder than the marsh.
-
-- » **Back to the trail**
-
 ## `thicket` · story
 
 <sub>reads: return?</sub>
@@ -946,48 +904,6 @@ The spiders are waiting in the high webbing this time. They drop the moment your
 *Won:*
 
 The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
-
-## `thicket-done` · story
-
-The torn webs hang slack and grey. Nothing spins in the thicket now.
-
-- » **Back to the trail**
-
-## `bog-toads` · battle
-
-The black water bulges, then heaves. Four giant toads haul themselves onto the mud bank, one after another. Each is wider than a shield. A tongue lashes out for the nearest of you.
-
-**Battle:** The Bog Toads
-
-*Won:*
-
-The last toad shudders and goes still, half in the water. You scrape off the slime and press on toward the ravine.
-
-## `camp-ambush` · battle
-
-<sub>reads: return?</sub>
-
-**2 versions**
-
-### 1. when the first visit?
-
-You wake to a wet, dragging sound in the dark. Four grey, sodden bodies are clawing up out of the mire beyond the fire. Behind them comes a fifth that reeks of something long dead. They come for the light on all fours, jaws working.
-
-**Battle:** The Marsh Dead
-
-*Won:*
-
-You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.
-
-### 2. when a return visit?
-
-The dragging sound comes again, out in the dark. The marsh has more dead in it than you hoped, and they are crawling toward your fire, the one that reeks worst at their back.
-
-**Battle:** The Marsh Dead
-
-*Won:*
-
-You shove the bodies back into the mire, but the fire will not catch again. You pack up in the dark, stiff and unrested, and walk on rather than lie down beside that water.
 
 ## `ambush` · check
 
@@ -1210,32 +1126,6 @@ Halfway over the wall, a stake shifts under a boot and cracks. A horn brays righ
 
 The big one goes down last, face-first in the mud at the foot of the wall.
 
-## `inner` · dungeon
-
-<sub>reads: flag:den-quiet</sub>
-
-**2 versions**
-
-### 1. when not `den-quiet`
-
-**Dungeon:** The Ashfang Den
-
-*Muster Yard, first visit:*
-
-Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.
-
-The den knows it has been broken into, and every eye in the yard is on the gate. Behind the drying-racks, out of the torchlight, there is a corner to bind a cut and get your breath while they watch the wrong end of the yard.
-
-### 2. when `den-quiet`
-
-**Dungeon:** The Ashfang Den
-
-*Muster Yard, first visit:*
-
-Inside the wall the den sprawls around a central fire-pit: tents, drying-racks, and the reek of a place that has never been clean. Ahead, a staked ring of trampled mud — **the pit** — where a chained shape heaves against its irons.
-
-No one at the fire has looked round yet. Behind the drying-racks there is room to sit, bind a cut and get your breath before anyone does.
-
 ## `den-muster` · battle
 
 <sub>reads: return?</sub>
@@ -1269,32 +1159,6 @@ The ogre is off its chain now, and it is not going back on. The two orc goaders 
 The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. The ogre's collar has worn a groove in its neck as deep as a thumb.
 
 Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
-
-## `den-camp-ambush` · battle
-
-<sub>reads: return?</sub>
-
-**2 versions**
-
-### 1. when the first visit?
-
-You've barely banked the fire when a watch-patrol rounds the tents: an orc and two archers, blinking in the light. Five grey wolves the size of ponies strain at their leashes. The orc finds his voice first. He starts to shout, and slips the leashes.
-
-**Battle:** The Night Watch
-
-*Won:*
-
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
-
-### 2. when a return visit?
-
-Another patrol. They come round the drying-racks this time with their grey wolves already off the leash, and they have their blades out before they reach the fire.
-
-**Battle:** The Night Watch
-
-*Won:*
-
-You put the patrol down before the whole den wakes, and kick dirt over the fire. Somewhere across the yard a pot clatters off its hook, and you are on your feet and moving before it stops rolling.
 
 ## `den-pens-door` · story
 
@@ -1377,7 +1241,7 @@ The hyenas and the grey wolves are loose in the kennels now. Their keeper is lon
 
 The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
 
-## `cache` · check
+## `den-cache` · check
 
 A tent of stolen goods, heaped anyhow. A careful search turns up the best of it.
 
@@ -2210,11 +2074,11 @@ Wren pushes through the crowd on a crutch and hands you the reeve's purse of fif
 
 ## `defeat` · story
 
-<sub>reads: at:square, at:trail, at:inner, visited:trail, flag:den-entered, return?</sub>
+<sub>reads: at:square, at:trail/delve, at:inner/delve, visited:trail, flag:den-entered, return?</sub>
 
 **4 versions**
 
-### 1. when at `inner` · the first visit?
+### 1. when at `inner/delve` · the first visit?
 
 You wake to lamplight and the crackle of Mira's hearth. The last thing you remember is the ground coming up to meet you.
 
@@ -2228,7 +2092,7 @@ You wake on Mira's cot again, under the same crack in the ceiling, aching in all
 
 "Same cot, same mug," Mira says, and sets it down. "Try to need it less."
 
-### 3. when at `trail` · the first visit?
+### 3. when at `trail/delve` · the first visit?
 
 You wake to lamplight and the crackle of Mira's hearth. The last thing you remember is the ground coming up to meet you.
 
@@ -2236,7 +2100,7 @@ A reed-cutter found you face-down in the reeds and poled you home on his raft. H
 
 "Easy, now." Mira puts a mug of something hot and bitter into your hands. "You slept the day round. The Ashfang are still out there, but you're no use to Thornwick dead. Drink that. Then go and finish them."
 
-### 4. when not been to `trail` · the first visit? — or — not at `trail` · not `den-entered` · the first visit? — or — not at `trail` · not at `inner` · the first visit?
+### 4. when not been to `trail` · the first visit? — or — not at `trail/delve` · not `den-entered` · the first visit? — or — not at `trail/delve` · not at `inner/delve` · the first visit?
 
 You wake to lamplight and the crackle of Mira's hearth. The last thing you remember is the ground coming up to meet you.
 
@@ -2246,7 +2110,7 @@ The reeve's men carried you in, she tells you, and then stood about in her tapro
 
 - » **Get back on your feet**
 - » **Go straight back out on the marsh road** <sub>open when `den-entered` — or — been to `trail`; otherwise hidden</sub>
-- » **Go straight back into the den** <sub>open when at `inner`; otherwise hidden</sub>
+- » **Go straight back into the den** <sub>open when at `inner/delve`; otherwise hidden</sub>
 
 ## `epilogue` · ending
 
@@ -2274,7 +2138,7 @@ By morning the carters are already complaining about the state of the road. Mira
 
 > **[when `vex-rebuffed`]** Vex sat out the end of it at his own fire, the bare blade across his knees. At dawn he walks down into Thornwick alone and lays it on the reeve's table. He asks for a cell with a window.
 
-> **[when met Vex]** Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
+> **[on every route here]** Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
 
 > **[when Wren saved]** At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.
 
@@ -2322,31 +2186,70 @@ Up in the hollow, the reeve's men pull down the den's timber wall one post at a 
 
 > **[when not `captives-freed` · not `captives-taken`]** The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The Ashfang who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.
 
+## `trail` · story
+
+In.
+
+<sub>(shared with: `inner`)</sub>
+
+- » **In**
+
+## `trail/delve` · explore
+
+<sub>reads: flag:trail-known, flag:npc.wren.fate.saved, companion:wren, flag:npc.wren.fate.lost, flag:scout-bled-out, flag:scout-walked-past, flag:trail-read, flag:crossed-ravine, flag:know-hag, flag:trail-wet</sub>
+
+**Map:** The Marsh Road
+
+- **Fresh Tracks** → `tracks`
+  - goes to `tracks-mapped` instead when `trail-known`
+- **Sunken Ravine** → `ravine`
+- **A Cry for Help** → `wounded`
+  - goes to `scout-along` instead when Wren in the party
+  - goes to `scout-sent` instead when Wren saved
+  - goes to `scout-gone` instead when Wren lost
+  - goes to `scout-dead` instead when `scout-bled-out`
+  - goes to `scout-passed` instead when `scout-walked-past`
+- **A Sunken Barrow** → `barrow`
+- **Webbed Thicket** → `thicket` <sub>open when `trail-read` · `crossed-ravine`; otherwise greyed</sub>
+- **The Hollow** → `ambush` <sub>open when `trail-read` · `crossed-ravine` · not `know-hag`; otherwise greyed</sub>
+  - goes to `ambush-wren` instead when Wren in the party
+  - goes to `ambush-wet` instead when `trail-wet`
+- **The Hollow** → `hollow-quiet` <sub>open when `know-hag`; otherwise greyed</sub>
+- **Out** → `square`
+
+## `inner` · story
+
+In.
+
+<sub>(shared with: `trail`)</sub>
+
+- » **In**
+
+## `inner/delve` · explore
+
+<sub>reads: flag:pit-won, flag:npc.vex.met, flag:npc.reedwife.met</sub>
+
+**Map:** The Ashfang Den
+
+- **The Pit** → `den-muster` <sub>open when not `pit-won`; otherwise greyed</sub>
+- **A Lone Fire** → `vex-parley` <sub>open when never met Vex; otherwise greyed</sub>
+- **Kennels** → `den-hyenas`
+- **Kennels** → `den-cache`
+- **The Pens** → `den-pens-door`
+- **The Chief's Hall** → `boss-approach` <sub>open when `pit-won` · met Vex; otherwise greyed</sub>
+- **Out** → `trail`
+
 ## Dawns
 
 ### Day 4
 
-#### when not at `square` · not at `trail` · not at `inner` — or — `pens-settled` · never met Wren · not `scout-walked-past`
+#### when not at `square` · not at `inner/delve` — or — `pens-settled` · never met Wren · not `scout-walked-past`
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
-#### when not `pens-settled` · never met Vex · at `inner` · never met Wren · not `scout-walked-past`
-
-Last night's moon was a thin paring of light, and it was down long before dawn.
-
-Somewhere in the den the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
-
-There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
-
-#### when not `pens-settled` · never met Vex · at `inner` · `scout-walked-past` — or — not `pens-settled` · never met Vex · at `inner` · met Wren
-
-Last night's moon was a thin paring of light, and it was down long before dawn.
-
-Somewhere in the den the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
-
-#### when not `pens-settled` · never met Vex · at `trail` · never met Wren · not `scout-walked-past` — or — not `pens-settled` · never met Vex · at `square` · never met Wren · not `scout-walked-past`
+#### when not `pens-settled` · never met Vex · at `square` · never met Wren · not `scout-walked-past`
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
@@ -2354,13 +2257,13 @@ Somewhere out there the Ashfang still have the carter they took off the marsh ro
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
-#### when not `pens-settled` · never met Vex · not at `inner` · `scout-walked-past` — or — not `pens-settled` · never met Vex · not at `inner` · met Wren
+#### when not `pens-settled` · never met Vex · `scout-walked-past` — or — not `pens-settled` · never met Vex · met Wren
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
 Somewhere out there the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
 
-#### when not `pens-settled` · met Vex · never met Wren · not `scout-walked-past`
+#### when not `pens-settled` · at `inner/delve` · never met Wren · not `scout-walked-past` — or — not `pens-settled` · met Vex · never met Wren · not `scout-walked-past`
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 
@@ -2368,7 +2271,7 @@ Vex said the chief keeps people in the pen behind the kennels for the Reedwife. 
 
 There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
 
-#### when not `pens-settled` · met Vex · `scout-walked-past` — or — not `pens-settled` · met Vex · met Wren
+#### when not `pens-settled` · at `inner/delve` · `scout-walked-past` — or — not `pens-settled` · at `inner/delve` · met Wren — or — not `pens-settled` · met Vex · `scout-walked-past` — or — not `pens-settled` · met Vex · met Wren
 
 Last night's moon was a thin paring of light, and it was down long before dawn.
 

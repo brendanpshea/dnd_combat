@@ -39,7 +39,7 @@ export function refsOf(scene: Scene): Id[] {
       const d = scene.dungeon;
       for (const r of d.rooms) {
         if (r.fight) refs.push(r.fight);
-        if (r.event) refs.push(r.event.scene);
+        if (r.event) refs.push(r.event.scene, ...(r.event.when ?? []).map((w) => w.to));
         if (r.search) refs.push(r.search);
         if (r.exit) refs.push(r.exit.to);
       }

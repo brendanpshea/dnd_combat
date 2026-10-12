@@ -379,7 +379,7 @@ export function validateModule(whole: Module): string[] {
     }
     if (sc.kind === 'dungeon') {
       for (const r of sc.dungeon.rooms) {
-        for (const t of [r.fight, r.event?.scene, r.search, r.exit?.to]) if (t) entries.add(t);
+        for (const t of [r.fight, r.event?.scene, ...(r.event?.when ?? []).map((w) => w.to), r.search, r.exit?.to]) if (t) entries.add(t);
       }
     }
   }

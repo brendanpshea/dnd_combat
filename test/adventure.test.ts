@@ -392,6 +392,28 @@ describe('adventure runtime vocabulary', () => {
 
 // --- Revisitable hubs + `once` (Phase 2) ------------------------------------
 
+/** A traversal map of its own (the marsh road's old shape): runtime features
+ *  tested on a fixture, not on whatever a chapter happens to lay out. */
+const back = (id: string) => ({ id, kind: 'story' as const, text: [id], next: [{ id: 'ok', label: 'Back', to: 'trail' }] });
+const TRAVERSE: Module = {
+  id: 'traverse', title: 'T', blurb: '', start: 'trail',
+  scenes: {
+    trail: { id: 'trail', kind: 'explore', map: {
+      title: 'Trail', art: {}, camp: { risky: { chance: 0.4, battleScene: 'night' } }, entry: ['tracks'],
+      paths: [['tracks', 'ravine'], ['tracks', 'scout'], ['ravine', 'approach']],
+      nodes: [
+        { id: 'tracks', x: 10, y: 50, label: 'Tracks', icon: 'tok-tracks', scene: 'tracks' },
+        { id: 'scout', x: 30, y: 80, label: 'A Cry', mystery: 'A faint sound…', icon: 'tok-person', scene: 'wounded',
+          sceneWhen: [{ if: [{ kind: 'flag', flag: 'scout-done' }], to: 'scout-gone' }] },
+        { id: 'ravine', x: 50, y: 40, label: 'Ravine', icon: 'tok-crossing', scene: 'ravine' },
+        { id: 'approach', x: 80, y: 30, label: 'Ahead', icon: 'tok-cave', scene: 'end' },
+      ] } },
+    tracks: back('tracks'), wounded: back('wounded'), 'scout-gone': back('scout-gone'), ravine: back('ravine'),
+    night: { id: 'night', kind: 'battle', encounterId: 'wolves', mapId: 'marsh', loot: false, onWin: { to: '@hub' } },
+    end: { id: 'end', kind: 'ending', outcome: 'victory', text: ['done'] },
+  },
+};
+
 describe('hubs and once-choices', () => {
   const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
 
@@ -456,16 +478,17 @@ describe('hubs and once-choices', () => {
   });
 
   it('a mystery node is unexplored until entered (drives the hidden label)', () => {
-    const state = startAdventure(newCampaign(1), hollow);
-    enterScene(state, hollow, 'trail');
-    state.exploredNodes.push('tracks'); // the marsh is a traversal map: reach the entry to reveal the fork
-    const before = exploreNodes(state, hollow).find((n) => n.node.id === 'scout')!;
+    const T = TRAVERSE;
+    const state = startAdventure(newCampaign(1), T);
+    enterScene(state, T, 'trail');
+    state.exploredNodes.push('tracks'); // a traversal map: reach the entry to reveal the fork
+    const before = exploreNodes(state, T).find((n) => n.node.id === 'scout')!;
     expect(before.node.mystery).toBeTruthy();
     expect(before.explored).toBe(false); // frontier: title hidden here
     expect(before.frontier).toBe(true);
-    enterNode(state, hollow, 'scout');
-    enterScene(state, hollow, 'trail'); // back on the map
-    const after = exploreNodes(state, hollow).find((n) => n.node.id === 'scout')!;
+    enterNode(state, T, 'scout');
+    enterScene(state, T, 'trail'); // back on the map
+    const after = exploreNodes(state, T).find((n) => n.node.id === 'scout')!;
     expect(after.explored).toBe(true); // now shows the real label
   });
 
@@ -624,14 +647,15 @@ describe('defeat, finished locations, battle rewards', () => {
   });
 
   it('a finished location redirects via sceneWhen instead of replaying', () => {
-    const s = startAdventure(newCampaign(1), hollow);
-    enterScene(s, hollow, 'trail');
+    const T = TRAVERSE;
+    const s = startAdventure(newCampaign(1), T);
+    enterScene(s, T, 'trail');
     s.exploredNodes.push('tracks'); // traversal map: reveal the frontier past the entry
-    enterNode(s, hollow, 'scout');
+    enterNode(s, T, 'scout');
     expect(s.sceneId).toBe('wounded'); // first visit: the full scene
-    enterScene(s, hollow, 'trail');
-    s.flags[npcFateFlag('wren', 'lost')] = true; // now the scout has been dealt with
-    enterNode(s, hollow, 'scout');
+    enterScene(s, T, 'trail');
+    s.flags['scout-done'] = true; // now the scout has been dealt with
+    enterNode(s, T, 'scout');
     expect(s.sceneId).toBe('scout-gone'); // revisit: the short "already done" beat
   });
 
@@ -674,10 +698,10 @@ describe('camp', () => {
     const state = startAdventure(newCampaign(1), hollow);
     enterScene(state, hollow, 'square');
     expect(campRule(state, hollow)).toEqual({}); // safe
-    enterScene(state, hollow, 'trail');
-    expect(campRule(state, hollow)?.risky).toBeTruthy();
-    // The den as a run builds it (a generated delve, spliced in).
+    // The marsh and the den as a run builds them (generated delves, spliced in).
     const live = expandModule(hollow, { seed: 1, flags: [] });
+    enterScene(state, live, 'trail/delve');
+    expect(campRule(state, live)?.risky).toBeTruthy();
     enterScene(state, live, 'inner/delve');
     expect(campRule(state, live)?.risky).toBeTruthy(); // rest in the den, at a price
   });
@@ -743,9 +767,9 @@ describe('camp', () => {
   });
 
   it('a short rest never triggers a risky ambush', () => {
-    const state = startAdventure(newCampaign(5), hollow);
-    enterScene(state, hollow, 'trail');
-    const events = campRest(state, hollow, 'short');
+    const state = startAdventure(newCampaign(5), TRAVERSE);
+    enterScene(state, TRAVERSE, 'trail');
+    const events = campRest(state, TRAVERSE, 'short');
     expect(events.some((e) => e.type === 'startBattle')).toBe(false);
     expect(state.sceneId).toBe('trail');
   });
@@ -755,34 +779,34 @@ describe('camp', () => {
 
 describe('traversal maps (paths & frontier)', () => {
   const hollow = MODULES.find((m) => m.id === 'hollow-road')!;
-
+  
   it('a fresh traversal map shows only its entry; the fork is still fogged', () => {
-    const s = startAdventure(newCampaign(1), hollow);
-    enterScene(s, hollow, 'trail');
-    const ids = exploreNodes(s, hollow).map((n) => n.node.id);
+    const s = startAdventure(newCampaign(1), TRAVERSE);
+    enterScene(s, TRAVERSE, 'trail');
+    const ids = exploreNodes(s, TRAVERSE).map((n) => n.node.id);
     expect(ids).toEqual(['tracks']);          // entry only
-    const tracks = exploreNodes(s, hollow)[0]!;
+    const tracks = exploreNodes(s, TRAVERSE)[0]!;
     expect(tracks.frontier).toBe(false);       // the entry isn't a "?" node
     expect(tracks.here).toBe(true);            // you are here
   });
 
   it('visiting a node reveals its neighbours as frontier (title-hidden)', () => {
-    const s = startAdventure(newCampaign(1), hollow);
-    enterScene(s, hollow, 'trail');
+    const s = startAdventure(newCampaign(1), TRAVERSE);
+    enterScene(s, TRAVERSE, 'trail');
     s.exploredNodes.push('tracks'); s.lastNode = 'tracks';
-    const vis = exploreNodes(s, hollow);
+    const vis = exploreNodes(s, TRAVERSE);
     const ids = vis.map((n) => n.node.id).sort();
     expect(ids).toEqual(['ravine', 'scout', 'tracks']); // fork revealed, not 'approach' (beyond)
     const ravine = vis.find((n) => n.node.id === 'ravine')!;
     expect(ravine.frontier).toBe(true);
-    expect(exploreNodes(s, hollow).find((n) => n.node.id === 'tracks')!.here).toBe(true);
+    expect(exploreNodes(s, TRAVERSE).find((n) => n.node.id === 'tracks')!.here).toBe(true);
   });
 
   it('entering a node beyond the frontier is rejected', () => {
-    const s = startAdventure(newCampaign(1), hollow);
-    enterScene(s, hollow, 'trail');
+    const s = startAdventure(newCampaign(1), TRAVERSE);
+    enterScene(s, TRAVERSE, 'trail');
     // 'ravine' is past the entry (tracks) and not otherwise gated — pure frontier.
-    expect(() => enterNode(s, hollow, 'ravine')).toThrow(/frontier/);
+    expect(() => enterNode(s, TRAVERSE, 'ravine')).toThrow(/frontier/);
   });
 
   it('a free-roam map (the town square) shows every node, none as frontier', () => {
@@ -1156,16 +1180,10 @@ describe('The Hollow Road (M4)', () => {
     state.flags['mill-saved'] = true;
     enterNode(state, hollow, 'mill');
     expect(state.sceneId).toBe('mill-done');
-    // The marsh pair declare the same guard in data (the barrow is also a
-    // hidden node, so we assert the shape rather than walk the frontier).
-    for (const [nodeId, flag, done] of [
-      ['barrow', 'barrow-cleared', 'barrow-done'],
-      ['thicket', 'thicket-cleared', 'thicket-done'],
-    ] as const) {
-      const trail = hollow.scenes['trail']!;
-      if (trail.kind !== 'explore') throw new Error('trail is not explore');
-      const node = trail.map.nodes.find((n) => n.id === nodeId)!;
-      expect(node.sceneWhen?.[0]).toEqual({ if: [{ kind: 'flag', flag }], to: done });
+    // The marsh pair are rooms of the marsh's delve: each plays until its flag.
+    for (const [scene, flag] of [['barrow', 'barrow-cleared'], ['thicket', 'thicket-cleared']] as const) {
+      const room = hollow.delves!.trail!.spec.require!.find((r) => r.event?.scene === scene)!;
+      expect(room.event!.until).toEqual([{ kind: 'flag', flag }]);
     }
   });
 
@@ -1248,7 +1266,7 @@ describe('The Hollow Road (M4)', () => {
       let nn = seed * 7 + 1;
       const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
       const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => rand() > 0.2 };
-      const result = runModule(newCampaign(seed), hollow, policy, 4000);
+      const result = runModule(newCampaign(seed), hollow, policy, 60000); // a random walk through two laid-out delves, torch and all;
       expect(['victory', 'defeat']).toContain(result.ending);
     }
   });
@@ -1289,7 +1307,7 @@ describe('The Hollow Road (M4)', () => {
       let nn = seed * 7 + 3;
       const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
       const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
-      const result = runModule(newCampaign(seed), hollow, policy, 6000);
+      const result = runModule(newCampaign(seed), hollow, policy, 60000);
       if (result.ending !== 'victory') continue;
       const level = levelForXp(result.state.campaign.xp);
       expect(level).toBeGreaterThanOrEqual(3);

@@ -452,7 +452,10 @@ export interface DungeonRoom {
   fight?: SceneRef;
   /** A scene that plays on walking in (a conversation, a find): once, or on
    *  every entry until `until` holds. After the fight, if there is one. */
-  event?: { scene: SceneRef; until?: Requirement[] };
+  event?: { scene: SceneRef; until?: Requirement[];
+    /** Which scene it opens on, by how things stand: the first whose `if`
+     *  holds, else `scene` (as an explore marker's `sceneWhen`). */
+    when?: Array<{ if: Requirement[]; to: SceneRef }> };
   /** What Search turns up here: a scene entered once, after any secret doors. */
   search?: SceneRef;
   /** A way out of the dungeon from this room. */

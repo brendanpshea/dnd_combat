@@ -46,6 +46,7 @@ import { writeFileSync, mkdirSync, existsSync, readFileSync, readdirSync, unlink
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { outsideOf } from '../src/adventure/outside.js';
 import type { Id } from '../src/engine/types.js';
 import type { Module, Scene, Requirement, Para, NpcDef } from '../src/adventure/types.js';
 import { parasOf } from '../src/adventure/graph.js';
@@ -659,7 +660,9 @@ interface ChapterAtlas {
   states: number;
 }
 
-function buildChapter(module: Module): ChapterAtlas {
+function buildChapter(written: Module): ChapterAtlas {
+  // Its delves as the proof sees them: only their outside (see outsideOf).
+  const module = outsideOf(written);
   const t0 = Date.now();
   const npcs = module.npcs ?? {};
   const shared = sharedTextOf(module);
