@@ -731,7 +731,8 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
         intro: ['Someone steps out of an alley ahead of you, and then someone else, behind.'], onWin: { to: 'city' } };
       const at = placed.find((x) => x.id === n.id)!;
       (scenes[bid] as { onWin: { to: Id } }).onWin.to = hubOf(at.d);
-      n.wandering = { chance: 0.25, battleScene: bid };
+      // Worse after dark: rolled again, once, at night.
+      n.wandering = { chance: 0.25, battleScene: bid, night: 0.5 };
     }
   }
   const entry = placed.find((p) => p.kind === 'gate') ?? placed[0]!;

@@ -225,7 +225,12 @@ export interface ExploreNode {
   /** Danger on the way: on entering, a `chance` (0–1) rng roll may divert to a
    *  battle scene first (its onWin should route back here). Rolled once per
    *  node — a fight already braved doesn't re-trigger. */
-  wandering?: { chance: number; battleScene: SceneRef };
+  wandering?: { chance: number; battleScene: SceneRef;
+    /** The chance after dark instead (rolled again, once, at night). */
+    night?: number };
+  /** Where the party sleeps standing here, in place of the map's own camp:
+   *  an inn's village, or the open marsh. */
+  camp?: CampRule;
 }
 
 /** Whether a location lets the party make camp — and at what risk.
@@ -271,6 +276,13 @@ export interface ExploreMap {
   /** A town's ground, drawn under its markers: water, wall, streets.
    *  Purely visual, like `roads` (which a map with ground does not draw). */
   ground?: TownGround;
+  /**
+   * Danger on the road. Walking a leg between two nodes (either way) may
+   * meet trouble: `chance`, halved for each fight already met on that leg,
+   * and half again after dark; the battle is one of `battles`, whose onWin
+   * comes back to the map — the party has arrived.
+   */
+  legs?: Array<{ between: [Id, Id]; chance: number; battles: SceneRef[] }>;
   /** A county's lie of the land, drawn under its markers (overland.ts). */
   land?: LandGround;
 }

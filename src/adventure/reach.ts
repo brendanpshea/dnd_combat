@@ -793,6 +793,8 @@ function searchModule(
           if (n.wandering) c.steps.push(step(n.wandering.battleScene, `is jumped on the way to ${n.label}`, mask(n.requires), undefined, n.requires));
         }
         if (s.map.camp?.risky) c.steps.push(step(s.map.camp.risky.battleScene, 'is attacked in camp'));
+        for (const n of s.map.nodes) if (n.camp?.risky) c.steps.push(step(n.camp.risky.battleScene, `is attacked in camp at ${n.label}`));
+        for (const b of new Set((s.map.legs ?? []).flatMap((l) => l.battles))) c.steps.push(step(b, 'is attacked on the road'));
         c.travel = true;
         break;
       case 'dungeon': {
@@ -818,7 +820,7 @@ function searchModule(
   /** Where a party can sleep the night, by scene: at a camp (the place it
    *  stands in — as `campRule`), or a long rest scene. */
   const campAt = (s: Scene | undefined) =>
-    s?.kind === 'explore' ? !!s.map.camp : s?.kind === 'dungeon' ? !!s.dungeon.camp : false;
+    s?.kind === 'explore' ? !!s.map.camp || s.map.nodes.some((n) => n.camp) : s?.kind === 'dungeon' ? !!s.dungeon.camp : false;
   const sleeps = ids.map((id) => {
     const s = module.scenes[id];
     return s?.kind === 'rest' && s.variant === 'long' && !s.sameDay;

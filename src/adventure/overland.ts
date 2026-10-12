@@ -238,6 +238,25 @@ const CROSSINGS: [string, string][] = [['Ford', 'The water runs knee-deep and fa
   ['Bridge', 'An old stone bridge, its parapet carved with the names of lovers.'],
   ['Ferry', 'A rope ferry, and a ferryman who wants a copper and asks no questions.']];
 
+/** Who you meet on the road, by the ground (factions, first most likely). */
+const ROAD_FOES: Record<Terrain, Id[]> = {
+  plain: ['bandits', 'gnolls'], forest: ['wild', 'bandits'], hills: ['goblins', 'kobolds'],
+  marsh: ['lizardfolk', 'hag-court'], mountain: ['kobolds', 'goblins'], water: ['lizardfolk', 'wild'],
+};
+const ROAD_INTRO: Record<Id, string> = {
+  bandits: 'A tree across the road, and men stepping out from behind it. "Toll," says the biggest.',
+  gnolls: 'Laughter on the wind, and then the gnolls are coming through the grass.',
+  wild: 'The birds go quiet. Something has been following you, and it is done following.',
+  goblins: 'Rocks rattle down the slope, and goblins after them, shrieking.',
+  kobolds: 'A snare snaps shut on the path, and kobolds swarm out of the rocks.',
+  lizardfolk: 'The water by the causeway moves. Lizardfolk rise out of it, spears first.',
+  'hag-court': 'Lights in the mist, leading you off the path, and things waiting where they lead.',
+};
+/** A leg's chance of trouble, by the ground it crosses; a night's, by the ground slept on. */
+const ROAD_CHANCE: Record<Terrain, number> = { plain: 0.12, forest: 0.22, hills: 0.2, marsh: 0.28, mountain: 0.3, water: 0.2 };
+const NIGHT_CHANCE: Record<Terrain, number> = { plain: 0.15, forest: 0.25, hills: 0.2, marsh: 0.3, mountain: 0.3, water: 0.25 };
+const BATTLE_MAP: Record<Terrain, Id> = { plain: 'open', forest: 'open', hills: 'pass', marsh: 'marsh', mountain: 'cliff', water: 'marsh' };
+
 const STYLES: NameStyle[] = ['saxon', 'hearth', 'isles', 'gaelic', 'germanic', 'slavic', 'norse'];
 
 class Reroll extends Error {}
@@ -543,13 +562,60 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
       scenes[pl.id] = { id: pl.id, kind: 'story', noBack: true, text: [pl.text!], next: [{ id: 'on', label: 'Walk on', to: 'land' }] };
     }
   }
+  // Trouble on the roads and at night, by the ground: a leg rolls on the
+  // ground at its middle; a camp out in the wild, on the ground it is on.
+  const posOf = (id: Id) => places.find((q) => q.id === id)!.p;
+  const settled = (id: Id) => { const k = places.find((q) => q.id === id)!.kind; return k === 'city' || k === 'town' || k === 'village'; };
+  const foes = new Map<Terrain, Id[]>();
+  const fightsOn = (t: Terrain): Id[] => {
+    const had = foes.get(t);
+    if (had) return had;
+    const ids = ROAD_FOES[t].slice(0, 2).map((f, n) => {
+      const id = `road-${t}-${n + 1}`;
+      const enc = generateEncounter({
+        budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
+        maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: FACTIONS[f]!.members,
+      }, seedRng(Math.floor(rng() * 2 ** 31))).value;
+      scenes[id] = { id, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: BATTLE_MAP[t],
+        intro: [ROAD_INTRO[f] ?? 'Trouble on the road.'], onWin: { to: 'land' } };
+      return id;
+    });
+    foes.set(t, ids);
+    return ids;
+  };
+  const roadLegs = paths.map(([a, b]) => {
+    const pa = posOf(a), pb = posOf(b);
+    const t = g.at([(pa[0] + pb[0]) / 2, (pa[1] + pb[1]) / 2]);
+    // A road between towns is watched; near the city, more so.
+    const road = (settled(a) || a.startsWith('stop-') || a === 'road-in') && (settled(b) || b.startsWith('stop-') || b === 'road-in');
+    const near = a === city.id || b === city.id;
+    const chance = Math.round(ROAD_CHANCE[t] * (road ? 0.6 : 1) * (near ? 0.5 : 1) * 100) / 100;
+    return { between: [a, b] as [Id, Id], chance, battles: fightsOn(t) };
+  });
+  for (const n of nodes) {
+    if (settled(n.id)) { n.camp = {}; continue; }
+    const t = g.at([n.x, n.y]);
+    const id = `night-${t}`;
+    if (!scenes[id]) {
+      const enc = generateEncounter({
+        budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
+        maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: FACTIONS[ROAD_FOES[t][0]!]!.members,
+      }, seedRng(Math.floor(rng() * 2 ** 31))).value;
+      scenes[id] = { id, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: BATTLE_MAP[t],
+        intro: ['Something comes at the fire out of the dark.'], onWin: { to: 'land' } };
+    }
+    n.camp = { risky: { chance: NIGHT_CHANCE[t], battleScene: id } };
+  }
+  scenes.beaten = { id: 'beaten', kind: 'story', noBack: true, text: ['You come to by the roadside, bruised, robbed of a little coin and more pride. Someone has dragged you clear of the road, and gone.'],
+    next: [{ id: 'up', label: 'Get up', to: 'land' }] };
+
   const sights = [g.sea ? 'the sea' : 'a river', ...new Set([...g.cells].map((c) => ({ f: 'forest', h: 'hills', m: 'marsh', M: 'mountains' } as Record<string, string>)[c]).filter(Boolean))];
   Object.assign(scenes, {
     start: { id: 'start', kind: 'story', text: [`The road crests a rise, and ${county} lies below you: ${sights.slice(0, -1).join(', ')}${sights.length > 1 ? ' and ' : ''}${sights.at(-1)}, and the smoke of ${city.label} in the middle of it.`],
       next: [{ id: 'on', label: `Go down into ${county}`, to: 'land', effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
     land: { id: 'land', kind: 'explore', map: {
       title: county, theme: 'forest', art: { emoji: '🗺️' }, nodes, paths, entry: ['road-in'], camp: {},
-      land: { cols: g.cols, rows: g.rows, cells: g.cells, river: g.river!, ...(bridges.length ? { bridges } : {}), ...(g.sea ? { sea: g.sea } : {}) },
+      legs: roadLegs, land: { cols: g.cols, rows: g.rows, cells: g.cells, river: g.river!, ...(bridges.length ? { bridges } : {}), ...(g.sea ? { sea: g.sea } : {}) },
     } },
     'road-in': { id: 'road-in', kind: 'story', noBack: true, text: ['The road runs on south, out of the county.'],
       next: [{ id: 'leave', label: `Leave ${county}`, to: 'left' }, { id: 'stay', label: 'Turn back', to: 'land' }] },
@@ -557,7 +623,7 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   } satisfies Record<Id, Scene>);
   return {
     id: `land-${seed}`, title: county, blurb: `A generated county (level ${spec.level}).`,
-    start: 'start', scenes, towns: embedded, ...(Object.keys(delves).length ? { delves } : {}), levelBand: { from: spec.level, to: spec.level },
+    start: 'start', scenes, defeatScene: 'beaten', towns: embedded, ...(Object.keys(delves).length ? { delves } : {}), levelBand: { from: spec.level, to: spec.level },
   };
 }
 

@@ -355,7 +355,9 @@ export function validateModule(module: Module): string[] {
         entries.add(n.scene);
         for (const w of n.sceneWhen ?? []) entries.add(w.to);
         if (n.wandering) entries.add(n.wandering.battleScene);
+        if (n.camp?.risky) entries.add(n.camp.risky.battleScene);
       }
+      for (const l of sc.map.legs ?? []) for (const b of l.battles) entries.add(b);
     }
     if (sc.kind === 'dungeon') {
       for (const r of sc.dungeon.rooms) {
@@ -443,7 +445,8 @@ export function validateModule(module: Module): string[] {
   // A night's ambush lost is a night lost: the way out of it must not be a
   // long rest or a full heal, or losing on purpose beats the camp's risk.
   for (const sc of Object.values(module.scenes)) {
-    const camp = sc.kind === 'explore' ? sc.map.camp : sc.kind === 'dungeon' ? sc.dungeon.camp : undefined;
+    const camps = sc.kind === 'explore' ? [sc.map.camp, ...sc.map.nodes.map((n) => n.camp)] : sc.kind === 'dungeon' ? [sc.dungeon.camp] : [];
+    for (const camp of camps) {
     const night = camp?.risky ? module.scenes[camp.risky.battleScene] : undefined;
     if (night?.kind !== 'battle' || !night.onLoss) continue;
     const restful = (effects?: Effect[]) => effects?.some((e) => e.kind === 'heal' && e.amount === 'full');
@@ -464,6 +467,7 @@ export function validateModule(module: Module): string[] {
           walk.push(c.to);
         }
       }
+    }
     }
   }
 
