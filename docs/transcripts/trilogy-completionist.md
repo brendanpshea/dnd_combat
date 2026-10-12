@@ -429,23 +429,13 @@ Past the last fence-post the road runs out into reeds and black water, and goes 
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-**→ Entrance** <sub>(room `m0`)</sub>
+**→ Trailhead** <sub>(room `m0`)</sub>
 
 Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.
 
 A reed stake by the path, and something tied to it that used to be a hare.
 
 → A Sunken Barrow
-
-<sub>scene `trail/f1-ambush-m0-s1`</sub>
-
-A shape in the reeds stands up. It has been waiting a long time, and it does not breathe.
-
-**Battle:** gen:zombie+zombie+zombie+zombie <sub>(`gen:zombie+zombie+zombie+zombie` on `@room`)</sub>
-
-**» Fight — won**
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
 **→ A Sunken Barrow** <sub>(room `s1`)</sub>
 
@@ -471,25 +461,35 @@ _+45 gold (231)_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-→ Entrance
+→ Trailhead
 
-**→ Entrance** <sub>(room `m0`)</sub>
+**→ Trailhead** <sub>(room `m0`)</sub>
 
-→ Dry Hummock
+→ Sunken Ravine
 
-**→ Dry Hummock** <sub>(room `m1`)</sub>
+<sub>scene `trail/f1-ambush-m0-m1`</sub>
 
-A hump of firm ground, high enough above the water for a fire. You could camp here.
+Every frog in the reeds goes quiet at once.
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**Battle:** gen:ghoul+lizardfolk <sub>(`gen:ghoul+lizardfolk` on `@room`)</sub>
 
-**Dawn — day 4.**
+**» Fight — won**
 
-Last night's moon was a thin paring of light, and it was down long before dawn.
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-Somewhere out there the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+**→ Sunken Ravine** <sub>(room `m1`)</sub>
 
-There is still no word of the reeve's scouts. If one of them is lying hurt out on the marsh road, tonight may be her last.
+<sub>scene `ravine`</sub>
+
+A collapsed ravine cuts the trail. The other lip is close, but the gap between is all loose rock, and there is more than one way across it.
+
+**» Climb the sheer face**
+
+`[Athletics DC 13 — Arthur the Bold rolls 16 — passed]`
+
+You haul each other up and over, hand over hand.
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
 → Fresh Tracks
 
@@ -503,85 +503,15 @@ The old trapper's ale-sketch was a good one. The reeds, the pools and the hollow
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-→ Dry Hummock
-
-**→ Dry Hummock** <sub>(room `m1`)</sub>
-
-→ Search the room
-
-<sub>scene `trail/f1-find-m1`</sub>
-
-A pack left behind, with a potion still in it.
-
-**» Take it**
-
-_Gained: Potion of Healing_
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
 → Sunken Ravine
 
-**→ Sunken Ravine** <sub>(room `m2`)</sub>
-
-_A hidden door: Sunken Ravine ↔ Hidden Cache._
-
-<sub>scene `ravine`</sub>
-
-A collapsed ravine cuts the trail. The other lip is close, but the gap between is all loose rock, and there is more than one way across it.
-
-**» Climb the sheer face**
-
-`[Athletics DC 13 — Arthur the Bold rolls 21 — passed]`
-
-You haul each other up and over, hand over hand.
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
-→ Hidden Cache
-
-**→ Hidden Cache** <sub>(room `cache`)</sub>
-
-→ Search the room
-
-<sub>scene `trail/f1-find-cache`</sub>
-
-Someone hid their best here: coin, and a flask of something red.
-
-**» Take it**
-
-_+55 gold (286)_
-
-_Gained: Potion of Greater Healing_
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
-→ Sunken Ravine
-
-**→ Sunken Ravine** <sub>(room `m2`)</sub>
-
-→ Search the room
-
-You find only scratches in the stone, and none of them mean anything.
-
-→ Cold Pool
-
-**→ Cold Pool** <sub>(room `m3`)</sub>
-
-→ Search the room
-
-<sub>scene `trail/f1-find-m3`</sub>
-
-_(a paragraph shown before: “A pack left behind, with a potion…”)_
-
-**» Take it**
-
-_Gained: Potion of Healing_
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+**→ Sunken Ravine** <sub>(room `m1`)</sub>
 
 → A Cry for Help
 
-**→ A Cry for Help** <sub>(room `m4`)</sub>
+**→ A Cry for Help** <sub>(room `m2`)</sub>
+
+_A hidden door: A Cry for Help ↔ Hidden Cache._
 
 <sub>scene `wounded`</sub>
 
@@ -606,6 +536,74 @@ The horse comes off and the bleeding stops, and the scout lets out a breath she 
 _Journal (npc): Wren, the Scout_
 
 _Journal (lead): Vex, the Lieutenant_
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ Hidden Cache
+
+**→ Hidden Cache** <sub>(room `cache`)</sub>
+
+→ Search the room
+
+<sub>scene `trail/f1-find-cache`</sub>
+
+Someone hid their best here: coin, and a flask of something red.
+
+**» Take it**
+
+_+55 gold (286)_
+
+_Gained: Potion of Greater Healing_
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ A Cry for Help
+
+**→ A Cry for Help** <sub>(room `m2`)</sub>
+
+→ Search the room
+
+A boot, with nobody's foot in it.
+
+→ Leech Ditch
+
+**→ Leech Ditch** <sub>(room `m3`)</sub>
+
+→ Search the room
+
+<sub>scene `trail/f1-find-m3`</sub>
+
+A pack left behind, with a potion still in it.
+
+**» Take it**
+
+_Gained: Potion of Healing_
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m4`)</sub>
+
+A hump of firm ground, high enough above the water for a fire. You could camp here.
+
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+**Dawn — day 4.**
+
+Last night's moon was a thin paring of light, and it was down long before dawn.
+
+Somewhere out there the Ashfang still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.
+
+→ Search the room
+
+<sub>scene `trail/f1-find-m4`</sub>
+
+_(a paragraph shown before: “A pack left behind, with a potion…”)_
+
+**» Take it**
+
+_Gained: Potion of Healing_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
@@ -647,7 +645,7 @@ _Gained: Potion of Healing_
 
 The hollow opens below you, and the reeds in it are too still, and cold where the marsh should be warm. Nothing moves. Something out there is lying flat in the water, waiting for you to come closer.
 
-`[Group Perception DC 13 — 3/4 pass — passed]`
+`[Group Perception DC 13 — 2/4 pass — passed]`
 
 You catch the gleam of an eye among the reeds a breath before it moves. The trap is yours to spring.
 
@@ -697,15 +695,197 @@ Inside the wall the den is tents and cook-smoke and stolen carts, and the noise 
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-**→ Entrance** <sub>(room `m0`)</sub>
+**→ Gate** <sub>(room `m0`)</sub>
 
-Tents and cook-smoke inside the timber wall. Somewhere a dog, or something like one, is laughing.
+Tents and cook-smoke inside a wall of stakes. Somewhere a dog, or something like one, is laughing.
 
 A stolen cart stands just inside, its sides hacked with the raiders' mark.
 
+→ Kennels
+
+**→ Kennels** <sub>(room `s1`)</sub>
+
+<sub>scene `den-hyenas`</sub>
+
+Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.
+
+**Battle:** The Kennels <sub>(`kennel-hyenas` on `ruins`)</sub>
+
+**» Fight — won**
+
+The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
+
+_+30 gold (376)_
+
+_Gained: Potion of Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Search the room
+
+<sub>scene `den-cache`</sub>
+
+A tent of stolen goods, heaped anyhow. A careful search turns up the best of it.
+
+`[Investigation DC 12 — Morgan Le Fey rolls 27 — passed]`
+
+Beneath the junk you find real coin and a caravan's lost potion. Stuffed in a sack at the bottom is the **Ashfang banner** itself. The reeve will pay extra for that.
+
+_+80 gold (456)_
+
+_Gained: Potion of Greater Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Gate
+
+**→ Gate** <sub>(room `m0`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m1`)</sub>
+
+_A hidden door: A Lone Fire ↔ Hidden Cache._
+
+<sub>scene `vex-parley`</sub>
+
+**Vex, the Lieutenant**
+
+> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
+
+> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
+
+**» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
+
+_Journal (quest): The Pens Behind the Kennels_
+
+`[Persuasion DC 9 — Elaine the Holy rolls 20 — passed]`
+
+<sub>scene `vex-turned`</sub>
+
+Vex weighs it, then slides the blade home. "A road out of this valley, then. I'll take it before the reeve's men take it from me."
+
+"Hask guards the chief, and Hask answers to me. He'll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I'm tired of soldiering for a man who burns barns and calls it strategy."
+
+**» Go and face the chief**
+
+_Journal (npc): Vex, Turned_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Hidden Cache
+
+**→ Hidden Cache** <sub>(room `cache`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-find-cache`</sub>
+
+_(a paragraph shown before: “Someone hid their best here: coin, and…”)_
+
+**» Take it**
+
+_+70 gold (526)_
+
+_Gained: Potion of Greater Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m1`)</sub>
+
+→ Search the room
+
+Fleas, and a blanket you would not wish on an enemy.
+
+→ Empty Tent
+
+**→ Empty Tent** <sub>(room `m2`)</sub>
+
+A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.
+
+→ Sentry Gap
+
+**→ Sentry Gap** <sub>(room `key`)</sub>
+
+<sub>scene `inner/f1-fight-key`</sub>
+
+Something laughs behind the wood pile, high and wrong, and the raiders by it get up.
+
+**Battle:** gen:bugbear+bugbear+bandit <sub>(`gen:bugbear+bugbear+bandit` on `@room`)</sub>
+
+**» Fight — won**
+
+One of them carried a heavy key.
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+**→ Sentry Gap** <sub>(room `key`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-find-key`</sub>
+
+A few coins, dropped and forgotten.
+
+**» Take it**
+
+_+20 gold (546)_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Empty Tent
+
+**→ Empty Tent** <sub>(room `m2`)</sub>
+
+**» Make camp (long rest)** <sub>(day 4)</sub>
+
+**Dawn — day 5.**
+
+There is frost on everything this morning, and the sun comes up thin and cold. The moon is wasting. A few more nights and it will be gone.
+
+→ Search the room
+
+<sub>scene `inner/f1-find-m2`</sub>
+
+_(a paragraph shown before: “A pack left behind, with a potion…”)_
+
+**» Take it**
+
+_Gained: Potion of Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ The Pit
+
+**→ The Pit** <sub>(room `m3`)</sub>
+
+<sub>scene `den-muster`</sub>
+
+The chained shape in the pit stands up, and keeps standing up: an **ogre**, half-starved, whip-scarred and beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they whoop and haul the pins.
+
+On the far side of the ring, a bare-chested raider gets up off an upturned barrel. Scars run from his collarbone to his belt. He lifts a notched greataxe and rolls his shoulders. This is his pit.
+
+"Fresh meat for the pit!" a goader bellows, and slips the ogre's chain.
+
+**Battle:** The Pit-Brute and Its Champion <sub>(`den-pit` on `ruins`)</sub>
+
+**» Fight — won**
+
+The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. The ogre's collar has worn a groove in its neck as deep as a thumb.
+
+Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
+
+_+40 gold (586)_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
 → The Pens
 
-**→ The Pens** <sub>(room `s1`)</sub>
+**→ The Pens** <sub>(room `m4`)</sub>
 
 <sub>scene `den-pens-door`</sub>
 
@@ -738,180 +918,6 @@ The last raider falls against the stakes, and no one else comes. Across the yard
 The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.
 
 **» Back to the den**
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Entrance
-
-**→ Entrance** <sub>(room `m0`)</sub>
-
-→ Empty Tent
-
-**→ Empty Tent** <sub>(room `m1`)</sub>
-
-A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.
-
-_A hidden door: Empty Tent ↔ Hidden Cache._
-
-**» Make camp (long rest)** <sub>(day 4)</sub>
-
-**Dawn — day 5.**
-
-There is frost on everything this morning, and the sun comes up thin and cold. The moon is wasting. A few more nights and it will be gone.
-
-→ Hidden Cache
-
-**→ Hidden Cache** <sub>(room `cache`)</sub>
-
-→ Search the room
-
-<sub>scene `inner/f1-find-cache`</sub>
-
-_(a paragraph shown before: “Someone hid their best here: coin, and…”)_
-
-**» Take it**
-
-_+70 gold (416)_
-
-_Gained: Potion of Greater Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Empty Tent
-
-**→ Empty Tent** <sub>(room `m1`)</sub>
-
-→ Search the room
-
-<sub>scene `inner/f1-find-m1`</sub>
-
-_(a paragraph shown before: “A pack left behind, with a potion…”)_
-
-**» Take it**
-
-_Gained: Potion of Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Kennels
-
-**→ Kennels** <sub>(room `m2`)</sub>
-
-<sub>scene `den-hyenas`</sub>
-
-Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.
-
-**Battle:** The Kennels <sub>(`kennel-hyenas` on `ruins`)</sub>
-
-**» Fight — won**
-
-The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
-
-_+30 gold (446)_
-
-_Gained: Potion of Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Smoke Hut
-
-**→ Smoke Hut** <sub>(room `key`)</sub>
-
-<sub>scene `inner/f1-fight-key`</sub>
-
-They were throwing dice for a carter's boots. They stop.
-
-**Battle:** gen:scout+orc+worg+orc <sub>(`gen:scout+orc+worg+orc` on `@room`)</sub>
-
-**» Fight — won**
-
-One of them carried a heavy key.
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-**→ Smoke Hut** <sub>(room `key`)</sub>
-
-→ Search the room
-
-<sub>scene `inner/f1-find-key`</sub>
-
-A few coins, dropped and forgotten.
-
-**» Take it**
-
-_+20 gold (466)_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Kennels
-
-**→ Kennels** <sub>(room `m2`)</sub>
-
-→ Search the room
-
-<sub>scene `den-cache`</sub>
-
-A tent of stolen goods, heaped anyhow. A careful search turns up the best of it.
-
-`[Investigation DC 12 — Morgan Le Fey rolls 23 — passed]`
-
-Beneath the junk you find real coin and a caravan's lost potion. Stuffed in a sack at the bottom is the **Ashfang banner** itself. The reeve will pay extra for that.
-
-_+80 gold (546)_
-
-_Gained: Potion of Greater Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ The Pit
-
-**→ The Pit** <sub>(room `m3`)</sub>
-
-<sub>scene `den-muster`</sub>
-
-The chained shape in the pit stands up, and keeps standing up: an **ogre**, half-starved, whip-scarred and beside itself with rage. Two orc goaders work its temper with barbed poles, and when they see you they whoop and haul the pins.
-
-On the far side of the ring, a bare-chested raider gets up off an upturned barrel. Scars run from his collarbone to his belt. He lifts a notched greataxe and rolls his shoulders. This is his pit.
-
-"Fresh meat for the pit!" a goader bellows, and slips the ogre's chain.
-
-**Battle:** The Pit-Brute and Its Champion <sub>(`den-pit` on `ruins`)</sub>
-
-**» Fight — won**
-
-The ogre crashes down across its own broken chains. The goaders and their champion don't outlive it by much. The ogre's collar has worn a groove in its neck as deep as a thumb.
-
-Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
-
-_+40 gold (586)_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `m4`)</sub>
-
-<sub>scene `vex-parley`</sub>
-
-**Vex, the Lieutenant**
-
-> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-**» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
-
-`[Persuasion DC 9 — Elaine the Holy rolls 17 — passed]`
-
-<sub>scene `vex-turned`</sub>
-
-Vex weighs it, then slides the blade home. "A road out of this valley, then. I'll take it before the reeve's men take it from me."
-
-"Hask guards the chief, and Hask answers to me. He'll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I'm tired of soldiering for a man who burns barns and calls it strategy."
-
-**» Go and face the chief**
-
-_Journal (npc): Vex, Turned_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 

@@ -615,7 +615,12 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
   const embedded: Record<Id, EmbeddedTown> = {};
   const delves: Record<Id, EmbeddedDelve> = {};
   const won = (id: Id) => `won-${id}`;
-  const THEME: Record<Terrain, SpecTheme> = { forest: 'forest', marsh: 'bog', hills: 'stone', mountain: 'stone', plain: 'graveyard', water: 'bog' };
+  const THEME: Record<Terrain, SpecTheme> = { forest: 'forest', marsh: 'marsh', hills: 'stone', mountain: 'stone', plain: 'graveyard', water: 'bog' };
+  /** Out on the open plain, an old graveyard or a camp someone has walled in: by place, so a county reads the same each time. */
+  const themeAt = (pl: { id: Id; p: Pt }): SpecTheme => {
+    const t = g.at(pl.p);
+    return t === 'plain' && [...pl.id].reduce((n, c) => n + c.charCodeAt(0), 0) % 2 ? 'stockade' : THEME[t];
+  };
   const nodes: ExploreNode[] = places.map((pl) => {
     const node: ExploreNode = { id: pl.id, label: pl.label, icon: pl.icon, scene: pl.id, x: pl.p[0], y: pl.p[1] };
     // Closed until the party has been there — or won there.
@@ -637,7 +642,7 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
         ...(pl.kind === 'city' ? { lord } : {}), name: pl.label, style }, onLeave: { to: 'land' } };
     } else if (pl.kind === 'delve') {
       const win: Effect[] = [{ kind: 'setFlag', flag: won(pl.id) }];
-      delves[pl.id] = { spec: { level: levelAt(pl.p, !!pl.from?.via), theme: THEME[g.at(pl.p)], ...pl.from?.delve }, onWin: { to: 'land', effects: win }, onLeave: { to: 'land' } };
+      delves[pl.id] = { spec: { level: levelAt(pl.p, !!pl.from?.via), theme: themeAt(pl), ...pl.from?.delve }, onWin: { to: 'land', effects: win }, onLeave: { to: 'land' } };
       scenes[`${pl.id}-quiet`] = { id: `${pl.id}-quiet`, kind: 'story', noBack: true, text: [`${pl.label} is quiet now. Whatever held it holds it no longer.`],
         next: [{ id: 'on', label: 'Walk on', to: 'land' }] };
     } else if (pl.kind === 'camp') {
