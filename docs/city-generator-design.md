@@ -303,3 +303,9 @@ A city is too big for one phone screen, so its map shows its quarters, and
 each quarter is a street-level map of its own with a "City map" way back
 up. A city holds up to twice the places a town can. Villages and towns stay
 on one map: they are hubs, and quick is right for them.
+
+A city's own map also shows its castle and the harbour (on a coast) or the
+great bridge (on a river), and a one-tap shortcut to each shop, inn and
+temple once the party has found it there (`hideWhenBlocked` on an explore
+node: nothing at all until then). A walled town or city bars its gate at
+night: wait for morning, or bribe the gatekeeper (5 gold a level).

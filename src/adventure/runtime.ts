@@ -856,6 +856,7 @@ export function exploreNodes(state: AdventureState, module: Module): VisibleNode
     if (known && !known.has(node.id)) continue;      // beyond the frontier
     const secret = !!node.hidden;
     if (secret && passive < node.hidden!.dc) continue; // undiscovered secret
+    if (node.hideWhenBlocked && blockedReason(state, node.requires)) continue;
     const explored = state.exploredNodes.includes(node.id);
     const isEntry = map.entry?.includes(node.id) ?? false;
     // Frontier: known but not yet reached (and not the entry you started at).

@@ -32,7 +32,7 @@ const mapsOf = (m: Module): ExploreMap[] => Object.values(m.scenes).flatMap((s) 
 const mapOf = (m: Module): ExploreMap => {
   const maps = mapsOf(m);
   if (!maps.length) throw new Error('no city map');
-  return { ...maps[0]!, nodes: maps.flatMap((x) => x.nodes).filter((n) => !/^(way|to)-/.test(n.id)) };
+  return { ...maps[0]!, nodes: maps.flatMap((x) => x.nodes).filter((n) => !/^(way|to|short)-/.test(n.id)) };
 };
 const dialogue = (m: Module, id: string) => { const s = m.scenes[id]; if (s?.kind !== 'dialogue') throw new Error(`no dialogue '${id}'`); return s; };
 const node = (m: Module, id: string) => mapOf(m).nodes.find((n) => n.id === id)!;

@@ -18,7 +18,7 @@ const mapsOf = (m: Module): ExploreMap[] => Object.values(m.scenes).flatMap((s) 
 const mapOf = (m: Module): ExploreMap => {
   const maps = mapsOf(m);
   if (!maps.length) throw new Error('no city map');
-  return { ...maps[0]!, nodes: maps.flatMap((x) => x.nodes).filter((n) => !/^(way|to)-/.test(n.id)) };
+  return { ...maps[0]!, nodes: maps.flatMap((x) => x.nodes).filter((n) => !/^(way|to|short)-/.test(n.id)) };
 };
 type Shop = Extract<Scene, { kind: 'shop' }>;
 const shop = (m: Module, id: string): Shop => {
@@ -71,7 +71,7 @@ describe('a generated town', () => {
       expect(new Set(map.nodes.map((n) => n.label)).size, `${size} seed ${seed}`).toBe(map.nodes.length);
       // One town, not islands: every marker reachable along the roads. (A
       // city's map of quarters is all ways in, and its streets join them.)
-      if (map.nodes.every((n) => n.id.startsWith('to-'))) continue;
+      if (map.nodes.some((n) => n.id.startsWith('to-'))) continue;
       const seen = new Set([map.nodes[0]!.id]);
       for (let grew = true; grew;) {
         grew = false;

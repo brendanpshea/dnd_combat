@@ -60,7 +60,7 @@ describe('a city\'s quarters', () => {
 
   it('puts one marker per quarter on the city\'s own map, the way in at the gatehouse', () => {
     const top = explore('city');
-    expect(top.nodes.map((n) => n.scene).sort()).toEqual(['quarter-gatehouse', 'quarter-market', 'quarter-temple-quarter', 'quarter-warrens']);
+    expect(top.nodes.filter((n) => n.id.startsWith('to-')).map((n) => n.scene).sort()).toEqual(['quarter-gatehouse', 'quarter-market', 'quarter-temple-quarter', 'quarter-warrens']);
     expect(top.entry).toEqual(['to-gatehouse']);
     expect(top.ground?.wall).toBeTruthy();
   });
@@ -88,5 +88,67 @@ describe('a city\'s quarters', () => {
     for (const size of ['village', 'town'] as const) {
       expect(Object.values(generateCity(3, { size }).module.scenes).filter((s) => s.kind === 'explore')).toHaveLength(1);
     }
+  });
+});
+
+import { startAdventure, enterScene, enterNode, choose, exploreNodes } from '../src/adventure/runtime.js';
+import { newCampaign } from '../src/campaign/campaign.js';
+import { NIGHT, type Module } from '../src/adventure/types.js';
+
+function walkIn(seed: number, m: Module) {
+  const c = newCampaign(seed); c.gold = 500;
+  const s = startAdventure(c, m);
+  enterScene(s, m, m.start);
+  choose(s, m, 'in');
+  return s;
+}
+const shownHere = (s: ReturnType<typeof walkIn>, m: Module) => exploreNodes(s, m).map((n) => n.node.id);
+
+describe('the city\'s own map', () => {
+  it('keeps a shop off it until it is found, then one tap away', () => {
+    const m = generateCity(7, { size: 'city', level: 3 }).module;
+    const s = walkIn(7, m);
+    expect(shownHere(s, m)).not.toContain('short-general');
+    enterScene(s, m, 'general');
+    enterScene(s, m, 'city');
+    expect(shownHere(s, m)).toContain('short-general');
+    enterNode(s, m, 'short-general');
+    expect(s.sceneId).toBe('general');
+  });
+
+  it('shows a castle, and a harbour on the coast or a bridge on a river', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const m = generateCity(seed, { size: 'city' }).module;
+      const top = m.scenes.city!.kind === 'explore' ? (m.scenes.city as { map: ExploreMap }).map : undefined;
+      const ids = top!.nodes.map((n) => n.id);
+      expect(ids).toContain('castle');
+      if (top!.ground?.water?.kind === 'coast') expect(ids).toContain('harbour');
+      if (top!.ground?.water?.kind === 'river') expect(ids).toContain('bridge');
+    }
+  });
+});
+
+describe('the gates at night', () => {
+  it('are barred in a walled town until dawn, or a bribe', () => {
+    for (const size of ['town', 'city'] as const) {
+      const m = generateCity(5, { size, level: 2 }).module;
+      const s = walkIn(5, m);
+      s.flags[NIGHT] = 1;
+      enterScene(s, m, size === 'city' ? 'quarter-gatehouse' : 'city');
+      enterNode(s, m, 'gate');
+      expect(s.sceneId).toBe('gate-shut');
+      const gold = s.campaign.gold;
+      choose(s, m, 'bribe');
+      expect(gold - s.campaign.gold).toBe(10);
+      expect(s.sceneId).toBe('gate');
+    }
+  });
+
+  it('stand open in a village, which has none', () => {
+    const m = generateCity(5, { size: 'village' }).module;
+    const s = walkIn(5, m);
+    s.flags[NIGHT] = 1;
+    enterNode(s, m, 'gate');
+    expect(s.sceneId).toBe('gate');
   });
 });
