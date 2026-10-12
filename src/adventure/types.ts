@@ -12,6 +12,7 @@
  */
 import type { Id } from '../engine/types.js';
 import type { SkillId } from '../data/classes.js';
+import type { DelveSpec } from './delve-spec.js';
 import type { MapTheme } from '../data/maps.js';
 
 /** A run of prose. One entry = one paragraph/beat the UI reveals in turn. */
@@ -599,6 +600,30 @@ export interface Module {
    * slept, so it does not end the day. Days ascending, each 2 or later.
    */
   dawns?: Dawn[];
+  /**
+   * Generated dungeons in this written story, by the scene id the story links
+   * to (see adventure/embed.ts). Expanded once per run, from a seed and the
+   * flags it reads, by `liveModule`: the runtime only ever sees the ordinary
+   * scenes they become.
+   */
+  delves?: Record<Id, EmbeddedDelve>;
+}
+
+/** A generated dungeon a written story walks into (Module.delves). */
+export interface EmbeddedDelve {
+  spec: DelveSpec;
+  /** Where the story goes when the delve is won. */
+  onWin: Outcome;
+  /** Where it goes when the party gives up on the place. */
+  onLeave: Outcome;
+  /**
+   * Story flags the delve reads: at generation (a placement's `when` decides
+   * whether a piece is built at all) and in play (left un-namespaced, so its
+   * scenes may require them). Snapshotted when the run's delves are rolled.
+   */
+  reads?: string[];
+  /** Delve flags handed back to the story, renamed: generated name → story name. */
+  exports?: Record<string, string>;
 }
 
 /** A named character and where a chapter introduces them (Module.cast). */

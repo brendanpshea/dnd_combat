@@ -6,6 +6,7 @@
  * combat engine has one `step` behind every UI.
  */
 import type { Module } from './types.js';
+import { liveModule } from './embed.js';
 import { type CampaignState, xpAward } from '../campaign/campaign.js';
 import {
   type AdventureState, type AdventureEvent,
@@ -34,9 +35,11 @@ export interface RunResult {
 /** Drive `module` from its start to an ending. Throws on a dead end (no legal
  *  progress), which is exactly what the validator/auto-player want to catch. */
 export function runModule(
-  campaign: CampaignState, module: Module, policy: RunPolicy, maxSteps = 5000,
+  campaign: CampaignState, written: Module, policy: RunPolicy, maxSteps = 5000,
 ): RunResult {
-  const state = startAdventure(campaign, module);
+  const state = startAdventure(campaign, written);
+  // Its generated dungeons, rolled for this run (none: the module as written).
+  const module = liveModule(written, state);
   const events: AdventureEvent[] = [...enterScene(state, module, module.start)];
   let ending: 'victory' | 'defeat' | null = null;
 

@@ -18,6 +18,7 @@ import {
 } from '../../src/adventure/delve-spec.js';
 import { PIECES } from '../../src/adventure/delve-pieces.js';
 import { FACTIONS } from '../../src/data/factions.js';
+import { DELVE_STORY_MODULE } from '../../src/data/modules/delve-story.js';
 import { DELVE_SLOT, savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { initAudio } from './sound.js';
 
@@ -49,7 +50,9 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
   const [pieces, setPieces] = useState<string[]>([]);
   const [error, setError] = useState('');
   const savedId = savedAdventureModule(DELVE_SLOT);
-  const saved = savedId ? specDelveFromId(savedId) ?? delveFromId(savedId) : undefined;
+  const saved = !savedId ? undefined
+    : savedId === DELVE_STORY_MODULE.id ? DELVE_STORY_MODULE
+    : specDelveFromId(savedId) ?? delveFromId(savedId);
   const resume = saved ? loadAdventureWeb(saved, DELVE_SLOT) : undefined;
 
   const start = () => {
@@ -117,6 +120,11 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
       {error && <small className="delve-error" role="alert">{error}</small>}
       <div className="delve-row">
         <button className="mini" onClick={start}>New delve</button>
+        <button className="mini" title={DELVE_STORY_MODULE.blurb} onClick={() => {
+          initAudio();
+          deleteAdventureWeb(DELVE_SLOT);
+          onPlay(DELVE_STORY_MODULE);
+        }}>📖 {DELVE_STORY_MODULE.title}</button>
       </div>
       {saved && resume && (
         <button className="mini" onClick={() => { initAudio(); onPlay(saved, resume); }}>
