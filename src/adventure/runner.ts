@@ -14,6 +14,7 @@ import {
   rollSceneCheck, legalApproaches, tryApproach, exploreNodes, enterNode,
   resolveBattle, resolveShopOrRest, battleWonBefore,
   dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere, leaveDungeon,
+  battleEncounter,
 } from './runtime.js';
 
 export interface RunPolicy {
@@ -77,12 +78,12 @@ export function runModule(
       }
 
       case 'battle': {
-        const won = policy.battle(scene.encounterId, scene.mapId);
+        const won = policy.battle(battleEncounter(state, scene), scene.mapId);
         // Mirror the real driver (applyAdventureVictory): a won fight grants
         // encounter XP unless the scene opts out with loot:false. Without this,
         // headless pacing ignored combat entirely and only saw milestone XP.
         if (won && scene.loot !== false) {
-          if (!battleWonBefore(state, scene.id)) state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
+          if (!battleWonBefore(state, scene.id)) state.campaign.xp += xpAward(battleEncounter(state, scene), Math.max(1, state.campaign.characters.length));
         }
         events.push(...resolveBattle(state, module, won));
         break;

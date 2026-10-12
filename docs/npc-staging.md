@@ -55,6 +55,26 @@ sees it whole. It already catches the first kind of incoherence this was for:
 a place someone can be that nothing ever sends them to ("talk-wren@jail can
 never be reached").
 
+## Three rules that end twins
+
+Chapter one's survey found its tangles were not about where people are but
+about *twins*: choices and lines written twice over one NPC's state. Three
+engine rules let a chapter write them once.
+
+- **Regard moves only in someone who knows the company.** An NPC attitude
+  effect compiles with `ifSet: npc.<id>.met`: before they have met the
+  company it does nothing. No more "met" and "not met" copies of a choice
+  just to keep a stranger's opinion still. (Talking to a staged NPC meets
+  them.)
+- **A fight picks its enemies** (`battle.encounterWhen`): the first variant
+  whose `if` holds, else `encounterId`. One hall, guarded or not, with its
+  text varying by the same conditions — not a twin of every choice leading
+  in.
+- **Outcome cards** (an ending slide `{ thread, cases }`): one thread's
+  ending, the first case that holds. Order says what negation used to; two
+  lines of one thread can never both show; a case after one that always
+  holds is refused.
+
 ## Next
 
 - Port chapter one (*The Hollow Road*): Wren, Vex, Vargan, the reed-wife.

@@ -79,12 +79,13 @@ function weave(scenes: Record<Id, Scene>, where: string, npc: NpcDef, st: NpcSta
     if (j && j.refuse.length !== j.when.length) err('join needs one refusal for each of its conditions');
     const topics = [...st.topics, ...joinTopics];
     scenes[talk] = { id: talk, kind: 'dialogue', npc: who, noBack: true, lines: [...lines], next: [
+      // Spoken with is met: every way out of the talk says so.
       ...topics.map((t): Choice => ({
         id: `topic-${t.id}`, label: t.label, to: `${talk}/${t.id}`, hideWhenBlocked: true,
         requires: [...(t.requires ?? []), ...(t.repeat ? [] : [{ kind: 'notFlag', flag: toldFlag(npc.id, t.id) } as const])],
-        effects: [...(t.repeat ? [] : [{ kind: 'setFlag', flag: toldFlag(npc.id, t.id) } as const]), ...(t.effects ?? [])],
+        effects: [{ kind: 'npc', npc: npc.id, met: true }, ...(t.repeat ? [] : [{ kind: 'setFlag', flag: toldFlag(npc.id, t.id) } as const]), ...(t.effects ?? [])],
       })),
-      { id: 'leave', label: 'Take your leave', to: P },
+      { id: 'leave', label: 'Take your leave', to: P, effects: [{ kind: 'npc', npc: npc.id, met: true }] },
     ] };
     for (const t of topics) {
       scenes[`${talk}/${t.id}`] = { id: `${talk}/${t.id}`, kind: 'dialogue', npc: who, noBack: true, lines: t.lines,

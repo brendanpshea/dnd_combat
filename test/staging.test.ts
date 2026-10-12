@@ -157,8 +157,12 @@ describe('a company\'s name', () => {
     expect(validateModule(m)).toEqual([]);
   });
 
-  it('is made by deeds, and moves everyone who cares, each their own way', () => {
+  it('is made by deeds, and moves everyone who cares, each their own way — once they know you', () => {
     const s = play();
+    choose(s, m, 'hang');
+    expect(s.flags[npcAttitudeFlag('wren')]).toBeUndefined();   // strangers: nobody to think worse of
+    s.flags['npc.wren.met'] = true; s.flags['npc.vex.met'] = true;
+    s.flags[reputationFlag('empathy')] = 0; s.flags[reputationFlag('law')] = 0;
     choose(s, m, 'hang');
     expect(s.flags[reputationFlag('empathy')]).toBe(-2);
     expect(s.flags[reputationFlag('law')]).toBe(-1);
@@ -177,6 +181,7 @@ describe('a company\'s name', () => {
 
   it('decides who will travel with you, and says why not', () => {
     const kind = play();
+    choose(kind, m, 'talk-wren'); choose(kind, m, 'leave');   // met
     choose(kind, m, 'spare');
     choose(kind, m, 'talk-wren');
     expect(ids(kind)).toEqual(['topic-join', 'leave']);
@@ -186,6 +191,7 @@ describe('a company\'s name', () => {
     expect(ids(kind)).not.toContain('talk-wren');        // she is with you now
 
     const cruel = play();
+    choose(cruel, m, 'talk-wren'); choose(cruel, m, 'leave');
     choose(cruel, m, 'help'); choose(cruel, m, 'hang');   // liked (3 − 2), but not with that name (−2)
     choose(cruel, m, 'talk-wren');
     expect(ids(cruel)).toEqual(['topic-join-no-1', 'leave']);

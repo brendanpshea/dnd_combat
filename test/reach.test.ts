@@ -2,6 +2,7 @@
  * The exhaustive state search: every shipped module can always still be won,
  * and the two strandings it found stay fixed.
  */
+import { slideLines } from '../src/adventure/runtime.js';
 import { describe, it, expect } from 'vitest';
 import { checkModuleReach } from '../src/adventure/reach.js';
 import { npcFateFlag, npcMetFlag } from '../src/adventure/npcs.js';
@@ -255,7 +256,7 @@ describe('campaign bugs found by the fifth read-through', () => {
   it('the camp is only said to have fought its night if the Calling peaked', () => {
     const end = byId('wyrmcalling').scenes['wc-epilogue'];
     if (end?.kind !== 'ending') throw new Error();
-    for (const sl of end.slides ?? []) {
+    for (const sl of slideLines(end.slides)) {
       if (sl.text.includes('night of the Calling') || sl.text.includes('arrows nobody needed')) {
         expect(sl.if, sl.text).toContainEqual({ kind: 'flag', flag: 'calling-peaked' });
       }

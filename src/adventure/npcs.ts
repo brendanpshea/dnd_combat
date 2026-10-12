@@ -107,7 +107,7 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
             ...(['empathy', 'law'] as const).filter((a) => by(a)).map((a) => ({ kind: 'addFlag' as const, flag: reputationFlag(a), amount: by(a) })),
             ...Object.values(npcs).flatMap((n) => {
               const moved = (n.values?.empathy ?? 0) * by('empathy') + (n.values?.law ?? 0) * by('law');
-              return moved ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(n.id), amount: moved, hearsay: true as const }] : [];
+              return moved ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(n.id), amount: moved, hearsay: true as const, ifSet: npcMetFlag(n.id) }] : [];
             }),
           ];
         }
@@ -115,7 +115,9 @@ function compileNpcState<T>(value: T, npcs: Record<Id, NpcDef>, where: string, k
         const npc = npcOf(e.npc, e.fate);
         return [
           ...(e.met ? [{ kind: 'setFlag' as const, flag: npcMetFlag(e.npc) }] : []),
-          ...(e.attitude ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(e.npc), amount: e.attitude, ...(e.hearsay ? { hearsay: true as const } : {}) }] : []),
+          // Regard moves only in someone who knows the company: before they
+          // have met it, there is nobody for them to think better or worse of.
+          ...(e.attitude ? [{ kind: 'addFlag' as const, flag: npcAttitudeFlag(e.npc), amount: e.attitude, ifSet: npcMetFlag(e.npc), ...(e.hearsay ? { hearsay: true as const } : {}) }] : []),
           // A new fate replaces the old: one at a time.
           ...(e.fate !== undefined ? [
             ...(npc.fates ?? []).filter((f) => f !== e.fate).map((f) => ({ kind: 'clearFlag' as const, flag: npcFateFlag(e.npc, f) })),

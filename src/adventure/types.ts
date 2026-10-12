@@ -115,7 +115,10 @@ export type Effect =
    *  company's reputation, and the attitude of everyone who cares (NpcDef.values). */
   | { kind: 'deed'; empathy?: number; law?: number }
   /** Add to a tally (signed; unset counts as 0). `hearsay`: see `npc`. */
-  | { kind: 'addFlag'; flag: string; amount: number; hearsay?: true };
+  | { kind: 'addFlag'; flag: string; amount: number; hearsay?: true;
+      /** Only while this flag is set: an NPC's regard moves only once they
+       *  know the company (compiled attitude changes carry their `met`). */
+      ifSet?: string };
 
 export interface JournalEntry {
   id: Id;
@@ -529,6 +532,10 @@ export type Scene =
     }
   | {
       id: Id; kind: 'battle'; encounterId: Id; mapId: Id; intro?: Para[]; art?: SceneArt;
+      /** Who the fight is against, by how things stand: the first whose `if`
+       *  holds, else `encounterId`. One hall, guarded or not, instead of a
+       *  twin of every choice that leads to it. */
+      encounterWhen?: Array<{ if: Requirement[]; encounterId: Id }>;
       /** The intro on every visit after the first: coming back to a fight
        *  fallen back from, or lost and retried (see story `again`). */
       again?: Para[];
@@ -603,8 +610,19 @@ export type Scene =
        * ("Mira sets an extra cup at the end of the bar…" if the scout died).
        * The ending reads the run back, so choices visibly mattered.
        */
-      slides?: Array<{ if: Requirement[]; text: Paragraph }>;
+      slides?: Array<Slide>;
     };
+
+/**
+ * An ending slide: a line shown when its requirements hold — or an outcome
+ * card, one thread's ending told in cases: the first whose `if` holds (a
+ * case with none always does), and only that. Order says what negation
+ * would: a later case never has to say it is not an earlier one, and two
+ * cases of one thread can never both show.
+ */
+export type Slide =
+  | { if: Requirement[]; text: Paragraph }
+  | { thread: string; cases: Array<{ if?: Requirement[]; text: Paragraph }> };
 
 /**
  * An NPC who can travel with the party — the Gold Box guide, prisoner or

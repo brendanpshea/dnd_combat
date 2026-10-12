@@ -53,6 +53,7 @@ import { collectReach, type ReachRun } from '../src/adventure/reach.js';
 import {
   type AdventureState, sceneParagraphs, introParagraphs, paragraphsFor,
   endingText,
+  slideLines,
 } from '../src/adventure/runtime.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
 import { ENCOUNTERS } from '../src/data/encounters.js';
@@ -129,7 +130,7 @@ function sceneConditions(scene: Scene): Requirement[][] {
       if (n.requires?.length) out.push(n.requires);
       for (const w of n.sceneWhen ?? []) out.push(w.if);
     } break;
-    case 'ending': for (const s of scene.slides ?? []) out.push(s.if); break;
+    case 'ending': for (const s of slideLines(scene.slides)) out.push(s.if); break;
     default: break;
   }
   return out;
@@ -460,7 +461,7 @@ function sharedTextOf(module: Module): SharedText {
   const users = new Map<string, Id[]>();
   for (const [id, scene] of Object.entries(module.scenes)) {
     const texts = parasOf(scene).flatMap(({ paras }) => paras.map((p) => (typeof p === 'string' ? p : p.text)));
-    if (scene.kind === 'ending') texts.push(...(scene.slides ?? []).map((sl) => sl.text));
+    if (scene.kind === 'ending') texts.push(...slideLines(scene.slides).map((sl) => sl.text));
     for (const t of new Set(texts.map((x) => x.trim()).filter(Boolean))) users.set(t, [...(users.get(t) ?? []), id]);
   }
   const byText = new Map<string, { n: number; scenes: Id[] }>();
@@ -800,7 +801,7 @@ function lineFor(scene: Scene, reqs: Requirement[]): string {
     const w = n.sceneWhen?.find((x) => x.if === reqs);
     if (w) return `the marker "${n.label}" going to \`${w.to}\``;
   }
-  if (scene.kind === 'ending') { const s = scene.slides?.find((x) => x.if === reqs); if (s) return `the slide "${clip(s.text)}"`; }
+  if (scene.kind === 'ending') { const s = slideLines(scene.slides).find((x) => x.if === reqs); if (s) return `the slide "${clip(s.text)}"`; }
   return '(a condition)';
 }
 const clip = (t: string, n = 140) => (t.length > n ? `${t.slice(0, n).trimEnd()}…` : t);
@@ -824,7 +825,7 @@ function lineByLine(scene: Scene, whenRaw: (reqs: Requirement[]) => string, note
   for (const { where, paras } of parasOf(scene)) para(where, paras);
   if (scene.kind === 'ending') {
     out.push('*slides:*', '');
-    for (const s of scene.slides ?? []) {
+    for (const s of slideLines(scene.slides)) {
       out.push(s.if.length ? `> **[${when(s.if).startsWith('on ') ? '' : 'when '}${when(s.if)}]** ${s.text}` : s.text, '');
       const n = note(s.text);
       if (n) out.push(n, '');

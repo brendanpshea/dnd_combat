@@ -185,6 +185,18 @@ export function validateModule(module: Module): string[] {
     // curated and every module is art-complete for free.
     const artId = 'art' in scene ? scene.art?.imageId : undefined;
     if (artId && !isLocationArt(artId)) at(id, `art.imageId '${artId}' is not a known location (see adventure-art.ts)`);
+    // An outcome card: one line of one thread. A case after one that always
+    // holds can never show; two cards for one thread would say it twice.
+    if (scene.kind === 'ending') {
+      const threads = new Set<string>();
+      for (const sl of scene.slides ?? []) {
+        if ('if' in sl) continue;
+        if (threads.has(sl.thread)) at(id, `two outcome cards for the thread '${sl.thread}'`);
+        threads.add(sl.thread);
+        const always = sl.cases.findIndex((c) => !c.if?.length);
+        if (always >= 0 && always < sl.cases.length - 1) at(id, `the '${sl.thread}' card's case ${always + 2} can never show: case ${always + 1} always holds`);
+      }
+    }
     if (scene.kind === 'explore' && scene.map.art?.imageId && !isLocationArt(scene.map.art.imageId)) {
       at(id, `explore map art '${scene.map.art.imageId}' is not a known location`);
     }
@@ -236,7 +248,9 @@ export function validateModule(module: Module): string[] {
       at(id, `shop NPC portraitId '${scene.npc.portraitId}' is not a known archetype`);
     }
     if (scene.kind === 'battle') {
-      if (!encounterExists(scene.encounterId)) at(id, `unknown encounter '${scene.encounterId}'`);
+      for (const e of [scene.encounterId, ...(scene.encounterWhen ?? []).map((v) => v.encounterId)]) {
+        if (!encounterExists(e)) at(id, `unknown encounter '${e}'`);
+      }
       if (scene.mapId === ROOM_MAP_REF) {
         // A board drawn for the room — so the fight has to happen in one.
         if (!roomFights.has(id)) at(id, `map '${ROOM_MAP_REF}' is only for a fight in a dungeon room or corridor`);
@@ -423,6 +437,8 @@ export function validateModule(module: Module): string[] {
         for (const e of effs) {
           const m = e.kind === 'addFlag' ? ATT.exec(e.flag) : null;
           if (!m || (e as { hearsay?: true }).hearsay) continue;
+          // Moved only once they know the company: guarded by construction.
+          if (e.kind === 'addFlag' && e.ifSet === `npc.${m[1]}.met`) continue;
           const who = m[1]!;
           const meets = effs.some((x) => x.kind === 'setFlag' && x.flag === `npc.${who}.met`);
           if (!meets && !present(who, here)) at(where, `moves ${who}'s regard where ${who} may not be present: guard it on ${who} being met or with the party, or mark it hearsay`);
