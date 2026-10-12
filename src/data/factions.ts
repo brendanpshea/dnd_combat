@@ -54,7 +54,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   },
   {
     id: 'goblins', names: ['the Redfang goblins', 'the Mudfoot tribe', 'the Grinning Knives'], one: 'a goblin',
-    themes: ['stone', 'forest', 'village'],
+    themes: ['stone', 'forest', 'village', 'stockade'],
     members: ['goblin-warrior', 'goblin-hexer', 'worg', 'bugbear', 'ogre'],
     leaders: ['goblin-boss', 'bugbear', 'ogre', 'ettin'],
     parley: { skill: 'intimidation', dc: 13, label: 'Scare them off', success: 'They decide, loudly, that this was never their room anyway.' },
@@ -80,7 +80,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   },
   {
     id: 'bandits', names: ['the Black Hand', 'Tamsin\'s Crew', 'the Gallows Boys'], one: 'a bandit',
-    themes: ['forest', 'village', 'stone'],
+    themes: ['forest', 'village', 'stone', 'stockade'],
     members: ['bandit', 'guard', 'scout', 'spy', 'berserker'],
     leaders: ['bandit-captain', 'veteran', 'gladiator', 'assassin'],
     parley: { dc: 13, label: 'Cut them in', success: 'A share of nothing yet found, promised loudly. Greed does the rest.' },
@@ -97,7 +97,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   },
   {
     id: 'lizardfolk', names: ['the Blackscale tribe', 'the Reed Hunters', 'the Silent Tongue'], one: 'a lizardfolk',
-    themes: ['bog'],
+    themes: ['bog', 'marsh'],
     members: ['lizardfolk', 'giant-toad', 'giant-constrictor-snake', 'scout'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],
     parley: { skill: 'survival', dc: 13, label: 'Trade with them', success: 'Salt and a good knife, and a long, unblinking look. They let you pass.' },
@@ -115,7 +115,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   },
   {
     id: 'gnolls', names: ['the Laughing Pack', 'the Bloodmaw gnolls', 'the Hungry Ones'], one: 'a gnoll',
-    themes: ['forest', 'stone'],
+    themes: ['forest', 'stone', 'stockade'],
     members: ['gnoll', 'giant-hyena', 'gnoll-packcaller'],
     leaders: ['gnoll-packcaller', 'ogre-mage'],
     rooms: ['Bone Heap', 'Feeding Pit', 'Howling Hall'],
@@ -123,17 +123,16 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   },
   {
     id: 'hag-court', names: ['the Mire Coven', 'the Green Mother\'s brood', 'the Hollow Court'], one: 'something fey',
-    themes: ['bog', 'forest'],
+    themes: ['bog', 'forest', 'marsh'],
     members: ['sprite', 'satyr', 'dryad', 'giant-toad', 'worg', 'will-o-wisp'],
     leaders: ['green-hag', 'night-hag'],
     parley: { skill: 'persuasion', dc: 14, label: 'Strike a bargain', success: 'A bargain, sealed with a laugh you do not like. They let you by — for now.' },
     rooms: ['Cauldron Room', 'Bone Garden', 'Mirror Pool', 'Bower'],
     sign: ['Flowers growing out of the stone, in the dark, where nothing should grow.'],
   },
-  // A story's own (chapter one): its theme is the story's, so no other
-  // place draws them.
+  // The out-of-doors themes' own (OUTDOOR_THEMES).
   {
-    id: 'ashfang', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
+    id: 'raiders', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
     themes: ['stockade'],
     members: ['bandit', 'scout', 'orc', 'gnoll', 'giant-hyena', 'worg', 'bugbear', 'berserker', 'ogre'],
     leaders: ['bandit-captain', 'berserker', 'bugbear', 'ogre'],
@@ -148,7 +147,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     ],
   },
   {
-    id: 'marsh-thralls', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
+    id: 'marsh-things', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
     themes: ['marsh'],
     members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'ghoul', 'ghast', 'giant-crocodile'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],

@@ -39,12 +39,16 @@ export interface DelveOptions {
   rest?: RestPolicy;
 }
 
-/** Themes written for one story's place: never drawn by chance. */
-export const STORY_THEMES = ['marsh', 'stockade'] as const;
-export const ROOMS: Record<DelveTheme | 'forest' | 'village' | typeof STORY_THEMES[number], {
+/** Out-of-doors themes: no torch, no cellar talk, a camp's own words. Never
+ *  drawn by a classic delve (DELVE_THEMES), so its seeds build as before. */
+export const OUTDOOR_THEMES = ['marsh', 'stockade'] as const;
+export const ROOMS: Record<DelveTheme | 'forest' | 'village' | typeof OUTDOOR_THEMES[number], {
   title: string[]; rooms: string[]; goal: string; door: string; enter: string; safe: [string, string];
   /** The board its fights are drawn on, where that is not its own name. */
   board?: MapTheme;
+  /** Out of doors: the first room's name, what stepping back out says, and
+   *  what a search that finds nothing turns up. No torch. */
+  outdoor?: { entry: string; outside: string; empty: string[]; fights: string[] };
 }> = {
   stone: {
     title: ['Broken Keep', 'Old Cistern', 'Warden\'s Hold', 'Sunless Mine'],
@@ -84,21 +88,35 @@ export const ROOMS: Record<DelveTheme | 'forest' | 'village' | typeof STORY_THEM
     safe: ['Locked Cellar', 'A cellar with a stout door and a bar for it. You could sleep here, in turns.'],
     goal: 'Manor Hall', door: 'The manor gate, chained.', enter: 'The village is shuttered and silent. Every door is shut, and something is watching.',
   },
-  // Story themes (STORY_THEMES): out of doors, for a road through the reeds…
+  // Out of doors (OUTDOOR_THEMES): a road through the reeds…
   marsh: {
-    title: ['Marsh Road'],
-    rooms: ['Reed Bed', 'Causeway', 'Sinkhole', 'Heron Rookery', 'Drowned Hut', 'Eel Weir', 'Peat Bank', 'Willow Island', 'Black Pool', 'Cut Reeds', 'Rush Flats', 'Old Ford'],
+    title: ['Reed Cut', 'Blackwater Causeway', 'Heron Fen', 'Drowned Lanes', 'Eelmere', 'Sedge Road'],
+    rooms: ['Reed Bed', 'Causeway', 'Sinkhole', 'Heron Rookery', 'Drowned Hut', 'Eel Weir', 'Peat Bank', 'Willow Island', 'Black Pool', 'Cut Reeds', 'Rush Flats', 'Old Ford',
+      'Plank Walk', 'Sedge Meadow', 'Frog Shallows', 'Bog Oak', 'Leech Ditch', 'Mist Hollow', 'Fowler\'s Blind', 'Sunk Cart', 'Wisp Pool', 'Stake Line', 'Otter Bank', 'Reedcutter\'s Hut'],
     safe: ['Dry Hummock', 'A hump of firm ground, high enough above the water for a fire. You could camp here.'],
     goal: 'The Hollow', door: 'The reeds close in over black water, too deep to wade.', enter: 'Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.',
     board: 'bog',
+    outdoor: {
+      entry: 'Trailhead', outside: 'The reeds open, and firm ground runs dry under your boots.',
+      empty: ['Mud, and the bones of something small.', 'A boot, with nobody\'s foot in it.', 'Water seeps into every hole you make.', 'Reeds, and more reeds. Nothing in them but frogs.'],
+      fights: ['The water is colder here than it should be, and it moves when you stop.', 'Something heavy slides off a tussock into the water, and then the water comes for you.',
+        'Every frog in the reeds goes quiet at once.', 'The mist ahead thickens into shapes, and the shapes come on.'],
+    },
   },
-  // …and a raiders' camp behind a timber wall.
+  // …and a camp behind a wall of stakes.
   stockade: {
-    title: ['Raiders\' Den'],
-    rooms: ['Tents', 'Cook Fire', 'Stolen Carts', 'Watch Platform', 'Horse Lines', 'Drying Racks', 'Dice Fire', 'Midden', 'Armourer\'s Tent', 'Smoke Hut', 'Water Butts', 'Wood Pile'],
+    title: ['Burnt Mill Camp', 'Raiders\' Stockade', 'Ditch Camp', 'Gallows Camp', 'Black Fair', 'Stake Wall'],
+    rooms: ['Tents', 'Cook Fire', 'Stolen Carts', 'Watch Platform', 'Horse Lines', 'Drying Racks', 'Dice Fire', 'Midden', 'Armourer\'s Tent', 'Smoke Hut', 'Water Butts', 'Wood Pile',
+      'Latrine Ditch', 'Plunder Heap', 'Branding Post', 'Rope Store', 'Grain Sacks', 'Butcher\'s Block', 'Slave Pen', 'Ale Barrels', 'Sharpening Wheel', 'Sentry Gap', 'Stockade Corner', 'Burnt Wagon'],
     safe: ['Empty Tent', 'A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.'],
-    goal: 'Chief\'s Hall', door: 'A gate of lashed timber, barred from the far side.', enter: 'Tents and cook-smoke inside the timber wall. Somewhere a dog, or something like one, is laughing.',
+    goal: 'Chief\'s Hall', door: 'A gate of lashed timber, barred from the far side.', enter: 'Tents and cook-smoke inside a wall of stakes. Somewhere a dog, or something like one, is laughing.',
     board: 'village',
+    outdoor: {
+      entry: 'Gate', outside: 'You slip back out past the stakes, and the camp\'s noise drops behind you.',
+      empty: ['Fleas, and a blanket you would not wish on an enemy.', 'Gnawed bones and empty bottles.', 'Someone\'s stash, already found by someone else.', 'Ashes, and a spoon.'],
+      fights: ['Two of them come out of a tent still buckling on stolen mail.', 'A raider looks up from the fire with his mouth full, and shouts with it.',
+        'They were throwing dice for a carter\'s boots. They stop.', 'A sentry on the platform yells, and the whole lines wake up.'],
+    },
   },
 };
 

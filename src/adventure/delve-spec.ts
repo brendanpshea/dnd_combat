@@ -34,7 +34,7 @@ import { LEVEL_XP, levelForXp, MAX_LEVEL } from '../campaign/campaign.js';
 import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, Effect, Requirement, SceneRef } from './types.js';
 import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
-import { Dice, ROOMS, SIZE_ROOMS, STORY_THEMES, encounterPools, type DelveOptions } from './dungeon-gen.js';
+import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
 import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
 import { beastName, bossName, styleFor } from './names.js';
 import { FACTIONS, canHold, factionsFor, type Faction } from '../data/factions.js';
@@ -43,7 +43,7 @@ import { adjustedXp } from '../arena/encounter.js';
 import { MONSTER_XP } from '../data/monsters.js';
 
 export type SpecTheme = keyof typeof ROOMS;
-export const SPEC_THEMES = (Object.keys(ROOMS) as SpecTheme[]).filter((t) => !(STORY_THEMES as readonly string[]).includes(t));
+export const SPEC_THEMES = Object.keys(ROOMS) as SpecTheme[];
 
 /**
  * How a floor is wired.
@@ -190,8 +190,6 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'l
   const floors = spec.floors ?? 1;
   if (!Number.isInteger(floors) || floors < 1 || floors > MAX_FLOORS) err(`floors ${floors} is not 1–${MAX_FLOORS}`);
   if (spec.theme && !(spec.theme in ROOMS)) err(`no theme '${spec.theme}'`);
-  // A story's own theme is the story's: only a dressed place may use it.
-  if (spec.theme && (STORY_THEMES as readonly string[]).includes(spec.theme) && !spec.dressing) err(`'${spec.theme}' is a story's theme: give the place its dressing`);
   if (spec.shape && !DELVE_SHAPES.includes(spec.shape)) err(`no shape '${spec.shape}'`);
   if (spec.rooms !== undefined && (!Number.isInteger(spec.rooms) || spec.rooms < ROOM_RANGE[0] || spec.rooms > ROOM_RANGE[1])) {
     err(`rooms ${spec.rooms} is not ${ROOM_RANGE[0]}–${ROOM_RANGE[1]}`);
@@ -509,7 +507,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const fight = (roomId: Id, enc: Id, win: Win): Id => {
       const id = `${pre}fight-${roomId}`;
       const talk = roomId === goal ? {} : parleyFor(factionOf(roomId), win, enc);
-      const opens = roomId === goal ? undefined : factionOf(roomId)?.intros;
+      const opens = roomId === goal ? undefined : factionOf(roomId)?.intros ?? T.outdoor?.fights;
       scenes[id] = { id, kind: 'battle', encounterId: enc, mapId: '@room', onWin: win, ...talk, ...(opens ? { intro: [dice.pick(opens)] } : {}) };
       floorXp += encounterXP(enc);
       return id;
@@ -646,9 +644,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       l.door = { ambush: { chance: 0.4, battle: id } };
       // Where the story caps the place's fights, a corridor ambush is a setback, not a payday.
       const capped = spec.maxFights !== undefined;
-      const opens = factionOf(l.a)?.intros;
+      const opens = factionOf(l.a)?.intros ?? T.outdoor?.fights;
       scenes[id] = { id, kind: 'battle', encounterId: fightOf(level, false, undefined, factionOf(l.a)), mapId: '@room',
-        intro: [capped && opens ? dice.pick(opens) : 'Something moves in the dark ahead of the torchlight.'], onWin: { to: '@hub' },
+        intro: [(capped || T.outdoor) && opens ? dice.pick(opens) : 'Something moves in the dark ahead of the torchlight.'], onWin: { to: '@hub' },
         ...(capped ? { loot: false as const } : {}) };
     }
 
@@ -730,7 +728,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
 
     g.main.forEach((id, i) => {
       if (i === 0) {
-        rooms.push({ id, name: f === 1 ? 'Entrance' : 'Stair Foot', size: 'small',
+        rooms.push({ id, name: f === 1 ? T.outdoor?.entry ?? 'Entrance' : 'Stair Foot', size: 'small',
           firstVisit: [f === 1 ? T.enter : 'The stair ends, and the dark is deeper here.',
             // The first sign of whoever holds this floor.
             ...(factionOf(goal) ? [dice.pick(factionOf(goal)!.sign)] : [])],
@@ -752,7 +750,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     // On a deeper floor a dead torch is not the end of the trip: you feel
     // your way back to the stair and light another, as you would at the door.
     const out = f === 1 ? 'dark' : `${pre}dark`;
-    if (f > 1) {
+    if (f > 1 && !T.outdoor) {
       scenes[out] = { id: out, kind: 'story', noBack: true,
         text: ['The torch gutters and dies. You feel your way back to the foot of the stair and strike a new one.'],
         next: [{ id: 'on', label: 'Go on', to: sceneId }] };
@@ -761,6 +759,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       title: f === 1 ? title : `${title}, Level ${f}`, theme: T.board ?? (spec.theme as Dungeon['theme']), entry: g.main[0]!,
       camp: { risky: { chance: 0.5, battleScene: campId } }, rest: spec.rest, rooms, links: g.links,
       ...(dress ? { searchWhereFound: true as const } : {}),
+      ...(T.outdoor ? { emptySearches: T.outdoor.empty } : {}),
     };
     scenes[sceneId] = { id: sceneId, kind: 'dungeon', dungeon };
     goals.push([dungeon, goal, out]);
@@ -770,10 +769,11 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
   Object.assign(scenes, {
     start: { id: 'start', kind: 'story', text: dress ? [dress.door] : [`The way into ${title} stands open.`, ...(history ? [history.story] : [])], next: [{ id: 'in', label: 'Go in', to: 'delve',
       effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
-    outside: { id: 'outside', kind: 'story', text: [dress?.outside ?? 'Daylight, and air that does not smell of the deep.'], noBack: true,
+    outside: { id: 'outside', kind: 'story', text: [dress?.outside ?? T.outdoor?.outside ?? 'Daylight, and air that does not smell of the deep.'], noBack: true,
       next: [{ id: 'in', label: dress?.back ?? 'Go back in', to: 'delve' }, { id: 'quit', label: dress?.leave ?? 'Leave it for someone else', to: 'gave-up' }] },
-    dark: { id: 'dark', kind: 'story', text: ['The torch gutters and dies. You feel your way back along the wall to the light.'], noBack: true,
-      next: [{ id: 'out', label: 'Out', to: 'outside' }] },
+    // (Out of doors there is no torch to die.)
+    ...(T.outdoor ? {} : { dark: { id: 'dark', kind: 'story', text: ['The torch gutters and dies. You feel your way back along the wall to the light.'], noBack: true,
+      next: [{ id: 'out', label: 'Out', to: 'outside' }] } }),
     fallen: { id: 'fallen', kind: 'story', text: ['You come to outside, dragged clear by whoever was still standing.'], noBack: true,
       next: [{ id: 'up', label: 'Get up', to: 'outside' }] },
     won: { id: 'won', kind: 'ending', outcome: 'victory', text: [`${title} is quiet at last.`] },
@@ -789,7 +789,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
   const walked = withStandIns(module, spec.require);
   for (const [d, goal, out] of goals) {
     const cost = goalCost(walked, d, goal);
-    if (cost !== undefined) d.torch = { length: cost + Math.max(4, Math.ceil(cost * 0.6)), out };
+    if (cost !== undefined && !T.outdoor) d.torch = { length: cost + Math.max(4, Math.ceil(cost * 0.6)), out };
   }
   return module;
 }
