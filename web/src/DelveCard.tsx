@@ -23,6 +23,7 @@ import { TOWN_STORY_MODULE } from '../../src/data/modules/town-story.js';
 
 /** The written stories with generated places in them, playable from here. */
 const STORIES = [DELVE_STORY_MODULE, TOWN_STORY_MODULE];
+import { generateLand, landFromId, LAND_KINDS, type LandKind } from '../../src/adventure/overland.js';
 import { generateCity, cityFromId, CITY_SIZES, type CitySize, type CitySpec } from '../../src/adventure/city-gen.js';
 import { DELVE_SLOT, savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { initAudio } from './sound.js';
@@ -54,11 +55,12 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
   const [require, setRequire] = useState('');
   const [pieces, setPieces] = useState<string[]>([]);
   const [citySize, setCitySize] = useState<CitySize>('town');
+  const [landKind, setLandKind] = useState<LandKind>('valley');
   const [error, setError] = useState('');
   const savedId = savedAdventureModule(DELVE_SLOT);
   const saved = !savedId ? undefined
     : STORIES.find((m) => m.id === savedId)
-      ?? specDelveFromId(savedId) ?? delveFromId(savedId) ?? cityFromId(savedId);
+      ?? specDelveFromId(savedId) ?? delveFromId(savedId) ?? cityFromId(savedId) ?? landFromId(savedId);
   const resume = saved ? loadAdventureWeb(saved, DELVE_SLOT) : undefined;
 
   const start = () => {
@@ -152,6 +154,20 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
             setError((e as Error).message);
           }
         }}>🏘️ New {citySize}</button>
+      </div>
+      <Pick<LandKind> label="County" value={landKind} options={LAND_KINDS} onPick={setLandKind} />
+      <div className="delve-row">
+        <button className="mini" onClick={() => {
+          try {
+            const land = generateLand(Math.floor(Math.random() * 1e6), { kind: landKind, level }).module;
+            initAudio();
+            deleteAdventureWeb(DELVE_SLOT);
+            onPlay(land);
+            setError('');
+          } catch (e) {
+            setError((e as Error).message);
+          }
+        }}>🗺️ New county</button>
       </div>
       {saved && resume && (
         <button className="mini" onClick={() => { initAudio(); onPlay(saved, resume); }}>

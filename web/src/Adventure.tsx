@@ -35,7 +35,7 @@ import {
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
-import type { Module, Scene, CampRule, TownGround } from '../../src/adventure/types.js';
+import type { Module, Scene, CampRule, TownGround, LandGround } from '../../src/adventure/types.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
@@ -1096,6 +1096,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
             way the stops read as one connected place, not floating markers. */}
         {/* A town's ground under everything: water, its wall, its streets. */}
         {scene.map.ground && <TownGroundArt g={scene.map.ground} />}
+        {scene.map.land && <LandArt g={scene.map.land} />}
         {(traversal || (!scene.map.ground && (scene.map.roads?.length ?? 0) > 0)) && (
           <svg className="adv-trails" viewBox="0 0 100 100" preserveAspectRatio="none">
             {(scene.map.paths ?? []).map(([a, b], i) => {
@@ -1319,5 +1320,38 @@ function TownGroundArt({ g }: { g: TownGround }) {
       {g.streets.map((s, i) => <polyline key={i} className="adv-street" points={line(s)} />)}
       {g.wall && <polyline className="adv-wall" points={line(g.wall)} />}
     </svg>
+  );
+}
+
+const LAND_FILL: Record<string, string> = {
+  p: 'rgba(150,170,90,.30)', f: 'rgba(40,95,50,.45)', h: 'rgba(150,120,80,.40)',
+  m: 'rgba(80,110,100,.45)', M: 'rgba(120,110,105,.60)', w: 'rgba(60,110,170,.55)',
+};
+const LAND_GLYPH: Record<string, string> = { f: '🌲', h: '⛰️', M: '🏔️', m: '🌾' };
+
+/** A county's ground: terrain squares, glyphs here and there, river and sea. */
+function LandArt({ g }: { g: LandGround }) {
+  const w = 100 / g.cols, h = 100 / g.rows;
+  const cells = [...g.cells];
+  return (
+    <>
+      <svg className="adv-ground" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs><filter id="land-soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.2" /></filter></defs>
+        <g filter="url(#land-soft)">
+        {cells.map((c, i) => (
+          <rect key={i} x={(i % g.cols) * w} y={Math.floor(i / g.cols) * h} width={w + 0.6} height={h + 0.6} fill={LAND_FILL[c]} />
+        ))}
+        </g>
+        {g.sea && <polyline className="adv-coastline" points={line(g.sea.points)} />}
+        {g.river && <polyline className="adv-land-river" points={line(g.river)} />}
+      </svg>
+      <div className="adv-land-glyphs" aria-hidden="true">
+        {cells.map((c, i) => {
+          const col = i % g.cols, row = Math.floor(i / g.cols);
+          if (!LAND_GLYPH[c] || (col + row) % 2) return null;
+          return <span key={i} style={{ left: `${(col + 0.5) * w}%`, top: `${(row + 0.5) * h}%` }}>{LAND_GLYPH[c]}</span>;
+        })}
+      </div>
+    </>
   );
 }
