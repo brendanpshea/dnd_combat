@@ -4740,3 +4740,9 @@ button.category .count {
   position: absolute; top: -6px; left: -6px; z-index: 3; font-size: 16px; pointer-events: none;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.8));
 }
+
+/* A quest's stages in the journal, ticked as they come true. */
+.quest-stages { list-style: none; margin: 4px 0 0; padding: 0; font-size: .9rem; }
+.quest-stages li { opacity: .9; }
+.quest-stages li.done { opacity: .55; text-decoration: line-through; }
+.quest-carrying { font-size: .85rem; opacity: .8; margin-top: 4px; }

@@ -34,6 +34,7 @@ import {
   hubReturn, hubReturnTitle, returnToHub, campRule, campRest, restOptions, restsByRoom, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft, battleWonBefore,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
+  requirementMet,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule, TownGround, LandGround } from '../../src/adventure/types.js';
 import type { BattleProps } from './App.js';
@@ -503,7 +504,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         <span className="adv-gold">💰 {campaign.gold}</span>
       </div>
 
-      {journalOpen && <JournalDrawer entries={state.journal} flags={state.flags} onClose={() => setJournalOpen(false)} />}
+      {journalOpen && <JournalDrawer entries={state.journal} flags={state.flags} met={(reqs) => reqs.every((r) => requirementMet(state, r))} onClose={() => setJournalOpen(false)} />}
       {campOpen && (
         <PartyScreen
           campaign={campaign}

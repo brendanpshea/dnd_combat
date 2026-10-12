@@ -1101,6 +1101,53 @@ function searchModule(
         + `${held.length ? ` (flags: ${held.join(', ')})` : ''}${carriedNote}. One way there: ${shown.join(' → ')}`);
     }
   }
+  // A quest taken can always still be finished: from every state where it is
+  // taken and neither done nor lost, some way on reaches it done. (Lost is a
+  // choice the story made; a quest is let rest there.) Found by walking
+  // back from the states where it is done, as for victories above.
+  const questsOf: Array<{ title: string; T: string; D: string; F?: string }> = [];
+  const scan = (x: unknown): void => {
+    if (Array.isArray(x)) { x.forEach(scan); return; }
+    if (!x || typeof x !== 'object') return;
+    const o = x as { kind?: string; entry?: { kind?: string; title?: string; takenBy?: string; resolvedBy?: string; failedBy?: string } };
+    if (o.kind === 'journal' && o.entry?.kind === 'quest' && o.entry.takenBy && o.entry.resolvedBy
+      && !questsOf.some((q) => q.T === o.entry!.takenBy)) {
+      questsOf.push({ title: o.entry.title ?? '', T: o.entry.takenBy, D: o.entry.resolvedBy, ...(o.entry.failedBy ? { F: o.entry.failedBy } : {}) });
+    }
+    for (const v of Object.values(x)) scan(v);
+  };
+  scan(module.scenes);
+  const bitOf = (f: string) => { const i = factNames.indexOf(`flag:${f}`); return i < 0 ? -1 : 2 ** i; };
+  if (questsOf.length) {
+    const qOff = new Int32Array(N + 1);
+    for (const t of edgeTo) qOff[t + 1]!++;
+    for (let i = 0; i < N; i++) qOff[i + 1]! += qOff[i]!;
+    const qFill = qOff.slice(0, N);
+    const qPreds = new Int32Array(edgeTo.length);
+    for (let e = 0; e < edgeTo.length; e++) qPreds[qFill[edgeTo[e]!]!++] = edgeFrom[e]!;
+    for (const q of questsOf) {
+      const t = bitOf(q.T), d = bitOf(q.D), f = q.F ? bitOf(q.F) : -1;
+      if (t < 0 || d < 0) continue;
+      const ok = new Uint8Array(N);
+      const stack: number[] = [];
+      for (let n = 0; n < N; n++) if (and(factsOf[n]!, d)) { ok[n] = 1; stack.push(n); }
+      while (stack.length) {
+        const n = stack.pop()!;
+        for (let i = qOff[n]!; i < qOff[n + 1]!; i++) { const p = qPreds[i]!; if (!ok[p]) { ok[p] = 1; stack.push(p); } }
+      }
+      for (let n = 0; n < N; n++) {
+        if (ok[n] || !and(factsOf[n]!, t) || (f >= 0 && and(factsOf[n]!, f))) continue;
+        const scene = module.scenes[ids[sceneOf[n]!]!]!;
+        if (scene.kind === 'ending') continue;
+        const path: string[] = [];
+        for (let m = n; parent[m]! >= 0; m = parent[m]!) path.unshift(via[m]!);
+        const shown = path.length > 10 ? ['…', ...path.slice(-10)] : path;
+        errors.push(`[${ids[sceneOf[n]!]}] the quest '${q.title}' is taken but can no longer be finished${carriedNote}. One way there: ${shown.join(' → ')}`);
+        break;
+      }
+    }
+  }
+
   // A `perApproach` challenge spends every approach tried, for good. With no
   // way back out (`noBack`), a party that comes back to it after trying it
   // can arrive with nothing left to try. The search can't see spent
