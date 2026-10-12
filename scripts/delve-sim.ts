@@ -19,7 +19,7 @@ import { Combat } from '../src/engine/combat.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { isDown, type TeamId } from '../src/engine/types.js';
 import {
-  newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors, levelForXp, type CampaignState,
+  newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors, levelForXp, itemPrice, type CampaignState,
 } from '../src/campaign/campaign.js';
 import { buildEncounter, encounterFor } from '../src/data/encounters.js';
 import { adjustedXp } from '../src/arena/encounter.js';
@@ -47,6 +47,9 @@ export interface FightRecord {
 export interface DelveResult {
   won: boolean; wipes: number; fights: FightRecord[]; longRests: number; shortRests: number;
   endLevel: number; startLevel: number; stalled: boolean; steps: number;
+  /** Coin picked up, and what the loot it carried out would sell for (half
+   *  price, as the shops buy). What a delve pays, for the town to spend. */
+  gold: number; lootValue: number;
 }
 
 /** One fight, to the end, with the real engine. */
@@ -92,7 +95,11 @@ export function simulateDelve(module: Module, seed: number, startLevel: number):
   const state = startAdventure(newCampaign(seed), module);
   state.campaign.partyReady = true;
   enterScene(state, module, module.start);
-  const r: DelveResult = { won: false, wipes: 0, fights: [], longRests: 0, shortRests: 0, endLevel: 0, startLevel, stalled: false, steps: 0 };
+  const r: DelveResult = { won: false, wipes: 0, fights: [], longRests: 0, shortRests: 0, endLevel: 0, startLevel, stalled: false, steps: 0, gold: 0, lootValue: 0 };
+  const goldAtStart = state.campaign.gold;
+  const carried = () => [...(state.campaign.stash ?? []), ...state.campaign.characters.flatMap((c) => c.inventory)]
+    .reduce((a, x) => a + Math.floor((itemPrice(x.itemId) ?? 0) / 2) * x.qty, 0);
+  const lootAtStart = carried();
   let shortsSinceLong = 0;
   /** Rooms already walked to for a rest this time round: never twice. */
   const restTried = new Set<string>();
@@ -170,6 +177,8 @@ export function simulateDelve(module: Module, seed: number, startLevel: number):
     choose(state, module, pick.choice.id);
   }
   r.endLevel = level();
+  r.gold = state.campaign.gold - goldAtStart;
+  r.lootValue = carried() - lootAtStart;
   return r;
 }
 
@@ -215,6 +224,7 @@ if (process.argv[1]?.endsWith('delve-sim.ts')) {
       wipes: res.reduce((a, x) => a + x.wipes, 0),
       nFights: all.length, longRests: res.reduce((a, x) => a + x.longRests, 0), shortRests: res.reduce((a, x) => a + x.shortRests, 0),
       stalled: res.filter((x) => x.stalled).length,
+      gold: Math.round(res.reduce((a, x) => a + x.gold, 0) / N), loot: Math.round(res.reduce((a, x) => a + x.lootValue, 0) / N),
       byKind: ['room', 'key', 'goal', 'piece', 'ambush', 'camp'].map((k) => first(k as FightRecord['kind'])).filter(Boolean),
       secs: Math.round((Date.now() - t) / 1000),
     };
@@ -222,6 +232,7 @@ if (process.argv[1]?.endsWith('delve-sim.ts')) {
     if (!json) {
       console.log(`L${level} ${fights.padEnd(11)} cleared ${row.cleared}/${N} (no wipe ${row.noWipe}) wipes ${row.wipes} fights ${row.nFights} rests ${row.longRests}L/${row.shortRests}S stalled ${row.stalled} ${row.secs}s`);
       console.log(`   ${row.byKind.join(' | ')}`);
+      console.log(`   pays: ${row.gold} gold + ${row.loot} in loot (at sale price), a delve on average`);
     }
   }
   if (json) console.log(JSON.stringify(rows));

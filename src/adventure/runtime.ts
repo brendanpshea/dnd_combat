@@ -29,7 +29,7 @@ import {
   attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
 } from '../campaign/campaign.js';
 import {
-  HUB_REF, ROOM_MAP_REF,
+  HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING,
   type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
   type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph,
 } from './types.js';
@@ -89,6 +89,9 @@ export interface AdventureState {
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
+  /** Shops that caught the party stealing, by scene id: they will not serve
+   *  it again. */
+  barredShops?: Id[];
   /** The run's roll for the module's generated dungeons (Module.delves): its
    *  seed, and the flags they read as they stood when it was made. */
   delveRoll?: { seed: number; flags: string[] };
@@ -459,6 +462,13 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
       events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
       break;
     case 'shop':
+      // Caught stealing here once: the door is as far as the party gets.
+      // Without this, "once per visit" was once per walk around the block —
+      // leave, come back, try again, for ever.
+      if (state.barredShops?.includes(resolved)) {
+        events.push({ type: 'text', paragraphs: [`${scene.npc?.name ?? 'The keeper'} sees you in the doorway and points straight back out. "Not you. Not again."`] });
+        return [...events, ...enterScene(state, module, scene.next)];
+      }
       // A fresh visit: haggle discount and spent gambits reset each entry.
       state.shopVisits[resolved] = { priceMult: 1, haggleUsed: false, stealUsed: false };
       if (scene.intro) events.push({ type: 'text', paragraphs: paragraphsFor(state, scene.intro) });
@@ -1506,8 +1516,13 @@ export function shopSteal(state: AdventureState, module: Module): AdventureEvent
   const events: AdventureEvent[] = [{ type: 'check', roll: decisive, success: result.success }];
   if (result.success && result.itemId) {
     events.push({ type: 'item', itemId: result.itemId, qty: 1, gained: true });
-  } else if (result.fine > 0) {
-    events.push({ type: 'gold', amount: -result.fine, total: c.gold });
+  } else {
+    if (result.fine > 0) events.push({ type: 'gold', amount: -result.fine, total: c.gold });
+    // Caught: barred from this shop for good, and counted — word gets round.
+    if (!(state.barredShops ??= []).includes(scene.id)) state.barredShops.push(scene.id);
+    const n = state.flags[CAUGHT_STEALING];
+    state.flags[CAUGHT_STEALING] = (typeof n === 'number' ? n : 0) + 1;
+    events.push({ type: 'text', paragraphs: ['"Thief!" You are bundled out of the door, and you will not be let back in.'] });
   }
   return events;
 }

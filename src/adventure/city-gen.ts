@@ -23,7 +23,7 @@ import { classScrollPool } from '../data/classes.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { ITEMS } from '../data/items.js';
-import type { Effect, ExploreNode, Module, NpcRef, Requirement, Scene } from './types.js';
+import { CAUGHT_STEALING, type Effect, type ExploreNode, type Module, type NpcRef, type Requirement, type Scene } from './types.js';
 import type { EncounterBrief } from '../arena/encounter.js';
 import { generateEncounter } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
@@ -168,6 +168,9 @@ const INN_B = ['Flagon', 'Stag', 'Lantern', 'Goose', 'Kettle', 'Anchor', 'Badger
 // runs into the marker below it.
 const TEMPLE = ['Dawn', 'Lantern', 'Harvest', 'Tide', 'Forge', 'Watcher'];
 
+/** The town watch: guards, with a sergeant or two once a party can take them. */
+const WATCH = ['guard', 'scout', 'veteran', 'knight'];
+
 const RUMOURS = [
   'The miller swears the river ran red for an hour last spring, and nobody upstream will say why.',
   'They say the old watchtower on the ridge has a light in it, some nights, and nobody lives there.',
@@ -219,7 +222,7 @@ function person(dice: Dice, emoji: string): NpcRef & { first: string } {
 }
 
 /** One venue: its marker, and the scenes behind it. */
-interface VenueCtx { town: string; size: CitySize; level: number; hub: Id; used: Set<string>; rumours: Rumour[] }
+interface VenueCtx { town: string; size: CitySize; level: number; hub: Id; used: Set<string>; rumours: Rumour[]; watch: Id }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -302,10 +305,31 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
       };
     }
     case 'thieves-guild': {
-      // Hidden until someone with a sharp eye spots the sign scratched on the door.
-      const b = shop('The Back Room', W.black, person(dice, '🗝️'),
-        '"You found the door. That\'s the test." A smile with no warmth in it. "Coin buys what you need, and nobody asks."', 'tok-mystery');
-      return { node: { ...b.node, hidden: { dc: ctx.size === 'village' ? 12 : ctx.size === 'town' ? 13 : 14 } }, scenes: b.scenes };
+      // Hidden until someone with a sharp eye spots the sign scratched on the
+      // door. Its keeper sells what the shops will not, and — for less than
+      // the watch would fine you — makes a name for theft go away.
+      const fence = person(dice, '🗝️');
+      // Cheaper than the watch's fine (see the gate), or nobody would come.
+      const clean = 40 * ctx.level;
+      return {
+        node: { id, label: 'The Back Room', icon: 'tok-mystery', scene: id,
+          hidden: { dc: ctx.size === 'village' ? 12 : ctx.size === 'town' ? 13 : 14 } },
+        scenes: [
+          { id, kind: 'dialogue', npc: fence, lines: [`"You found the door. That's the test." **${fence.first}** smiles with no warmth in it. "Coin buys what you need, and nobody asks."`],
+            next: [
+              { id: 'wares', label: 'See what is for sale', to: `${id}-wares` },
+              { id: 'clean', label: `Have your name cleared with the watch (${clean} gold)`, to: `${id}-cleaned`,
+                requires: [{ kind: 'count', flag: CAUGHT_STEALING, atLeast: 1 }, { kind: 'gold', atLeast: clean }], hideWhenBlocked: true,
+                effects: [{ kind: 'gold', amount: -clean }, { kind: 'clearFlag', flag: CAUGHT_STEALING }] },
+              back('Slip back out'),
+            ] },
+          { id: `${id}-wares`, kind: 'shop', title: 'The Back Room', stock: W.black, npc: fence, next: id,
+            intro: ['"Take your time. Nobody comes in here by accident."'] },
+          { id: `${id}-cleaned`, kind: 'story', noBack: true,
+            text: [`${fence.first} writes something on a scrap, folds it twice, and hands it to a child who runs off with it. "The watch has a short memory, for friends of ours."`],
+            next: [{ id: 'ok', label: 'Pay, and say nothing', to: id }] },
+        ],
+      };
     }
     case 'notice-board':
       return {
@@ -320,12 +344,34 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
       ctx.used.add(label);
       return { node: { id, label, icon, scene: id }, scenes: [{ id, kind: 'story', text: [text], next: [back('Walk on')] }] };
     }
-    case 'gate':
+    case 'gate': {
+      // Caught stealing twice in a town, and the watch is waiting at the way
+      // out: pay, fight, or go and find someone who can make it go away.
+      /*
+       * About a tenth of what a delve at this level pays (scripts/delve-sim.ts:
+       * roughly 750, 1,200, 2,700, 3,100 and 4,400 gold in coin and loot at
+       * levels 1–5). At 25 a level it was 1–3% of a delve: a theft cost
+       * nothing to walk away from.
+       */
+      const fine = 75 * ctx.level;
+      const watched = { kind: 'count', flag: CAUGHT_STEALING, atLeast: 2 } as const;
+      const cleared: Effect[] = [{ kind: 'clearFlag', flag: CAUGHT_STEALING }];
       return {
-        node: { id, label: `Leave ${ctx.town}`, icon: 'tok-gate', scene: id },
-        scenes: [{ id, kind: 'story', text: [`The road out of ${ctx.town} runs on through the fields.`],
-          next: [{ id: 'go', label: 'Take the road', to: 'left' }, back('Not yet')] }],
+        node: { id, label: `Leave ${ctx.town}`, icon: 'tok-gate', scene: id, sceneWhen: [{ if: [watched], to: `${id}-watch` }] },
+        scenes: [
+          { id, kind: 'story', text: [`The road out of ${ctx.town} runs on through the fields.`],
+            next: [{ id: 'go', label: 'Take the road', to: 'left' }, back('Not yet')] },
+          { id: `${id}-watch`, kind: 'story', text: ['The watch is on the gate, and they have your descriptions. "That\'s them. The ones from the shops."'],
+            next: [
+              { id: 'pay', label: `Pay the fine (${fine} gold)`, to: id, requires: [{ kind: 'gold', atLeast: fine }], effects: [{ kind: 'gold', amount: -fine }, ...cleared] },
+              { id: 'fight', label: 'Fight your way out', to: `${id}-watch-fight` },
+              back('Back into town'),
+            ] },
+          { id: `${id}-watch-fight`, kind: 'battle', encounterId: ctx.watch, mapId: 'village',
+            intro: ['Halberds come down across the gate.'], onWin: { to: id, effects: cleared } },
+        ],
       };
+    }
   }
 }
 
@@ -369,7 +415,7 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
     if (isVenue && ['gate', 'notice-board', 'landmark'].includes(p.at)) {
       err(`${p.name} is at the ${p.at}, which has no one to talk to: put them at an inn, a temple, a shop, or a district`);
     }
-    if (isVenue && !['inn', 'temple'].includes(p.at) && p.lead) {
+    if (isVenue && !['inn', 'temple', 'thieves-guild'].includes(p.at) && p.lead) {
       err(`${p.name} keeps the ${p.at}, a shop, where there is no talking: put a lead at an inn, a temple, or a district`);
     }
   }
@@ -490,7 +536,12 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
 
   const scenes: Record<Id, Scene> = {};
   const nodes: ExploreNode[] = [];
-  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours };
+  // The watch: drawn once per town, so every gate is held by the same men.
+  const watch = generatedEncounterId(generateEncounter({
+    budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
+    maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: WATCH,
+  }, seedRng((seed ^ 0x9a7c) >>> 0)).value.members);
+  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch };
   const fightFor = (f: CustomPlace['fight']): Id => {
     if (typeof f === 'string') return f;
     const enc = generateEncounter({
@@ -517,7 +568,8 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
       // They run it: the venue's own keeper stands aside.
       if (venueScene?.kind === 'shop') Object.assign(venueScene, { npc, intro: [who.lines[0]!] });
       if (venueScene?.kind === 'dialogue') Object.assign(venueScene, { npc, lines: who.lines });
-      if (who.at === 'temple' && scenes['temple-wares']?.kind === 'shop') Object.assign(scenes['temple-wares'], { npc });
+      const wares = scenes[`${who.at}-wares`];
+      if (wares?.kind === 'shop') Object.assign(wares, { npc });
       continue;
     }
     const home = atVenue ? who.at : 'city';

@@ -377,6 +377,14 @@ export interface DungeonDoor {
  *  is standing in", generated from the dungeon's theme and the room's size. */
 export const ROOM_MAP_REF = '@room';
 
+/**
+ * The one flag the runtime sets itself rather than any scene: how many times
+ * the party has been caught stealing from a shop (a count). A story may read
+ * it — a town's watch does — and the validator counts it as written wherever
+ * there is a shop to be caught in. Never namespaced by a splice.
+ */
+export const CAUGHT_STEALING = 'caught-stealing';
+
 export type Scene =
   // `noBack` suppresses the implicit "leave to the hub" affordance for a forced
   // beat the player shouldn't be able to walk away from.
