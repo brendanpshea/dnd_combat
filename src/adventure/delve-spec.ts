@@ -676,8 +676,12 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     for (const l of dice.shuffle(g.links.filter((x) => !x.door && !pieceLinks.has(x))).slice(0, dice.int(1, 2))) {
       const id = `${pre}ambush-${l.a}-${l.b}`;
       l.door = { ambush: { chance: 0.4, battle: id } };
+      // Where the story caps the place's fights, a corridor ambush is a setback, not a payday.
+      const capped = spec.maxFights !== undefined;
+      const opens = factionOf(l.a)?.intros;
       scenes[id] = { id, kind: 'battle', encounterId: fightOf(level, false, undefined, factionOf(l.a)), mapId: '@room',
-        intro: ['Something moves in the dark ahead of the torchlight.'], onWin: { to: '@hub' } };
+        intro: [capped && opens ? dice.pick(opens) : 'Something moves in the dark ahead of the torchlight.'], onWin: { to: '@hub' },
+        ...(capped ? { loot: false as const } : {}) };
     }
 
     const safe = new Set<Id>();

@@ -135,7 +135,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   {
     id: 'ashfang', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
     themes: ['stockade'],
-    members: ['bandit', 'scout', 'orc', 'gnoll', 'giant-hyena', 'worg'],
+    members: ['bandit', 'scout', 'orc', 'gnoll', 'giant-hyena', 'worg', 'bugbear', 'berserker', 'ogre'],
     leaders: ['bandit-captain', 'berserker', 'bugbear', 'ogre'],
     parley: { skill: 'intimidation', dc: 13, label: 'Tell them the chief is finished', success: 'They look at each other, then at the gate. Nobody here was paid enough for this.' },
     rooms: ['Kennel Run', 'Plunder Tent', 'Bone Fire'],
@@ -150,7 +150,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   {
     id: 'marsh-thralls', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
     themes: ['marsh'],
-    members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp'],
+    members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'ghoul', 'ghast', 'giant-crocodile'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],
     rooms: ['Brand Stake', 'Cold Pool'],
     sign: ['A reed stake by the path, and something tied to it that used to be a hare.'],

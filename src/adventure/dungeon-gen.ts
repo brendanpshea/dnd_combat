@@ -89,7 +89,7 @@ export const ROOMS: Record<DelveTheme | 'forest' | 'village' | typeof STORY_THEM
     title: ['Marsh Road'],
     rooms: ['Reed Bed', 'Causeway', 'Sinkhole', 'Heron Rookery', 'Drowned Hut', 'Eel Weir', 'Peat Bank', 'Willow Island', 'Black Pool', 'Cut Reeds', 'Rush Flats', 'Old Ford'],
     safe: ['Dry Hummock', 'A hump of firm ground, high enough above the water for a fire. You could camp here.'],
-    goal: 'The Hollow', door: 'The reeds close in over black water, too deep to wade.', enter: 'The road runs out into reeds and black water, and goes on as a line of planks and tussocks.',
+    goal: 'The Hollow', door: 'The reeds close in over black water, too deep to wade.', enter: 'Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.',
     board: 'bog',
   },
   // …and a raiders' camp behind a timber wall.

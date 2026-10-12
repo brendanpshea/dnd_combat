@@ -5,6 +5,11 @@
 import { describe, it, expect } from 'vitest';
 import { generateSpecDelve, checkSpec, DELVE_SHAPES, SPEC_THEMES, type DelveSpec } from '../src/adventure/delve-spec.js';
 import { FACTIONS, factionsFor } from '../src/data/factions.js';
+import { STORY_THEMES } from '../src/adventure/dungeon-gen.js';
+
+/** A story's own theme is used only by a place its story dresses. */
+const dressFor = (theme: string) => ((STORY_THEMES as readonly string[]).includes(theme)
+  ? { dressing: { name: 'The Place', door: 'In.', outside: 'Out.', back: 'Back in', leave: 'Leave' } } : {});
 import { MONSTERS } from '../src/data/monsters.js';
 import { avoidedFightXP, encounterFor } from '../src/data/encounters.js';
 import { ARENA_EXCLUDED, generateEncounter } from '../src/arena/encounter.js';
@@ -57,7 +62,7 @@ describe('a peopled floor', () => {
     const f = FACTIONS[id]!;
     for (let level = 1; level <= 5; level++) {
       for (let seed = 1; seed <= 4; seed++) {
-        const { module } = generateSpecDelve(seed, { theme: f.themes[0]!, level, fights: 'inhabitants', factions: [id] });
+        const { module } = generateSpecDelve(seed, { theme: f.themes[0]!, level, fights: 'inhabitants', factions: [id], ...dressFor(f.themes[0]!) });
         const goal = goalFightOf(module);
         for (const b of battles(module)) {
           const foreign = membersOf(b).filter((m) => !f.members.includes(m) && !(b.id === goal && f.leaders.includes(m)));
@@ -70,7 +75,7 @@ describe('a peopled floor', () => {
   it('puts a leader at the goal wherever one can be fielded', () => {
     for (const f of Object.values(FACTIONS)) {
       for (const level of [3, 4, 5]) {
-        const { module } = generateSpecDelve(level, { theme: f.themes[0]!, level, fights: 'inhabitants', factions: [f.id] });
+        const { module } = generateSpecDelve(level, { theme: f.themes[0]!, level, fights: 'inhabitants', factions: [f.id], ...dressFor(f.themes[0]!) });
         const boss = module.scenes[goalFightOf(module)] as Battle;
         expect(membersOf(boss).some((m) => f.leaders.includes(m)), `${f.id} L${level}: ${membersOf(boss).join('+')}`).toBe(true);
       }
