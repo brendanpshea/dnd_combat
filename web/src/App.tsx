@@ -1,4 +1,5 @@
 import { DelvePreview } from './DelvePreview.js';
+import { NamePreview } from './NamePreview.js';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Combat } from '../../src/engine/combat.js';
 import type { Combatant, Id, Position, TeamId } from '../../src/engine/types.js';
@@ -127,6 +128,7 @@ type Screen =
 export function App() {
   const [screen, setScreen] = useState<Screen>({ view: 'menu' });
   if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('dev') === 'recipes') return <DelvePreview />;
+  if (typeof location !== 'undefined' && new URLSearchParams(location.search).get('dev') === 'names') return <NamePreview />;
   switch (screen.view) {
     case 'menu':
       return <Menu onPick={setScreen} />;
