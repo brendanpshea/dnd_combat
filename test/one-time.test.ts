@@ -40,7 +40,7 @@ describe('a camp with a night limit', () => {
     campRest(s, m, 'long');
     campRest(s, m, 'long');
     expect(nightsLeft(s, m)).toBe(0);
-    expect(() => campRest(s, m, 'long')).toThrow(/No nights left/);
+    expect(() => campRest(s, m, 'long')).toThrow(/slept here as long as you dare/);
     expect(() => campRest(s, m, 'short')).not.toThrow();
     const bad = { ...m, scenes: { ...m.scenes, map: { ...m.scenes.map!, map: { ...(m.scenes.map as Extract<Scene, { kind: 'explore' }>).map, camp: { nights: 0 } } } as Scene } };
     expect(validateModule(bad).some((e) => e.includes('camp nights'))).toBe(true);

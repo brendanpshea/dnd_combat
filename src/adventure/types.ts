@@ -291,11 +291,36 @@ export interface Dungeon {
   torch?: { length: number; out: SceneRef };
   /** Present = the party may rest here (see CampRule). */
   camp?: CampRule;
+  /**
+   * Rest by ROOM rather than anywhere: see `RestPolicy`. Absent = the old
+   * rule, where `camp` lets the party rest in any room alike. When present,
+   * `camp` still names the fight that breaks up a long rest and its chance
+   * is the base the room's odds are scaled from.
+   */
+  rest?: RestPolicy;
   rooms: DungeonRoom[];
   links: DungeonLink[];
 }
 
 export type RoomSize = 'small' | 'medium' | 'large';
+
+/**
+ * How a dungeon lets a party rest, in the Baldur's Gate manner: by room, never
+ * with enemies nearby, and never for free.
+ *
+ * - `harsh`     short rests only.
+ * - `standard`  short rests in any room that allows one; long rests only in a
+ *               `safe` room.
+ * - `forgiving` long rests in any room that allows a short one.
+ *
+ * Everywhere, a room with an unbeaten fight in it or next door cannot be
+ * rested in, a short rest burns torch, and a long rest's chance of being
+ * interrupted grows with how much of the place is still awake.
+ */
+export type RestPolicy = 'harsh' | 'standard' | 'forgiving';
+
+/** What a room allows: nothing, a short rest, or (`safe`) a night's sleep. */
+export type RoomRest = 'none' | 'short' | 'safe';
 
 export interface DungeonRoom {
   id: Id;
@@ -318,6 +343,9 @@ export interface DungeonRoom {
   goal?: true;
   /** Pin the room to a layout cell; unpinned rooms are placed around it. */
   at?: [col: number, row: number];
+  /** What resting here allows, under the dungeon's `rest` policy. Default
+   *  'short'. Ignored by a dungeon without one. */
+  rest?: RoomRest;
 }
 
 export interface DungeonLink {

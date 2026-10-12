@@ -23,7 +23,7 @@ import type { Id } from '../engine/types.js';
 import type { MapTheme } from '../data/maps.js';
 import { next, seedRng, type RngState } from '../engine/rng.js';
 import { ENCOUNTERS } from '../data/encounters.js';
-import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize } from './types.js';
+import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, RestPolicy } from './types.js';
 import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
 
@@ -35,27 +35,33 @@ export interface DelveOptions {
   level?: number;
   theme?: DelveTheme;
   size?: 'small' | 'medium' | 'large';
+  /** How the party may rest (see RestPolicy). Default 'standard'. */
+  rest?: RestPolicy;
 }
 
-const ROOMS: Record<DelveTheme, { title: string[]; rooms: string[]; goal: string; door: string; enter: string }> = {
+const ROOMS: Record<DelveTheme, { title: string[]; rooms: string[]; goal: string; door: string; enter: string; safe: [string, string] }> = {
   stone: {
     title: ['Broken Keep', 'Old Cistern', 'Warden\'s Hold', 'Sunless Mine'],
     rooms: ['Guardroom', 'Cistern', 'Collapsed Hall', 'Armory', 'Well Chamber', 'Barracks', 'Storeroom', 'Gallery', 'Cells', 'Pillared Hall', 'Stair Hall', 'Kitchens'],
+    safe: ['Barred Storeroom', 'A storeroom whose door still bars from the inside. Somewhere you could sleep.'],
     goal: 'Throne Room', door: 'An iron door, locked.', enter: 'Cold air breathes out of the dark, and your torch finds worked stone.',
   },
   graveyard: {
     title: ['Hollow Crypt', 'Bone Chapel', 'Weeping Barrow', 'Lantern Catacombs'],
     rooms: ['Ossuary', 'Charnel Pit', 'Chapel', 'Catacomb', 'Embalming Room', 'Bone Gallery', 'Reliquary', 'Mourners\' Hall', 'Niche Walk', 'Bell Crypt', 'Sexton\'s Room', 'Cairn Hall'],
+    safe: ['Quiet Shrine', 'A small shrine, its candles long out. Nothing that walks here comes in. You could rest.'],
     goal: 'Sepulchre', door: 'A grave-gate, chained shut.', enter: 'The steps go down past the dead, and the dead do not stay quiet.',
   },
   ember: {
     title: ['Cinder Forge', 'Ashen Deep', 'Slag Halls', 'Bellows Keep'],
     rooms: ['Forge', 'Slag Pit', 'Bellows Hall', 'Cinder Vault', 'Smelter', 'Ash Gallery', 'Quench Room', 'Ore Store', 'Coal Chute', 'Anvil Hall', 'Mould Room', 'Flue'],
+    safe: ['Cooling Room', 'A stone room off the heat, with a door that shuts tight. A place to sleep, if you dare.'],
     goal: 'Great Forge', door: 'A furnace door, barred and hot to the touch.', enter: 'Heat rolls up the passage. Somewhere below, something is still burning.',
   },
   bog: {
     title: ['Drowned Hall', 'Reedmire Cellars', 'Sinking Abbey', 'Mudroot Caves'],
     rooms: ['Sunken Hall', 'Reed Chamber', 'Drowned Crypt', 'Mud Cellar', 'Root Cave', 'Frog Pools', 'Silt Gallery', 'Leech Pit', 'Peat Store', 'Moss Hall', 'Eel Run', 'Weir Room'],
+    safe: ['Dry Loft', 'A loft above the waterline, reached by one ladder you can pull up. Dry enough to sleep.'],
     goal: 'Drowned Altar', door: 'A swollen door, locked and slick with weed.', enter: 'Black water stands in the doorway. The walls sweat.',
   },
 };
@@ -90,7 +96,13 @@ function encounterPools(level: number): { room: Id[]; boss: Id[] } {
 }
 
 /** One candidate: the graph, its contents, and the scenes around it. */
-function draft(seed: number, opts: Required<DelveOptions>): Module {
+/**
+ * `legacy` rebuilds a delve saved before rest-by-room existed, exactly: none of
+ * the safe-room rolls (they would shift every roll after them and hand the save
+ * a different dungeon than the one its progress was recorded against), the old
+ * whole-dungeon camp, and the old interruption odds.
+ */
+function draft(seed: number, opts: Required<DelveOptions>, legacy = false): Module {
   const dice = new Dice(seedRng(seed));
   const T = ROOMS[opts.theme];
   const [lo, hi] = SIZE_ROOMS[opts.size];
@@ -163,6 +175,19 @@ function draft(seed: number, opts: Required<DelveOptions>): Module {
     return id;
   };
 
+  /*
+   * Where a night's sleep is possible (standard policy). One before the lock,
+   * so a party can always reach it, and sometimes a second past it as a
+   * reward for getting through. Never the entrance or the goal: the entrance
+   * is the way out (rest outside is free), and the goal is the end.
+   */
+  const safe = new Set<Id>();
+  if (!legacy) {
+    safe.add(main[dice.int(1, lockAt - 1)]!);
+    if (lockAt < mainLen - 1 && dice.chance(0.5)) safe.add(main[dice.int(lockAt, mainLen - 2)]!);
+  }
+  const safeName = (id: Id) => (safe.has(id) ? { name: T.safe[0], rest: 'safe' as const, firstVisit: [T.safe[1]] } : {});
+
   main.forEach((id, i) => {
     if (i === 0) {
       rooms.push({ id, name: 'Entrance', size: 'small', firstVisit: [T.enter], exit: { to: 'outside', label: 'Back outside' } });
@@ -172,6 +197,7 @@ function draft(seed: number, opts: Required<DelveOptions>): Module {
     } else {
       rooms.push({ id, name: nextName(), size: sizeOf(),
         ...(dice.chance(0.6) ? { fight: fight(id, dice.pick(pools.room), { to: '@hub' }) } : {}),
+        ...safeName(id),
         ...(dice.chance(0.3) ? { search: find(id, 'A few coins, dropped and forgotten.', [{ kind: 'gold', amount: 10 + 5 * opts.level }]) } : {}) });
     }
   });
@@ -194,11 +220,16 @@ function draft(seed: number, opts: Required<DelveOptions>): Module {
   const title = `The ${dice.pick(T.title)}`;
   const dungeon: Dungeon = {
     title, theme: opts.theme, entry: main[0]!,
-    camp: { risky: { chance: 0.3, battleScene: 'camp-fight' } },
+    // The base chance a night is broken up; the room and how much of the place
+    // is still awake scale it down (see `restOptions`).
+    camp: { risky: { chance: legacy ? 0.3 : 0.5, battleScene: 'camp-fight' } },
+    ...(legacy ? {} : { rest: opts.rest }),
     rooms, links,
   };
   scenes['camp-fight'] = {
-    id: 'camp-fight', kind: 'battle', encounterId: dice.pick(pools.room), mapId: '@room',
+    // A broken night is a setback, not a payday: no XP, no loot, or resting
+    // becomes the way to farm the place.
+    id: 'camp-fight', kind: 'battle', encounterId: dice.pick(pools.room), mapId: '@room', ...(legacy ? {} : { loot: false as const }),
     intro: ['Your fire draws them out of the dark.'], onWin: { to: '@hub' },
   };
   Object.assign(scenes, {
@@ -231,14 +262,18 @@ function draft(seed: number, opts: Required<DelveOptions>): Module {
  * rebuilt exactly: `delve-<seed>-<theme>-<size>-<level>`.
  */
 export function delveId(seed: number, o: Required<DelveOptions>): string {
-  return `delve-${seed}-${o.theme}-${o.size}-${o.level}`;
+  return `delve-${seed}-${o.theme}-${o.size}-${o.level}-${o.rest}`;
 }
 
 /** The delve an id names, rebuilt; undefined if it is not a delve id. */
 export function delveFromId(id: string): Module | undefined {
-  const m = /^delve-(\d+)-(stone|graveyard|ember|bog)-(small|medium|large)-(\d+)$/.exec(id);
+  // The rest policy was added later; an id without one is a delve saved before
+  // it, and is rebuilt the way it was generated then — rest anywhere.
+  const m = /^delve-(\d+)-(stone|graveyard|ember|bog)-(small|medium|large)-(\d+)(?:-(harsh|standard|forgiving))?$/.exec(id);
   if (!m) return undefined;
-  return generateDelve(Number(m[1]), { theme: m[2] as DelveTheme, size: m[3] as NonNullable<DelveOptions['size']>, level: Number(m[4]) }).module;
+  const opts: DelveOptions = { theme: m[2] as DelveTheme, size: m[3] as NonNullable<DelveOptions['size']>, level: Number(m[4]) };
+  if (m[5]) return generateDelve(Number(m[1]), { ...opts, rest: m[5] as RestPolicy }).module;
+  return legacyDelve(Number(m[1]), opts);
 }
 
 /**
@@ -246,17 +281,30 @@ export function delveFromId(id: string): Module | undefined {
  * successive candidates until one passes every proof.
  */
 export function generateDelve(seed: number, opts: DelveOptions = {}): { module: Module; rerolls: number } {
+  return build(seed, opts, false);
+}
+
+/** A delve saved before rest-by-room, rebuilt as it was generated then. */
+function legacyDelve(seed: number, opts: DelveOptions): Module {
+  return build(seed, opts, true).module;
+}
+
+function build(seed: number, opts: DelveOptions, legacy: boolean): { module: Module; rerolls: number } {
   const dice = new Dice(seedRng(seed ^ 0x5eed));
   const full: Required<DelveOptions> = {
     level: opts.level ?? 2,
     theme: opts.theme ?? dice.pick(DELVE_THEMES),
     size: opts.size ?? dice.pick(['small', 'medium', 'large'] as const),
+    rest: opts.rest ?? 'standard',
   };
   let last: string[] = [];
   for (let attempt = 0; attempt < 40; attempt++) {
-    const module = draft(seed * 41 + attempt, full);
+    const module = draft(seed * 41 + attempt, full, legacy);
     last = validateModule(module);
-    if (last.length === 0) return { module: { ...module, id: delveId(seed, full) }, rerolls: attempt };
+    if (last.length === 0) {
+      const id = legacy ? `delve-${seed}-${full.theme}-${full.size}-${full.level}` : delveId(seed, full);
+      return { module: { ...module, id }, rerolls: attempt };
+    }
   }
   throw new Error(`No valid delve for seed ${seed}: ${last.join('; ')}`);
 }

@@ -22,6 +22,7 @@ import {
   EQUIP_SLOTS, type CampaignState, type EquipSlot,
 } from '../../src/campaign/campaign.js';
 import type { CampRule } from '../../src/adventure/types.js';
+import type { RestOption } from '../../src/adventure/runtime.js';
 import { SPELLS } from '../../src/data/spells.js';
 import { acOf } from '../../src/data/armor.js';
 import { Portrait } from './Portrait.js';
@@ -70,11 +71,16 @@ type Pick =
  *  Tap an item, then choose what to do with it — the same verb-after-noun flow
  *  as the campaign's between-battle screen, reusing the same state helpers. */
 export function PartyScreen(
-  { campaign, camp, nightsLeft = null, onRest, onChange, onClose, notice: opening, frame = 'modal' }: {
+  { campaign, camp, nightsLeft = null, rest, onRest, onChange, onClose, notice: opening, frame = 'modal' }: {
     campaign: CampaignState;
     camp: CampRule | null;
     /** Nights left to sleep at this camp (null: no limit). */
     nightsLeft?: number | null;
+    /**
+     * What each rest allows here, why not, and what it costs (`restOptions`).
+     * Absent: the old whole-camp rule, read off `camp` and `nightsLeft`.
+     */
+    rest?: { short: RestOption; long: RestOption } | undefined;
     /**
      * How this screen is framed.
      *
@@ -133,6 +139,7 @@ export function PartyScreen(
         {(camp || frame === 'modal') && (
         <div className="adv-camp-rest">
           {camp ? (
+            rest ? <RoomRest rest={rest} onRest={onRest} /> : (
             <>
               <div className="adv-rest-btns">
                 <button className="primary" onClick={() => onRest('short')}>🌤 Short rest</button>
@@ -145,6 +152,7 @@ export function PartyScreen(
                 <p className="adv-rest-warn">⚠ This is open country — a long rest here may be interrupted.</p>
               )}
             </>
+            )
           ) : (
             <p className="adv-rest-warn muted">No safe place to rest here. You can still sort your gear.</p>
           )}
@@ -482,5 +490,31 @@ export function PartyScreen(
       </div>
       {sheet}
     </div>
+  );
+}
+
+/**
+ * Rest by room: each button says what it costs, and a refused one says why.
+ *
+ * The reason is the point. A greyed-out Long rest teaches nothing; "Not here —
+ * find somewhere you can bar the door" sends the player looking for the safe
+ * room, and "enemies are nearby" tells them what clearing a wing is for.
+ */
+function RoomRest({ rest, onRest }: { rest: { short: RestOption; long: RestOption }; onRest(v: 'short' | 'long'): void }) {
+  const pct = (p: number) => `${Math.round(p * 100)}%`;
+  return (
+    <>
+      <div className="adv-rest-btns">
+        <button className="primary" disabled={!rest.short.ok} onClick={() => onRest('short')}>
+          🌤 Short rest{rest.short.torch ? ` (🔥−${rest.short.torch})` : ''}
+        </button>
+        <button className="primary" disabled={!rest.long.ok} onClick={() => onRest('long')}>🌙 Long rest</button>
+      </div>
+      {!rest.short.ok && <p className="adv-rest-warn">{rest.short.reason}</p>}
+      {rest.short.ok && !rest.long.ok && <p className="adv-rest-warn">Long rest: {rest.long.reason}</p>}
+      {rest.long.ok && rest.long.chance ? (
+        <p className="adv-rest-warn">⚠ Something may find you in the night: a {pct(rest.long.chance)} chance.</p>
+      ) : null}
+    </>
   );
 }

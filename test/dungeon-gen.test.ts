@@ -81,7 +81,9 @@ describe('playing a delve from the menu', () => {
   it('rebuilds the same delve from its id, so a saved run can be resumed', async () => {
     const { delveFromId } = await import('../src/adventure/dungeon-gen.js');
     const { module } = generateDelve(77, { theme: 'bog', size: 'large', level: 3 });
-    expect(module.id).toBe('delve-77-bog-large-3');
+    // The rest policy is part of the id (dungeon-rest.test.ts covers ids from
+    // before it, which rebuild without one).
+    expect(module.id).toBe('delve-77-bog-large-3-standard');
     expect(delveFromId(module.id)).toEqual(module);
     expect(delveFromId('hollow-road')).toBeUndefined();
   });
