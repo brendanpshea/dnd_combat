@@ -35,7 +35,7 @@ import {
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
 } from '../../src/adventure/runtime.js';
-import type { Module, Scene, CampRule } from '../../src/adventure/types.js';
+import type { Module, Scene, CampRule, TownGround } from '../../src/adventure/types.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';
@@ -1094,7 +1094,9 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
         {/* Roads everywhere: a traversal map draws its gating paths (frontier
             edges fade), a free-roam town draws its purely visual roads — either
             way the stops read as one connected place, not floating markers. */}
-        {(traversal || (scene.map.roads?.length ?? 0) > 0) && (
+        {/* A town's ground under everything: water, its wall, its streets. */}
+        {scene.map.ground && <TownGroundArt g={scene.map.ground} />}
+        {(traversal || (!scene.map.ground && (scene.map.roads?.length ?? 0) > 0)) && (
           <svg className="adv-trails" viewBox="0 0 100 100" preserveAspectRatio="none">
             {(scene.map.paths ?? []).map(([a, b], i) => {
               const pa = posOf(a); const pb = posOf(b);
@@ -1105,7 +1107,7 @@ function SceneBody({ scene, state, module, onChoice, onRollScene, onApproach, on
                   className={`adv-trail ${toFrontier ? 'faint' : ''}`} />
               );
             })}
-            {(scene.map.roads ?? []).map(([a, b], i) => {
+            {(scene.map.ground ? [] : scene.map.roads ?? []).map(([a, b], i) => {
               const pa = posOf(a); const pb = posOf(b);
               if (!pa || !pb) return null;
               return <line key={`r${i}`} x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} className="adv-trail" />;
@@ -1300,5 +1302,22 @@ function RosterPicker({ campaign, onPick, only }: { campaign: CampaignState; onP
         </button>
       ))}
     </div>
+  );
+}
+
+const line = (pts: Array<[number, number]>) => pts.map(([x, y]) => `${x},${y}`).join(' ');
+
+/** Water, wall and streets, drawn on the map's own percent grid. */
+function TownGroundArt({ g }: { g: TownGround }) {
+  const w = g.water;
+  return (
+    <svg className="adv-ground" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {w?.kind === 'coast' && (
+        <polygon className="adv-water" points={line([...w.points, w.side === 'left' ? [0, 100] : [100, 100], w.side === 'left' ? [0, 0] : [100, 0]])} />
+      )}
+      {w?.kind === 'river' && <polyline className="adv-river" points={line(w.points)} />}
+      {g.streets.map((s, i) => <polyline key={i} className="adv-street" points={line(s)} />)}
+      {g.wall && <polyline className="adv-wall" points={line(g.wall)} />}
+    </svg>
   );
 }

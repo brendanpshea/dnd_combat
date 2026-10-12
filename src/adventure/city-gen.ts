@@ -18,6 +18,7 @@
  */
 import type { Id } from '../engine/types.js';
 import { seedRng } from '../engine/rng.js';
+import { layGround, dry, nearestOn, laneTo, wander } from './town-map.js';
 import { SHOP_STOCK, isMagicalWare, itemPrice } from '../campaign/campaign.js';
 import { classScrollPool } from '../data/classes.js';
 import { WEAPONS } from '../data/weapons.js';
@@ -493,13 +494,25 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
 
   // Districts, and each venue to the first of its homes the town has.
   const districts = plan.districts;
-  const centres = CENTRES[districts.length]!;
+  // The ground first — water, wall, streets — on dice of its own, so a
+  // town's names and wares are what they were before it had any.
+  const groundDice = new Dice(seedRng((seed ^ 0x51ab) >>> 0));
+  const ground = layGround(spec.size, () => groundDice.float());
+  // The market (or the green) on the square, the gatehouse by the main gate.
+  const centres = CENTRES[districts.length]!.map(([x, y], i): [number, number] =>
+    districts[i] === 'market' || districts[i] === 'green' ? ground.square
+      : districts[i] === 'gatehouse' ? [ground.mainGate[0], 72] : [x, y]);
+  // Every quarter on a street of its own, run in from the square: a town
+  // with one street put every shop on it, single file.
+  for (const c of centres) {
+    if (nearestOn(c, ground.streets).d > 10) ground.streets.push(wander(ground.square, c, () => groundDice.float(), 7, 4));
+  }
   const home = (k: VenueKind) => HOME[k].find((d) => districts.includes(d)) ?? districts[0]!;
   type Kind = VenueKind | 'person' | 'place';
   const placed: { id: Id; kind: Kind; d: number; x: number; y: number }[] = [];
   const counts = new Map<VenueKind, number>();
   const put = (id: Id, kind: Kind, d: number) => {
-    const [cx, cy] = centres[d]!;
+    const [cx, cy] = kind === 'gate' ? ground.mainGate : centres[d]!;
     /*
      * The free spot nearest the district's centre, from a grid over the whole
      * map, with a little jitter so two towns do not look stamped from one
@@ -512,15 +525,19 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     let best = Infinity;
     for (let x = 14; x <= 86; x += 4) {
       for (let y = 16; y <= 82; y += 3) {
-        if (!placed.every((p) => apart(p, { x, y }))) continue;
-        const score = Math.hypot((x - cx) / 22, (y - cy) / 14) + dice.float() * 0.6;
+        if (!placed.every((p) => apart(p, { x, y })) || !dry([x, y], ground)) continue;
+        // On a street, as shops are — the thieves down a side street.
+        const off = nearestOn([x, y], ground.streets).d;
+        const street = kind === 'gate' ? off / 4 : kind === 'thieves-guild' ? Math.abs(off - 8) / 10 : Math.max(0, off - 4) / 10;
+        const score = Math.hypot((x - cx) / 22, (y - cy) / 14) + street + dice.float() * 0.6;
         if (score < best) { best = score; spot = [x, y]; }
       }
     }
     if (!spot) throw new Reroll(`no room for ${id}`);
     placed.push({ id, kind, d, x: spot[0], y: spot[1] });
   };
-  for (const kind of kinds) {
+  // The gate first: it belongs on the road in, wherever else is crowded.
+  for (const kind of [...kinds.filter((k) => k === 'gate'), ...kinds.filter((k) => k !== 'gate')]) {
     const n = (counts.get(kind) ?? 0) + 1;
     counts.set(kind, n);
     put(n === 1 ? kind : `${kind}-${n}`, kind, districts.indexOf(home(kind)));
@@ -657,7 +674,9 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   Object.assign(scenes, {
     start: { id: 'start', kind: 'story', text: [`${town} comes into sight: ${spec.size === 'village' ? 'a few roofs and a green' : spec.size === 'town' ? 'a market town behind a low wall' : 'walls, towers, and the smoke of a thousand chimneys'}.`],
       next: [{ id: 'in', label: `Go into ${town}`, to: 'city', effects: [{ kind: 'xpToLevel', level: spec.level }] }] },
-    city: { id: 'city', kind: 'explore', map: { title: town, theme: 'village', art: { emoji: '🏘️' }, entry: [entry.id], roads, nodes } },
+    city: { id: 'city', kind: 'explore', map: { title: town, theme: 'village', art: { emoji: '🏘️' }, entry: [entry.id], roads, nodes,
+      ground: { feature: ground.feature, ...(ground.water ? { water: ground.water } : {}), ...(ground.wall ? { wall: ground.wall } : {}),
+        streets: [...ground.streets, ...nodes.flatMap((n) => { const l = laneTo([n.x, n.y], ground); return l ? [l] : []; })] } } },
     left: { id: 'left', kind: 'ending', outcome: 'victory', text: [`${town} falls away behind you.`] },
   } satisfies Record<Id, Scene>);
   // Somewhere to come to after a beating — only in a town with a fight in it.

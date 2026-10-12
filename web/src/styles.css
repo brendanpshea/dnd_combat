@@ -4718,3 +4718,11 @@ button.category .count {
 .dp-key i { display: inline-block; width: 10px; height: 10px; margin: 0 3px 0 8px; border-radius: 2px; }
 .dp-key .piece { background: #3f6db0; } .dp-key .goal { background: #b08a2f; } .dp-key .safe { background: #3d8a5a; }
 .dp-key .fight { background: #5a3a3a; } .dp-key .locked-k { background: #d65a4a; } .dp-key .secret-k { border: 1px dashed #8a7d63; }
+
+/* A town's ground, under the roads and markers. Strokes stay one width
+   however the map stretches on a phone. */
+.adv-ground { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.adv-water { fill: rgba(70,130,180,.45); stroke: rgba(170,210,235,.6); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.adv-river { fill: none; stroke: rgba(70,130,180,.6); stroke-width: 14; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.adv-street { fill: none; stroke: rgba(240,232,210,.55); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.adv-wall { fill: none; stroke: rgba(35,28,22,.85); stroke-width: 6; stroke-dasharray: 10 3; vector-effect: non-scaling-stroke; }
