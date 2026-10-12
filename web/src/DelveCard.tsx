@@ -19,6 +19,10 @@ import {
 import { PIECES } from '../../src/adventure/delve-pieces.js';
 import { FACTIONS } from '../../src/data/factions.js';
 import { DELVE_STORY_MODULE } from '../../src/data/modules/delve-story.js';
+import { TOWN_STORY_MODULE } from '../../src/data/modules/town-story.js';
+
+/** The written stories with generated places in them, playable from here. */
+const STORIES = [DELVE_STORY_MODULE, TOWN_STORY_MODULE];
 import { generateCity, cityFromId, CITY_SIZES, type CitySize, type CitySpec } from '../../src/adventure/city-gen.js';
 import { DELVE_SLOT, savedAdventureModule, loadAdventureWeb, deleteAdventureWeb } from './adventureStorage.js';
 import { initAudio } from './sound.js';
@@ -53,8 +57,8 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
   const [error, setError] = useState('');
   const savedId = savedAdventureModule(DELVE_SLOT);
   const saved = !savedId ? undefined
-    : savedId === DELVE_STORY_MODULE.id ? DELVE_STORY_MODULE
-    : specDelveFromId(savedId) ?? delveFromId(savedId) ?? cityFromId(savedId);
+    : STORIES.find((m) => m.id === savedId)
+      ?? specDelveFromId(savedId) ?? delveFromId(savedId) ?? cityFromId(savedId);
   const resume = saved ? loadAdventureWeb(saved, DELVE_SLOT) : undefined;
 
   const start = () => {
@@ -122,11 +126,13 @@ export function DelveCard({ onPlay }: { onPlay(module: Module, resume?: Adventur
       {error && <small className="delve-error" role="alert">{error}</small>}
       <div className="delve-row">
         <button className="mini" onClick={start}>New delve</button>
-        <button className="mini" title={DELVE_STORY_MODULE.blurb} onClick={() => {
-          initAudio();
-          deleteAdventureWeb(DELVE_SLOT);
-          onPlay(DELVE_STORY_MODULE);
-        }}>📖 {DELVE_STORY_MODULE.title}</button>
+        {STORIES.map((story) => (
+          <button key={story.id} className="mini" title={story.blurb} onClick={() => {
+            initAudio();
+            deleteAdventureWeb(DELVE_SLOT);
+            onPlay(story);
+          }}>📖 {story.title}</button>
+        ))}
       </div>
       <Pick<CitySize> label="Town" value={citySize} options={CITY_SIZES} onPick={setCitySize} />
       <div className="delve-row">

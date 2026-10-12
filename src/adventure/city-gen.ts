@@ -44,7 +44,9 @@ export const VENUE_KINDS: VenueKind[] = [
   'inn', 'general', 'smithy', 'armorer', 'weaponsmith', 'mage-guild', 'temple', 'thieves-guild', 'notice-board', 'landmark', 'gate',
 ];
 
-export type DistrictKind = 'green' | 'market' | 'temple-quarter' | 'warrens' | 'gate' | 'noble-hill';
+// 'gatehouse', not 'gate': a district named like a venue made "at: 'gate'"
+// mean the venue when the author meant the district.
+export type DistrictKind = 'green' | 'market' | 'temple-quarter' | 'warrens' | 'gatehouse' | 'noble-hill';
 
 /** Something worth following up: a journal lead, closed when `flag` is set. */
 export interface Lead { title: string; text: string; flag?: string }
@@ -58,6 +60,12 @@ export interface Lead { title: string; text: string; flag?: string }
  */
 export interface PlacedPerson {
   name: string;
+  /**
+   * What the party would call them before they have met: "The Harbourmaster".
+   * Shown on their marker in place of the name — a story's cast check will
+   * not let a map name someone nobody has been introduced to. Default: name.
+   */
+  title?: string;
   emoji?: string;
   at: VenueKind | DistrictKind;
   keeps?: boolean;
@@ -85,6 +93,12 @@ export interface CustomPlace {
   sets?: string;
   /** What is there to take: coin, or an item id. */
   loot?: 'gold' | Id;
+  /**
+   * A way on, out of the town and into the story: the sewer grate, the road
+   * to the mine. Only in a town inside a story (Module.towns), where `to`
+   * names one of the story's scenes — a delve's door, most often.
+   */
+  way?: { to: Id; label?: string };
 }
 
 /** A rumour the inn tells, before its own. */
@@ -107,12 +121,12 @@ export interface CitySpec {
 const BY_SIZE: Record<CitySize, { districts: DistrictKind[]; venues: VenueKind[]; extra: [number, number] }> = {
   village: { districts: ['green'], venues: ['inn', 'general', 'smithy', 'temple', 'notice-board', 'gate'], extra: [0, 1] },
   town: {
-    districts: ['market', 'temple-quarter', 'gate'],
+    districts: ['market', 'temple-quarter', 'gatehouse'],
     venues: ['inn', 'general', 'armorer', 'weaponsmith', 'mage-guild', 'temple', 'thieves-guild', 'notice-board', 'gate'],
     extra: [1, 2],
   },
   city: {
-    districts: ['market', 'temple-quarter', 'warrens', 'gate'],
+    districts: ['market', 'temple-quarter', 'warrens', 'gatehouse'],
     venues: ['inn', 'inn', 'general', 'armorer', 'weaponsmith', 'mage-guild', 'temple', 'thieves-guild', 'notice-board', 'gate'],
     extra: [2, 4],
   },
@@ -120,17 +134,17 @@ const BY_SIZE: Record<CitySize, { districts: DistrictKind[]; venues: VenueKind[]
 
 /** Where a venue goes, in order of preference. */
 const HOME: Record<VenueKind, DistrictKind[]> = {
-  inn: ['gate', 'green', 'warrens', 'market'],
+  inn: ['gatehouse', 'green', 'warrens', 'market'],
   general: ['market', 'green'],
   smithy: ['market', 'green'],
   armorer: ['market', 'green'],
   weaponsmith: ['market', 'green'],
   'mage-guild': ['noble-hill', 'market', 'temple-quarter', 'green'],
   temple: ['temple-quarter', 'green'],
-  'thieves-guild': ['warrens', 'market', 'gate', 'green'],
-  'notice-board': ['gate', 'market', 'green'],
+  'thieves-guild': ['warrens', 'market', 'gatehouse', 'green'],
+  'notice-board': ['gatehouse', 'market', 'green'],
   landmark: ['temple-quarter', 'warrens', 'market', 'green'],
-  gate: ['gate', 'green'],
+  gate: ['gatehouse', 'green'],
 };
 
 /** District centres on the map (percent), by how many districts there are. */
@@ -326,7 +340,12 @@ export function cityFromId(id: string): Module | undefined {
   try { return generateCity(Number(m[1]), decodeSpec(m[2]!) as CitySpec).module; } catch { return undefined; }
 }
 
-export function checkCitySpec(spec: CitySpec): Required<CitySpec> {
+/** How a town is being built: on its own (a dev-card town, which must pass
+ *  every proof by itself), or inside a story, whose flags and scenes it may
+ *  use and whose validator proves the whole (embed.ts, validateLive). */
+export interface CityOptions { story?: boolean }
+
+export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<CitySpec> {
   const err = (m: string) => { throw new Error(`Bad city spec: ${m}`); };
   const size = spec.size ?? 'town';
   if (!CITY_SIZES.includes(size)) err(`no size '${size}'`);
@@ -345,6 +364,11 @@ export function checkCitySpec(spec: CitySpec): Required<CitySpec> {
     const isVenue = VENUE_KINDS.includes(p.at as VenueKind);
     if (isVenue && !venues.has(p.at as VenueKind)) err(`${p.name} is at the ${p.at}, which a ${size} does not have (add it to venues)`);
     if (!isVenue && !districts.includes(p.at as DistrictKind)) err(`${p.name} is in '${p.at}', which is not a district of a ${size} (${districts.join(', ')})`);
+    // A gate, a notice board, a landmark: nobody keeps them, and there is no
+    // one there to talk to — a person there would have nowhere to stand.
+    if (isVenue && ['gate', 'notice-board', 'landmark'].includes(p.at)) {
+      err(`${p.name} is at the ${p.at}, which has no one to talk to: put them at an inn, a temple, a shop, or a district`);
+    }
     if (isVenue && !['inn', 'temple'].includes(p.at) && p.lead) {
       err(`${p.name} keeps the ${p.at}, a shop, where there is no talking: put a lead at an inn, a temple, or a district`);
     }
@@ -358,13 +382,17 @@ export function checkCitySpec(spec: CitySpec): Required<CitySpec> {
     if (typeof pl.fight === 'string' && !encounterFor(pl.fight)) err(`'${pl.label}': no encounter '${pl.fight}'`);
     if (pl.loot && pl.loot !== 'gold' && !ITEMS[pl.loot] && !itemPrice(pl.loot)) err(`'${pl.label}': no item '${pl.loot}'`);
   }
-  // A lead nothing can close is a promise the town cannot keep.
+  for (const pl of places) {
+    if (pl.way && !opts.story) err(`'${pl.label}' leads on to '${pl.way.to}', but a town on its own has no story to lead into`);
+  }
+  // A lead nothing can close is a promise the town cannot keep. Inside a
+  // story, the story may close it — and the whole story's proofs say so.
   const closers = new Set(places.flatMap((pl) => (pl.sets ? [pl.sets] : [])));
-  for (const lead of [...people.flatMap((p) => (p.lead ? [p.lead] : [])), ...(spec.rumours ?? []).flatMap((r) => (r.lead ? [r.lead] : []))]) {
+  if (!opts.story) for (const lead of [...people.flatMap((p) => (p.lead ? [p.lead] : [])), ...(spec.rumours ?? []).flatMap((r) => (r.lead ? [r.lead] : []))]) {
     if (lead.flag && !closers.has(lead.flag)) err(`the lead '${lead.title}' closes on '${lead.flag}', which no place sets`);
   }
-  // Until towns sit inside stories, the only flags there are the town's own.
-  for (const w of [...people.flatMap((p) => p.when ?? []), ...places.flatMap((pl) => pl.when ?? [])]) {
+  // On its own, the only flags there are are the town's own.
+  if (!opts.story) for (const w of [...people.flatMap((p) => p.when ?? []), ...places.flatMap((pl) => pl.when ?? [])]) {
     const f = w.replace(/^!/, '');
     if (!closers.has(f)) err(`'${w}' reads the flag '${f}', which nothing in the town sets`);
   }
@@ -509,7 +537,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
       venueScene.next.splice(venueScene.next.length - 1, 0, talk);
     } else {
       const p = placed.find((x) => x.id === id)!;
-      nodes.push({ id, label: who.name, icon: 'tok-person', scene: id, x: p.x, y: p.y,
+      nodes.push({ id, label: who.title ?? who.name, icon: 'tok-person', scene: id, x: p.x, y: p.y,
         ...(who.when?.length ? { requires: needs(who.when), note: `${who.name} is not here just now.` } : {}) });
     }
   }
@@ -523,6 +551,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     scenes[id] = { id, kind: 'story', noBack: true, text: pl.text,
       next: [
         ...(loot.length ? [{ id: 'take', label: 'Take what is there', to: 'city', once: true, effects: [...loot, ...sets] }] : []),
+        ...(pl.way ? [{ id: 'on', label: pl.way.label ?? `Go on, past the ${pl.label.toLowerCase()}`, to: pl.way.to, ...(sets.length ? { effects: sets } : {}) }] : []),
         { id: 'leave', label: 'Walk on', to: 'city', ...(sets.length ? { effects: sets } : {}) },
       ] };
     const node: ExploreNode = { id, label: pl.label, icon: pl.icon ?? 'tok-mystery', scene: id, x: p.x, y: p.y,
@@ -541,7 +570,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   // Trouble in the streets: a scuffle on the way to a place or two in the
   // rougher districts. Rolled last, so a town without them is built as before.
   if (spec.streets) {
-    const rough = new Set(['warrens', 'gate', 'market'].map((d) => districts.indexOf(d as DistrictKind)).filter((i) => i >= 0));
+    const rough = new Set(['warrens', 'gatehouse', 'market'].map((d) => districts.indexOf(d as DistrictKind)).filter((i) => i >= 0));
     const spots = dice.shuffle(nodes.filter((n) => {
       const p = placed.find((x) => x.id === n.id);
       return p && rough.has(p.d) && !n.hidden && !n.wandering && p.kind !== 'gate' && !n.id.startsWith('place-');
@@ -579,8 +608,8 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
 class Reroll extends Error {}
 
 /** A playable, validated town. Deterministic in seed and spec. */
-export function generateCity(seed: number, spec: CitySpec = {}): { module: Module; rerolls: number } {
-  const full = checkCitySpec(spec);
+export function generateCity(seed: number, spec: CitySpec = {}, opts: CityOptions = {}): { module: Module; rerolls: number } {
+  const full = checkCitySpec(spec, opts);
   let last: string[] = [];
   for (let attempt = 0; attempt < 40; attempt++) {
     let module: Module;
@@ -588,7 +617,9 @@ export function generateCity(seed: number, spec: CitySpec = {}): { module: Modul
       if (!(e instanceof Reroll)) throw e;
       last = [e.message]; continue;
     }
-    last = validateModule(module);
+    // Inside a story the town is not a module of its own: the story's
+    // validator proves it, spliced in, with the story's scenes and flags.
+    last = opts.story ? [] : validateModule(module);
     if (last.length === 0) return { module: { ...module, id: cityId(seed, spec) }, rerolls: attempt };
   }
   throw new Error(`No valid town for seed ${seed}: ${last.join('; ')}`);
