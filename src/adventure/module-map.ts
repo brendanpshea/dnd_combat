@@ -69,6 +69,7 @@ export function needsOf(reqs: Requirement[] | undefined): string | undefined {
       case 'at': return `@${r.hub}`;
       case 'count': return `${r.flag}${r.atLeast !== undefined ? `≥${r.atLeast}` : ''}${r.below !== undefined ? `<${r.below}` : ''}`;
       case 'npc': return `${r.npc}${r.fate ? `:${r.fate}` : ''}`;
+      case 'partyLevel': return `lv${r.atLeast !== undefined ? `≥${r.atLeast}` : ''}${r.below !== undefined ? `<${r.below}` : ''}`;
     }
   }).join(', ');
 }

@@ -68,7 +68,10 @@ export type Requirement =
    *  read in camp, or a defeat scene after a fight, is somewhere: say so. */
   | { kind: 'at'; hub: SceneRef }
   /** A tally against bounds, unset counting as 0. */
-  | { kind: 'count'; flag: string; atLeast?: number; below?: number };
+  | { kind: 'count'; flag: string; atLeast?: number; below?: number }
+  /** The party's level as it plays (its average): a camp that preys on the
+   *  weak and bows to the strong. Either way may hold, for the proofs. */
+  | { kind: 'partyLevel'; atLeast?: number; below?: number };
 
 /** A state mutation a choice/outcome applies. Deliberately tiny vocabulary. */
 export type Effect =

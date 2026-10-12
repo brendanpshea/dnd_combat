@@ -87,31 +87,57 @@ export interface LandPlace {
 }
 
 /**
- * Who camps out in the wild, where, and how they take to strangers. Not
- * every camp is a fight: half the point is that you cannot tell from the
- * road which ones are.
+ * Who camps out in the wild, where, how strong they are, and how they take
+ * to strangers. Not every camp is a fight: half the point is that you cannot
+ * tell from the road which ones are.
+ *
+ * `tier` is the party level the band is a fair fight for. A county rolls
+ * bands within a level of its own; in play, how a camp treats the party goes
+ * by the party's level against that tier — it preys on a weaker party, and
+ * bows (or bolts) before one two levels past it.
  */
-const CAMPS: Record<string, { label: string; ground: Terrain[]; hostile: number; angry: string; calm: string; talk: string }> = {
-  bandits: { label: 'Bandit Camp', ground: ['plain', 'forest'], hostile: 0.5,
-    angry: 'A lookout whistles. Hard faces turn your way, and the blades come out.',
-    calm: 'Outlaws — but not today\'s kind of trouble. They make room at the fire, for a coin.',
-    talk: 'They tell you which roads the lord\'s men watch, and which they don\'t, and laugh at their own jokes.' },
-  goblins: { label: 'Goblin Camp', ground: ['forest', 'hills'], hostile: 0.6,
-    angry: 'Goblins boil out of the brush, shrieking, before you are halfway to the fire.',
-    calm: 'The goblins here are fat on someone\'s sheep, and too full to fight. They eye you and grin.',
-    talk: 'Between belches, the goblins boast of a hole in the hills full of shiny things, and who guards it.' },
-  kobolds: { label: 'Kobold Warren', ground: ['hills'], hostile: 0.4,
+const CAMPS: Record<string, { label: string; tier: number; ground: Terrain[]; hostile: number; flees?: true;
+  angry: string; calm: string; talk: string; cowed: string }> = {
+  kobolds: { label: 'Kobold Warren', tier: 1, ground: ['hills', 'forest'], hostile: 0.4, flees: true,
     angry: 'A trip-line twangs underfoot. Little shapes with spears pour out of the burrows.',
     calm: 'Kobolds peer from their burrows, chattering. One brave one comes out to trade.',
-    talk: 'The kobolds know every tunnel under these hills, and sell you a little of what they know.' },
-  gnolls: { label: 'Gnoll Camp', ground: ['plain', 'hills'], hostile: 0.85,
-    angry: 'Laughter, high and wrong, from every side at once. The gnolls have smelt you.',
-    calm: 'The gnolls are gorged and sleepy. Their leader watches you go, and does not move.',
-    talk: 'The gnoll leader growls something about the city, and the soft people in it.' },
-  lizardfolk: { label: 'Lizardfolk Camp', ground: ['marsh'], hostile: 0.3,
+    talk: 'The kobolds know every tunnel under these hills, and sell you a little of what they know.',
+    cowed: 'The kobolds take one look at you and vanish down their holes, squealing. They leave their cookpot, and their hoard, behind.' },
+  goblins: { label: 'Goblin Camp', tier: 1, ground: ['forest', 'hills'], hostile: 0.6, flees: true,
+    angry: 'Goblins boil out of the brush, shrieking, before you are halfway to the fire.',
+    calm: 'The goblins here are fat on someone\'s sheep, and too full to fight. They eye you and grin.',
+    talk: 'Between belches, the goblins boast of a hole in the hills full of shiny things, and who guards it.',
+    cowed: 'The goblins scatter into the trees at the sight of you, leaving the fire burning and their loot in a heap.' },
+  bandits: { label: 'Bandit Camp', tier: 2, ground: ['plain', 'forest'], hostile: 0.5,
+    angry: 'A lookout whistles. Hard faces turn your way, and the blades come out.',
+    calm: 'Outlaws — but not today\'s kind of trouble. They make room at the fire, for a coin.',
+    talk: 'They tell you which roads the lord\'s men watch, and which they don\'t, and laugh at their own jokes.',
+    cowed: 'The outlaws know your names. Their captain comes out with his hands open and a purse in one of them. "No trouble. A gift, for the road."' },
+  lizardfolk: { label: 'Lizardfolk Camp', tier: 2, ground: ['marsh'], hostile: 0.3,
     angry: 'The reeds part, and the lizardfolk come at you without a sound.',
     calm: 'Lizardfolk on a mudbank, gutting fish. They watch you with flat eyes, and let you be.',
-    talk: 'Through signs and grunts, the lizardfolk warn you off the deep water to the south.' },
+    talk: 'Through signs and grunts, the lizardfolk warn you off the deep water to the south.',
+    cowed: 'The lizardfolk lay a string of river pearls on the mud before you, and back away into the reeds.' },
+  gnolls: { label: 'Gnoll Camp', tier: 3, ground: ['plain', 'hills'], hostile: 0.85,
+    angry: 'Laughter, high and wrong, from every side at once. The gnolls have smelt you.',
+    calm: 'The gnolls are gorged and sleepy. Their leader watches you go, and does not move.',
+    talk: 'The gnoll leader growls something about the city, and the soft people in it.',
+    cowed: 'The gnolls go quiet as you come. Their leader drops a sack of plunder at your feet: a price to be left alone.' },
+  cult: { label: 'Cultist Camp', tier: 3, ground: ['forest', 'hills', 'plain'], hostile: 0.7,
+    angry: 'Chanting stops. Hooded figures turn from the fire, knives already out.',
+    calm: 'Pilgrims, they say, in grey robes. They offer bread, and watch you eat it.',
+    talk: 'Their elder speaks of a door that will open soon, and smiles as if you already knew.',
+    cowed: 'The robed ones bow, too low. Their elder offers you an offering bowl full of coin, "for the road you walk."' },
+  'hag-court': { label: 'Witch Circle', tier: 4, ground: ['marsh', 'forest'], hostile: 0.6,
+    angry: 'Lights in the mist close round you, and laughter, and things with too many teeth.',
+    calm: 'An old woman by a fire in the fog, stirring a pot. "Sit, dears. Ask your question."',
+    talk: 'She answers a question you did not ask, about someone you love. It is true, and you wish it were not.',
+    cowed: 'The fog thins. A voice from nowhere: "Not you. Not today." Something glitters where the fire was.' },
+  'fire-court': { label: 'Ember Camp', tier: 5, ground: ['hills'], hostile: 0.8,
+    angry: 'The ground is hot underfoot. Burning shapes rise from the coals, and the air catches fire.',
+    calm: 'Things of ember and smoke, round a fire that burns nothing. They watch, and wait for a word.',
+    talk: 'They speak of the deep forges under the hills, and the one who keeps them.',
+    cowed: 'The burning ones bank their fires and kneel, and leave you a lump of something molten that cools to gold.' },
 };
 export const CAMP_FACTIONS = Object.keys(CAMPS);
 
@@ -374,7 +400,10 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
     const at = wildAt();
     if (!at) break;
     const taken = new Set(places.map((q) => q.faction));
-    const who = dice.shuffle(CAMP_FACTIONS.filter((f) => CAMPS[f]!.ground.includes(g.at(at)) && !taken.has(f)))[0];
+    // Who lives on this ground, and is a fair fight, within a level, for
+    // the party this county is for.
+    const who = dice.shuffle(CAMP_FACTIONS.filter((f) => CAMPS[f]!.ground.includes(g.at(at)) && !taken.has(f)
+      && Math.abs(CAMPS[f]!.tier - spec.level) <= 1))[0];
     if (!who) continue;
     const q = put('camp', at, { id: `camp-${who}`, label: CAMPS[who]!.label, kind: 'camp' });
     delete q.from;
@@ -534,28 +563,60 @@ export function draftLand(seed: number, spec: Required<LandSpec>): Module {
     } else if (pl.kind === 'camp') {
       const c = CAMPS[pl.faction!]!;
       const angry = pl.from?.hostile ?? rng() < c.hostile;
+      // The fight is the band's own strength, whatever the party's: a weak
+      // party meets more than it can handle, a strong one less.
+      const tier = c.tier;
       const fid = `${pl.id}-fight`;
       const enc = generateEncounter({
-        budget: Math.round(evenBudgetFor(spec.level) * shareFor('elite', spec.level)), maxMemberXp: memberCapFor(spec.level),
-        maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: FACTIONS[pl.faction!]!.members,
+        budget: Math.round(evenBudgetFor(tier) * shareFor('elite', tier)), maxMemberXp: memberCapFor(tier),
+        maxCount: maxCountFor(tier), partyLevel: tier, members: FACTIONS[pl.faction!]!.members,
       }, seedRng(Math.floor(rng() * 2 ** 31))).value;
-      const loot: Effect[] = [{ kind: 'setFlag', flag: won(pl.id) }, { kind: 'gold', amount: 15 * spec.level }];
+      const done: Effect = { kind: 'setFlag', flag: won(pl.id) };
       scenes[fid] = { id: fid, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: g.at(pl.p) === 'marsh' ? 'marsh' : 'firepit',
-        onWin: { to: `${pl.id}-quiet`, effects: loot } };
+        onWin: { to: `${pl.id}-quiet`, effects: [done, { kind: 'gold', amount: 15 * tier }] } };
       scenes[`${pl.id}-quiet`] = { id: `${pl.id}-quiet`, kind: 'story', noBack: true, text: ['Cold ashes and trampled ground. Whoever camped here is gone.'],
         next: [{ id: 'on', label: 'Walk on', to: 'land' }] };
-      nodes.find((n) => n.id === pl.id)!.sceneWhen = [{ if: [{ kind: 'flag', flag: won(pl.id) }], to: `${pl.id}-quiet` }];
+      const talk = `${pl.id}-talk`;
+      // Talked to when calm, or when cowed and staying put.
+      if (!angry || !c.flees) scenes[talk] = { id: talk, kind: 'story', noBack: true, text: [c.talk], next: [{ id: 'ok', label: 'Thank them and go', to: 'land' }] };
+      // A party of their own strength: as the band is disposed.
       scenes[pl.id] = angry
         ? { id: pl.id, kind: 'story', noBack: true, text: [c.angry], next: [
             { id: 'fight', label: 'Fight', to: fid },
             { id: 'run', label: 'Fall back to the road', to: 'land' },
           ] }
         : { id: pl.id, kind: 'story', noBack: true, text: [c.calm], next: [
-            { id: 'talk', label: 'Sit and talk a while', to: `${pl.id}-talk`, once: true },
+            { id: 'talk', label: 'Sit and talk a while', to: talk, once: true },
             { id: 'fight', label: 'Attack them', to: fid },
             { id: 'on', label: 'Walk on', to: 'land' },
           ] };
-      if (!angry) scenes[`${pl.id}-talk`] = { id: `${pl.id}-talk`, kind: 'story', noBack: true, text: [c.talk], next: [{ id: 'ok', label: 'Thank them and go', to: 'land' }] };
+      // Weaker: prey. The angry come for you; the calm want paying.
+      const toll = 5 * tier;
+      scenes[`${pl.id}-prey`] = angry
+        ? { id: `${pl.id}-prey`, kind: 'story', noBack: true, text: [c.angry, 'They have sized you up, and they like their chances.'], next: [
+            { id: 'fight', label: 'Fight', to: fid },
+            { id: 'run', label: 'Run for the road', to: 'land' },
+          ] }
+        : { id: `${pl.id}-prey`, kind: 'story', noBack: true, text: [c.calm, `Then they look you over, and the welcome cools. "${toll} gold," says one, "to pass in one piece."`], next: [
+            { id: 'pay', label: `Pay ${toll} gold`, to: 'land', requires: [{ kind: 'gold', atLeast: toll }], effects: [{ kind: 'gold', amount: -toll }] },
+            { id: 'fight', label: 'Refuse', to: fid },
+            { id: 'run', label: 'Back away', to: 'land' },
+          ] };
+      // Two levels past them: they bow, or bolt, and pay to be let be.
+      const gift = 10 * tier;
+      scenes[`${pl.id}-cowed`] = { id: `${pl.id}-cowed`, kind: 'story', noBack: true, text: [c.cowed], next: c.flees
+        ? [{ id: 'take', label: 'Help yourselves', to: `${pl.id}-quiet`, effects: [done, { kind: 'gold', amount: gift }] }]
+        : [
+            { id: 'take', label: `Accept the gift (${gift} gold)`, to: 'land', once: true, effects: [{ kind: 'gold', amount: gift }] },
+            { id: 'talk', label: 'Ask what they know', to: talk, once: true },
+            { id: 'fight', label: 'Attack them anyway', to: fid },
+            { id: 'on', label: 'Walk on', to: 'land' },
+          ] };
+      nodes.find((n) => n.id === pl.id)!.sceneWhen = [
+        { if: [{ kind: 'flag', flag: won(pl.id) }], to: `${pl.id}-quiet` },
+        { if: [{ kind: 'partyLevel', below: tier }], to: `${pl.id}-prey` },
+        { if: [{ kind: 'partyLevel', atLeast: tier + 2 }], to: `${pl.id}-cowed` },
+      ];
     } else if (pl.kind === 'place') {
       scenes[pl.id] = { id: pl.id, kind: 'story', noBack: true, text: pl.from!.text!, next: [{ id: 'on', label: 'Walk on', to: 'land' }] };
     } else if (pl.kind === 'stop') {
