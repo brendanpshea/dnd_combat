@@ -6,7 +6,7 @@
 import type { Id } from '../engine/types.js';
 import type { EmbeddedDelve, EmbeddedTown, ExploreNode, Module, Requirement, Scene } from './types.js';
 import { refsOf, requirementsOf } from './graph.js';
-import { delveFightXpBound } from './delve-spec.js';
+import { delveFightXpBound } from './delve-budget.js';
 
 /**
  * The story with each `proveApart` delve as only what the story sees of it:
