@@ -197,8 +197,17 @@ function draft(seed: number, opts: Required<DelveOptions>, legacy = false): Modu
    */
   const safe = new Set<Id>();
   if (!legacy) {
-    safe.add(main[dice.int(1, lockAt - 1)]!);
-    if (lockAt < mainLen - 1 && dice.chance(0.5)) safe.add(main[dice.int(lockAt, mainLen - 2)]!);
+    // Never on the goal's doorstep (main[mainLen - 2]): resting is refused
+    // beside a fight still to be had, and the goal's is had last, so a safe
+    // room there could never be slept in. One step back instead, with no
+    // extra roll, so every other delve is built exactly as before.
+    const off = (i: number, lo: number) => (i === mainLen - 2 && i - 1 >= lo ? i - 1 : i === mainLen - 2 ? -1 : i);
+    const first = off(dice.int(1, lockAt - 1), 1);
+    if (first >= 0) safe.add(main[first]!);
+    if (lockAt < mainLen - 1 && dice.chance(0.5)) {
+      const second = off(dice.int(lockAt, mainLen - 2), lockAt);
+      if (second >= 0) safe.add(main[second]!);
+    }
   }
   const safeName = (id: Id) => (safe.has(id) ? { name: T.safe[0], rest: 'safe' as const, firstVisit: [T.safe[1]] } : {});
 

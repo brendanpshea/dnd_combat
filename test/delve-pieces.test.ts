@@ -177,6 +177,12 @@ describe('delves without pieces', () => {
         })));
       }
     }
-    expect(h.digest('hex').slice(0, 16)).toBe('a9c70867a1648919');
+    // Changed twice, on purpose, each time for a measured reason:
+    //  - a safe room on the goal's doorstep could never be slept in; moving it
+    //    changed exactly the delves that had one (15 of 200, compared one by
+    //    one against the old build; no other moved);
+    //  - boss fights are sized by level from whole delves played through
+    //    (SHARES), which re-draws every generated boss.
+    expect(h.digest('hex').slice(0, 16)).toBe('b807f083b7acd9f6');
   }, 60_000);
 });

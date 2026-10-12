@@ -124,11 +124,41 @@ export const ROOM_RANGE: [number, number] = [5, 16];
  * not a new difficulty decision. This is a match to the authored pools, NOT a
  * measurement of whole delves played through.
  */
-export const ROOM_SHARE = 0.3;
-export const BOSS_SHARE = 0.65;
-/** A set piece's named foe: between the two. NOT calibrated or measured — the
- *  midpoint, until whole delves are played through to say otherwise. */
-export const ELITE_SHARE = 0.45;
+/**
+ * The shares, by role and party level (index = level - 1; past the end, the
+ * last entry). Mutable so scripts/delve-sim.ts can sweep them; nothing in the
+ * game writes to it.
+ */
+/*
+ * MEASURED (scripts/delve-sim.ts): whole one-floor delves played through by a
+ * careful player, every fight the real engine with the greedy AI on both
+ * sides, HP and slots carried, resting by the dungeon's rules. The targets:
+ * a room nearly always won, a named foe usually, a boss more often than not
+ * at the first try (~75–85%), and a delve cleared ~85%+ of the time.
+ *
+ * The boss share started at a flat 0.65, matched to the authored pools. Played
+ * through, that was far too easy at 1st level (97% first try) and too hard at
+ * 3rd–4th (62–63%): a party's reserves, not its paper strength, decide a boss
+ * at the end of a dungeon, and they scale differently by level. Swept per
+ * level at n=40, then confirmed on 40 fresh seeds per cell — first-try boss
+ * wins, generated / inhabitants:
+ *   L1 83 / 83   L2 93 / 83   L3 82 / 75   L4 89 / 77   L5 84 / 83
+ * Delves cleared 78–98%. Rooms 94–100% at 0.3, so they stay.
+ * Elite (the warden, a rival company): 0.45 wins 83–95% — between room and
+ * boss, as a named foe should; 0.35 won 93–100%, no harder than a room.
+ * Levels past 5 use the last entry, and are NOT measured.
+ */
+export const SHARES: Record<FightRole, number[]> = {
+  room: [0.3],
+  elite: [0.45],
+  boss: [0.8, 0.65, 0.55, 0.55, 0.6],
+};
+
+/** The share of the even budget a fight of this role costs at this level. */
+export function shareFor(role: FightRole, level: number): number {
+  const t = SHARES[role];
+  return t[Math.min(Math.max(1, level), t.length) - 1]!;
+}
 
 /** Throws on a spec no candidate could satisfy; returns it with defaults. */
 export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & { size?: DelveSpec['size'] } {
@@ -364,9 +394,13 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
 
   /** A faction's leader and an escort, to the boss budget. */
   const leaderFight = (lvl: number, fac: Faction): Id | undefined => {
-    const budget = Math.round(evenBudgetFor(lvl) * BOSS_SHARE);
+    const budget = Math.round(evenBudgetFor(lvl) * shareFor('boss', lvl));
     const cap = Math.min(memberCapFor(lvl), budget * 0.75);
-    const fits = fac.leaders.filter((m) => (MONSTER_XP[m] ?? Infinity) <= cap);
+    const all = fac.leaders.filter((m) => (MONSTER_XP[m] ?? Infinity) <= cap);
+    // A leader worth a real share of the fight, where the faction has one:
+    // a goblin boss heading a 12,000 XP fight is an escort with a hat on.
+    const worthy = all.filter((m) => (MONSTER_XP[m] ?? 0) >= budget * 0.12);
+    const fits = worthy.length ? worthy : all.sort((a, b) => (MONSTER_XP[b] ?? 0) - (MONSTER_XP[a] ?? 0)).slice(0, 1);
     // Too low a level for any of its leaders: the biggest of its own that
     // fits leads instead, so the goal is still THEM and not a stranger.
     const stand = [...fac.members].filter((m) => (MONSTER_XP[m] ?? Infinity) <= cap)
@@ -374,10 +408,19 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const pool = fits.length ? fits : stand;
     if (pool.length === 0) return undefined;
     const leader = dice.pick(pool);
-    const escort = generateEncounter({
-      budget: Math.max(1, budget - (MONSTER_XP[leader] ?? 0) * 1.5), maxMemberXp: Math.min(memberCapFor(lvl), MONSTER_XP[leader] ?? 0),
+    // A leader big enough to be most of the fight on its own fights alone:
+    // asking the generator for an escort out of nothing crashed it.
+    const left = budget - (MONSTER_XP[leader] ?? 0) * 1.5;
+    const escortSeed = Math.floor(dice.float() * 2 ** 31);
+    // ...and so does one that leaves less than its cheapest follower costs:
+    // asked to spend 50 XP on wild beasts, the generator falls back to the
+    // whole roster and a kobold joins the giant ape.
+    const cheapest = Math.min(...fac.members.map((m) => MONSTER_XP[m] ?? Infinity));
+    // (The generator spends at most three quarters of a budget on one body.)
+    const escort = left * 0.75 < cheapest ? [] : generateEncounter({
+      budget: left, maxMemberXp: Math.min(memberCapFor(lvl), MONSTER_XP[leader] ?? 0),
       maxCount: Math.max(1, maxCountFor(lvl) - 1), partyLevel: lvl, members: fac.members,
-    }, seedRng(Math.floor(dice.float() * 2 ** 31))).value.members;
+    }, seedRng(escortSeed)).value.members;
     // Trim the escort until the whole fight is inside the boss budget.
     const out = [leader, ...escort];
     while (out.length > 1 && adjustedXp(out) > budget * 1.1) out.pop();
@@ -396,7 +439,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       const pools = encounterPools(lvl);
       return dice.pick(role === 'boss' ? pools.boss : pools.room);
     }
-    const share = role === 'boss' ? BOSS_SHARE : role === 'elite' ? ELITE_SHARE : ROOM_SHARE;
+    const share = shareFor(role, lvl);
     const budget = Math.round(evenBudgetFor(lvl) * share);
     const enc = generateEncounter({
       budget, maxMemberXp: memberCapFor(lvl), maxCount: maxCountFor(lvl), partyLevel: lvl, ...(brief ? { brief } : {}),
@@ -572,7 +615,20 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
 
     const safe = new Set<Id>();
     const beforeLock = g.main.slice(1, -1).filter((id) => !g.afterLock.has(id) && !placed.has(id));
-    if (beforeLock.length && !pieceGivesRest) safe.add(dice.pick(beforeLock));
+    if (beforeLock.length && !pieceGivesRest) {
+      /*
+       * Never next to the goal. Resting is refused beside a room whose fight
+       * is still to be had, and the goal's is had last — so a safe room on
+       * the goal's doorstep could never once be slept in. Measured: whole
+       * delves played through lost their boss fight far more often than a
+       * fresh party does, because the party could not sleep before it, nor
+       * after a wipe. Substituted without another roll, so a delve whose safe
+       * room was already usable is built exactly as before.
+       */
+      const byGoal = (id: Id) => g.links.some((l) => (l.a === id && l.b === goal) || (l.b === id && l.a === goal));
+      const pick = dice.pick(beforeLock);
+      safe.add(byGoal(pick) ? beforeLock.find((x) => !byGoal(x)) ?? pick : pick);
+    }
     const keyOf = new Map(g.keys.map((k) => [k.room, k.flag]));
     const rooms: DungeonRoom[] = [];
 
