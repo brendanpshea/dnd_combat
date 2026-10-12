@@ -153,6 +153,12 @@ export interface QuestSpec {
   /** A flag the story sets when the quest is lost — by a choice made, never
    *  an accident. Lost, the journal says so, and the proofs let it rest. */
   failsOn?: string;
+  /**
+   * What the quest adds elsewhere: a choice in a scene, offered only while
+   * the quest is in hand (another way through: "Ask the fence after the
+   * chalice"), or effects on a battle's win (the chalice in the hoard).
+   */
+  adds?: Array<{ scene: SceneRef; choice: Choice } | { battle: SceneRef; effects: Effect[] }>;
 }
 
 /** Where a check/branch lands, plus what it does on the way. */
