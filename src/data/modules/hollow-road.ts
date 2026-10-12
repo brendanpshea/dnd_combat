@@ -68,7 +68,12 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   delves: {
   trail: {
     spec: {
-      level: 1, theme: 'bog', shape: 'classic', rooms: 10, fights: 'inhabitants', factions: ['wild'],
+      // A road, not a maze: one long way through the reeds, held by the hag's creatures.
+      level: 1, theme: 'marsh', shape: 'spine', rooms: 10, fights: 'inhabitants', factions: ['marsh-thralls'], maxFights: 0,
+      dressing: { name: 'The Marsh Road',
+        door: 'Past the last fence-post the road runs out into reeds and black water, and goes on as a line of planks and tussocks.',
+        outside: 'The reeds open, and the road back to {thornwick} runs dry under your boots.',
+        back: 'Back into the reeds', leave: 'Walk back to {thornwick}' },
       lock: { requires: [{ kind: 'flag', flag: 'trail-read' }, { kind: 'flag', flag: 'crossed-ravine' }],
         note: 'The ravine cuts the trail, and past it the reeds hide the way to the hollow. Cross the ravine, and find the patrols\' tracks.' },
       require: [
@@ -101,7 +106,11 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     spec: {
       // A spine: no lock and key of its own, so no flag the whole chapter's
       // proof would have to carry twice over.
-      level: 2, theme: 'ember', shape: 'spine', rooms: 9, fights: 'inhabitants', factions: ['gnolls'],
+      level: 2, theme: 'stockade', shape: 'spine', rooms: 9, fights: 'inhabitants', factions: ['ashfang'], maxFights: 0,
+      dressing: { name: 'The {ashfang} Den',
+        door: 'Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp that thinks it is safe.',
+        outside: 'You slip back out through the gate, into the quiet of the hollow.',
+        back: 'Back inside', leave: 'Leave the den for now' },
       require: [
         { name: 'The Pit', where: 'main', event: { scene: 'den-muster', until: [{ kind: 'flag', flag: 'pit-won' }] } },
         { name: 'A Lone Fire', where: 'main',

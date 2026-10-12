@@ -43,6 +43,7 @@
  * a victory with (cold starts lie under that: their `xpToLevel` floor is a
  * `max`, so it is counted where it runs).
  */
+import { outsideOf } from './outside.js';
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Scene, type Effect, type Outcome, type Requirement } from './types.js';
 import { refsOf, effectsOf } from './graph.js';
@@ -96,8 +97,10 @@ const cache = new Map<string, XpReport>();
  * (0 for a first chapter).
  */
 export function maxXpReport(
-  module: Module, chapters: readonly Module[] = MODULES, opts: { startXp?: number; partySize?: number } = {},
+  written: Module, chapters: readonly Module[] = MODULES, opts: { startXp?: number; partySize?: number } = {},
 ): XpReport {
+  // Its generated places as the search sees them: only their outside.
+  const module = outsideOf(written);
   const partySize = opts.partySize ?? PARTY_SIZE;
   let startXp = opts.startXp;
   if (startXp === undefined) {

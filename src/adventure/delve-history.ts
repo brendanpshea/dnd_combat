@@ -13,7 +13,7 @@ import type { SpecTheme } from './delve-spec.js';
 interface Builder { who: string; traces: string[] }
 interface Calamity { adj: string; what: string; traces: string[] }
 
-const BUILDERS: Record<SpecTheme, Builder[]> = {
+const BUILDERS: Partial<Record<SpecTheme, Builder[]>> = {
   stone: [
     { who: 'dwarven miners', traces: ['Dwarven runes over the arch, worn almost smooth.', 'Tool marks in the rock, neat as handwriting.'] },
     { who: 'a forgotten king\'s jailers', traces: ['Iron rings set into the wall, at the height of a man\'s wrists.', 'A tally scratched into the stone: hundreds of days.'] },
@@ -41,7 +41,7 @@ const BUILDERS: Record<SpecTheme, Builder[]> = {
   ],
 };
 
-const CALAMITIES: Record<SpecTheme, Calamity[]> = {
+const CALAMITIES: Partial<Record<SpecTheme, Calamity[]>> = {
   stone: [
     { adj: 'Sealed', what: 'they dug too deep, and sealed the lower halls behind them', traces: ['A wall of newer stone across an older passage, mortared in a hurry.'] },
     { adj: 'Broken', what: 'an earthquake split it and they never came back', traces: ['A crack across the floor wide enough to lose a boot in.'] },
@@ -68,7 +68,7 @@ const CALAMITIES: Record<SpecTheme, Calamity[]> = {
   ],
 };
 
-const PLACES: Record<SpecTheme, string[]> = {
+const PLACES: Partial<Record<SpecTheme, string[]>> = {
   stone: ['Halls', 'Hold', 'Deeps', 'Keep'],
   graveyard: ['Crypts', 'Catacombs', 'Barrows', 'Charnel'],
   ember: ['Forges', 'Furnaces', 'Kilns', 'Deeps'],
@@ -87,9 +87,11 @@ export interface History {
 
 /** One past for a place, ending in whoever holds it now. */
 export function drawHistory(theme: SpecTheme, dice: Dice, holders: readonly Faction[]): History {
-  const b = dice.pick(BUILDERS[theme]);
-  const c = dice.pick(CALAMITIES[theme]);
-  const title = `The ${c.adj} ${dice.pick(PLACES[theme])}`;
+  // (A story's own theme has no past of its own: it borrows stone's.)
+  const t = BUILDERS[theme] ? theme : 'stone';
+  const b = dice.pick(BUILDERS[t]!);
+  const c = dice.pick(CALAMITIES[t]!);
+  const title = `The ${c.adj} ${dice.pick(PLACES[t]!)}`;
   const now = holders.length === 0 ? 'Nobody knows what lives there now.'
     : holders.length === 1 ? `Now ${dice.pick(holders[0]!.names)} hold it.`
     : `Now ${dice.pick(holders[0]!.names)} hold the upper halls, and ${dice.pick(holders[1]!.names)} the deeper ones.`;

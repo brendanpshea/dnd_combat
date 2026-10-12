@@ -26,9 +26,9 @@ Main-path fights per chapter, counted **below / in / above** the band.
 
 | Chapter | Main-path fights | Bosses | Fresh | Arrival | Worn | EASY | OVER |
 |---|---|---|---|---|---|---|---|
-| The Hollow Road | 19 | 2 | 1 / 13 / 5 | 9 / 6 / 4 | 17 / 1 / 1 | 2 | 0 |
-| The Sunken Barrows | 16 | 2 | 0 / 5 / 11 | 5 / 4 / 7 | 10 / 1 / 5 | 8 | 0 |
-| The Wyrmcalling | 17 | 2 | 0 / 10 / 7 | 8 / 4 / 5 | 14 / 0 / 3 | 3 | 0 |
+| The Hollow Road | 23 | 2 | 1 / 10 / 12 | 7 / 6 / 10 | 13 / 1 / 9 | 10 | 0 |
+| The Sunken Barrows | 15 | 2 | 1 / 6 / 8 | 5 / 3 / 7 | 9 / 1 / 5 | 7 | 0 |
+| The Wyrmcalling | 17 | 2 | 1 / 8 / 8 | 10 / 2 / 5 | 14 / 0 / 3 | 4 | 0 |
 
 ### Furthest above the band
 
@@ -36,72 +36,78 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 
 | Chapter | Scene | Encounter | Map | Level (sugg.) | Fresh | Worn | Band |
 |---|---|---|---|---|---|---|---|
+| wyrmcalling | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | 5 (5) | 92% | 7% | 60–80% |
+| hollow-road | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | 3 (2) | 100% | 100% | 70–90% |
 | sunken-barrows | `diggers-fight` | The Diggers `diggers` | `corridor` | 4 (3) | 100% | 100% | 70–90% |
 | sunken-barrows | `crypt-ambush` | Crypt Crawlers `crypt` | room (The Undercrypt, in a corridor) | 4 (3) | 100% | 100% | 70–90% |
+| wyrmcalling | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | 5 (4) | 100% | 100% | 70–90% |
 | wyrmcalling | `clutch-r` | The Brood on the Rim `den-clutch-r` | `open` | 5 (4) | 100% | 100% | 70–90% |
 | wyrmcalling | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | 5 (4) | 100% | 100% | 70–90% |
 | hollow-road | `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | 1 (1) | 100% | 100% | 70–90% |
-| wyrmcalling | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | 4 (4) | 100% | 100% | 70–90% |
-| sunken-barrows | `wights` | Wight Tomb `wight-tomb` | `corridor` | 4 (3) | 100% | 97% | 70–90% |
-| sunken-barrows | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 97% | 70–90% |
+| hollow-road | `trail/f1-ambush-m0-s1` | gen:zombie+zombie+zombie+zombie `gen:zombie+zombie+zombie+zombie` | room (The Marsh Road, in a corridor) | 2 (?) | 100% | 100% | 70–90% |
+| hollow-road | `inner/f1-fight-key` | gen:scout+orc+worg+orc `gen:scout+orc+worg+orc` | room (The Ashfang Den) | 3 (?) | 100% | 100% | 70–90% |
+| hollow-road | `trail/f1-ambush-m1-m2` | gen:lizardfolk+zombie+zombie `gen:lizardfolk+zombie+zombie` | room (The Marsh Road, in a corridor) | 2 (?) | 100% | 100% | 70–90% |
+| hollow-road | `inner/f1-ambush-m3-m4` | gen:scout+orc+scout+orc `gen:scout+orc+scout+orc` | room (The Ashfang Den, in a corridor) | 3 (?) | 100% | 100% | 70–90% |
+| hollow-road | `inner/f1-camp-fight` | gen:bugbear+giant-hyena+bandit `gen:bugbear+giant-hyena+bandit` | room (The Ashfang Den) | 3 (?) | 100% | 100% | 70–90% |
+| hollow-road | `trail/f1-ambush-m5-m6` | gen:zombie+zombie+lizardfolk `gen:zombie+zombie+lizardfolk` | room (The Marsh Road, in a corridor) | 2 (?) | 100% | 100% | 70–90% |
+| hollow-road | `trail/f1-ambush-m0-m1` | gen:zombie+zombie+zombie+zombie `gen:zombie+zombie+zombie+zombie` | room (The Marsh Road, in a corridor) | 1 (?) | 100% | 100% | 70–90% |
+| sunken-barrows | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 100% | 70–90% |
 | sunken-barrows | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 97% | 70–90% |
-| hollow-road | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | 3 (2) | 100% | 90% | 70–90% |
-| sunken-barrows | `fen-night` | The Fen Dead `fen-dead` | `bog` | 4 (3) | 100% | 70% | 70–90% |
-| sunken-barrows | `crypt-night` | The Painted Dead `painted-dead` | `corridor` | 4 (4) | 100% | 23% | 70–90% |
-| sunken-barrows | `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | 4 (3) | 98% | 63% | 70–90% |
-| sunken-barrows | `seal-breach` | The Warden's Dead `warden-dead` | `firepit` | 4 (4) | 96% | 27% | 70–90% |
-| wyrmcalling | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | 5 (5) | 96% | 20% | 70–90% |
-| hollow-road | `thicket-fight` | Spider Nest `spiders` | `marsh` | 2 (2) | 94% | 47% | 70–90% |
-| sunken-barrows | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | 3 (3) | 94% | 17% | 70–90% |
-| wyrmcalling | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | 4 (4) | 92% | 37% | 70–90% |
-| wyrmcalling | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | 4 (4) | 92% | 30% | 70–90% |
-| hollow-road | `camp-ambush` | The Marsh Dead `marsh-dead` | `bog` | 2 (2) | 92% | 13% | 70–90% |
+| sunken-barrows | `wights` | Wight Tomb `wight-tomb` | `corridor` | 4 (3) | 100% | 93% | 70–90% |
+| hollow-road | `gate-fight` | Gate Enforcers `den-gate` | `corridor` | 3 (2) | 100% | 87% | 70–90% |
+| sunken-barrows | `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | 4 (3) | 100% | 70% | 70–90% |
 
-…and 3 more (see the chapter tables).
+…and 8 more (see the chapter tables).
 
 ## Flagged
 
 ### Too hard or under-levelled (LOW, UNDER)
 
-- `barrow-haunt` on `corridor` at level 1: 30% fresh, 27% worn **LOW** — met by trilogy-unlucky
-- `hag-thralls` on `bog` at level 1, party surprised: 28% fresh, 3% worn **LOW** — met by trilogy-unlucky
-- `hag-thralls` on `bog` at level 1, foes surprised: 38% fresh, 23% worn **LOW** — routes 1–3 (`ambush-turned`)
+- `cult-wavering` on `firepit` at level 4: 52% fresh, 0% worn **LOW** — met by trilogy-completionist, trilogy-merciful, cold-sunken-barrows
+- `barrow-haunt` on `corridor` at level 1: 40% fresh, 30% worn **LOW** — met by trilogy-unlucky
 
 ### Too easy or over-levelled (EASY, OVER)
 
 - `cockatrice-flock` on `open` at level 1: 100% fresh, 100% worn **EASY**
-- `goblin-outriders` on `open` at level 2: 100% fresh, 70% worn **EASY**
-- `spiders` on `marsh` at level 3: 100% fresh, 93% worn **EASY**
-- `hag-thralls` on `bog` at level 3, foes surprised: 100% fresh, 90% worn **EASY**
-- `den-gate` on `corridor` at level 3: 100% fresh, 90% worn **EASY**
-- `den-pit` on `ruins` at level 3: 100% fresh, 90% worn **EASY**
+- `goblin-outriders` on `open` at level 2: 100% fresh, 73% worn **EASY**
+- `gen:zombie+zombie+zombie+zombie` on room (The Marsh Road, in a corridor) at level 2: 100% fresh, 100% worn **EASY**
+- `hag-thralls` on `bog` at level 3, foes surprised: 100% fresh, 97% worn **EASY**
+- `den-gate` on `corridor` at level 3: 100% fresh, 87% worn **EASY**
+- `gen:scout+orc+worg+orc` on room (The Ashfang Den) at level 3: 100% fresh, 100% worn **EASY**
+- `den-pit` on `ruins` at level 3: 100% fresh, 100% worn **EASY**
+- `drowned-chapel` on `ruins` at level 4: 98% fresh, 57% worn **EASY**
 - `corpse-lights` on `bog` at level 4: 100% fresh, 100% worn **EASY**
-- `fen-dead` on `bog` at level 4: 100% fresh, 70% worn **EASY**
 - `serpent-pool` on `marsh` at level 4, foes surprised: 100% fresh, 87% worn **EASY**
-- `barrow-watchers` on `ruins` at level 4: 100% fresh, 63% worn **EASY**
-- `wight-tomb` on `corridor` at level 4: 100% fresh, 97% worn **EASY**
-- `griffon-flight` on `pass` at level 5: 100% fresh, 87% worn **EASY**
-- `crag-harpies` on `open` at level 5: 100% fresh, 83% worn **EASY**
+- `barrow-watchers` on `ruins` at level 4: 100% fresh, 70% worn **EASY**
+- `wight-tomb` on `corridor` at level 4: 100% fresh, 93% worn **EASY**
+- `griffon-flight` on `pass` at level 5: 100% fresh, 83% worn **EASY**
 - `green-dragon-den` on `marsh` at level 5: 100% fresh, 100% worn **EASY**
-- `flooded-seam` on `bog` at level 5: 100% fresh, 87% worn **EASY**
-- `oni-hold` on `open` at level 5: 100% fresh, 97% worn **EASY**
-- `giants-hall` on `ruins` at level 5: 100% fresh, 90% worn **EASY**
-- `manticore-toll` on `cliff` at level 5: 100% fresh, 87% worn **EASY**
+- `flooded-seam` on `bog` at level 5: 100% fresh, 90% worn **EASY**
+- `crag-harpies` on `open` at level 5: 100% fresh, 93% worn **EASY**
+- `oni-hold` on `open` at level 5: 100% fresh, 100% worn **EASY**
+- `giants-hall` on `ruins` at level 5: 100% fresh, 93% worn **EASY**
+- `manticore-toll` on `cliff` at level 5: 98% fresh, 80% worn **EASY**
 - `boar-runs` on `pass` at level 5: 100% fresh, 100% worn **EASY**
-- `corpse-lights` on `bog` at level 3, party surprised: 100% fresh, 97% worn **EASY**
-- `corpse-lights` on `bog` at level 3: 100% fresh, 97% worn **EASY**
-- `serpent-pool` on `marsh` at level 4: 98% fresh, 63% worn **EASY**
-- `painted-dead` on `corridor` at level 4: 100% fresh, 23% worn **EASY**
+- `gen:lizardfolk+zombie+zombie` on room (The Marsh Road, in a corridor) at level 2: 100% fresh, 100% worn **EASY**
+- `gen:scout+scout+giant-hyena+bandit` on room (The Ashfang Den) at level 3: 100% fresh, 100% worn **EASY**
+- `gen:scout+orc+scout+orc` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 100% worn **EASY**
+- `green-dragon-den` on `marsh` at level 4: 98% fresh, 33% worn **EASY**
+- `gen:bugbear+giant-hyena+bandit` on room (The Ashfang Den) at level 3: 100% fresh, 100% worn **EASY**
+- `serpent-pool` on `marsh` at level 4: 100% fresh, 70% worn **EASY**
+- `painted-dead` on `corridor` at level 4: 100% fresh, 13% worn **EASY**
+- `gen:zombie+zombie+lizardfolk` on room (The Marsh Road, in a corridor) at level 2: 100% fresh, 100% worn **EASY**
 - `den-clutch-r` on `open` at level 5: 100% fresh, 100% worn **EASY**
+- `gen:zombie+zombie+zombie+zombie` on room (The Marsh Road, in a corridor) at level 1: 100% fresh, 100% worn **EASY**
+- `gen:berserker+scout` on room (The Ashfang Den) at level 3: 100% fresh, 100% worn **EASY**
+- `corpse-lights` on `bog` at level 3, party surprised: 100% fresh, 97% worn **EASY**
 - `diggers` on `corridor` at level 4: 100% fresh, 100% worn **EASY**
-- `boar-runs` on `pass` at level 4: 100% fresh, 100% worn **EASY**
-- `den-clutch-br` on `open` at level 5: 100% fresh, 100% worn **EASY**
 - `crypt` on room (The Undercrypt, in a corridor) at level 4: 100% fresh, 100% worn **EASY**
-- `cockatrice-flock` on `open` at level 2: 100% fresh, 100% worn **EASY**
-- `hag-thralls` on `bog` at level 3, party surprised: 100% fresh, 87% worn **EASY**
+- `den-clutch-br` on `open` at level 5: 100% fresh, 100% worn **EASY**
+- `corpse-lights` on `bog` at level 3: 100% fresh, 100% worn **EASY**
+- `hag-thralls` on `bog` at level 3, party surprised: 100% fresh, 83% worn **EASY**
 - `den-gate` on `corridor` at level 3, party surprised: 100% fresh, 93% worn **EASY**
 - `corpse-lights` on `bog` at level 4, party surprised: 100% fresh, 100% worn **EASY**
-- `manticore-toll` on `cliff` at level 5, party surprised: 100% fresh, 77% worn **EASY**
+- `manticore-toll` on `cliff` at level 5, party surprised: 98% fresh, 73% worn **EASY**
 
 ## The Hollow Road `hollow-road`
 
@@ -111,55 +117,61 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 
 | Route | Scene | Encounter | Map | Surprise | Arrives at | Sugg. | Fresh | Arrival | Worn | How | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| trilogy-completionist | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 88% | 88% (0) | 63% | fought |  |
-| trilogy-completionist | `spy-ambush` | Cutpurse Crew `cutpurses` | `village` | foes surprised | 1 (113 XP) | 1 | 78% | 78% (0) | 27% | fought |  |
+| trilogy-completionist | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought |  |
+| trilogy-completionist | `spy-ambush` | Cutpurse Crew `cutpurses` | `village` | foes surprised | 1 (113 XP) | 1 | 74% | 74% (0) | 23% | fought |  |
 | trilogy-completionist | `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | — | 1 (251 XP) | 1 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-completionist | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 2 (301 XP) | 1 | 100% | 100% (0) | 70% | fought | **EASY** |
-| trilogy-completionist | `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 2 (446 XP) | 2 | 78% | 53% (1) | 40% | fought |  |
-| trilogy-completionist | `camp-ambush` | The Marsh Dead `marsh-dead` | `bog` | — | 2 (671 XP) | 2 | 92% | 92% (0) | 13% | fought |  |
-| trilogy-completionist | `bog-toads` | The Bog Toads `bog-toads` | `bog` | — | 2 (671 XP) | 2 | 96% | 90% (1) | 70% | fought |  |
-| trilogy-completionist | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 3 (901 XP) | 2 | 100% | 97% (1) | 93% | fought | **EASY** |
-| trilogy-completionist | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 3 (1101 XP) | 2 | 100% | 100% (0) | 90% | fought | **EASY** |
-| trilogy-completionist | `gate-fight` | Gate Enforcers `den-gate` | `corridor` | — | 3 (1326 XP) | 2 | 100% | 100% (1) | 90% | fought | **EASY** |
-| trilogy-completionist | `den-hyenas` | The Kennels `kennel-hyenas` | room (The Ashfang Den) | — | 3 (1614 XP) | 3 | 90% | 90% (0) | 23% | fought |  |
-| trilogy-completionist | `pens-alarm` | The Watch at the Pen `pen-watch` | `ruins` | — | 3 (1839 XP) | 3 | 86% | 43% (1) | 27% | fought |  |
-| trilogy-completionist | `den-camp-ambush` | The Night Watch `den-watch` | room (The Ashfang Den) | — | 3 (1839 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| trilogy-completionist | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1839 XP) | 2 | 100% | 100% (1) | 90% | fought | **EASY** |
-| trilogy-completionist | `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 (2177 XP) | 3 | 82% | 82% (0) | 23% | fought |  |
-| trilogy-rusher | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 88% | 88% (0) | 63% | fought |  |
-| trilogy-rusher | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (251 XP) | 1 | 78% | 78% (0) | 37% | fought |  |
-| trilogy-rusher | `bog-toads` | The Bog Toads `bog-toads` | `bog` | — | 2 (396 XP) | 2 | 96% | 90% (1) | 70% | fought |  |
-| trilogy-rusher | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 (626 XP) | 2 | 90% | 23% (2) | 23% | fought |  |
-| trilogy-rusher | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1139 XP) | 2 | 100% | 90% (3) | 90% | fought | **EASY** |
-| trilogy-rusher | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1414 XP) | 3 | 70% | 23% (4) | 23% | fought |  |
-| trilogy-cruel | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 88% | 88% (0) | 63% | fought |  |
-| trilogy-cruel | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (251 XP) | 1 | 78% | 78% (0) | 37% | fought |  |
-| trilogy-cruel | `bog-toads` | The Bog Toads `bog-toads` | `bog` | — | 2 (396 XP) | 2 | 96% | 90% (1) | 70% | fought |  |
-| trilogy-cruel | `camp-ambush` | The Marsh Dead `marsh-dead` | `bog` | — | 2 (626 XP) | 2 | 92% | 92% (0) | 13% | fought |  |
-| trilogy-cruel | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 (626 XP) | 2 | 94% | 57% (1) | 47% | fought |  |
-| trilogy-cruel | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 (826 XP) | 2 | 90% | 73% (1) | 23% | fought |  |
-| trilogy-cruel | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1339 XP) | 2 | 100% | 100% (0) | 90% | fought | **EASY** |
-| trilogy-cruel | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1614 XP) | 3 | 70% | 47% (1) | 23% | fought |  |
-| trilogy-merciful | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 88% | 88% (0) | 63% | fought |  |
+| trilogy-completionist | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 2 (301 XP) | 1 | 100% | 100% (0) | 73% | fought | **EASY** |
+| trilogy-completionist | `trail/f1-ambush-m0-s1` | gen:zombie+zombie+zombie+zombie `gen:zombie+zombie+zombie+zombie` | room (The Marsh Road, in a corridor) | — | 2 (426 XP) | ? | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-completionist | `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 2 (426 XP) | 2 | 88% | 43% (2) | 43% | fought |  |
+| trilogy-completionist | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 (701 XP) | 2 | 90% | 90% (0) | 50% | fought |  |
+| trilogy-completionist | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 3 (901 XP) | 2 | 100% | 100% (1) | 97% | fought | **EASY** |
+| trilogy-completionist | `gate-fight` | Gate Enforcers `den-gate` | `corridor` | — | 3 (1126 XP) | 2 | 100% | 87% (2) | 87% | fought | **EASY** |
+| trilogy-completionist | `pens-alarm` | The Watch at the Pen `pen-watch` | `ruins` | — | 3 (1414 XP) | 3 | 96% | 47% (3) | 47% | fought |  |
+| trilogy-completionist | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (1414 XP) | 3 | 80% | 80% (0) | 20% | fought |  |
+| trilogy-completionist | `inner/f1-fight-key` | gen:scout+orc+worg+orc `gen:scout+orc+worg+orc` | room (The Ashfang Den) | — | 3 (1639 XP) | ? | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-completionist | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1739 XP) | 2 | 100% | 100% (2) | 100% | fought | **EASY** |
+| trilogy-completionist | `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 (2077 XP) | 3 | 70% | 10% (3) | 10% | fought |  |
+| trilogy-rusher | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought |  |
+| trilogy-rusher | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (251 XP) | 1 | 84% | 84% (0) | 40% | fought |  |
+| trilogy-rusher | `trail/f1-ambush-m1-m2` | gen:lizardfolk+zombie+zombie `gen:lizardfolk+zombie+zombie` | room (The Marsh Road, in a corridor) | — | 2 (376 XP) | ? | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-rusher | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 (426 XP) | 2 | 90% | 50% (2) | 50% | fought |  |
+| trilogy-rusher | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 (626 XP) | 2 | 86% | 7% (3) | 7% | fought |  |
+| trilogy-rusher | `inner/f1-fight-key` | gen:scout+scout+giant-hyena+bandit `gen:scout+scout+giant-hyena+bandit` | room (The Ashfang Den) | — | 3 (1139 XP) | ? | 100% | 100% (4) | 100% | fought | **EASY** |
+| trilogy-rusher | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1245 XP) | 2 | 100% | 100% (5) | 100% | fought | **EASY** |
+| trilogy-rusher | `inner/f1-ambush-m3-m4` | gen:scout+orc+scout+orc `gen:scout+orc+scout+orc` | room (The Ashfang Den, in a corridor) | — | 3 (1520 XP) | ? | 100% | 100% (6) | 100% | fought | **EASY** |
+| trilogy-rusher | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (1520 XP) | 3 | 80% | 20% (7) | 20% | fought |  |
+| trilogy-rusher | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1745 XP) | 3 | 70% | 13% (8) | 13% | fought |  |
+| trilogy-cruel | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought |  |
+| trilogy-cruel | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (251 XP) | 1 | 84% | 84% (0) | 40% | fought |  |
+| trilogy-cruel | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 (426 XP) | 2 | 90% | 53% (1) | 50% | fought |  |
+| trilogy-cruel | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 (626 XP) | 2 | 86% | 7% (2) | 7% | fought |  |
+| trilogy-cruel | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1139 XP) | 2 | 100% | 100% (3) | 100% | fought | **EASY** |
+| trilogy-cruel | `inner/f1-camp-fight` | gen:bugbear+giant-hyena+bandit `gen:bugbear+giant-hyena+bandit` | room (The Ashfang Den) | — | 3 (1414 XP) | ? | 100% | 100% (0) | 100% | fought | **EASY** |
+| trilogy-cruel | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (1414 XP) | 3 | 80% | 43% (1) | 20% | fought |  |
+| trilogy-cruel | `inner/f1-fight-key` | gen:bugbear+giant-hyena+bandit `gen:bugbear+giant-hyena+bandit` | room (The Ashfang Den) | — | 3 (1639 XP) | ? | 100% | 100% (0) | 100% | fought | **EASY** |
+| trilogy-cruel | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1745 XP) | 3 | 70% | 33% (1) | 13% | fought |  |
+| trilogy-merciful | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought |  |
 | trilogy-merciful | `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | — | 1 (113 XP) | 1 | 100% | 100% (0) | 100% | fought | **EASY** |
-| trilogy-merciful | `spy-ambush` | Cutpurse Crew `cutpurses` | `village` | foes surprised | 1 (163 XP) | 1 | 78% | 47% (1) | 27% | fought |  |
-| trilogy-merciful | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 2 (301 XP) | 1 | 100% | 100% (0) | 70% | parleyed |  |
-| trilogy-merciful | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 (476 XP) | 2 | 90% | 90% (0) | 23% | fought |  |
-| trilogy-merciful | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (989 XP) | 2 | 100% | 100% (1) | 90% | fought | **EASY** |
-| trilogy-merciful | `den-camp-ambush` | The Night Watch `den-watch` | room (The Ashfang Den) | — | 3 (1264 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| trilogy-unlucky | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 88% | 88% (0) | 63% | fought (lost 1 first) |  |
-| trilogy-unlucky | `spy-bolts` | Cutpurse Crew `cutpurses` | `village` | — | 1 (0 XP) | 1 | 78% | 78% (0) | 50% | fought |  |
-| trilogy-unlucky | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (138 XP) | 1 | 78% | 37% (1) | 37% | fought |  |
-| trilogy-unlucky | `bog-toads` | The Bog Toads `bog-toads` | `bog` | — | 1 (263 XP) | 2 | 70% | 40% (2) | 40% | fought (lost 1 first) |  |
-| trilogy-unlucky | `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 1 (263 XP) | 2 | 30% | 30% (0) | 27% | fell back | **LOW** |
-| trilogy-unlucky | `ambush-sprung` | The Hag's Thralls `hag-thralls` | `bog` | party surprised | 1 (263 XP) | 2 | 28% | 28% (0) | 3% | fought | **LOW** |
-| trilogy-unlucky | `gate-caught` | Gate Enforcers `den-gate` | `corridor` | party surprised | 2 (488 XP) | 2 | 86% | 50% (1) | 30% | fought (lost 1 first) |  |
-| trilogy-unlucky | `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | — | 2 (488 XP) | 1 | 100% | 100% (0) | 100% | fell back |  |
-| trilogy-unlucky | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 (488 XP) | 2 | 94% | 94% (0) | 47% | fought |  |
-| trilogy-unlucky | `gate-fight` | Gate Enforcers `den-gate` | `corridor` | — | 2 (688 XP) | 2 | 82% | 60% (1) | 37% | fought (lost 1 first) |  |
-| trilogy-unlucky | `camp-ambush` | The Marsh Dead `marsh-dead` | `bog` | — | 2 (688 XP) | 2 | 92% | 92% (0) | 13% | fell back |  |
-| trilogy-unlucky | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (976 XP) | 2 | 100% | 100% (1) | 90% | fought | **EASY** |
-| trilogy-unlucky | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1251 XP) | 3 | 70% | 23% (2) | 23% | fought (lost 1 first) |  |
+| trilogy-merciful | `spy-ambush` | Cutpurse Crew `cutpurses` | `village` | foes surprised | 1 (163 XP) | 1 | 74% | 40% (1) | 23% | fought |  |
+| trilogy-merciful | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 2 (301 XP) | 1 | 100% | 100% (0) | 73% | parleyed |  |
+| trilogy-merciful | `trail/f1-ambush-m5-m6` | gen:zombie+zombie+lizardfolk `gen:zombie+zombie+lizardfolk` | room (The Marsh Road, in a corridor) | — | 2 (476 XP) | ? | 100% | 100% (0) | 100% | fought | **EASY** |
+| trilogy-merciful | `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 (476 XP) | 2 | 86% | 70% (1) | 7% | fought |  |
+| trilogy-merciful | `inner/f1-fight-key` | gen:ogre+worg `gen:ogre+worg` | room (The Ashfang Den) | — | 3 (1052 XP) | ? | 100% | 100% (2) | 100% | parleyed |  |
+| trilogy-merciful | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (1190 XP) | 3 | 80% | 20% (2) | 20% | fought |  |
+| trilogy-merciful | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1415 XP) | 2 | 100% | 100% (3) | 100% | fought | **EASY** |
+| trilogy-unlucky | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought (lost 1 first) |  |
+| trilogy-unlucky | `spy-bolts` | Cutpurse Crew `cutpurses` | `village` | — | 1 (0 XP) | 1 | 78% | 78% (0) | 47% | fought |  |
+| trilogy-unlucky | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (138 XP) | 1 | 84% | 47% (1) | 40% | fought |  |
+| trilogy-unlucky | `trail/f1-ambush-m0-m1` | gen:zombie+zombie+zombie+zombie `gen:zombie+zombie+zombie+zombie` | room (The Marsh Road, in a corridor) | — | 1 (263 XP) | ? | 100% | 100% (2) | 100% | fought (lost 1 first) | **EASY** |
+| trilogy-unlucky | `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | — | 1 (263 XP) | 1 | 100% | 100% (0) | 100% | fell back |  |
+| trilogy-unlucky | `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 1 (263 XP) | 2 | 40% | 40% (0) | 30% | fought | **LOW** |
+| trilogy-unlucky | `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 (488 XP) | 2 | 90% | 53% (1) | 50% | fought (lost 1 first) |  |
+| trilogy-unlucky | `ambush-sprung` | The Hag's Thralls `hag-thralls` | `bog` | party surprised | 2 (488 XP) | 2 | 86% | 23% (2) | 23% | fought |  |
+| trilogy-unlucky | `gate-caught` | Gate Enforcers `den-gate` | `corridor` | party surprised | 2 (713 XP) | 2 | 82% | 17% (3) | 17% | fought |  |
+| trilogy-unlucky | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (1001 XP) | 3 | 80% | 20% (4) | 20% | fought (lost 1 first) |  |
+| trilogy-unlucky | `inner/f1-fight-key` | gen:berserker+scout `gen:berserker+scout` | room (The Ashfang Den) | — | 3 (1226 XP) | ? | 100% | 100% (6) | 100% | fought (lost 1 first) | **EASY** |
+| trilogy-unlucky | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1364 XP) | 2 | 100% | 100% (8) | 100% | fought | **EASY** |
+| trilogy-unlucky | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1639 XP) | 3 | 70% | 13% (9) | 13% | fought (lost 1 first) |  |
 
 ### Every fight in the chapter, at the levels it is met
 
@@ -167,29 +179,26 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 
 | Scene(s) | Encounter | Map | Surprise | Sugg. | Levels | Fresh at low | Worn at low | Fresh at high | Worn at high | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 | routes 1 | 88% | 63% | ″ | ″ |  |
-| `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | — | 1 | routes 1–2 | 100% | 100% | 100% | 100% | **EASY** |
-| `spy-bolts` | Cutpurse Crew `cutpurses` | `village` | — | 1 | routes 1 | 78% | 50% | ″ | ″ |  |
-| `spy-ambush` | Cutpurse Crew `cutpurses` | `village` | foes surprised | 1 | routes 1 | 78% | 27% | ″ | ″ |  |
-| `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 | routes 1–2 | 78% | 37% | 100% | 70% | **EASY** |
-| `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 2 | routes 1–2 | 30% | 27% | 78% | 40% | **LOW** |
-| `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 | routes 2–3 | 94% | 47% | 100% | 93% | **EASY** |
-| `bog-toads` | The Bog Toads `bog-toads` | `bog` | — | 2 | routes 1–2 | 70% | 40% | 96% | 70% |  |
-| `camp-ambush` | The Marsh Dead `marsh-dead` | `bog` | — | 2 | routes 2 | 92% | 13% | ″ | ″ |  |
-| `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 | routes 1–3 | 38% | 23% | 100% | 90% | **LOW** **EASY** |
-| `ambush-sprung` | The Hag's Thralls `hag-thralls` | `bog` | party surprised | 2 | routes 1–3 | 28% | 3% | 100% | 87% | **LOW** **EASY** |
-| `gate-fight` | Gate Enforcers `den-gate` | `corridor` | — | 2 | routes 2–3 | 82% | 37% | 100% | 90% | **EASY** |
-| `gate-caught` | Gate Enforcers `den-gate` | `corridor` | party surprised | 2 | routes 2–3 | 86% | 30% | 100% | 93% | **EASY** |
-| `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 2 | routes 3 | 100% | 90% | ″ | ″ | **EASY** |
-| `den-camp-ambush` | The Night Watch `den-watch` | room (The Ashfang Den) | — | 3 | routes 3 | 90% | 27% | ″ | ″ |  |
-| `pens-alarm` | The Watch at the Pen `pen-watch` | `ruins` | — | 3 | routes 3 | 86% | 27% | ″ | ″ |  |
-| `den-hyenas` | The Kennels `kennel-hyenas` | room (The Ashfang Den) | — | 3 | routes 3 | 90% | 23% | ″ | ″ |  |
-| `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 | routes 3 | 70% | 23% | ″ | ″ |  |
-| `boss-shaken` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | foes surprised | 3 | routes 3 | 80% | 27% | ″ | ″ |  |
-| `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 | routes 3 | 82% | 23% | ″ | ″ |  |
-| `boss-unguarded-shaken` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | foes surprised | 3 | routes 3 | 88% | 20% | ″ | ″ |  |
-| `reedwife-fight` ★ | The Reedwife and the Chief's Guard `hag-guarded` | `firepit` | — | 3 | not met; late chapter 3 | 82% | 30% | ″ | ″ |  |
-| `reedwife-fight-alone` ★ | The Reedwife at Bay `hag-whistled` | `firepit` | — | 3 | not met; late chapter 3 | 84% | 50% | ″ | ″ |  |
+| `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 | routes 1 | 92% | 60% | ″ | ″ |  |
+| `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | — | 1 | routes 1 | 100% | 100% | ″ | ″ | **EASY** |
+| `spy-bolts` | Cutpurse Crew `cutpurses` | `village` | — | 1 | routes 1 | 78% | 47% | ″ | ″ |  |
+| `spy-ambush` | Cutpurse Crew `cutpurses` | `village` | foes surprised | 1 | routes 1 | 74% | 23% | ″ | ″ |  |
+| `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 | routes 1–2 | 84% | 40% | 100% | 73% | **EASY** |
+| `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 2 | routes 1–2 | 40% | 30% | 88% | 43% | **LOW** |
+| `thicket-fight` | Spider Nest `spiders` | `marsh` | — | 2 | routes 2 | 90% | 50% | ″ | ″ |  |
+| `ambush-turned` | The Hag's Thralls `hag-thralls` | `bog` | foes surprised | 2 | routes 2–3 | 86% | 7% | 100% | 97% | **EASY** |
+| `ambush-sprung` | The Hag's Thralls `hag-thralls` | `bog` | party surprised | 2 | routes 2–3 | 86% | 23% | 100% | 83% | **EASY** |
+| `gate-fight` | Gate Enforcers `den-gate` | `corridor` | — | 2 | routes 2–3 | 84% | 30% | 100% | 87% | **EASY** |
+| `gate-caught` | Gate Enforcers `den-gate` | `corridor` | party surprised | 2 | routes 2–3 | 82% | 17% | 100% | 93% | **EASY** |
+| `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 2 | routes 3 | 100% | 100% | ″ | ″ | **EASY** |
+| `pens-alarm` | The Watch at the Pen `pen-watch` | `ruins` | — | 3 | routes 3 | 96% | 47% | ″ | ″ |  |
+| `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 | routes 3 | 80% | 20% | ″ | ″ |  |
+| `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 | routes 3 | 70% | 13% | ″ | ″ |  |
+| `boss-shaken` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | foes surprised | 3 | routes 3 | 80% | 23% | ″ | ″ |  |
+| `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 | routes 3 | 70% | 10% | ″ | ″ |  |
+| `boss-unguarded-shaken` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | foes surprised | 3 | routes 3 | 78% | 10% | ″ | ″ |  |
+| `reedwife-fight` ★ | The Reedwife and the Chief's Guard `hag-guarded` | `firepit` | — | 3 | not met; late chapter 3 | 74% | 23% | ″ | ″ |  |
+| `reedwife-fight-alone` ★ | The Reedwife at Bay `hag-whistled` | `firepit` | — | 3 | not met; late chapter 3 | 92% | 50% | ″ | ″ |  |
 
 ## The Sunken Barrows `sunken-barrows`
 
@@ -199,56 +208,53 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 
 | Route | Scene | Encounter | Map | Surprise | Arrives at | Sugg. | Fresh | Arrival | Worn | How | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| trilogy-completionist | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2583 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| trilogy-completionist | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 4 (3151 XP) | 3 | 96% | 96% (0) | 50% | fought |  |
-| trilogy-completionist | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 4 (3414 XP) | 3 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-completionist | `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 4 (3964 XP) | 3 | 100% | 100% (0) | 70% | fought | **EASY** |
-| trilogy-completionist | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 4 (3964 XP) | 3 | 100% | 97% (1) | 87% | fought | **EASY** |
-| trilogy-completionist | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (4302 XP) | 3 | 100% | 93% (1) | 63% | fought | **EASY** |
-| trilogy-completionist | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (4740 XP) | 3 | 100% | 100% (0) | 97% | fought | **EASY** |
-| trilogy-completionist | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (4940 XP) | 4 | 90% | 47% (1) | 47% | fought |  |
-| trilogy-completionist | `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 (5578 XP) | 4 | 80% | 80% (0) | 7% | fought |  |
-| trilogy-rusher | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (1883 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| trilogy-rusher | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 (2421 XP) | 3 | 94% | 27% (1) | 17% | fought |  |
-| trilogy-rusher | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | party surprised | 3 (2684 XP) | 3 | 100% | 97% (2) | 97% | fought | **EASY** |
-| trilogy-rusher | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (3234 XP) | 3 | 100% | 63% (3) | 63% | fought | **EASY** |
-| trilogy-rusher | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (3672 XP) | 3 | 100% | 97% (4) | 97% | parleyed |  |
-| trilogy-rusher | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (3872 XP) | 4 | 90% | 47% (4) | 47% | fought |  |
-| trilogy-rusher | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 (4447 XP) | 4 | 82% | 10% (5) | 10% | fought |  |
-| trilogy-cruel | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2083 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| trilogy-cruel | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 3 (2621 XP) | 3 | 100% | 100% (1) | 97% | fought | **EASY** |
-| trilogy-cruel | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 4 (3171 XP) | 3 | 96% | 96% (0) | 50% | fought |  |
-| trilogy-cruel | `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | — | 4 (3434 XP) | 3 | 98% | 80% (1) | 63% | fought | **EASY** |
-| trilogy-cruel | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (3772 XP) | 3 | 100% | 100% (0) | 63% | fought | **EASY** |
-| trilogy-cruel | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (4210 XP) | 3 | 100% | 100% (1) | 97% | fought | **EASY** |
-| trilogy-cruel | `crypt-night` | The Painted Dead `painted-dead` | `corridor` | — | 4 (4410 XP) | 4 | 100% | 100% (0) | 23% | fought | **EASY** |
-| trilogy-cruel | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (4410 XP) | 4 | 90% | 47% (1) | 47% | fought |  |
-| trilogy-cruel | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 (4985 XP) | 4 | 82% | 82% (0) | 10% | fought |  |
-| trilogy-merciful | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (1665 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| trilogy-merciful | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (3016 XP) | 3 | 100% | 93% (1) | 63% | parleyed |  |
-| trilogy-merciful | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (3454 XP) | 3 | 100% | 100% (1) | 97% | parleyed |  |
-| trilogy-merciful | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (3654 XP) | 4 | 90% | 47% (1) | 47% | fought |  |
-| trilogy-merciful | `crypt-night` | The Painted Dead `painted-dead` | `corridor` | — | 4 (4229 XP) | 4 | 100% | 100% (0) | 23% | fought | **EASY** |
-| trilogy-merciful | `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 (4292 XP) | 4 | 80% | 23% (1) | 7% | fought |  |
-| trilogy-unlucky | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (1720 XP) | 3 | 90% | 90% (0) | 27% | fought (lost 1 first) |  |
-| trilogy-unlucky | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 (1720 XP) | 3 | 94% | 94% (0) | 17% | fought |  |
-| trilogy-unlucky | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | party surprised | 3 (1720 XP) | 3 | 100% | 100% (0) | 97% | fought | **EASY** |
-| trilogy-unlucky | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 3 (2270 XP) | 3 | 86% | 57% (1) | 27% | fought (lost 1 first) |  |
-| trilogy-unlucky | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 3 (2533 XP) | 3 | 86% | 30% (1) | 20% | fought |  |
-| trilogy-unlucky | `diggers-fight` | The Diggers `diggers` | `corridor` | — | 4 (2808 XP) | 3 | 100% | 100% (2) | 100% | fought | **EASY** |
-| trilogy-unlucky | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (2971 XP) | 3 | 100% | 97% (3) | 97% | fought (lost 1 first) | **EASY** |
-| trilogy-unlucky | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (3171 XP) | 4 | 90% | 90% (0) | 47% | fought |  |
-| trilogy-unlucky | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 (3746 XP) | 4 | 82% | 43% (1) | 10% | fought (lost 1 first) |  |
-| trilogy-unlucky | `seal-breach` | The Warden's Dead `warden-dead` | `firepit` | — | 4 (4434 XP) | 4 | 96% | 80% (1) | 27% | fought (lost 1 first) |  |
-| cold-sunken-barrows | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (900 XP) | 3 | 90% | 90% (0) | 27% | fought |  |
-| cold-sunken-barrows | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 (1468 XP) | 3 | 94% | 94% (0) | 17% | fought |  |
-| cold-sunken-barrows | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 3 (1731 XP) | 3 | 100% | 100% (1) | 97% | fought | **EASY** |
+| trilogy-completionist | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2483 XP) | 3 | 86% | 86% (0) | 20% | fought |  |
+| trilogy-completionist | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 4 (3051 XP) | 3 | 98% | 98% (0) | 57% | fought | **EASY** |
+| trilogy-completionist | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 4 (3314 XP) | 3 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-completionist | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 4 (3864 XP) | 3 | 100% | 100% (0) | 87% | fought | **EASY** |
+| trilogy-completionist | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (4202 XP) | 3 | 100% | 97% (1) | 70% | fought | **EASY** |
+| trilogy-completionist | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (4640 XP) | 3 | 100% | 100% (0) | 93% | fought | **EASY** |
+| trilogy-completionist | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (4840 XP) | 4 | 88% | 50% (1) | 40% | fought |  |
+| trilogy-completionist | `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 (5478 XP) | 4 | 52% | 52% (0) | 0% | fought | **LOW** |
+| trilogy-rusher | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2214 XP) | 3 | 86% | 86% (0) | 20% | fought |  |
+| trilogy-rusher | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (3565 XP) | 3 | 100% | 97% (1) | 70% | fought | **EASY** |
+| trilogy-rusher | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (4003 XP) | 3 | 100% | 93% (2) | 93% | parleyed |  |
+| trilogy-rusher | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (4203 XP) | 4 | 88% | 40% (2) | 40% | fought |  |
+| trilogy-rusher | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 (4778 XP) | 4 | 62% | 0% (3) | 0% | fought |  |
+| trilogy-cruel | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2214 XP) | 3 | 86% | 86% (0) | 20% | fought |  |
+| trilogy-cruel | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 4 (2752 XP) | 3 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-cruel | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 4 (3302 XP) | 3 | 98% | 98% (0) | 57% | fought | **EASY** |
+| trilogy-cruel | `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | — | 4 (3565 XP) | 3 | 100% | 83% (1) | 70% | fought | **EASY** |
+| trilogy-cruel | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (3903 XP) | 3 | 100% | 100% (0) | 70% | fought | **EASY** |
+| trilogy-cruel | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (4341 XP) | 3 | 100% | 100% (1) | 93% | fought | **EASY** |
+| trilogy-cruel | `crypt-night` | The Painted Dead `painted-dead` | `corridor` | — | 4 (4541 XP) | 4 | 100% | 100% (0) | 13% | fought | **EASY** |
+| trilogy-cruel | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (4541 XP) | 4 | 88% | 50% (1) | 40% | fought |  |
+| trilogy-cruel | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 (5116 XP) | 4 | 62% | 62% (0) | 0% | fought |  |
+| trilogy-merciful | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2028 XP) | 3 | 86% | 86% (0) | 20% | fought |  |
+| trilogy-merciful | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (3379 XP) | 3 | 100% | 97% (1) | 70% | parleyed |  |
+| trilogy-merciful | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (3817 XP) | 3 | 100% | 100% (1) | 93% | parleyed |  |
+| trilogy-merciful | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (4017 XP) | 4 | 88% | 50% (1) | 40% | fought |  |
+| trilogy-merciful | `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 (4655 XP) | 4 | 52% | 52% (0) | 0% | fought | **LOW** |
+| trilogy-unlucky | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (2108 XP) | 3 | 86% | 86% (0) | 20% | fought (lost 1 first) |  |
+| trilogy-unlucky | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 (2108 XP) | 3 | 92% | 92% (0) | 13% | fought |  |
+| trilogy-unlucky | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | party surprised | 3 (2108 XP) | 3 | 100% | 100% (0) | 97% | fought | **EASY** |
+| trilogy-unlucky | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 3 (2658 XP) | 3 | 86% | 70% (1) | 27% | fought (lost 1 first) |  |
+| trilogy-unlucky | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 4 (2921 XP) | 3 | 100% | 97% (1) | 70% | fought | **EASY** |
+| trilogy-unlucky | `diggers-fight` | The Diggers `diggers` | `corridor` | — | 4 (3196 XP) | 3 | 100% | 100% (2) | 100% | fought | **EASY** |
+| trilogy-unlucky | `crypt-ambush` | Crypt Crawlers `crypt` | room (The Undercrypt, in a corridor) | — | 4 (3359 XP) | 3 | 100% | 100% (3) | 100% | fought (lost 1 first) | **EASY** |
+| trilogy-unlucky | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (3359 XP) | 3 | 100% | 93% (4) | 93% | fought | **EASY** |
+| trilogy-unlucky | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (3559 XP) | 4 | 88% | 88% (0) | 40% | fought |  |
+| trilogy-unlucky | `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 (4134 XP) | 4 | 62% | 3% (1) | 0% | fought (lost 1 first) |  |
+| trilogy-unlucky | `seal-breach` | The Warden's Dead `warden-dead` | `firepit` | — | 4 (4822 XP) | 4 | 90% | 23% (1) | 3% | fought (lost 1 first) |  |
+| cold-sunken-barrows | `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 (900 XP) | 3 | 86% | 86% (0) | 20% | fought |  |
+| cold-sunken-barrows | `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 (1468 XP) | 3 | 92% | 92% (0) | 13% | fought |  |
+| cold-sunken-barrows | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 3 (1731 XP) | 3 | 100% | 100% (1) | 100% | fought | **EASY** |
 | cold-sunken-barrows | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 3 (2281 XP) | 3 | 86% | 86% (0) | 27% | fought |  |
-| cold-sunken-barrows | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 3 (2619 XP) | 3 | 86% | 30% (1) | 20% | fought |  |
+| cold-sunken-barrows | `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 3 (2619 XP) | 3 | 82% | 40% (1) | 20% | fought |  |
 | cold-sunken-barrows | `crypt-ambush` | Crypt Crawlers `crypt` | room (The Undercrypt, in a corridor) | — | 4 (3057 XP) | 3 | 100% | 100% (0) | 100% | fought | **EASY** |
-| cold-sunken-barrows | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (3195 XP) | 3 | 100% | 100% (1) | 97% | fought | **EASY** |
-| cold-sunken-barrows | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (3395 XP) | 4 | 90% | 90% (0) | 47% | fought |  |
-| cold-sunken-barrows | `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 (4033 XP) | 4 | 80% | 23% (1) | 7% | fought |  |
+| cold-sunken-barrows | `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 4 (3195 XP) | 3 | 100% | 100% (1) | 93% | fought | **EASY** |
+| cold-sunken-barrows | `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 (3395 XP) | 4 | 88% | 88% (0) | 40% | fought |  |
+| cold-sunken-barrows | `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 (4033 XP) | 4 | 52% | 7% (1) | 0% | fought | **LOW** |
 
 ### Every fight in the chapter, at the levels it is met
 
@@ -256,24 +262,24 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 
 | Scene(s) | Encounter | Map | Surprise | Sugg. | Levels | Fresh at low | Worn at low | Fresh at high | Worn at high | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 | routes 3 | 90% | 27% | ″ | ″ |  |
-| `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 3 | routes 4 | 100% | 70% | ″ | ″ | **EASY** |
-| `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 | routes 3–4 | 94% | 17% | 96% | 50% |  |
-| `chapel-caught` | The Drowned Chapel `drowned-chapel` | `ruins` | foes surprised | 3 | routes 3–4 | 80% | 17% | 98% | 57% |  |
-| `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 3 | routes 3–4 | 100% | 97% | 100% | 100% | **EASY** |
+| `lychyard` | Shadow Ambush `shadow-ambush` | `corridor` | — | 3 | routes 3 | 86% | 20% | ″ | ″ |  |
+| `fen-night` | The Fen Dead `fen-dead` | `bog` | — | 3 | not met; late chapter 4 | 100% | 63% | ″ | ″ |  |
+| `chapel-fight` | The Drowned Chapel `drowned-chapel` | `ruins` | — | 3 | routes 3–4 | 92% | 13% | 98% | 57% | **EASY** |
+| `chapel-caught` | The Drowned Chapel `drowned-chapel` | `ruins` | foes surprised | 3 | routes 3–4 | 92% | 20% | 100% | 53% |  |
+| `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | — | 3 | routes 3–4 | 100% | 100% | 100% | 100% | **EASY** |
 | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | party surprised | 3 | routes 3–4 | 100% | 97% | 100% | 100% | **EASY** |
-| `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | — | 3 | routes 3–4 | 82% | 17% | 98% | 63% | **EASY** |
+| `pool-fight` | The Serpent Pool `serpent-pool` | `marsh` | — | 3 | routes 3–4 | 84% | 17% | 100% | 70% | **EASY** |
 | `pool-drawn` | The Serpent Pool `serpent-pool` | `marsh` | foes surprised | 3 | routes 3–4 | 86% | 27% | 100% | 87% | **EASY** |
-| `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 3 | routes 3–4 | 86% | 20% | 100% | 63% | **EASY** |
-| `crypt-night` | The Painted Dead `painted-dead` | `corridor` | — | 4 | routes 4 | 100% | 23% | ″ | ″ | **EASY** |
+| `lychgate-fight` | The Watchers at the Barrow Gate `barrow-watchers` | `ruins` | — | 3 | routes 3–4 | 82% | 20% | 100% | 70% | **EASY** |
+| `crypt-night` | The Painted Dead `painted-dead` | `corridor` | — | 4 | routes 4 | 100% | 13% | ″ | ″ | **EASY** |
 | `stair-night` | The Stair Haunt `stair-haunt` | room (The Warden's Stair) | — | 4 | not met; late chapter 4 | 100% | 97% | ″ | ″ |  |
 | `diggers-fight` | The Diggers `diggers` | `corridor` | — | 3 | routes 4 | 100% | 100% | ″ | ″ | **EASY** |
 | `crypt-ambush` | Crypt Crawlers `crypt` | room (The Undercrypt, in a corridor) | — | 3 | routes 4 | 100% | 100% | ″ | ″ | **EASY** |
-| `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 3 | routes 4 | 100% | 97% | ″ | ″ | **EASY** |
-| `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 | routes 4 | 90% | 47% | ″ | ″ |  |
-| `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 | routes 4 | 80% | 7% | ″ | ″ |  |
-| `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 | routes 4 | 82% | 10% | ″ | ″ |  |
-| `seal-breach` | The Warden's Dead `warden-dead` | `firepit` | — | 4 | routes 4 | 96% | 27% | ″ | ″ |  |
+| `wights` | Wight Tomb `wight-tomb` | `corridor` | — | 3 | routes 4 | 100% | 93% | ″ | ″ | **EASY** |
+| `king` | The Embalmed King `barrow-king` | room (The Undercrypt) | — | 4 | routes 4 | 88% | 40% | ″ | ″ |  |
+| `seal-doubt` ★ | The Worm Without Its Shepherd `cult-wavering` | `firepit` | — | 4 | routes 4 | 52% | 0% | ″ | ″ | **LOW** |
+| `seal-battle` ★ | The Worm at the Door `cult-at-door` | `firepit` | — | 4 | routes 4 | 62% | 0% | ″ | ″ |  |
+| `seal-breach` | The Warden's Dead `warden-dead` | `firepit` | — | 4 | routes 4 | 90% | 3% | ″ | ″ |  |
 
 ## The Wyrmcalling `wyrmcalling`
 
@@ -283,65 +289,67 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 
 | Route | Scene | Encounter | Map | Surprise | Arrives at | Sugg. | Fresh | Arrival | Worn | How | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| trilogy-completionist | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (6203 XP) | 4 | 92% | 92% (0) | 37% | fought |  |
-| trilogy-completionist | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 5 (6671 XP) | 4 | 100% | 100% (1) | 87% | fought | **EASY** |
-| trilogy-completionist | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 5 (7234 XP) | 4 | 100% | 100% (0) | 83% | fought | **EASY** |
-| trilogy-completionist | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 5 (7234 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-completionist | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (7684 XP) | 4 | 100% | 100% (0) | 87% | fought | **EASY** |
-| trilogy-completionist | `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 5 (8384 XP) | 4 | 100% | 100% (1) | 97% | fought | **EASY** |
-| trilogy-completionist | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (9184 XP) | 4 | 100% | 100% (0) | 90% | fought | **EASY** |
-| trilogy-completionist | `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 5 (9734 XP) | 4 | 100% | 93% (1) | 87% | fought | **EASY** |
-| trilogy-completionist | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 5 (10484 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-completionist | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (10822 XP) | 5 | 96% | 37% (1) | 20% | fought |  |
-| trilogy-completionist | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (11710 XP) | 5 | 74% | 27% (1) | 10% | fought |  |
-| trilogy-completionist | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (12523 XP) | 5 | 82% | 82% (0) | 3% | fought |  |
-| trilogy-rusher | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (5135 XP) | 4 | 92% | 92% (0) | 37% | fought |  |
-| trilogy-rusher | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (5573 XP) | 4 | 88% | 43% (1) | 20% | fought |  |
-| trilogy-rusher | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (6136 XP) | 4 | 92% | 30% (2) | 30% | fought |  |
-| trilogy-rusher | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (6586 XP) | 4 | 100% | 87% (3) | 87% | fought | **EASY** |
-| trilogy-rusher | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7286 XP) | 5 | 96% | 20% (4) | 20% | fought |  |
-| trilogy-rusher | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (8974 XP) | 5 | 74% | 10% (5) | 10% | fought |  |
-| trilogy-cruel | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (5673 XP) | 4 | 92% | 92% (0) | 37% | fought |  |
-| trilogy-cruel | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (6111 XP) | 4 | 88% | 43% (1) | 20% | fought |  |
-| trilogy-cruel | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 5 (6674 XP) | 4 | 100% | 100% (0) | 100% | fought | **EASY** |
-| trilogy-cruel | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 5 (7012 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-cruel | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (7462 XP) | 4 | 100% | 100% (0) | 87% | fought | **EASY** |
-| trilogy-cruel | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (8162 XP) | 5 | 96% | 37% (1) | 20% | fought |  |
-| trilogy-cruel | `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 5 (9050 XP) | 4 | 100% | 100% (0) | 97% | fought | **EASY** |
-| trilogy-cruel | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (9850 XP) | 5 | 74% | 27% (1) | 10% | fought |  |
-| trilogy-cruel | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 5 (10663 XP) | 4 | 100% | 100% (0) | 83% | fought | **EASY** |
-| trilogy-cruel | `gorgonvale-fight` | The Valley of Statues `gorgon-vale` | `corridor` | — | 5 (10663 XP) | 5 | 86% | 27% (1) | 10% | fought |  |
-| trilogy-cruel | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (11788 XP) | 4 | 100% | 100% (0) | 90% | fought | **EASY** |
-| trilogy-cruel | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (12338 XP) | 5 | 82% | 50% (1) | 3% | fought |  |
-| trilogy-merciful | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (4917 XP) | 4 | 92% | 92% (0) | 37% | fought |  |
-| trilogy-merciful | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (5355 XP) | 4 | 88% | 43% (1) | 20% | fought |  |
-| trilogy-merciful | `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 4 (5918 XP) | 4 | 88% | 88% (0) | 17% | fought |  |
-| trilogy-merciful | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 5 (6668 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-merciful | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (7118 XP) | 4 | 100% | 100% (0) | 87% | fought | **EASY** |
-| trilogy-merciful | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7818 XP) | 5 | 96% | 37% (1) | 20% | fought |  |
-| trilogy-merciful | `clutch-r` | The Brood on the Rim `den-clutch-r` | `open` | — | 5 (10056 XP) | 4 | 100% | 100% (0) | 100% | fought | **EASY** |
-| trilogy-unlucky | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (4434 XP) | 4 | 92% | 92% (0) | 37% | fought (lost 1 first) |  |
-| trilogy-unlucky | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (4434 XP) | 4 | 88% | 88% (0) | 20% | fought |  |
-| trilogy-unlucky | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (4997 XP) | 4 | 92% | 70% (1) | 30% | fought |  |
-| trilogy-unlucky | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 4 (5447 XP) | 4 | 74% | 13% (2) | 13% | fought (lost 1 first) |  |
-| trilogy-unlucky | `tollcliff-stung` | The Toll-Cliff `manticore-toll` | `cliff` | party surprised | 4 (5477 XP) | 4 | 74% | 74% (0) | 27% | fought |  |
-| trilogy-unlucky | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 4 (6227 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-unlucky | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7265 XP) | 5 | 96% | 20% (3) | 20% | fought (lost 1 first) |  |
-| trilogy-unlucky | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (8065 XP) | 4 | 100% | 100% (0) | 90% | fought | **EASY** |
-| trilogy-unlucky | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 5 (8615 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| trilogy-unlucky | `calling-battle-cracked` ★ | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 5 (9065 XP) | 6 | 62% | 0% (2) | 0% | fought (lost 1 first) |  |
-| cold-wyrmcalling | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (2700 XP) | 4 | 92% | 92% (0) | 37% | fought |  |
-| cold-wyrmcalling | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (3168 XP) | 4 | 88% | 43% (1) | 20% | fought |  |
-| cold-wyrmcalling | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (3731 XP) | 4 | 92% | 92% (0) | 30% | fought |  |
-| cold-wyrmcalling | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 4 (4181 XP) | 4 | 74% | 23% (1) | 13% | fought |  |
-| cold-wyrmcalling | `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 4 (4881 XP) | 4 | 90% | 90% (0) | 30% | fought |  |
-| cold-wyrmcalling | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 (5681 XP) | 4 | 88% | 50% (1) | 23% | fought |  |
-| cold-wyrmcalling | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 4 (6231 XP) | 4 | 72% | 72% (0) | 30% | fought |  |
-| cold-wyrmcalling | `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 4 (6231 XP) | 4 | 88% | 43% (1) | 17% | fought |  |
+| trilogy-completionist | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (6103 XP) | 4 | 92% | 92% (0) | 33% | fought |  |
+| trilogy-completionist | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 5 (6571 XP) | 4 | 100% | 100% (1) | 83% | fought | **EASY** |
+| trilogy-completionist | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 5 (7134 XP) | 4 | 100% | 100% (0) | 100% | fought | **EASY** |
+| trilogy-completionist | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (7584 XP) | 4 | 100% | 100% (1) | 90% | fought | **EASY** |
+| trilogy-completionist | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 5 (8284 XP) | 4 | 100% | 100% (0) | 93% | fought | **EASY** |
+| trilogy-completionist | `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 5 (8284 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-completionist | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (9084 XP) | 4 | 100% | 100% (1) | 93% | fought | **EASY** |
+| trilogy-completionist | `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 5 (9634 XP) | 4 | 98% | 98% (0) | 80% | fought | **EASY** |
+| trilogy-completionist | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 5 (10384 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-completionist | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (10722 XP) | 5 | 96% | 96% (0) | 27% | fought |  |
+| trilogy-completionist | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (11610 XP) | 5 | 90% | 43% (1) | 20% | fought |  |
+| trilogy-completionist | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (12423 XP) | 5 | 92% | 43% (1) | 7% | fought |  |
+| trilogy-rusher | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (5466 XP) | 4 | 92% | 92% (0) | 33% | fought |  |
+| trilogy-rusher | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (5904 XP) | 4 | 90% | 47% (1) | 20% | fought |  |
+| trilogy-rusher | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (6467 XP) | 4 | 98% | 33% (2) | 33% | fought | **EASY** |
+| trilogy-rusher | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (6917 XP) | 4 | 100% | 90% (3) | 90% | fought | **EASY** |
+| trilogy-rusher | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7617 XP) | 5 | 96% | 27% (4) | 27% | fought |  |
+| trilogy-rusher | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (9305 XP) | 5 | 90% | 20% (5) | 20% | fought |  |
+| trilogy-rusher | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (10668 XP) | 5 | 92% | 7% (6) | 7% | fought |  |
+| trilogy-cruel | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (5804 XP) | 4 | 92% | 92% (0) | 33% | fought |  |
+| trilogy-cruel | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (6242 XP) | 4 | 90% | 47% (1) | 20% | fought |  |
+| trilogy-cruel | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 5 (6805 XP) | 4 | 100% | 100% (0) | 100% | fought | **EASY** |
+| trilogy-cruel | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 5 (7143 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-cruel | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (7593 XP) | 4 | 100% | 100% (0) | 90% | fought | **EASY** |
+| trilogy-cruel | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (8293 XP) | 5 | 96% | 67% (1) | 27% | fought |  |
+| trilogy-cruel | `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 5 (9181 XP) | 4 | 100% | 100% (0) | 100% | fought | **EASY** |
+| trilogy-cruel | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (9981 XP) | 5 | 90% | 43% (1) | 20% | fought |  |
+| trilogy-cruel | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 5 (10794 XP) | 4 | 100% | 100% (0) | 93% | fought | **EASY** |
+| trilogy-cruel | `gorgonvale-fight` | The Valley of Statues `gorgon-vale` | `corridor` | — | 5 (10794 XP) | 5 | 92% | 33% (1) | 10% | fought |  |
+| trilogy-cruel | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (11919 XP) | 4 | 100% | 100% (0) | 93% | fought | **EASY** |
+| trilogy-cruel | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (12469 XP) | 5 | 92% | 43% (1) | 7% | fought |  |
+| trilogy-merciful | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (5280 XP) | 4 | 92% | 92% (0) | 33% | fought |  |
+| trilogy-merciful | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (5718 XP) | 4 | 90% | 47% (1) | 20% | fought |  |
+| trilogy-merciful | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 4 (6281 XP) | 4 | 88% | 88% (0) | 37% | fought |  |
+| trilogy-merciful | `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 4 (6281 XP) | 4 | 86% | 43% (1) | 13% | fought |  |
+| trilogy-merciful | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 5 (7031 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-merciful | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 5 (7481 XP) | 4 | 100% | 100% (1) | 90% | fought | **EASY** |
+| trilogy-merciful | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (8181 XP) | 5 | 96% | 67% (1) | 27% | fought |  |
+| trilogy-merciful | `clutch-r` | The Brood on the Rim `den-clutch-r` | `open` | — | 5 (10419 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-unlucky | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (4822 XP) | 4 | 92% | 92% (0) | 33% | fought (lost 1 first) |  |
+| trilogy-unlucky | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (4822 XP) | 4 | 90% | 90% (0) | 20% | fought |  |
+| trilogy-unlucky | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (5385 XP) | 4 | 98% | 90% (1) | 33% | fought | **EASY** |
+| trilogy-unlucky | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 4 (5835 XP) | 4 | 76% | 7% (2) | 7% | fought (lost 1 first) |  |
+| trilogy-unlucky | `tollcliff-stung` | The Toll-Cliff `manticore-toll` | `cliff` | party surprised | 4 (5865 XP) | 4 | 68% | 68% (0) | 23% | fought |  |
+| trilogy-unlucky | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 5 (6615 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-unlucky | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7653 XP) | 5 | 96% | 27% (3) | 27% | fought (lost 1 first) |  |
+| trilogy-unlucky | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 5 (8453 XP) | 4 | 100% | 100% (0) | 93% | fought | **EASY** |
+| trilogy-unlucky | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 5 (9003 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
+| trilogy-unlucky | `calling-battle-cracked` ★ | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 5 (9453 XP) | 6 | 80% | 7% (2) | 7% | fought (lost 1 first) |  |
+| cold-wyrmcalling | `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 (2700 XP) | 4 | 92% | 92% (0) | 33% | fought |  |
+| cold-wyrmcalling | `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 (3168 XP) | 4 | 90% | 47% (1) | 20% | fought |  |
+| cold-wyrmcalling | `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 (3731 XP) | 4 | 98% | 98% (0) | 33% | fought | **EASY** |
+| cold-wyrmcalling | `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 4 (4181 XP) | 4 | 76% | 33% (1) | 7% | fought |  |
+| cold-wyrmcalling | `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 4 (4881 XP) | 4 | 84% | 84% (0) | 30% | fought |  |
+| cold-wyrmcalling | `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 (5681 XP) | 4 | 86% | 47% (1) | 17% | fought |  |
+| cold-wyrmcalling | `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 4 (6231 XP) | 4 | 88% | 88% (0) | 37% | fought |  |
+| cold-wyrmcalling | `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 4 (6231 XP) | 4 | 86% | 43% (1) | 13% | fought |  |
 | cold-wyrmcalling | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 5 (6981 XP) | 4 | 100% | 100% (1) | 100% | fought | **EASY** |
-| cold-wyrmcalling | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7319 XP) | 5 | 96% | 96% (0) | 20% | fought |  |
-| cold-wyrmcalling | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (8207 XP) | 5 | 74% | 27% (1) | 10% | fought |  |
-| cold-wyrmcalling | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (9020 XP) | 5 | 82% | 50% (1) | 3% | fought |  |
+| cold-wyrmcalling | `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 (7319 XP) | 5 | 96% | 96% (0) | 27% | fought |  |
+| cold-wyrmcalling | `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 (8207 XP) | 5 | 90% | 43% (1) | 20% | fought |  |
+| cold-wyrmcalling | `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 (9020 XP) | 5 | 92% | 43% (1) | 7% | fought |  |
 
 ### Every fight in the chapter, at the levels it is met
 
@@ -349,21 +357,21 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 
 | Scene(s) | Encounter | Map | Surprise | Sugg. | Levels | Fresh at low | Worn at low | Fresh at high | Worn at high | Flags |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 | routes 4 | 92% | 37% | ″ | ″ |  |
-| `peak-battle` | Harpy Roost `harpy-roost` | `open` | — | 4 | not met; late chapter 5 | 98% | 80% | ″ | ″ |  |
-| `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 | routes 4–5 | 88% | 20% | 100% | 87% | **EASY** |
-| `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 4 | routes 4–5 | 72% | 30% | 100% | 83% | **EASY** |
-| `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 4 | routes 4–5 | 88% | 17% | 100% | 87% | **EASY** |
-| `tollcliff-stung` | The Toll-Cliff `manticore-toll` | `cliff` | party surprised | 4 | routes 4–5 | 74% | 27% | 100% | 77% | **EASY** |
-| `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 4 | routes 4–5 | 100% | 100% | 100% | 100% | **EASY** |
-| `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 | routes 4–5 | 92% | 30% | 100% | 100% | **EASY** |
-| `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 4 | routes 4–5 | 74% | 13% | 100% | 87% | **EASY** |
-| `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 | routes 5 | 96% | 20% | ″ | ″ |  |
-| `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 4 | routes 4–5 | 90% | 30% | 100% | 97% | **EASY** |
-| `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 | routes 5 | 74% | 10% | ″ | ″ |  |
-| `gorgonvale-fight` | The Valley of Statues `gorgon-vale` | `corridor` | — | 5 | routes 5 | 86% | 10% | ″ | ″ |  |
-| `gorgonvale-woken` | The Valley of Statues `gorgon-vale` | `corridor` | party surprised | 5 | routes 5 | 86% | 0% | ″ | ″ |  |
-| `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 | routes 4–5 | 88% | 23% | 100% | 90% | **EASY** |
+| `envoys` | The Sister's Hired Swords `hired-swords` | `open` | — | 4 | routes 4 | 92% | 33% | ″ | ″ |  |
+| `peak-battle` | Harpy Roost `harpy-roost` | `open` | — | 4 | not met; late chapter 5 | 100% | 83% | ″ | ″ |  |
+| `switchbacks-fight` | Griffons on the Switchbacks `griffon-flight` | `pass` | — | 4 | routes 4–5 | 90% | 20% | 100% | 83% | **EASY** |
+| `hills-night` | Harpies of the Crags `crag-harpies` | `open` | — | 4 | routes 4–5 | 88% | 37% | 100% | 93% | **EASY** |
+| `tollcliff-fight` | The Toll-Cliff `manticore-toll` | `cliff` | — | 4 | routes 4–5 | 86% | 13% | 98% | 80% | **EASY** |
+| `tollcliff-stung` | The Toll-Cliff `manticore-toll` | `cliff` | party surprised | 4 | routes 4–5 | 68% | 23% | 98% | 73% | **EASY** |
+| `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | — | 4 | routes 5 | 100% | 100% | ″ | ″ | **EASY** |
+| `greenden-fight` | Green Wyrmling's Thicket `green-dragon-den` | `marsh` | — | 4 | routes 4–5 | 98% | 33% | 100% | 100% | **EASY** |
+| `seam-fight` | The Flooded Pass `flooded-seam` | `bog` | — | 4 | routes 4–5 | 76% | 7% | 100% | 90% | **EASY** |
+| `blueden` | Blue Wyrmling's Mesa `blue-dragon-den` | `ruins` | — | 5 | routes 5 | 96% | 27% | ″ | ″ |  |
+| `onihold-fight` | The Ogre-Mage's Hold `oni-hold` | `open` | — | 4 | routes 4–5 | 84% | 30% | 100% | 100% | **EASY** |
+| `redden` | Red Wyrmling's Forge `red-forge` | `firepit` | — | 5 | routes 5 | 90% | 20% | ″ | ″ |  |
+| `gorgonvale-fight` | The Valley of Statues `gorgon-vale` | `corridor` | — | 5 | routes 5 | 92% | 10% | ″ | ″ |  |
+| `gorgonvale-woken` | The Valley of Statues `gorgon-vale` | `corridor` | party surprised | 5 | routes 5 | 94% | 10% | ″ | ″ |  |
+| `steading-roused` | The Giants' Hall `giants-hall` | `ruins` | — | 4 | routes 4–5 | 86% | 17% | 100% | 93% | **EASY** |
 | `steading-raided` | The Raided Hall `giants-raided` | `ruins` | — | 5 | not met; late chapter 5 | 100% | 100% | ″ | ″ |  |
 | `clutch-g` | The Brood on the Rim `den-clutch-g` | `open` | — | 4 | not met; late chapter 5 | 100% | 100% | ″ | ″ |  |
 | `clutch-b` | The Brood on the Rim `den-clutch-b` | `open` | — | 4 | not met; late chapter 5 | 100% | 100% | ″ | ″ |  |
@@ -372,6 +380,6 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | `clutch-gr` | The Brood on the Rim `den-clutch-gr` | `open` | — | 4 | not met; late chapter 5 | 100% | 100% | ″ | ″ |  |
 | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | — | 4 | routes 5 | 100% | 100% | ″ | ″ | **EASY** |
 | `clutch-gbr` | The Brood on the Rim `den-clutch-gbr` | `open` | — | 4 | not met; late chapter 5 | 100% | 100% | ″ | ″ |  |
-| `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 | routes 5 | 82% | 3% | ″ | ″ |  |
-| `sisters-battle-cracked` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | party surprised | 5 | routes 5 | 68% | 7% | ″ | ″ |  |
-| `calling-battle`, `calling-battle-cracked` ★ | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 6 | routes 5 | 62% | 0% | ″ | ″ |  |
+| `sisters-battle` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | — | 5 | routes 5 | 92% | 7% | ″ | ″ |  |
+| `sisters-battle-cracked` ★ | The Sisters at the Stone `sisters-at-stone` | `firepit` | party surprised | 5 | routes 5 | 92% | 23% | ″ | ″ |  |
+| `calling-battle`, `calling-battle-cracked` ★ | Elemental Cataclysm `elemental-cataclysm` | `firepit` | — | 6 | routes 5 | 80% | 7% | ″ | ″ |  |

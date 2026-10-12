@@ -39,7 +39,13 @@ export interface DelveOptions {
   rest?: RestPolicy;
 }
 
-export const ROOMS: Record<DelveTheme | 'forest' | 'village', { title: string[]; rooms: string[]; goal: string; door: string; enter: string; safe: [string, string] }> = {
+/** Themes written for one story's place: never drawn by chance. */
+export const STORY_THEMES = ['marsh', 'stockade'] as const;
+export const ROOMS: Record<DelveTheme | 'forest' | 'village' | typeof STORY_THEMES[number], {
+  title: string[]; rooms: string[]; goal: string; door: string; enter: string; safe: [string, string];
+  /** The board its fights are drawn on, where that is not its own name. */
+  board?: MapTheme;
+}> = {
   stone: {
     title: ['Broken Keep', 'Old Cistern', 'Warden\'s Hold', 'Sunless Mine'],
     rooms: ['Guardroom', 'Cistern', 'Collapsed Hall', 'Armory', 'Well Chamber', 'Barracks', 'Storeroom', 'Gallery', 'Cells', 'Pillared Hall', 'Stair Hall', 'Kitchens'],
@@ -77,6 +83,22 @@ export const ROOMS: Record<DelveTheme | 'forest' | 'village', { title: string[];
     rooms: ['Market Square', 'Smithy', 'Inn Common Room', 'Mill', 'Granary', 'Chapel', 'Well Yard', 'Tannery', 'Cooper\'s Shed', 'Reeve\'s House', 'Stable', 'Bakehouse'],
     safe: ['Locked Cellar', 'A cellar with a stout door and a bar for it. You could sleep here, in turns.'],
     goal: 'Manor Hall', door: 'The manor gate, chained.', enter: 'The village is shuttered and silent. Every door is shut, and something is watching.',
+  },
+  // Story themes (STORY_THEMES): out of doors, for a road through the reeds…
+  marsh: {
+    title: ['Marsh Road'],
+    rooms: ['Reed Bed', 'Causeway', 'Sinkhole', 'Heron Rookery', 'Drowned Hut', 'Eel Weir', 'Peat Bank', 'Willow Island', 'Black Pool', 'Cut Reeds', 'Rush Flats', 'Old Ford'],
+    safe: ['Dry Hummock', 'A hump of firm ground, high enough above the water for a fire. You could camp here.'],
+    goal: 'The Hollow', door: 'The reeds close in over black water, too deep to wade.', enter: 'Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.',
+    board: 'bog',
+  },
+  // …and a raiders' camp behind a timber wall.
+  stockade: {
+    title: ['Raiders\' Den'],
+    rooms: ['Tents', 'Cook Fire', 'Stolen Carts', 'Watch Platform', 'Horse Lines', 'Drying Racks', 'Dice Fire', 'Midden', 'Armourer\'s Tent', 'Smoke Hut', 'Water Butts', 'Wood Pile'],
+    safe: ['Empty Tent', 'A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.'],
+    goal: 'Chief\'s Hall', door: 'A gate of lashed timber, barred from the far side.', enter: 'Tents and cook-smoke inside the timber wall. Somewhere a dog, or something like one, is laughing.',
+    board: 'village',
   },
 };
 

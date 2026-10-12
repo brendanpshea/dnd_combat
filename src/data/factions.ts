@@ -37,6 +37,9 @@ export interface Faction {
   beastly?: true;
   /** A line for the entrance: the first sign of them. */
   sign: string[];
+  /** Lines to open one of their fights with, one drawn per fight. Without
+   *  them a fight opens on nothing at all. */
+  intros?: string[];
 }
 
 export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
@@ -126,6 +129,37 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     parley: { skill: 'persuasion', dc: 14, label: 'Strike a bargain', success: 'A bargain, sealed with a laugh you do not like. They let you by — for now.' },
     rooms: ['Cauldron Room', 'Bone Garden', 'Mirror Pool', 'Bower'],
     sign: ['Flowers growing out of the stone, in the dark, where nothing should grow.'],
+  },
+  // A story's own (chapter one): its theme is the story's, so no other
+  // place draws them.
+  {
+    id: 'ashfang', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
+    themes: ['stockade'],
+    members: ['bandit', 'scout', 'orc', 'gnoll', 'giant-hyena', 'worg', 'bugbear', 'berserker', 'ogre'],
+    leaders: ['bandit-captain', 'berserker', 'bugbear', 'ogre'],
+    parley: { skill: 'intimidation', dc: 13, label: 'Tell them the chief is finished', success: 'They look at each other, then at the gate. Nobody here was paid enough for this.' },
+    rooms: ['Kennel Run', 'Plunder Tent', 'Bone Fire'],
+    sign: ['A stolen cart stands just inside, its sides hacked with the raiders\' mark.'],
+    intros: [
+      'A raider looks up from the fire with his mouth full, and shouts with it.',
+      'Two of them come out of a tent still buckling on stolen mail.',
+      'Something laughs behind the wood pile, high and wrong, and the raiders by it get up.',
+      'They were throwing dice for a carter\'s boots. They stop.',
+    ],
+  },
+  {
+    id: 'marsh-thralls', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
+    themes: ['marsh'],
+    members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'ghoul', 'ghast', 'giant-crocodile'],
+    leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],
+    rooms: ['Brand Stake', 'Cold Pool'],
+    sign: ['A reed stake by the path, and something tied to it that used to be a hare.'],
+    intros: [
+      'The water is colder here than it should be, and it moves when you stop.',
+      'A shape in the reeds stands up. It has been waiting a long time, and it does not breathe.',
+      'Something heavy slides off a tussock into the water, and then the water comes for you.',
+      'Every frog in the reeds goes quiet at once.',
+    ],
   },
 ] satisfies Faction[]).map((f) => [f.id, f]));
 
