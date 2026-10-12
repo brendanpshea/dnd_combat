@@ -1315,8 +1315,6 @@ The moon has gone dark, and the Reedwife has come and gone. In the corner lies o
 
 ## `den-pens` · story
 
-<sub>reads: flag:npc.wren.met</sub>
-
 There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.
 
 The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran gave her one lamb each midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
@@ -1325,8 +1323,7 @@ A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes b
 
 - » **[Sleight of Hand DC 13] Work the padlock open quietly** [Sleight of Hand DC 13] <sub>(once)</sub>
 - » **Hack through the stakes, and never mind the noise**
-- » **Leave them for the reeve's men** <sub>open when met Wren; otherwise hidden</sub>
-- » **Leave them for the reeve's men** <sub>open when never met Wren; otherwise hidden</sub>
+- » **Leave them for the reeve's men**
 
 ## `pens-alarm` · battle
 
@@ -1344,12 +1341,9 @@ You go down in the mud in front of the pen, and come to in the straw of the pen 
 
 ## `den-pens-freed` · story
 
-<sub>reads: flag:npc.wren.met</sub>
-
 The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.
 
-- » **Back to the den** <sub>open when met Wren; otherwise hidden</sub>
-- » **Back to the den** <sub>open when never met Wren; otherwise hidden</sub>
+- » **Back to the den**
 
 ## `den-pens-left` · story
 
@@ -1970,7 +1964,7 @@ You wake behind the throne, where somebody dragged you. Vargan sits beside you w
 
 ## `vargan-beaten` · story
 
-<sub>reads: flag:vargan-shaken, flag:npc.wren.met, flag:bounty</sub>
+<sub>reads: flag:vargan-shaken, flag:bounty</sub>
 
 **2 versions**
 
@@ -1990,16 +1984,14 @@ The brand on his hand has gone grey, like an old scar. He looks at it, and not a
 
 "Go on, then," he says. "Thornwick will only hang me slower."
 
-- » **Bind him and march him down to the reeve** <sub>open when met Wren; otherwise hidden</sub>
-- » **Bind him and march him down to the reeve** <sub>open when never met Wren; otherwise hidden</sub>
+- » **Bind him and march him down to the reeve**
 - » **Let him crawl out into the marsh** — _The reeve pays for a chief he can see._ <sub>open when not `bounty`; otherwise hidden</sub>
 - » **Let him crawl out into the marsh** — _The reeve pays for a chief he can see, and he will want his retainer back._ <sub>open when `bounty`; otherwise hidden</sub>
-- » **End it here** <sub>open when met Wren; otherwise hidden</sub>
-- » **End it here** <sub>open when never met Wren; otherwise hidden</sub>
+- » **End it here**
 
 ## `vargan-fate` · story
 
-<sub>reads: class:cleric?, flag:npc.wren.met, flag:bounty</sub>
+<sub>reads: class:cleric?, flag:bounty</sub>
 
 **2 versions**
 
@@ -2017,12 +2009,10 @@ Vargan sits against his throne of spears. The brand on his hand has gone grey, l
 
 Your cleric kneels beside him and studies the grey brand. There is no prayer for this, and Vargan does not ask for one.
 
-- » **Bind him and march him down to the reeve** <sub>open when met Wren; otherwise hidden</sub>
-- » **Bind him and march him down to the reeve** <sub>open when never met Wren; otherwise hidden</sub>
+- » **Bind him and march him down to the reeve**
 - » **Let him walk out into the marsh** — _The reeve pays for a chief he can see._ <sub>open when not `bounty`; otherwise hidden</sub>
 - » **Let him walk out into the marsh** — _The reeve pays for a chief he can see, and he will want his retainer back._ <sub>open when `bounty`; otherwise hidden</sub>
-- » **End it here** <sub>open when met Wren; otherwise hidden</sub>
-- » **End it here** <sub>open when never met Wren; otherwise hidden</sub>
+- » **End it here**
 
 ## `aftermath` · story
 
@@ -2260,7 +2250,7 @@ The reeve's men carried you in, she tells you, and then stood about in her tapro
 
 ## `epilogue` · ending
 
-<sub>reads: flag:vargan-shaken, flag:npc.vargan.fate.dead, flag:npc.vargan.fate.spared, flag:vargan-let-go, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-walked-past, flag:scout-covered, flag:captives-freed, flag:mill-saved, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:captives-taken, flag:captives-left, flag:pens-found</sub>
+<sub>reads: flag:npc.vargan.fate.dead, flag:vargan-shaken, flag:vargan-let-go, flag:npc.vargan.fate.spared, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-covered, flag:scout-walked-past, flag:captives-freed, flag:mill-saved, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:captives-taken, flag:captives-left, flag:pens-found</sub>
 
 **Too many combinations** — printed once, each conditional line marked with when it shows.
 
@@ -2272,39 +2262,41 @@ By morning the carters are already complaining about the state of the road. Mira
 
 *slides:*
 
-> **[when `vargan-shaken` · Vargan dead]** Round the bonfire they tell it in low voices: the Ashfang chief wore the hag's brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.
+> **[when Vargan dead · `vargan-shaken`]** Round the bonfire they tell it in low voices: the Ashfang chief wore the hag's brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.
 
-> **[when Vargan spared · not `vargan-let-go`]** The reeve does not hang Vargan. He sends him out to cut reeds on the common land until the drowned houses stand again. Vargan has not missed a day.
-
-> **[when not `vargan-shaken` · Vargan dead]** The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
+> **[when Vargan dead]** The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
 
 > **[when `vargan-let-go`]** The reeve keeps his bounty, and says so loudly. Before the month is out, a man with a scarred hand is cutting reeds in the shallows below the water-meadows. The reeve watches him from his window, and does not send the watch.
 
-> **[when Vex turned]** At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.
+> **[when Vargan spared]** The reeve does not hang Vargan. He sends him out to cut reeds on the common land until the drowned houses stand again. Vargan has not missed a day.
 
-> **[when Vex not turned · met Vex · not `vex-rebuffed`]** Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
+> **[when Vex turned]** At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.
 
 > **[when `vex-rebuffed`]** Vex sat out the end of it at his own fire, the bare blade across his knees. At dawn he walks down into Thornwick alone and lays it on the reeve's table. He asks for a cell with a window.
 
+> **[when met Vex]** Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
+
 > **[when Wren saved]** At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.
 
-> **[when Wren not lost · `scout-walked-past`]** The reeve's men bring a scout in from the marsh road on a door. The other scout, who lost her horse in the fen and walked home the long way round, walks beside it. Whether the one on the door lives, nobody at the bonfire will say.
+> **[when `scout-covered`]** 
 
-> **[when Wren not saved · Wren not lost · not `scout-walked-past`]** The other scout lost her horse in the fen and walked home the long way round. She leads the reeve's men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den's wall scratched into the mud.
+> **[when Wren lost · `scout-walked-past`]** The reeve's men find a scout in the reeds off the marsh road, a hundred yards from a dead horse. She had been crawling toward Thornwick.
 
-> **[when Wren lost · not `scout-walked-past` · not `scout-covered`]** Out on the marsh road, the reeve's men lift a dead horse off one of their own scouts. She died under it alone, with a healing potion at her belt that she could never reach.
+> **[when Wren lost]** Out on the marsh road, the reeve's men lift a dead horse off one of their own scouts. She died under it alone, with a healing potion at her belt that she could never reach.
 
-> **[when Wren lost · `scout-walked-past` · not `scout-covered`]** The reeve's men find a scout in the reeds off the marsh road, a hundred yards from a dead horse. She had been crawling toward Thornwick.
+> **[when `scout-walked-past`]** The reeve's men bring a scout in from the marsh road on a door. The other scout, who lost her horse in the fen and walked home the long way round, walks beside it. Whether the one on the door lives, nobody at the bonfire will say.
 
-> **[when Vargan not dead · `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
-
-> **[when Vargan not dead · Wren saved · not `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
-
-> **[when Vargan not dead · Wren not saved · not `captives-freed` · `mill-saved`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
-
-> **[when Vargan not dead · Wren not saved · not `captives-freed` · not `mill-saved`]** Mira pours your round and takes your coin for it. "Town's still standing," she allows, and moves off down the bar.
+The other scout lost her horse in the fen and walked home the long way round. She leads the reeve's men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den's wall scratched into the mud.
 
 > **[when Vargan dead]** Mira pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.
+
+> **[when `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+
+> **[when Wren saved · not `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+
+> **[when Wren not saved · not `captives-freed` · `mill-saved`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+
+Mira pours your round and takes your coin for it. "Town's still standing," she allows, and moves off down the bar.
 
 > **[when `got-banner`]** By the week's end the Ashfang banner hangs upside down over Mira's bar, still spattered with the children's mud.
 
