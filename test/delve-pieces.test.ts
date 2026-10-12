@@ -177,6 +177,9 @@ describe('delves without pieces', () => {
         })));
       }
     }
-    expect(h.digest('hex').slice(0, 16)).toBe('a9c70867a1648919');
+    // Changed once, on purpose: a safe room on the goal's doorstep could never
+    // be slept in, and moving it changed exactly the delves that had one
+    // (15 of 200 compared one by one against the old build; no other moved).
+    expect(h.digest('hex').slice(0, 16)).toBe('bcdf407510bb9406');
   }, 60_000);
 });

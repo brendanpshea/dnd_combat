@@ -271,3 +271,32 @@ describe('the story chapters', () => {
     expect(restOptions(s, m).long).toEqual({ ok: true, chance: 0.5 });
   });
 });
+
+describe('a safe room you can actually sleep in', () => {
+  it('is never on the goal\'s doorstep, in a classic delve or a spec one', async () => {
+    /*
+     * Resting is refused beside a room whose fight is still to be had, and
+     * the goal's is had last. A safe room next to it could never be slept
+     * in — so the party could not rest before the boss, nor after a wipe.
+     * Whole delves played through found it: 74 classic delves in 200 had one.
+     */
+    const { generateDelve } = await import('../src/adventure/dungeon-gen.js');
+    const { generateSpecDelve, DELVE_SHAPES } = await import('../src/adventure/delve-spec.js');
+    const modules = [
+      ...Array.from({ length: 120 }, (_, i) => generateDelve(i + 1).module),
+      ...DELVE_SHAPES.flatMap((shape) => Array.from({ length: 12 }, (_, i) => generateSpecDelve(i + 1, { shape, floors: 2 }).module)),
+    ];
+    for (const m of modules) {
+      for (const s of Object.values(m.scenes)) {
+        if (s.kind !== 'dungeon') continue;
+        const d = s.dungeon;
+        const goal = d.rooms.find((r) => r.goal)!.id;
+        for (const r of d.rooms.filter((x) => x.rest === 'safe')) {
+          const byGoal = d.links.some((l) => (l.a === r.id && l.b === goal) || (l.b === r.id && l.a === goal));
+          expect(byGoal, `${m.id} ${s.id}: safe room ${r.id} is next to the goal`).toBe(false);
+        }
+      }
+    }
+  }, 30_000);
+});
+

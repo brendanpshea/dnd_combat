@@ -3,7 +3,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import {
-  generateSpecDelve, specDelveFromId, checkSpec, DELVE_SHAPES, SPEC_THEMES, ROOM_SHARE, BOSS_SHARE,
+  generateSpecDelve, specDelveFromId, checkSpec, DELVE_SHAPES, SPEC_THEMES, shareFor,
   type DelveSpec,
 } from '../src/adventure/delve-spec.js';
 import { validateModule } from '../src/adventure/validate.js';
@@ -198,7 +198,7 @@ describe('generated fights', () => {
         const enc = encounterFor(b.encounterId)!;
         expect(enc, b.encounterId).toBeDefined();
         const isBoss = floorsOf(module)[0]![1].rooms.find((r) => r.fight === b.id)!.goal;
-        const budget = evenBudgetFor(level) * (isBoss ? BOSS_SHARE : ROOM_SHARE);
+        const budget = evenBudgetFor(level) * shareFor(isBoss ? 'boss' : 'room', level);
         // The generator is best-effort and lands a little either side.
         expect(adjustedXp(enc.members), `${b.id} L${level}`).toBeLessThanOrEqual(budget * 1.5);
         ratios.push(adjustedXp(enc.members) / budget);
