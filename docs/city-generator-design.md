@@ -86,18 +86,66 @@ markers kept off the bottom edge.
 scroll item ids. Matched against scroll ids, the mage's guild stocked no
 scrolls at all, only potions. It now matches on the scroll's own spell.
 
-## Step 2: author control and leads
+## Step 2, as built: author control and leads
 
-- **NPC placement:** `{ npc, at: venue kind | district | node id, when? }`.
-  Placed NPCs are real cast members with the introduction check. A placed NPC
-  replaces a venue's generated proprietor, or stands at their own marker.
-- **Custom markers:** authored nodes with their own scenes, pinned to a
-  district, optionally hidden or gated. The town's version of required rooms.
-- **Custom encounters:** street fights by district (pickpockets in the market,
-  thugs in the warrens) and authored set fights.
-- **Rumours and leads:** rumours drawn from the town's own facts (its
-  factions, history, nearby dungeons), handing out journal `lead` entries. A
-  lead may point at an authored scene or a generated delve.
+Four additions to `CitySpec`.
+
+**`people`** (`PlacedPerson`): a name, what they say, and where they are.
+
+- **At an inn or a temple**, they are someone to talk to there: a "Talk to"
+  choice placed before the venue's way out. With `keeps`, they run it instead.
+- **At a shop**, they run it. A shop has no one else to talk to, so a lead
+  there is refused.
+- **In a district**, they get a marker of their own.
+- **`lead`** is a journal lead, given once. **`when`** is a list of story
+  flags ('flag', or '!flag' for not set) that decides whether they are there.
+
+**`places`** (`CustomPlace`): an authored marker with its own text, in a
+district, optionally hidden (Perception DC) or gated (`when`).
+
+- **`fight`** is fought on the way in, once; after that the place is just the
+  place.
+- **`loot`** is taken once.
+- **`sets`** is a flag set whichever way the party leaves. It is what closes a
+  lead that pointed there. The first cut set it only on "Walk on", so taking
+  the loot left the lead open forever. Tested.
+
+**`rumours`**: the author's rumours, told first by the first inn (only the
+first: a rumour told at two inns is two leads for one thing). Each may carry a
+lead.
+
+**`streets`** (default on for towns and cities): footpads, drawn from the
+bandit faction at a room fight's budget, on one marker (town) or two (city)
+in the rough districts. Never at the gate, never on a hidden marker, fought on
+the village battle map. A town with a fight in it gets somewhere to come to
+after a beating.
+
+**Refused up front, with the reason:**
+
+- a person in a district the town does not have;
+- a person at a venue the town does not have;
+- a shopkeeper with a lead;
+- two people or places of one name;
+- an unknown encounter or item;
+- more than 15 markers;
+- a lead whose closing flag no place sets;
+- a `when` flag nothing in the town sets. Until towns sit inside stories
+  (step 3), the town's own flags are the only flags there are.
+
+**Layout, again.** The browser showed that labels, not markers, are what
+collide: a three-line name ("Temple of the Watchful Eye", "The Wandering
+Anchor") runs into the marker below it, and the topmost marker sat under the
+town's name. Fixes:
+
+- markers are placed by searching a grid for the free spot nearest the
+  district's centre, so a crowded city still fits (rerolls fell from 2.4 per
+  city to 0.1);
+- they are kept clear of every edge;
+- names are kept to 20 characters (tested). The longest in 900 towns is 19.
+
+On the dev card, an object in the JSON box is the rest of the town's spec.
+The town is built before the save slot is cleared, so a mistyped spec does not
+cost a run.
 
 ## Step 3: composition
 

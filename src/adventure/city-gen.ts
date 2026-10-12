@@ -23,7 +23,13 @@ import { classScrollPool } from '../data/classes.js';
 import { WEAPONS } from '../data/weapons.js';
 import { ARMOR } from '../data/armor.js';
 import { ITEMS } from '../data/items.js';
-import type { ExploreNode, Module, NpcRef, Scene } from './types.js';
+import type { Effect, ExploreNode, Module, NpcRef, Requirement, Scene } from './types.js';
+import type { EncounterBrief } from '../arena/encounter.js';
+import { generateEncounter } from '../arena/encounter.js';
+import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
+import { encounterFor, generatedEncounterId } from '../data/encounters.js';
+import { FACTIONS } from '../data/factions.js';
+import { shareFor } from './delve-spec.js';
 import { validateModule } from './validate.js';
 import { Dice } from './dungeon-gen.js';
 import { encodeSpec, decodeSpec } from './delve-spec.js';
@@ -40,12 +46,61 @@ export const VENUE_KINDS: VenueKind[] = [
 
 export type DistrictKind = 'green' | 'market' | 'temple-quarter' | 'warrens' | 'gate' | 'noble-hill';
 
+/** Something worth following up: a journal lead, closed when `flag` is set. */
+export interface Lead { title: string; text: string; flag?: string }
+
+/**
+ * Someone the author puts in the town.
+ *   at a venue    found there: a choice to talk to them at an inn or temple,
+ *                 or (with `keeps`, or at a shop, which has no one else to
+ *                 talk to) the person who runs it
+ *   at a district a marker of their own there
+ */
+export interface PlacedPerson {
+  name: string;
+  emoji?: string;
+  at: VenueKind | DistrictKind;
+  keeps?: boolean;
+  /** What they say. */
+  lines: string[];
+  /** What they point the party at. */
+  lead?: Lead;
+  /** Story flags that must hold for them to be there ('!flag': must not). */
+  when?: string[];
+}
+
+/** A place the author writes: a marker with its own scene. */
+export interface CustomPlace {
+  label: string;
+  icon?: string;
+  /** Default: the town's first district. */
+  district?: DistrictKind;
+  text: string[];
+  /** Found only by a passive Perception of at least this. */
+  hidden?: number;
+  when?: string[];
+  /** A fight on first walking in: an encounter id, or one generated to a brief. */
+  fight?: Id | { brief?: EncounterBrief };
+  /** A flag set on leaving it: what closes a lead that pointed here. */
+  sets?: string;
+  /** What is there to take: coin, or an item id. */
+  loot?: 'gold' | Id;
+}
+
+/** A rumour the inn tells, before its own. */
+export interface Rumour { text: string; lead?: Lead }
+
 export interface CitySpec {
   size?: CitySize;
   /** Party level the wares and prices are set for (default 2). */
   level?: number;
   /** Venues that must be there, beyond what the size brings. */
   venues?: VenueKind[];
+  people?: PlacedPerson[];
+  places?: CustomPlace[];
+  rumours?: Rumour[];
+  /** Street trouble in the rougher districts (default: towns and cities). */
+  streets?: boolean;
 }
 
 /** What each size brings, before the spec adds anything. */
@@ -90,10 +145,14 @@ const CENTRES: [number, number][][] = [
 const NAME_HEAD = ['Ash', 'Stone', 'Mill', 'Ember', 'Hollow', 'King\'s', 'Salt', 'Bright', 'Raven', 'Oak', 'Fen', 'Thorn', 'Wolf', 'Copper'];
 const NAME_TAIL = ['ford', 'bridge', 'haven', 'mere', 'wick', 'gate', 'stead', 'holm', 'fall', 'cross', 'barrow', 'well'];
 const FIRST = ['Agna', 'Bertil', 'Corra', 'Dunstan', 'Edda', 'Fenn', 'Gisla', 'Hollis', 'Isolde', 'Jory', 'Kesta', 'Lom', 'Marta', 'Nils', 'Orrin', 'Pell', 'Quill', 'Rhosyn', 'Sabeth', 'Tobin', 'Ulla', 'Wendel'];
-const LAST = ['Ashby', 'Brack', 'Coldwell', 'Dray', 'Fairweather', 'Greaves', 'Hale', 'Inchcape', 'Marrow', 'Penhale', 'Rook', 'Tallow', 'Underhill', 'Vane'];
-const INN_A = ['Gilded', 'Drowsy', 'Laughing', 'Crooked', 'Silver', 'Wandering', 'Three-Legged', 'Blue', 'Lucky', 'Sleeping'];
+const LAST = ['Ashby', 'Brack', 'Coldwell', 'Dray', 'Greaves', 'Hale', 'Inchcape', 'Marrow', 'Penhale', 'Rook', 'Tallow', 'Underhill', 'Vane'];
+// Short words: a long inn name wraps to three lines on a phone and runs into
+// the marker below it ("The Wandering Anchor" did).
+const INN_A = ['Gilded', 'Drowsy', 'Crooked', 'Silver', 'Blue', 'Lucky', 'Red', 'Old', 'Merry', 'Black'];
 const INN_B = ['Flagon', 'Stag', 'Lantern', 'Goose', 'Kettle', 'Anchor', 'Badger', 'Crown', 'Mare', 'Hearth'];
-const TEMPLE = ['the Dawn', 'the Lantern', 'the Harvest', 'the Still Water', 'the Forge Father', 'the Watchful Eye'];
+// Short, because a marker's label wraps on a phone and a three-line label
+// runs into the marker below it.
+const TEMPLE = ['Dawn', 'Lantern', 'Harvest', 'Tide', 'Forge', 'Watcher'];
 
 const RUMOURS = [
   'The miller swears the river ran red for an hour last spring, and nobody upstream will say why.',
@@ -146,7 +205,21 @@ function person(dice: Dice, emoji: string): NpcRef & { first: string } {
 }
 
 /** One venue: its marker, and the scenes behind it. */
-function venue(kind: VenueKind, id: Id, dice: Dice, ctx: { town: string; size: CitySize; level: number; hub: Id; used: Set<string> }): Built {
+interface VenueCtx { town: string; size: CitySize; level: number; hub: Id; used: Set<string>; rumours: Rumour[] }
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/** A lead, as the journal entry that records it. */
+function leadEffect(lead: Lead): Effect {
+  return { kind: 'journal', entry: { id: `lead-${slug(lead.title)}`, kind: 'lead', title: lead.title, body: lead.text,
+    ...(lead.flag ? { resolvedBy: lead.flag } : {}) } };
+}
+
+/** Story flags as requirements: 'flag' must be set, '!flag' must not. */
+const needs = (when: string[] | undefined): Requirement[] =>
+  (when ?? []).map((w) => (w.startsWith('!') ? { kind: 'notFlag', flag: w.slice(1) } : { kind: 'flag', flag: w }));
+
+function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
   const W = wares();
   const back = (label = 'Back out into the street') => ({ id: 'leave', label, to: ctx.hub });
   const shop = (title: string, stock: Id[], who: NpcRef, intro: string, icon: string): Built => ({
@@ -155,10 +228,16 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: { town: string; size: C
   });
   switch (kind) {
     case 'inn': {
-      const name = `The ${dice.pick(INN_A)} ${dice.pick(INN_B)}`;
+      // Never two inns of one name in a town.
+      let name = `The ${dice.pick(INN_A)} ${dice.pick(INN_B)}`;
+      while (ctx.used.has(name)) name = `The ${dice.pick(INN_A)} ${dice.pick(INN_B)}`;
+      ctx.used.add(name);
       const keeper = person(dice, '🍺');
       const room = ctx.size === 'village' ? 1 : ctx.size === 'town' ? 2 : 5;
-      const rumours = dice.shuffle([...RUMOURS]).slice(0, 3);
+      // The first inn tells the author's rumours first, and notes their leads.
+      const told = id === 'inn' ? ctx.rumours : [];
+      const rumours = [...told.map((r) => r.text), ...dice.shuffle([...RUMOURS])].slice(0, Math.max(3, told.length));
+      const leads = told.flatMap((r) => (r.lead ? [leadEffect(r.lead)] : []));
       return {
         node: { id, label: name, icon: 'tok-tavern', scene: id },
         scenes: [
@@ -172,12 +251,12 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: { town: string; size: C
           { id: `${id}-rest`, kind: 'rest', variant: 'long', next: id,
             intro: [`A narrow bed above the taproom at ${name}, and a door that bolts. You sleep until the noise downstairs is breakfast.`] },
           { id: `${id}-talk`, kind: 'story', noBack: true, text: rumours.map((r) => `"${r}"`),
-            next: [{ id: 'ok', label: 'Thank them, and drink up', to: id }] },
+            next: [{ id: 'ok', label: 'Thank them, and drink up', to: id, ...(leads.length ? { effects: leads } : {}) }] },
         ],
       };
     }
     case 'general':
-      return shop(`${dice.pick(LAST)}'s Provisions`, W.general, person(dice, '🧺'), '"Rope, oil, a good knife, a healing draught. All honest."', 'tok-market');
+      return shop(`${dice.pick(LAST)}'s Stores`, W.general, person(dice, '🧺'), '"Rope, oil, a good knife, a healing draught. All honest."', 'tok-market');
     case 'smithy':
       return shop('The Smithy', [...W.weapons, ...W.armor], person(dice, '⚒️'), 'The forge roars. "Steel or leather? I make both, and I make them to last."', 'tok-fire');
     case 'armorer':
@@ -192,9 +271,9 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: { town: string; size: C
       const priest = person(dice, '🕯️');
       const cost = 10 * ctx.level;
       return {
-        node: { id, label: `Temple of ${god}`, icon: 'tok-temple', scene: id },
+        node: { id, label: `${god} Temple`, icon: 'tok-temple', scene: id },
         scenes: [
-          { id, kind: 'dialogue', npc: priest, lines: [`**${priest.first}** looks up from the altar. "Peace be on you. What do you need of ${god}?"`],
+          { id, kind: 'dialogue', npc: priest, lines: [`**${priest.first}** looks up from the altar. "Peace be on you. What do you need of the ${god}?"`],
             next: [
               { id: 'heal', label: `Ask for healing (${cost} gold)`, to: `${id}-healed`,
                 requires: [{ kind: 'gold', atLeast: cost }], effects: [{ kind: 'gold', amount: -cost }, { kind: 'heal', amount: 'full' }] },
@@ -203,7 +282,7 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: { town: string; size: C
             ] },
           { id: `${id}-healed`, kind: 'story', noBack: true, text: ['Warm hands, an old prayer, and your wounds close like they were never there.'],
             next: [{ id: 'ok', label: 'Give thanks', to: id }] },
-          { id: `${id}-wares`, kind: 'shop', title: `Temple of ${god}`, stock: W.temple, npc: priest,
+          { id: `${id}-wares`, kind: 'shop', title: `${god} Temple`, stock: W.temple, npc: priest,
             intro: ['"Scrolls of the faith, and the draughts the sisters brew."'], next: id },
         ],
       };
@@ -254,7 +333,48 @@ export function checkCitySpec(spec: CitySpec): Required<CitySpec> {
   const level = spec.level ?? 2;
   if (!Number.isInteger(level) || level < 1 || level > 9) err(`level ${level} is not 1–9`);
   for (const v of spec.venues ?? []) if (!VENUE_KINDS.includes(v)) err(`no venue '${v}'`);
-  return { size, level, venues: spec.venues ?? [] };
+  const districts = BY_SIZE[size].districts;
+  const venues = new Set([...BY_SIZE[size].venues, ...(spec.venues ?? [])]);
+  const people = spec.people ?? [];
+  const places = spec.places ?? [];
+  const names = new Set<string>();
+  for (const p of people) {
+    if (!p.name?.trim() || !p.lines?.length) err(`a person needs a name and something to say`);
+    if (names.has(slug(p.name))) err(`two people called '${p.name}'`);
+    names.add(slug(p.name));
+    const isVenue = VENUE_KINDS.includes(p.at as VenueKind);
+    if (isVenue && !venues.has(p.at as VenueKind)) err(`${p.name} is at the ${p.at}, which a ${size} does not have (add it to venues)`);
+    if (!isVenue && !districts.includes(p.at as DistrictKind)) err(`${p.name} is in '${p.at}', which is not a district of a ${size} (${districts.join(', ')})`);
+    if (isVenue && !['inn', 'temple'].includes(p.at) && p.lead) {
+      err(`${p.name} keeps the ${p.at}, a shop, where there is no talking: put a lead at an inn, a temple, or a district`);
+    }
+  }
+  const labels = new Set<string>();
+  for (const pl of places) {
+    if (!pl.label?.trim() || !pl.text?.length) err(`a place needs a label and some text`);
+    if (labels.has(slug(pl.label))) err(`two places called '${pl.label}'`);
+    labels.add(slug(pl.label));
+    if (pl.district && !districts.includes(pl.district)) err(`'${pl.label}' is in '${pl.district}', which is not a district of a ${size} (${districts.join(', ')})`);
+    if (typeof pl.fight === 'string' && !encounterFor(pl.fight)) err(`'${pl.label}': no encounter '${pl.fight}'`);
+    if (pl.loot && pl.loot !== 'gold' && !ITEMS[pl.loot] && !itemPrice(pl.loot)) err(`'${pl.label}': no item '${pl.loot}'`);
+  }
+  // A lead nothing can close is a promise the town cannot keep.
+  const closers = new Set(places.flatMap((pl) => (pl.sets ? [pl.sets] : [])));
+  for (const lead of [...people.flatMap((p) => (p.lead ? [p.lead] : [])), ...(spec.rumours ?? []).flatMap((r) => (r.lead ? [r.lead] : []))]) {
+    if (lead.flag && !closers.has(lead.flag)) err(`the lead '${lead.title}' closes on '${lead.flag}', which no place sets`);
+  }
+  // Until towns sit inside stories, the only flags there are the town's own.
+  for (const w of [...people.flatMap((p) => p.when ?? []), ...places.flatMap((pl) => pl.when ?? [])]) {
+    const f = w.replace(/^!/, '');
+    if (!closers.has(f)) err(`'${w}' reads the flag '${f}', which nothing in the town sets`);
+  }
+  const markers = BY_SIZE[size].venues.length + (spec.venues ?? []).filter((v) => !BY_SIZE[size].venues.includes(v)).length
+    + people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + places.length;
+  if (markers > MAX_PLACES) err(`${markers} places; a town holds at most ${MAX_PLACES}`);
+  return {
+    size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
+    streets: spec.streets ?? size !== 'village',
+  };
 }
 
 /**
@@ -265,7 +385,7 @@ export function checkCitySpec(spec: CitySpec): Required<CitySpec> {
  * the guild's marker.
  */
 export function apart(a: { x: number; y: number }, b: { x: number; y: number }): boolean {
-  return Math.hypot((a.x - b.x) / 22, (a.y - b.y) / 12) >= 1;
+  return Math.hypot((a.x - b.x) / 22, (a.y - b.y) / 14) >= 1;
 }
 
 /** Most places on one map: past it, a phone screen is a mess of markers. */
@@ -276,34 +396,51 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
   const town = `${dice.pick(NAME_HEAD)}${dice.pick(NAME_TAIL)}`;
   const plan = BY_SIZE[spec.size];
   const kinds: VenueKind[] = [...plan.venues];
+  // The author's own markers count against the map's room too.
+  const authored = spec.people.filter((p) => !VENUE_KINDS.includes(p.at as VenueKind)).length + spec.places.length;
   for (const v of spec.venues) if (!kinds.includes(v)) kinds.push(v);
-  for (let i = dice.int(...plan.extra); i > 0 && kinds.length < MAX_PLACES; i--) kinds.push('landmark');
+  for (let i = dice.int(...plan.extra); i > 0 && kinds.length + authored < MAX_PLACES; i--) kinds.push('landmark');
   if (kinds.length > MAX_PLACES) throw new Error(`Bad city spec: ${kinds.length} places; at most ${MAX_PLACES}`);
 
   // Districts, and each venue to the first of its homes the town has.
   const districts = plan.districts;
   const centres = CENTRES[districts.length]!;
   const home = (k: VenueKind) => HOME[k].find((d) => districts.includes(d)) ?? districts[0]!;
-  const placed: { id: Id; kind: VenueKind; d: number; x: number; y: number }[] = [];
+  type Kind = VenueKind | 'person' | 'place';
+  const placed: { id: Id; kind: Kind; d: number; x: number; y: number }[] = [];
   const counts = new Map<VenueKind, number>();
-  for (const kind of kinds) {
-    const d = districts.indexOf(home(kind));
+  const put = (id: Id, kind: Kind, d: number) => {
     const [cx, cy] = centres[d]!;
-    const n = (counts.get(kind) ?? 0) + 1;
-    counts.set(kind, n);
-    const id = n === 1 ? kind : `${kind}-${n}`;
-    // A spot near the district's centre, clear of every marker already down.
+    /*
+     * The free spot nearest the district's centre, from a grid over the whole
+     * map, with a little jitter so two towns do not look stamped from one
+     * mould. Random tries near the centre gave up on a crowded map: a city
+     * rerolled 2.4 times a town once the spacing was set for a phone.
+     * Clear of the edges, too: a label is wider than its marker, and the
+     * town's name sits across the top of the map.
+     */
     let spot: [number, number] | undefined;
-    for (let tries = 0; tries < 60 && !spot; tries++) {
-      const a = dice.float() * Math.PI * 2, r = 8 + dice.float() * 22;
-      const x = Math.round(Math.min(90, Math.max(10, cx + Math.cos(a) * r)));
-      // Off the bottom edge: the map's hint bar sits over the last tenth.
-      const y = Math.round(Math.min(82, Math.max(10, cy + Math.sin(a) * r)));
-      if (placed.every((p) => apart(p, { x, y }))) spot = [x, y];
+    let best = Infinity;
+    for (let x = 14; x <= 86; x += 4) {
+      for (let y = 16; y <= 82; y += 3) {
+        if (!placed.every((p) => apart(p, { x, y }))) continue;
+        const score = Math.hypot((x - cx) / 22, (y - cy) / 14) + dice.float() * 0.6;
+        if (score < best) { best = score; spot = [x, y]; }
+      }
     }
     if (!spot) throw new Reroll(`no room for ${id}`);
     placed.push({ id, kind, d, x: spot[0], y: spot[1] });
+  };
+  for (const kind of kinds) {
+    const n = (counts.get(kind) ?? 0) + 1;
+    counts.set(kind, n);
+    put(n === 1 ? kind : `${kind}-${n}`, kind, districts.indexOf(home(kind)));
   }
+  // The author's own: people with a marker of their own, and places.
+  for (const p of spec.people) {
+    if (!VENUE_KINDS.includes(p.at as VenueKind)) put(`person-${slug(p.name)}`, 'person', districts.indexOf(p.at as DistrictKind));
+  }
+  for (const pl of spec.places) put(`place-${slug(pl.label)}`, 'place', pl.district ? districts.indexOf(pl.district) : 0);
 
   // Roads: within a district, each place to its nearest neighbour already
   // joined; then each district to the next, nearest pair to nearest pair.
@@ -325,11 +462,100 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
 
   const scenes: Record<Id, Scene> = {};
   const nodes: ExploreNode[] = [];
-  const ctx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>() };
+  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours };
+  const fightFor = (f: CustomPlace['fight']): Id => {
+    if (typeof f === 'string') return f;
+    const enc = generateEncounter({
+      budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
+      maxCount: maxCountFor(spec.level), partyLevel: spec.level, ...(f?.brief ? { brief: f.brief } : {}),
+    }, seedRng(Math.floor(dice.float() * 2 ** 31))).value;
+    return generatedEncounterId(enc.members);
+  };
   for (const p of placed) {
+    if (p.kind === 'person' || p.kind === 'place') continue;
     const v = venue(p.kind, p.id, dice, ctx);
     nodes.push({ ...v.node, x: p.x, y: p.y });
     for (const s of v.scenes) scenes[s.id] = s;
+  }
+
+  // People: at a venue, or at a marker of their own.
+  for (const who of spec.people) {
+    const id = `person-${slug(who.name)}`;
+    const npc: NpcRef = { id: slug(who.name), name: who.name, emoji: who.emoji ?? '🧑' };
+    const atVenue = VENUE_KINDS.includes(who.at as VenueKind);
+    const venueScene = atVenue ? scenes[who.at] : undefined;
+    const keeps = atVenue && (who.keeps || venueScene?.kind === 'shop');
+    if (keeps) {
+      // They run it: the venue's own keeper stands aside.
+      if (venueScene?.kind === 'shop') Object.assign(venueScene, { npc, intro: [who.lines[0]!] });
+      if (venueScene?.kind === 'dialogue') Object.assign(venueScene, { npc, lines: who.lines });
+      if (who.at === 'temple' && scenes['temple-wares']?.kind === 'shop') Object.assign(scenes['temple-wares'], { npc });
+      continue;
+    }
+    const home = atVenue ? who.at : 'city';
+    scenes[id] = { id, kind: 'dialogue', npc, lines: who.lines, ...(atVenue ? { noBack: true } : {}),
+      next: [
+        ...(who.lead ? [{ id: 'ask', label: `Ask about ${who.lead.title.toLowerCase()}`, to: `${id}-told`, once: true, effects: [leadEffect(who.lead)] }] : []),
+        { id: 'leave', label: atVenue ? 'Leave them to it' : 'Walk on', to: home },
+      ] };
+    if (who.lead) {
+      scenes[`${id}-told`] = { id: `${id}-told`, kind: 'story', noBack: true, text: [`${who.name} tells you what they know, and you write it down.`],
+        next: [{ id: 'ok', label: 'Thank them', to: id }] };
+    }
+    if (venueScene?.kind === 'dialogue') {
+      // A choice at the venue, before its way out.
+      const talk = { id: `talk-${slug(who.name)}`, label: `Talk to ${who.name}`, to: id,
+        ...(who.when?.length ? { requires: needs(who.when), hideWhenBlocked: true } : {}) };
+      venueScene.next.splice(venueScene.next.length - 1, 0, talk);
+    } else {
+      const p = placed.find((x) => x.id === id)!;
+      nodes.push({ id, label: who.name, icon: 'tok-person', scene: id, x: p.x, y: p.y,
+        ...(who.when?.length ? { requires: needs(who.when), note: `${who.name} is not here just now.` } : {}) });
+    }
+  }
+
+  // The author's places.
+  for (const pl of spec.places) {
+    const id = `place-${slug(pl.label)}`;
+    const p = placed.find((x) => x.id === id)!;
+    const sets: Effect[] = pl.sets ? [{ kind: 'setFlag', flag: pl.sets }] : [];
+    const loot: Effect[] = !pl.loot ? [] : pl.loot === 'gold' ? [{ kind: 'gold', amount: 20 * spec.level }] : [{ kind: 'addItem', itemId: pl.loot }];
+    scenes[id] = { id, kind: 'story', noBack: true, text: pl.text,
+      next: [
+        ...(loot.length ? [{ id: 'take', label: 'Take what is there', to: 'city', once: true, effects: [...loot, ...sets] }] : []),
+        { id: 'leave', label: 'Walk on', to: 'city', ...(sets.length ? { effects: sets } : {}) },
+      ] };
+    const node: ExploreNode = { id, label: pl.label, icon: pl.icon ?? 'tok-mystery', scene: id, x: p.x, y: p.y,
+      ...(pl.hidden ? { hidden: { dc: pl.hidden } } : {}),
+      ...(pl.when?.length ? { requires: needs(pl.when), note: 'Not now.' } : {}) };
+    if (pl.fight) {
+      // A fight on the way in, once: won, the place is just the place.
+      const fid = `${id}-fight`, won = `${id}-cleared`;
+      scenes[fid] = { id: fid, kind: 'battle', encounterId: fightFor(pl.fight), mapId: 'village',
+        onWin: { to: id, effects: [{ kind: 'setFlag', flag: won }] } };
+      Object.assign(node, { scene: fid, sceneWhen: [{ if: [{ kind: 'flag', flag: won }], to: id }] });
+    }
+    nodes.push(node);
+  }
+
+  // Trouble in the streets: a scuffle on the way to a place or two in the
+  // rougher districts. Rolled last, so a town without them is built as before.
+  if (spec.streets) {
+    const rough = new Set(['warrens', 'gate', 'market'].map((d) => districts.indexOf(d as DistrictKind)).filter((i) => i >= 0));
+    const spots = dice.shuffle(nodes.filter((n) => {
+      const p = placed.find((x) => x.id === n.id);
+      return p && rough.has(p.d) && !n.hidden && !n.wandering && p.kind !== 'gate' && !n.id.startsWith('place-');
+    })).slice(0, spec.size === 'city' ? 2 : 1);
+    for (const n of spots) {
+      const bid = `street-${n.id}`;
+      const enc = generateEncounter({
+        budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
+        maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: FACTIONS.bandits!.members,
+      }, seedRng(Math.floor(dice.float() * 2 ** 31))).value;
+      scenes[bid] = { id: bid, kind: 'battle', encounterId: generatedEncounterId(enc.members), mapId: 'village',
+        intro: ['Someone steps out of an alley ahead of you, and then someone else, behind.'], onWin: { to: 'city' } };
+      n.wandering = { chance: 0.25, battleScene: bid };
+    }
   }
   const entry = placed.find((p) => p.kind === 'gate') ?? placed[0]!;
   Object.assign(scenes, {
@@ -338,9 +564,15 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     city: { id: 'city', kind: 'explore', map: { title: town, theme: 'village', art: { emoji: '🏘️' }, entry: [entry.id], roads, nodes } },
     left: { id: 'left', kind: 'ending', outcome: 'victory', text: [`${town} falls away behind you.`] },
   } satisfies Record<Id, Scene>);
+  // Somewhere to come to after a beating — only in a town with a fight in it.
+  const fights = Object.values(scenes).some((x) => x.kind === 'battle');
+  if (fights) {
+    scenes.beaten = { id: 'beaten', kind: 'story', noBack: true, text: ['You come to in the temple, bandaged, lighter by a purse, and told to be more careful.'],
+      next: [{ id: 'up', label: 'Get up', to: 'city' }] };
+  }
   return {
     id: `city-${seed}`, title: town, blurb: `A generated ${spec.size} (level ${spec.level}).`,
-    start: 'start', scenes, town: 'city', levelBand: { from: spec.level, to: spec.level },
+    start: 'start', scenes, town: 'city', ...(fights ? { defeatScene: 'beaten' } : {}), levelBand: { from: spec.level, to: spec.level },
   };
 }
 
