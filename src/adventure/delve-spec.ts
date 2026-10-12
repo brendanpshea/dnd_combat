@@ -35,6 +35,7 @@ import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, Effect
 import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
 import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
+import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
 
 export type SpecTheme = keyof typeof ROOMS;
 export const SPEC_THEMES = Object.keys(ROOMS) as SpecTheme[];
@@ -69,6 +70,19 @@ export interface RequiredRoom {
   loot?: 'gold' | Id;
 }
 
+/** A set piece to build in (see delve-pieces.ts), by its library id. */
+export interface PiecePlacement {
+  piece: Id;
+  /** 1-based; default 1. */
+  floor?: number;
+  /** Default: the piece's own. */
+  where?: PieceWhere;
+  /** Built only this often (0–1); default always. */
+  chance?: number;
+  /** The piece's parameters: a prisoner's name, a warden's title. */
+  bind?: Record<string, string>;
+}
+
 export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
   theme?: SpecTheme;
   shape?: DelveShape;
@@ -77,6 +91,7 @@ export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
   floors?: number;
   fights?: 'authored' | 'generated';
   require?: RequiredRoom[];
+  pieces?: PiecePlacement[];
 }
 
 export const MAX_FLOORS = 3;
@@ -93,6 +108,9 @@ export const ROOM_RANGE: [number, number] = [5, 16];
  */
 export const ROOM_SHARE = 0.3;
 export const BOSS_SHARE = 0.65;
+/** A set piece's named foe: between the two. NOT calibrated or measured — the
+ *  midpoint, until whole delves are played through to say otherwise. */
+export const ELITE_SHARE = 0.45;
 
 /** Throws on a spec no candidate could satisfy; returns it with defaults. */
 export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & { size?: DelveSpec['size'] } {
@@ -119,13 +137,32 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size'>> & 
     if (typeof r.fight === 'string' && !encounterFor(r.fight)) err(`required room ${i}: no encounter '${r.fight}'`);
     if (r.loot && r.loot !== 'gold' && !ITEMS[r.loot]) err(`required room ${i}: no item '${r.loot}'`);
   }
+  const pieces = spec.pieces ?? [];
+  const keyed = new Set<number>();
+  for (const [i, pl] of pieces.entries()) {
+    const piece = PIECES[pl.piece];
+    if (!piece) err(`piece ${i}: no piece '${pl.piece}' (have ${Object.keys(PIECES).join(', ')})`);
+    const floor = pl.floor ?? 1;
+    if (!Number.isInteger(floor) || floor < 1 || floor > floors) err(`piece ${i} is on floor ${floor} of ${floors}`);
+    if (pl.chance !== undefined && !(pl.chance >= 0 && pl.chance <= 1)) err(`piece ${i}: chance ${pl.chance} is not 0–1`);
+    if (piece!.gives?.includes('key')) {
+      // A key must be reachable without itself, and there is one first lock.
+      if ((pl.where ?? piece!.where) !== 'beforeLock') err(`piece ${i} (${pl.piece}) carries the key, so it must be beforeLock`);
+      if (keyed.has(floor)) err(`two pieces carry the key on floor ${floor}`);
+      if (pl.chance !== undefined && pl.chance < 1) err(`piece ${i} (${pl.piece}) carries the key, so it cannot be left to chance`);
+      keyed.add(floor);
+    }
+    for (const name of Object.keys(pl.bind ?? {})) {
+      if (!piece!.params?.[name]) err(`piece ${i} (${pl.piece}) has no parameter '${name}'`);
+    }
+  }
   // A floor's rooms minus the entrance, the goal and the key room(s).
   const minRooms = spec.rooms ?? (spec.size ? SIZE_ROOMS[spec.size][0] : SIZE_ROOMS.medium[0]);
   for (const [floor, n] of perFloor) {
     if (n > minRooms - 4) err(`${n} required rooms on floor ${floor}; a floor of ${minRooms} has room for ${minRooms - 4}`);
   }
   return {
-    level, floors, require,
+    level, floors, require, pieces,
     theme: spec.theme ?? 'stone', shape: spec.shape ?? 'classic',
     rooms: spec.rooms ?? 0, fights: spec.fights ?? 'authored', rest: spec.rest ?? 'standard',
     ...(spec.size ? { size: spec.size } : {}),
@@ -143,6 +180,8 @@ interface Graph {
   keys: { room: Id; flag: string }[];
   /** Rooms only reachable past the first lock. */
   afterLock: Set<Id>;
+  /** Rooms a set piece built: sealed, never re-rolled or re-used. */
+  pieceRooms: Set<Id>;
 }
 
 function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: string): Graph {
@@ -229,18 +268,18 @@ function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: str
     if (anchors.length === 0) throw new Reroll(`floor ${floor}: nowhere left to hang a room`);
     hang(dice.pick(anchors), id, id === 'cache' ? { door: { secret: { dc: dice.int(12, 16) } } } : {});
   }
-  return { main, links, side, keys, afterLock };
+  return { main, links, side, keys, afterLock, pieceRooms: new Set() };
 }
 
 /** Where a required room may go, given the floor's graph. */
 function placesFor(g: Graph, where: RoomPlace | undefined): Id[] {
   const goal = g.main[g.main.length - 1]!;
   const keyRooms = new Set(g.keys.map((k) => k.room));
-  const plain = [...g.main.slice(1, -1), ...g.side].filter((id) => !keyRooms.has(id) && id !== 'cache');
+  const plain = [...g.main.slice(1, -1), ...g.side].filter((id) => !keyRooms.has(id) && id !== 'cache' && !g.pieceRooms.has(id));
   switch (where) {
     case 'goal': return [goal];
     case 'main': return g.main.slice(1, -1);
-    case 'side': return g.side.filter((id) => !keyRooms.has(id) && id !== 'cache');
+    case 'side': return g.side.filter((id) => !keyRooms.has(id) && id !== 'cache' && !g.pieceRooms.has(id));
     case 'beforeLock': return plain.filter((id) => !g.afterLock.has(id));
     case 'afterLock': return plain.filter((id) => g.afterLock.has(id));
     default: return plain;
@@ -267,12 +306,15 @@ function draftSpec(seed: number, spec: Full): Module {
   // The torch is set once the module exists, so its proof sees every scene.
   const goals: [Dungeon, Id, Id][] = [];
 
-  const fightOf = (lvl: number, boss: boolean, brief?: EncounterBrief): Id => {
-    if (spec.fights === 'authored' && !brief) {
+  const fightOf = (lvl: number, boss: boolean | FightRole, brief?: EncounterBrief): Id => {
+    const role: FightRole = boss === true ? 'boss' : boss === false ? 'room' : boss;
+    // An elite has no authored pool of its own; it is built to its budget.
+    if (spec.fights === 'authored' && !brief && role !== 'elite') {
       const pools = encounterPools(lvl);
-      return dice.pick(boss ? pools.boss : pools.room);
+      return dice.pick(role === 'boss' ? pools.boss : pools.room);
     }
-    const budget = Math.round(evenBudgetFor(lvl) * (boss ? BOSS_SHARE : ROOM_SHARE));
+    const share = role === 'boss' ? BOSS_SHARE : role === 'elite' ? ELITE_SHARE : ROOM_SHARE;
+    const budget = Math.round(evenBudgetFor(lvl) * share);
     const enc = generateEncounter({
       budget, maxMemberXp: memberCapFor(lvl), maxCount: maxCountFor(lvl), partyLevel: lvl, ...(brief ? { brief } : {}),
     }, seedRng(Math.floor(dice.float() * 2 ** 31))).value;
@@ -303,6 +345,67 @@ function draftSpec(seed: number, spec: Full): Module {
       return id;
     };
 
+    // Set pieces first: they bring rooms of their own, and the most demanding
+    // claims go before anything else can take the corridors they need.
+    let pieceGivesRest = false;
+    const pieceLinks = new Set<DungeonLink>();
+    const pieceRooms: DungeonRoom[] = [];
+    // The first lock's flag, kept before a key piece can take over the key.
+    const lockFlag = g.keys[0]?.flag;
+    const onFloor = spec.pieces.map((pl, i) => ({ pl, i })).filter(({ pl }) => (pl.floor ?? 1) === f);
+    onFloor.sort((a, b) => Number(!!PIECES[b.pl.piece]!.gives?.includes('key')) - Number(!!PIECES[a.pl.piece]!.gives?.includes('key')));
+    for (const { pl, i } of onFloor) {
+      if (pl.chance !== undefined && !dice.chance(pl.chance)) continue;
+      const piece = PIECES[pl.piece]!;
+      const where = pl.where ?? piece.where;
+      const degree = (r: Id) => g.links.filter((l) => l.a === r || l.b === r).length;
+      const open = [...g.main.slice(0, -1), ...g.side].filter((id) => id !== 'cache' && !g.pieceRooms.has(id) && degree(id) < 3)
+        .filter((id) => where === 'beforeLock' ? !g.afterLock.has(id)
+          : where === 'afterLock' ? g.afterLock.has(id)
+          : where === 'main' ? g.main.includes(id)
+          : where === 'side' ? g.side.includes(id) : true);
+      /*
+       * Past the lock is often nothing but the goal (a classic floor whose lock
+       * is on the goal's own door), and a piece cannot hang off the goal. Then
+       * it hangs off a room before the lock, behind a door the SAME key opens:
+       * what `afterLock` promises is "needs the key", and this keeps it.
+       */
+      let portDoor: DungeonLink['door'];
+      if (open.length === 0 && where === 'afterLock' && lockFlag) {
+        open.push(...[...g.main.slice(0, -1), ...g.side]
+          .filter((id) => id !== 'cache' && !g.pieceRooms.has(id) && !g.afterLock.has(id) && degree(id) < 3));
+        portDoor = { locked: [{ kind: 'flag', flag: lockFlag }], note: T.door };
+      }
+      if (open.length === 0) throw new Reroll(`no ${where} corridor left on floor ${f} for ${piece.name}`);
+      const anchor = dice.pick(open);
+      const local = `p${i}`;
+      const isKey = !!piece.gives?.includes('key');
+      const built = piece.build({
+        floor: f, level, theme: spec.theme, dice,
+        room: (r) => `${local}-${r}`, scene: (sc) => `${pre}${local}-${sc}`, flag: (fl) => `${pre}${local}-${fl}`,
+        fight: (role, brief) => fightOf(level, role, brief),
+        param: (name, fallback) => pl.bind?.[name] ?? fallback,
+        ...(isKey ? { keyFlag: g.keys[0]!.flag } : {}),
+      });
+      // The generic key room stands down: the piece carries the key now.
+      if (isKey) g.keys = g.keys.slice(1);
+      if (piece.gives?.includes('rest')) pieceGivesRest = true;
+      if (portDoor && built.port.door) throw new Reroll(`${piece.name} has a door of its own and needs the floor's lock too`);
+      const door = portDoor ?? built.port.door;
+      const port: DungeonLink = { a: anchor, b: built.port.room, ...(door ? { door } : {}) };
+      for (const l of [port, ...built.links]) { g.links.push(l); pieceLinks.add(l); }
+      for (const r of built.rooms) {
+        g.pieceRooms.add(r.id);
+        if (g.afterLock.has(anchor) || portDoor) g.afterLock.add(r.id);
+        pieceRooms.push(r);
+      }
+      for (const sc of built.scenes) {
+        if (scenes[sc.id]) throw new Error(`piece '${piece.id}' reuses scene id '${sc.id}'`);
+        scenes[sc.id] = sc;
+        if (sc.kind === 'battle' && sc.loot !== false) floorXp += encounterXP(sc.encounterId);
+      }
+    }
+
     // Required rooms first, so the rolls cannot take their places.
     const placed = new Map<Id, RequiredRoom>();
     for (const r of spec.require) {
@@ -314,7 +417,7 @@ function draftSpec(seed: number, spec: Full): Module {
     }
 
     // Ambushes on a corridor or two (never through a lock).
-    for (const l of dice.shuffle(g.links.filter((x) => !x.door)).slice(0, dice.int(1, 2))) {
+    for (const l of dice.shuffle(g.links.filter((x) => !x.door && !pieceLinks.has(x))).slice(0, dice.int(1, 2))) {
       const id = `${pre}ambush-${l.a}-${l.b}`;
       l.door = { ambush: { chance: 0.4, battle: id } };
       scenes[id] = { id, kind: 'battle', encounterId: fightOf(level, false), mapId: '@room',
@@ -323,7 +426,7 @@ function draftSpec(seed: number, spec: Full): Module {
 
     const safe = new Set<Id>();
     const beforeLock = g.main.slice(1, -1).filter((id) => !g.afterLock.has(id) && !placed.has(id));
-    if (beforeLock.length) safe.add(dice.pick(beforeLock));
+    if (beforeLock.length && !pieceGivesRest) safe.add(dice.pick(beforeLock));
     const keyOf = new Map(g.keys.map((k) => [k.room, k.flag]));
     const rooms: DungeonRoom[] = [];
 
@@ -375,6 +478,7 @@ function draftSpec(seed: number, spec: Full): Module {
       } else rooms.push(contents(id));
     });
     for (const id of g.side) rooms.push(contents(id));
+    rooms.push(...pieceRooms);
 
     const campId = `${pre}camp-fight`;
     scenes[campId] = {

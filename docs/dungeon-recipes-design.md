@@ -394,3 +394,29 @@ Each step ships on its own and is useful alone.
 4. **Measure.** Whole-delve win rates per shape, depth and inhabitants, and
    adjust the budget shares from measurement rather than from the authored
    pools.
+
+## 12. Step 1 as built
+
+What shipped, and where it departed from the design above:
+
+- **Pieces are TypeScript functions** (`src/adventure/delve-pieces.ts`), built
+  through a context that names every room, scene and flag for them. This
+  removes §4.2's id-rewriting pass, which was the riskiest code in the design.
+  A spec still names pieces by id, so it stays JSON and saved runs rebuild.
+- **One port per piece, and pieces add rooms** rather than claiming generated
+  ones. Multi-port pieces (passages) and slot-claiming wait for a piece that
+  needs them.
+- **No goal pieces yet.** A goal is still a `RequiredRoom` with
+  `where: 'goal'`. Lair pieces arrive with factions (step 2).
+- **`DelveSpec.pieces`**, not a separate `DelveRecipe` type. The recipe grows
+  out of the spec when floors need different settings.
+- **`afterLock` without a room past the lock.** On a classic floor the lock is
+  often the goal's own door. The piece then hangs off a room before the lock,
+  behind a second door that takes the same key. The preview page caught this:
+  3.4 rerolls a delve before the fix, 0.3 after.
+- **`ELITE_SHARE` (0.45 of even) is a midpoint, not a measurement.** It is the
+  warden's budget.
+- **A validator gap found on the way.** A room reachable only through the
+  last floor's goal can never be entered, because winning that fight ends the
+  delve, and the validator does not flag it. Placement never anchors a piece
+  on the goal (tested), but the check belongs in the validator.
