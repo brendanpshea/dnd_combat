@@ -576,9 +576,43 @@ export const ENCOUNTERS: Record<Id, EncounterData> = {
  * monster has an entry so the two can't drift.
  */
 
+/*
+ * GENERATED ENCOUNTERS, BY ID.
+ *
+ * A battle scene names its fight by id, and some ninety places across the
+ * runtime, the proofs and the UI read a fight that way. A generated dungeon
+ * wants fights that are not in this table — drawn for its own level and budget
+ * — and the alternatives to an id were a table carried on every module, or
+ * mutating this one at runtime. Both multiply the ways two readers can
+ * disagree about what a fight is.
+ *
+ * So a generated fight's id CARRIES its roster: `gen:<monster>+<monster>...`.
+ * Monster ids never contain `+` or `:`, the id is all there is to know, and a
+ * saved run rebuilds it from nothing. `encounterFor` is the one reader.
+ */
+const GEN_PREFIX = 'gen:';
+
+/** The id of a generated fight with these members. */
+export function generatedEncounterId(members: readonly Id[]): Id {
+  return `${GEN_PREFIX}${members.join('+')}`;
+}
+
+/** A fight by id: an authored one, or a generated one rebuilt from its id. */
+export function encounterFor(encounterId: Id): EncounterData | undefined {
+  const authored = ENCOUNTERS[encounterId];
+  if (authored) return authored;
+  if (!encounterId.startsWith(GEN_PREFIX)) return undefined;
+  const members = encounterId.slice(GEN_PREFIX.length).split('+').filter(Boolean);
+  if (members.length === 0 || members.some((m) => !MONSTERS[m])) return undefined;
+  // Named after its most dangerous member, the way a party would name it.
+  const lead = [...members].sort((a, b) => (MONSTER_XP[b] ?? 0) - (MONSTER_XP[a] ?? 0))[0]!;
+  const name = members.length === 1 ? MONSTERS[lead]!.name : `${MONSTERS[lead]!.name} and company`;
+  return { id: encounterId, name, members, suggestedLevel: 0 };
+}
+
 /** Total XP an encounter is worth (sum of member XP). */
 export function encounterXP(encounterId: Id): number {
-  const enc = ENCOUNTERS[encounterId];
+  const enc = encounterFor(encounterId);
   if (!enc) return 0;
   return enc.members.reduce((sum, mid) => sum + (MONSTER_XP[mid] ?? 0), 0);
 }
@@ -602,7 +636,7 @@ const NO_TREASURE_TYPES = new Set<CreatureType>(['beast', 'elemental']);
 /** The share of an encounter's XP that comes from loot-bearing creatures — the
  *  basis for coin and valuables. An all-beast fight yields 0 (XP only). */
 export function encounterCoinXP(encounterId: Id): number {
-  const enc = ENCOUNTERS[encounterId];
+  const enc = encounterFor(encounterId);
   if (!enc) return 0;
   return membersCoinXP(enc.members);
 }
@@ -619,7 +653,7 @@ export function membersCoinXP(members: readonly Id[]): number {
 
 /** Place an encounter on a rank, spread across the files. */
 export function buildEncounter(encounterId: Id, team: TeamId, rank: number): Combatant[] {
-  const enc = ENCOUNTERS[encounterId];
+  const enc = encounterFor(encounterId);
   if (!enc) throw new Error(`Unknown encounter: ${encounterId}`);
   const files = [3, 1, 5, 2, 6, 0, 7, 4];
   return enc.members.map((mid, i) =>
