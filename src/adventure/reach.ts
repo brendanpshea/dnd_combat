@@ -528,7 +528,7 @@ function searchModule(
   // settled: such a redirect is taken both ways. So is one that reads a tally
   // (a `count`), which no bit can hold: a marker may route on the valley's
   // regard, and both ways are searched.
-  const untracked = (r: Requirement) => r.kind === 'count' ||
+  const untracked = (r: Requirement) => r.kind === 'count' || r.kind === 'partyLevel' ||
     ((r.kind === 'flag' || r.kind === 'notFlag') && !facts.has(`flag:${r.flag}`) && !settled.has(r.flag));
   const factNames = [...facts.keys()];
 
@@ -1197,6 +1197,7 @@ function searchModule(
   const unseen = (r: Requirement): string | null => {
     if (r.kind === 'item' || r.kind === 'gold' || r.kind === 'classInParty' || r.kind === 'speciesInParty') return r.kind;
     if (r.kind === 'count') return `the tally '${r.flag}'`;
+    if (r.kind === 'partyLevel') return 'the party\'s level';
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !facts.has(`flag:${r.flag}`)) return `the counted flag '${r.flag}'`;
     return null;
   };

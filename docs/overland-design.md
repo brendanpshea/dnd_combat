@@ -80,3 +80,24 @@ night — the town flag, so a party that arrives late finds the shops shut and
 the gates barred — and at 8 the next morning, day again. A long rest, or
 sitting up at an inn till dawn, makes it morning; waiting at the inn for
 nightfall makes it dusk. The map's title shows the hour. No rations.
+
+## Camps by level (built)
+
+Each band has a **tier**: the party level it is a fair fight for — kobolds
+and goblins 1, bandits and lizardfolk 2, gnolls and cultists 3, the witch
+circle 4, the ember court 5. A county rolls bands on suitable ground within
+a level of its own, and a camp's fight is built at the band's tier, not
+the party's.
+
+In play, a camp goes by the party's **current** level (`partyLevel`, a new
+requirement the proofs treat as either-way):
+
+- **Weaker than the band:** prey. The hostile come for you, sure of
+  themselves; the calm demand a toll (5 gold a tier) — pay, refuse and
+  fight, or back away.
+- **Within a level:** as the band is disposed (rolled at build): fight, or
+  sit and talk.
+- **Two levels past it:** they bow. Most pay to be let be (10 gold a tier)
+  and will talk; goblins and kobolds bolt and leave their camp to you.
+
+So the goblins that jumped a level-1 party scatter before it at level 3.
