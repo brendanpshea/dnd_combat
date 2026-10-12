@@ -189,7 +189,9 @@ function sceneWords(scene: Scene, can: (reqs: Requirement[] | undefined) => bool
   if (scene.kind === 'dialogue') out.push(scene.npc.name);
   if (scene.kind === 'challenge') for (const a of scene.approaches) if (shown(a)) out.push(a.label, a.hint ?? '');
   if (scene.kind === 'battle' && scene.parley?.label) out.push(scene.parley.label);
-  if (scene.kind === 'ending') for (const sl of scene.slides ?? []) if (can(sl.if)) out.push(sl.text);
+  if (scene.kind === 'ending') for (const sl of scene.slides ?? []) {
+    if ('if' in sl) { if (can(sl.if)) out.push(sl.text); } else for (const c of sl.cases) if (can(c.if ?? [])) out.push(c.text);
+  }
   if (scene.kind === 'explore') for (const n of scene.map.nodes) out.push(n.label, n.note ?? '');
   return out.join('\n');
 }

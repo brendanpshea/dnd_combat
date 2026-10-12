@@ -157,7 +157,10 @@ describe('regard follows what an NPC saw', () => {
     } }, NPCS);
     const flagged = (mod: Module) => validateModule(mod).some((e) => e.includes("scout's regard"));
     const att = { kind: 'npc', npc: 'scout', attitude: 1 };
-    expect(flagged(m({ effects: [att] }))).toBe(true);
+    // An NPC's own attitude effect counts only once they know the company:
+    // guarded by construction. A raw tally of it, by hand, is not.
+    expect(flagged(m({ effects: [att] }))).toBe(false);
+    expect(flagged(m({ effects: [{ kind: 'addFlag', flag: 'npc.scout.attitude', amount: 1 }] }))).toBe(true);
     expect(flagged(m({ effects: [att], requires: [{ kind: 'npc', npc: 'scout', met: true }] }))).toBe(false);
     expect(flagged(m({ effects: [{ ...att, met: true }] }))).toBe(false);
     expect(flagged(m({ effects: [att] }, ['scout']))).toBe(false);

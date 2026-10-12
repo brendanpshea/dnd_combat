@@ -108,7 +108,9 @@ export function maxXpReport(
   const hit = key ? cache.get(key) : undefined;
   if (hit) return hit;
 
-  const battleXp = (sc: BattleScene) => (sc.loot === false ? 0 : xpAward(sc.encounterId, partySize));
+  // A fight with variants pays, at most, its richest.
+  const battleXp = (sc: BattleScene) => (sc.loot === false ? 0
+    : Math.max(...[sc.encounterId, ...(sc.encounterWhen ?? []).map((v) => v.encounterId)].map((e) => xpAward(e, partySize))));
   const trips = sideTrips(module, battleXp);
   // At a fight's door, the fight has not paid yet: nor has its side trip,
   // when its win pays (a trip pays once, and its payers are not met after).

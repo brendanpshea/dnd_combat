@@ -31,7 +31,7 @@ import {
 import {
   HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, NIGHT,
   type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
-  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph,
+  type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph, type Slide,
 } from './types.js';
 import { linkKey, linksFrom, roomOf } from './dungeon.js';
 import { isNpcFlag } from './npcs.js';
@@ -454,6 +454,7 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       }
       break;
     case 'addFlag': {
+      if (eff.ifSet && !state.flags[eff.ifSet]) break;
       const cur = state.flags[eff.flag];
       const value = (typeof cur === 'number' ? cur : cur === true ? 1 : 0) + eff.amount;
       state.flags[eff.flag] = value;
@@ -496,7 +497,7 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
     case 'check': case 'challenge': events.push({ type: 'text', paragraphs: introParagraphs(state, scene) }); break;
     case 'battle':
       if (scene.intro || scene.again) events.push({ type: 'text', paragraphs: introParagraphs(state, scene) });
-      events.push({ type: 'startBattle', encounterId: scene.encounterId, mapId: scene.mapId, sceneId });
+      events.push({ type: 'startBattle', encounterId: battleEncounter(state, scene), mapId: scene.mapId, sceneId });
       break;
     case 'shop':
       // Caught stealing here once: the door is as far as the party gets.
@@ -526,9 +527,22 @@ export function enterScene(state: AdventureState, module: Module, sceneId: Id): 
 }
 
 /** An ending's paragraphs: its text, then each slide whose requirements hold. */
+/** An ending's slides as plain conditional lines, a card's cases each one
+ *  (with its own `if` only): for tools that read what can be said, not the
+ *  order a card picks in. */
+export function slideLines(slides: readonly Slide[] | undefined): Array<{ if: Requirement[]; text: Paragraph }> {
+  return (slides ?? []).flatMap((sl) => ('if' in sl ? [sl] : sl.cases.map((c) => ({ if: c.if ?? [], text: c.text }))));
+}
+
 export function endingText(state: AdventureState, scene: Extract<Scene, { kind: 'ending' }>): string[] {
-  // Slides are conditional paragraphs by another name.
-  return paragraphsFor(state, [...scene.text, ...(scene.slides ?? [])]);
+  // Slides are conditional paragraphs by another name; a card, the first of
+  // its cases that holds.
+  const slides = (scene.slides ?? []).flatMap((sl): Para[] => {
+    if ('if' in sl) return [sl];
+    const hit = sl.cases.find((c) => (c.if ?? []).every((r) => requirementMet(state, r)));
+    return hit ? [hit.text] : [];
+  });
+  return paragraphsFor(state, [...scene.text, ...slides]);
 }
 
 /** The scenes that are places: a map the party stands on, and returns to. */
@@ -1312,6 +1326,11 @@ export function battleMap(state: AdventureState, module: Module): MapData {
 // --- Driver callbacks (battle / shop / rest) --------------------------------
 
 /** After the driver runs the battle for the current `battle` scene. */
+/** Who a battle is against, as things stand (its `encounterWhen`). */
+export function battleEncounter(state: AdventureState, scene: Extract<Scene, { kind: 'battle' }>): Id {
+  return scene.encounterWhen?.find((v) => v.if.every((r) => requirementMet(state, r)))?.encounterId ?? scene.encounterId;
+}
+
 /** Has this run already won this battle? A won fight pays once: its
  *  encounter XP and loot (the caller's), and the reward effects of its win. */
 export const battleWonBefore = (state: AdventureState, sceneId: Id): boolean =>
@@ -1413,7 +1432,7 @@ export function battleOptions(state: AdventureState, module: Module): BattleOpti
     };
   }
   if (!scene.surprise && !state.consumedChoices.includes(doorKey(scene.id, 'sneak'))) {
-    out.sneak = { dc: sneakDc(scene.encounterId) };
+    out.sneak = { dc: sneakDc(battleEncounter(state, scene)) };
   }
   const hub = state.hub;
   // Caught out (the scene's own ambush, or a sneak-up rolled at its door)

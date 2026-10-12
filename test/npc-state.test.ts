@@ -118,6 +118,10 @@ describe('NPC state', () => {
     expect(validateModule(m)).toEqual([]);
     const s = startAdventure(newCampaign(1), m);
     enterScene(s, m, 'a');
+    // Regard moves only in someone who knows the company.
+    choose(s, m, 'snub');
+    expect(s.flags[npcAttitudeFlag('scout')]).toBeUndefined();
+    s.flags[npcMetFlag('scout')] = true;
     const open = () => ['warm', 'cold'].filter((id) => !blockedReason(s, (m.scenes.a as Extract<Scene, { kind: 'story' }>).next.find((c) => c.id === id)!.requires));
     expect(open()).toEqual([]);
     choose(s, m, 'snub');
@@ -125,7 +129,7 @@ describe('NPC state', () => {
     expect(open()).toEqual(['cold']);
     choose(s, m, 'help'); choose(s, m, 'help'); choose(s, m, 'help');
     expect(open()).toEqual(['warm']);
-    expect(carriedFlags(m, s)).toEqual({ [npcAttitudeFlag('scout')]: 1 });
+    expect(carriedFlags(m, s)).toEqual({ [npcMetFlag('scout')]: true, [npcAttitudeFlag('scout')]: 1 });
   });
 });
 

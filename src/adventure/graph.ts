@@ -86,7 +86,7 @@ export function requirementsOf(scene: Scene): Requirement[] {
       n.sceneWhen?.forEach((w) => out.push(...w.if));
     }); break;
     case 'ending':
-      for (const s of scene.slides ?? []) out.push(...s.if);
+      for (const s of scene.slides ?? []) out.push(...('if' in s ? s.if : s.cases.flatMap((c) => c.if ?? [])));
       break;
     case 'dungeon':
       for (const r of scene.dungeon.rooms) out.push(...(r.event?.until ?? []));

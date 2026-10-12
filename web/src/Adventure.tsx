@@ -35,6 +35,7 @@ import {
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
   requirementMet,
+  battleEncounter,
 } from '../../src/adventure/runtime.js';
 import type { Module, Scene, CampRule, TownGround, LandGround } from '../../src/adventure/types.js';
 import type { BattleProps } from './App.js';
@@ -227,7 +228,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
       // again from. Taken here, as the intro opens, so it holds the party
       // exactly as it walked up — before the dice, and before any parley.
       if (scene.kind === 'battle') {
-        saveCheckpointWeb(state, encounterFor(scene.encounterId)?.name ?? 'a fight');
+        saveCheckpointWeb(state, encounterFor(battleEncounter(state, scene))?.name ?? 'a fight');
       }
     }
     setShopFocus('all'); // a fresh shop starts on the whole party
@@ -374,7 +375,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
 
   // --- Battle scene: a pre-fight intro, then the shared Battle component ---
   if (scene.kind === 'battle') {
-    const enc = encounterFor(scene.encounterId);
+    const enc = encounterFor(battleEncounter(state, scene));
     // The door of the fight — unless a parley or a sneak is mid-roll, whose
     // dice and result play over the backdrop below before the door returns.
     if (armedBattle !== scene.id && !dice && overlays.length === 0) {
@@ -406,7 +407,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         // The party, then whoever is travelling with it, then the enemy.
         const heroes = buildCampaignParty(campaign);
         const allies = companionCombatants(state, module, parseMap(board), heroes.map((h) => h.position));
-        return [...heroes, ...allies, ...buildEncounter(scene.encounterId, 'team2', board.rows.length - 1)];
+        return [...heroes, ...allies, ...buildEncounter(battleEncounter(state, scene), 'team2', board.rows.length - 1)];
       })(),
       // Authored ambush, or the result of sneaking up at the door.
       ...(surprise ? { surprisedTeam: (surprise === 'enemies' ? 'team2' : 'team1') as TeamId } : {}),
@@ -417,7 +418,7 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
         aiTeams={new Set<TeamId>(['team2'])}
         aiLevel={campaign.storyMode ? 'easy' : 'normal'}
         storyMode={campaign.storyMode}
-        mapLabel={`${enc?.name ?? scene.encounterId} — ${board.name}`}
+        mapLabel={`${enc?.name ?? battleEncounter(state, scene)} — ${board.name}`}
         theme={board.theme}
         doneLabel="Continue"
         onExit={onExit}
@@ -451,13 +452,13 @@ function AdventureGame({ Battle, module, state, onExit, onContinue }: Props & { 
               readBackSurvivors(campaign, survivors); // gear persists; no rewards
             } else {
               victory = applyAdventureVictory(
-                campaign, survivors, battleScene.encounterId, combat.state.rng, battleScene.loot?.bonusTier,
+                campaign, survivors, battleEncounter(state, battleScene), combat.state.rng, battleScene.loot?.bonusTier,
               );
             }
           }
           readBackCompanions(state, Object.values(combat.state.combatants));
           setArmedBattle(null); // re-arm the intro if a later fight reuses this
-          setLostFight(won ? null : (encounterFor(battleScene.encounterId)?.name ?? 'the fight'));
+          setLostFight(won ? null : (encounterFor(battleEncounter(state, battleScene))?.name ?? 'the fight'));
           // Loot ceremony (won fights with rewards), then the onWin/onLoss beat.
           const outcome = resolveBattle(state, module, won);
           markRevisit(outcome);
@@ -707,7 +708,7 @@ function BattleIntro(
     onFight: () => void; onParley: () => void; onSneak: () => void; onFallBack: () => void; onExit: () => void;
   },
 ) {
-  const enc = encounterFor(scene.encounterId);
+  const enc = encounterFor(battleEncounter(state, scene));
   // Distinct monster types in roster order, with how many of each.
   const roster: Array<{ id: string; count: number }> = [];
   for (const id of enc?.members ?? []) {

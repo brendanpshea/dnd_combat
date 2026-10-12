@@ -23,6 +23,7 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   dungeonExits, dungeonProgress, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere, leaveDungeon,
   type AdventureState, type AdventureEvent,
+  battleEncounter,
 } from '../../adventure/runtime.js';
 import type { Module } from '../../adventure/types.js';
 import { runBattle } from './battle.js';
@@ -150,13 +151,13 @@ async function main() {
       const idx = await pickIndex(rl, acts.map((a) => a.label), auto);
       render(acts[idx]!.run(), campaign);
     } else if (scene.kind === 'battle') {
-      const enc = encounterFor(scene.encounterId);
-      console.log(`\n⚔️  ${enc?.name ?? scene.encounterId} — fight!`);
+      const enc = encounterFor(battleEncounter(state, scene));
+      console.log(`\n⚔️  ${enc?.name ?? battleEncounter(state, scene)} — fight!`);
       const map = battleMap(state, module);
       const combat = new Combat({
         seed: battleSeed(state, scene.id),
         map,
-        combatants: [...buildCampaignParty(campaign), ...buildEncounter(scene.encounterId, 'team2', map.rows.length - 1)],
+        combatants: [...buildCampaignParty(campaign), ...buildEncounter(battleEncounter(state, scene), 'team2', map.rows.length - 1)],
       });
       const aiTeams = new Set<string>(['team2']);
       if (auto) aiTeams.add('team1');
@@ -169,7 +170,7 @@ async function main() {
         // advanced `stage` until it threw "Campaign already complete".
         const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
         if (scene.loot === false) readBackSurvivors(campaign, survivors);
-        else applyAdventureVictory(campaign, survivors, scene.encounterId, combat.state.rng, scene.loot?.bonusTier);
+        else applyAdventureVictory(campaign, survivors, battleEncounter(state, scene), combat.state.rng, scene.loot?.bonusTier);
       }
       render(resolveBattle(state, module, won), campaign);
     } else if (scene.kind === 'shop' || scene.kind === 'rest') {
