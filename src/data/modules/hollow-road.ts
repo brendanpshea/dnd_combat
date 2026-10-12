@@ -1,34 +1,6 @@
 /**
- * "The Hollow Road" — the campaign module: an original, SRD-safe ~2-hour
- * adventure in three acts (village hub → wilderness trail → raider hideout →
- * boss), the deliverable that proves the whole adventure system end to end.
- *
- * Design targets from docs/adventure-mode-plan.md: ~25 scenes, 3 explore maps,
- * combat never more than 3–4 scenes away, two avoidable fights, skill variety
- * across the 18-skill list, and an epilogue that reads flags back so choices
- * visibly mattered. No new stat blocks — every encounter is composed from the
- * existing bestiary. All content is original; no published module text is reproduced.
- *
- * LEVEL BAND 1→3: fights carry the leveling, with no milestone floors
- * (docs/module-writing-guide.md, "Levels come from fights"). Every way past a
- * fight pays what the fight would have (`avoidedFightXP`): the spy's crew
- * shouted down or caught, the den's gate slipped, Vex turned so that Hask
- * stands aside from the chief's guard, the road-out goblins stared down. A company
- * that fights its road reaches 2nd on the marsh road, and every company
- * reaches 3rd before the chief's hall: the den's
- * gate (fought or slipped) and the pit on its forced spine carry about 560 XP
- * a head between them, enough to lift a company that walked past every side
- * fight (the mill, the barrow, the thicket, the toads, the kennels) to 3rd
- * just as it wins the pit. The side fights buy a margin, not the level.
- *
- * MONSTER VARIETY is a goal in itself — this module is a tour of the bestiary,
- * a distinct roster per fight (goblins, human crooks, the marsh's toads and
- * risen dead, a hag-thrall lizardfolk war-party, a bugbear/gnoll gate, a chained
- * ogre pit-brute and its berserker champion, kenneled hyenas, and a green-hag-and-warlord finale) across a
- * spread of maps (road, village square, bog ford, ruins, corridor, fire-pit). The connective story explains
- * *why* beasts, undead and lizardfolk fight for "bandits": chief Vargan, a
- * Thornwick-born reed-cutter, sold the reed-cutters' common marsh to the
- * Reedwife, a green hag, for coin and monsters. She branded him like the rest.
+ * The Hollow Road: chapter one of the trilogy (docs/trilogy-plan.md).
+ * Why it is built as it is, scene by scene: docs/chapters/hollow-road-notes.md.
  */
 import type { Module, Scene, Effect, Choice, Para, Requirement } from '../../adventure/types.js';
 import { HUB_REF } from '../../adventure/types.js';
@@ -54,11 +26,6 @@ const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-gate') 
 /** Past the gate by any road: the gate-signal lead is done with, used or not. */
 const SIGNAL_SPENT: Effect = { kind: 'setFlag', flag: 'signal-spent' };
 
-/** The pens, as a lead: Vex points the way, but only while the pen is still
- *  an open question (`pens-settled` unset). Looking in it, the dark moon, or
- *  the hag's death (no way back into the den after it) settles it. */
-// Proved from every state (no `takenBy`): its taking needs no flag of its own,
-// and each tracked flag doubles the search.
 const PENS_LEAD: Effect = { kind: 'journal', entry: { id: 'lead-pens', kind: 'quest', resolvedBy: 'pens-settled',
   stages: [{ text: 'Find out what became of the captives', done: [{ kind: 'flag', flag: 'pens-settled' }] }],
   title: 'The Pens Behind the Kennels',
@@ -85,13 +52,6 @@ const WREN_ON_VEX: Para[] = [
     text: '"You got the horse off me. Let me pay some of that back." She looks at the den-mud on your boots. "You\'ve been inside already, so you\'ve met {vex} at his fire. He hates the chief worse than you do. Whatever you said to him, he\'ll remember it when the chief calls for his guards."' },
 ];
 
-/** The chief and the hag go down together, in every version of the hall. He
- *  is beaten, not dead: what becomes of him is the company's call
- *  (`vargan-beaten`), and finishing him there is an execution (`dead`), as
- *  it is for a chief who turned on her. The hag's death also closes the
- *  pens lead: there is no going back into the den after it. */
-// She dies as a body, not a heap of reeds: in Part 3 her sister's seeming
-// melts into wet reeds and a puddle, and the two must not read alike.
 const BOSS_FALLS = 'The chief\'s axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.';
 /** The unguarded hall's whistled help, ended (`boss-unguarded`). */
 // The guarded hall: the chief's guard and a raider fight beside him.
@@ -128,10 +88,6 @@ const turnUnread = (also: Requirement[]): Choice[] => [
     requires: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, ...also], hideWhenBlocked: true,
     check: { skill: 'persuasion', dc: 14, failTo: 'boss-unguarded' } },
 ];
-/** Marching him down to the reeve (`spared`). {wren} asked for something to
- *  arrest, and thinks the better of the company for it — if she knows the
- *  company at all (pulled out from under the horse): regard moves only in
- *  someone met, by the engine's rule, not a twin of the choice. */
 const BIND_VARGAN: Choice[] = [
   { id: 'reeve', label: 'Bind him and march him down to the reeve', to: 'aftermath',
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
@@ -142,13 +98,6 @@ const END_VARGAN: Choice[] = [
   { id: 'end', label: 'End it here', to: 'aftermath',
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
 ];
-/** Letting him go: `spared` too, as far as the rest of the campaign cares,
- *  and `vargan-let-go` for this chapter's square and ending. The reeve pays nothing for a chief he cannot see, so the
- *  bounty is settled there and then (`got-bounty`). A company that drew the
- *  retainer at the board (`bounty`) gives it back: the reeve asks for it in
- *  the square (`aftermath`), and the coin goes as the company walks in.
- *  (Charged on the way in, not as a claim in the square: an unsettled bounty
- *  there is a state the search would carry through the whole square.) */
 const FREE_VARGAN = (label: string): Choice[] => [
   { id: 'free', label, hint: 'The reeve pays for a chief he can see.', to: 'aftermath', requires: [{ kind: 'notFlag', flag: 'bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'setFlag', flag: 'vargan-let-go' }, { kind: 'setFlag', flag: 'got-bounty' }] },
@@ -160,21 +109,6 @@ const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and g
 /** And hers: the purse at her belt. */
 const REEDWIFE_HOARD = 'A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.';
 const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' }];
-/**
- * Binding her instead: with {vargan} turned on her, his bargain is broken and
- * only the older one stands. Every company that gets here has heard its price
- * from her own mouth (`boss-approach`). Said back to her at the door of the
- * fight, it holds her (a parley: one try between both fights, `bind-hag`, so
- * a miss is the fight and the kill, never a second roll). Its success pays
- * what the fight would have, and carries the fight's story effects (not her
- * purse, which she keeps). The parley has no scene of its own: it lands on
- * `vargan-fate`, so the reach search gains no layer.
- *
- * Two skills reach it (docs/design-decisions.md, "One try at the big
- * mercies"): the parley is Arcana, the words as a spell; `vargan-turns` offers
- * the same try as Religion, the words as a rite (`bind-hag-rite`, a check
- * spending the same `bind-hag`). Either spends both.
- */
 const BIND_HAG_WON = (encounter: string): Effect[] =>
   [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'pens-settled' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
 const BIND_HAG_HELD = (after: string): Para[] => [
@@ -192,10 +126,6 @@ const BIND_HAG = (encounter: string, after: string): NonNullable<Extract<Scene, 
       ...BIND_HAG_HELD(after),
     ] },
 });
-/** The same binding as a rite (Religion), offered before the fight, before
- *  she whistles in her guard. A miss is that fight, the parley spent. Bound,
- *  she whistles as she goes, so the chief's guard answers her whistle and
- *  never fights the company, as at the fight's door (docs/canon.md, Hask). */
 const BIND_HAG_RITE_CHOICE = (to: string): Choice => ({
   id: 'rite', label: '[Religion DC 15] Bind her to her old price as a rite: one {door-price} a winter, by their door',
   hint: 'One try at binding her, whichever way the words are said.', to, attempt: 'bind-hag' });
@@ -210,12 +140,6 @@ const REEDWIFE_LOST = [
   'You wake behind the throne, where somebody dragged you. {vargan} sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."',
 ];
 
-/**
- * The claims in the square after the chief falls. Each pays out once, shows a
- * one-line result beat, and comes back to the short `aftermath-hub` instead of
- * replaying the homecoming. The bounty is owed to whoever killed the chief; a
- * party that took the 25-gold retainer at the board collects the balance.
- */
 const AFTERMATH_CLAIMS: Choice[] = [
   { id: 'bounty', label: 'Let the reeve count out the bounty', to: 'claim-bounty',
     requires: [{ kind: 'notFlag', flag: 'bounty' }, { kind: 'notFlag', flag: 'got-bounty' }], hideWhenBlocked: true,
@@ -231,21 +155,6 @@ const AFTERMATH_CLAIMS: Choice[] = [
   { id: 'scout', label: 'Look for {wren} in the crowd', to: 'claim-scout', hideWhenBlocked: true,
     requires: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'notFlag', flag: 'got-scout' }],
     effects: [{ kind: 'gold', amount: factValue('scout-reward') }, { kind: 'setFlag', flag: 'got-scout' }] },
-  // `won`: every road to the victory ending runs through here, so the next
-  // chapters can tell a company that broke the Ashfang from a cold start.
-  // Shown once the bounty is settled (paid, or forfeit for a freed chief), so
-  // no company walks off and leaves it on the well by accident. Here too
-  // the scout under the horse is settled for the rest of the campaign: past
-  // the fifth morning and never pulled out, she died there ({wren} `lost`,
-  // as covering her already said). Before it, she lived, and a scout the
-  // company stepped round holds it against them (−2, booked here rather
-  // than at `wounded` so it lands only on a {wren} who lived to hold it;
-  // `hearsay` only to the validator's eye: she saw it herself, at `wounded`).
-  // And the pen: a {wren} pulled out from under the horse sent the reeve's
-  // men up to it (sent home, or running for them from the tree line), so a
-  // pen the company left or never opened, the moon still up, was emptied on
-  // her word, and counts as freed (docs/design-decisions.md; the epilogue's
-  // pens slides read the same).
   ...([
     [[{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'notFlag', flag: 'captives-taken' }],
       [{ kind: 'setFlag', flag: 'captives-freed' }]],
@@ -265,18 +174,8 @@ const AFTERMATH_CLAIMS: Choice[] = [
 ];
 
 
-// NPCs name a reusable archetype `portraitId` (src/data/adventure-art.ts) so
-// they share art with every other module's innkeeper / scout / captain; the
-// emoji is the fallback until that portrait is generated.
-/** What the peddler's stall gives up, however he was taken. */
 const SPY_LIST = 'Under a loose board at the back of his stall lies a list of every caravan that has left {thornwick} this month. Someone has ticked off each one. The ticks are his. The names are in another man\'s writing. "The chief sends the names," he babbles. "He knows every carter in this town. I only tick them off."';
 
-/** What the company can say at {vex}'s fire. Split on whether the pen is
- *  still an open question: only then does his word on it go in the journal
- *  (PENS_LEAD). Shared `attempt`s keep each try to one go across both.
- *  Being told of the pen costs nothing with {wren}: she is never at this
- *  fire, and every {wren} who knows the company at all (`met`) has already
- *  sent the reeve's men up to it (see the epilogue's pens). */
 const VEX_OFFERS = (lead: boolean): Choice[] => {
   const pens: Requirement = lead ? { kind: 'notFlag', flag: 'pens-settled' } : { kind: 'flag', flag: 'pens-settled' };
   const told: Effect[] = lead ? [PENS_LEAD] : [];
@@ -301,10 +200,6 @@ const VEX_OFFERS = (lead: boolean): Choice[] => {
   ];
 };
 
-/** What earns {mira}'s warmth at the end, as mutually exclusive cases (one
- *  line shows): the captives freed, else the scout saved, else the mill
- *  turning. MIRA_COOL is none of them. The aftermath and the epilogue both
- *  read these, each beside "not executed". */
 const MIRA_WARM: Requirement[][] = [
   [{ kind: 'flag', flag: 'captives-freed' }],
   [{ kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', fate: 'saved' }],
@@ -319,10 +214,6 @@ const SCOUT = speaker(NPCS.wren!, { label: 'Wounded Scout', portraitId: 'npc-wou
 const LIEUTENANT = speaker(NPCS.vex!, 'the Lieutenant');
 
 const scenes: Record<string, Scene> = {
-  // === ACT 0 — THE VALLEY ROAD (cold open: a fight in the first minute) ===
-  // The module leads with combat, not conversation: an ambush that teaches the
-  // battle UI (it's the first fight, so the tutorial fires) and names the enemy
-  // — the raiders declare for the Ashfang chief before you ever reach town.
   road: {
     id: 'road', kind: 'story', art: { imageId: 'loc-road', emoji: '🛤️' },
     text: [
@@ -378,11 +269,6 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'go', label: 'Enter the {wander-inn}', to: 'tavern-meet' }],
     noBack: true,
   },
-  // The tavern is a small loop, not a one-way door (#6): each social read is a
-  // `once` choice that returns you here, so you can try Insight *and*
-  // Persuasion but never re-roll either. "Head to the square" is the way out.
-  // First meeting: Mira's introduction plays once, then every return to the
-  // inn (rest, the regulars, a lead followed up) lands on the short `tavern` hub.
   'tavern-meet': {
     id: 'tavern-meet', kind: 'dialogue', npc: MIRA, art: { imageId: 'loc-tavern', emoji: '🍺' },
     lines: [
@@ -419,9 +305,6 @@ const scenes: Record<string, Scene> = {
         once: true, requires: [{ kind: 'gold', atLeast: factValue('tavern-round') }], effects: [{ kind: 'gold', amount: -factValue('tavern-round') }],
         check: { skill: 'persuasion', dc: 12, failTo: 'tavern-round-flat' } },
       { id: 'plain', label: 'Ask her the way to the den', to: 'tavern-plain', once: true },
-      // The rumor table: an optional, in-character tutorial any player can skip.
-      // Each regular teaches one real mechanic; kept as its own loop so it never
-      // gets in the way of the plot choices above.
       { id: 'regulars', label: 'Drift over to the regulars\' table', to: 'regulars' },
       // A paid long rest: cheap, but a real gold sink and the place to re-prepare
       // spells. Gated on having the coin; the effect deducts it before resting.
@@ -473,13 +356,6 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Back to your table', to: 'tavern' }],
   },
 
-  // --- The Regulars' Table: a reusable "lore table" ------------------------
-  // A drop-in, fully optional in-character tutorial. Each regular teaches ONE
-  // real mechanic in the world's own voice; the choices are `once` so a lesson
-  // isn't repeated, and "leave them to it" exits at any time. Any module can
-  // paste this shape into its hub — a hub scene whose `once` choices each route
-  // to a short lore beat that loops back. Skippable by design: advanced players
-  // simply never walk over.
   regulars: {
     id: 'regulars', kind: 'story', back: true, art: { emoji: '🍻' },
     text: ['{thornwick}\'s older hands have claimed the long table by the fire — the sort who\'ve survived enough to have firm opinions about how. They\'ll talk your ear clean off, if you let them. Some of it might even keep you breathing.'],
@@ -559,9 +435,6 @@ const scenes: Record<string, Scene> = {
       { id: 'brace', label: 'Put your backs to the wall and draw', to: 'spy-bolts', effects: [{ kind: 'setFlag', flag: 'spy-seen' }] },
     ],
   },
-  // Taken quietly (stalked and grabbed, his crew shouted down, or caught by
-  // a read of the crowd): nobody runs for the marsh to warn the den, so the
-  // gate-signal he gives up is still good.
   'spy-caught': {
     id: 'spy-caught', kind: 'story', art: { emoji: '🔗' },
     text: [
@@ -575,9 +448,6 @@ const scenes: Record<string, Scene> = {
       effects: [{ kind: 'setFlag', flag: 'spy-caught' }, { kind: 'setFlag', flag: 'know-signal' }, { kind: 'gold', amount: 40 },
         { kind: 'journal', entry: { id: 'c-signal', kind: 'lead', resolvedBy: 'signal-spent', title: 'The Gate-Signal', body: 'You caught the {ashfang}\'s informant in the market and took the raiders\' gate-signal off him. Call it up to the watch-post at the den\'s gate, and the watch should open for you.' } }] }],
   },
-  // Taken the loud way (a brawl, or his knives scared off): one of them ran
-  // for the den, so the signal is spoiled before the peddler can give it up. The den still has
-  // other ways in (the wall, the water-gate, the gate itself).
   'spy-caught-loud': {
     id: 'spy-caught-loud', kind: 'story', art: { emoji: '🔗' },
     text: [
@@ -781,9 +651,6 @@ const scenes: Record<string, Scene> = {
     id: 'ravine', kind: 'challenge', art: { emoji: '🪨' },
     intro: ['A collapsed ravine cuts the trail. The other lip is close, but the gap between is all loose rock, and there is more than one way across it.'],
     again: ['The ravine still cuts the trail. You look the loose stone over again for a way across you have not tried.'],
-    // `perApproach`: a botched climb doesn't strand you — you can still scramble
-    // the rubble or take the slow way round. Only when every line fails do you
-    // take the long detour, and it costs a whole day on the clock.
     retry: 'perApproach',
     approaches: [
       { id: 'climb', label: 'Climb the sheer face',
@@ -814,19 +681,6 @@ const scenes: Record<string, Scene> = {
     // No stepping back to the map: walking away from her is a choice (`leave`,
     // `scout-walked-past`), never a quiet click that records nothing.
     noBack: true,
-    // One sure way to save her (a potion), and the rest are rolls: a healer's
-    // hands come easier than the plain Medicine check, but they can still
-    // slip. A slip fails forward (`scout-fail`): she lives, but it costs a day
-    // and she is no guide. Every way out of here is recorded, so she is
-    // met once. Walking past is final (`scout-walked-past`): the map marker
-    // then shows only the empty horse, never the rescue again. Left untended
-    // until the fifth morning (the dawn's `scout-bled-out`; {mira} warns of
-    // her at the first meeting), she dies there, walked past or never found:
-    // walking past never leaves her better off than not finding her at all.
-    // A scout who died there is {wren}'s fate `lost` (her partner, {tamsin},
-    // was the one under the horse): set when the company covers her, or on
-    // the way out of the square (AFTERMATH_CLAIMS). Walked past or never
-    // found before that morning, she lived: no fate.
     next: [
       { id: 'potion', label: 'Give her a healing potion', to: 'scout-saved',
         requires: [{ kind: 'item', itemId: 'potion-healing' }], hideWhenBlocked: true,
@@ -842,12 +696,6 @@ const scenes: Record<string, Scene> = {
         attempt: 'scout-wound', check: { skill: 'nature', dc: 9, failTo: 'scout-fail' } },
       { id: 'medicine', label: '[Medicine DC 12] Ease her out and bind the leg', to: 'scout-saved',
         attempt: 'scout-wound', check: { skill: 'medicine', dc: 12, failTo: 'scout-fail' } },
-      // `scout-walked-past` outlives the fifth dawn, so the body and the
-      // ending can say who stepped round her. She watched them step round
-      // her, but her −2 is booked on the way out of the square
-      // (AFTERMATH_CLAIMS), once it is settled that she lived: if the fifth
-      // morning comes first, the scout who watched was {tamsin}, and the
-      // {wren} who came home saw nothing.
       { id: 'leave', label: 'Leave her and press on', to: 'scout-left',
         effects: [{ kind: 'setFlag', flag: 'scout-walked-past' }] },
     ],
@@ -876,13 +724,7 @@ const scenes: Record<string, Scene> = {
       ...WREN_ON_VEX,
     ],
     next: [
-      // Sent home from here, she has the reeve's men on the marsh road long
-      // before the den falls: the epilogue's pens slide reads it. Every rescue that lands here earns her +1, by
-      // potion, prayer or a steady hand alike.
       { id: 'ok', label: 'Send {wren} back to {thornwick}', to: HUB_REF, effects: [...WREN_SAVED, { kind: 'npc', npc: 'wren', attitude: 1 }] },
-      // The Gold Box guide: she knows the marsh, and she owes you twice over.
-      // Only as far as the den's gate: a party that has already been inside
-      // (and could walk straight back in) sends her home instead.
       { id: 'come', label: 'Ask {wren} to come with you through the marsh', to: 'wren-joins',
         requires: [{ kind: 'notFlag', flag: 'den-entered' }], hideWhenBlocked: true,
         effects: [...WREN_SAVED, { kind: 'npc', npc: 'wren', attitude: 1 }, { kind: 'joinParty', companion: 'wren' }] },
@@ -914,9 +756,6 @@ const scenes: Record<string, Scene> = {
     next: [{ id: 'ok', label: 'Send {wren} limping back to {thornwick}', to: HUB_REF,
       effects: [...WREN_SAVED, { kind: 'passDay' }] }],
   },
-  // The fifth morning came first: the scout under the horse died (Wren's
-  // `lost`), and the party only finds her (or finds her again) to cover her.
-  // A party that stepped round her finds where she crawled to.
   'scout-dead': {
     id: 'scout-dead', kind: 'story', noBack: true, art: { imageId: 'loc-marsh', emoji: '🐴' },
     assumes: [{ kind: 'flag', flag: 'scout-bled-out' }, { kind: 'npc', npc: 'wren', notFate: ['saved', 'lost'] }],
@@ -1003,9 +842,6 @@ const scenes: Record<string, Scene> = {
     id: 'ambush', kind: 'check', skill: 'perception', dc: 13, roller: 'group', art: { emoji: '⛰️' },
     intro: ['The hollow opens below you, and the reeds in it are too still, and cold where the marsh should be warm. Nothing moves. Something out there is lying flat in the water, waiting for you to come closer.'],
     again: ['You come back to the lip of the hollow. The reeds below are still too still, and too cold. Something out there is waiting for you again.'],
-    // The perception check only sets the terms (surprise). The hollow ambush is
-    // the one route to the den (approach needs trail-read from the tracks), so
-    // it never gets skipped.
     success: { to: 'ambush-turned', text: ['You catch the gleam of an eye among the reeds a breath before it moves. The trap is yours to spring.'] },
     failure: { to: 'ambush-sprung', text: ['A hiss, a ripple — and the reeds come alive all at once. Too late.'] },
   },
@@ -1186,9 +1022,6 @@ const scenes: Record<string, Scene> = {
       { id: 'pick', label: '[Sleight of Hand DC 13] Work the padlock open quietly', to: 'den-pens-freed',
         once: true, check: { skill: 'sleight-of-hand', dc: 13, failTo: 'pens-alarm' } },
       { id: 'hack', label: 'Hack through the stakes, and never mind the noise', to: 'pens-alarm' },
-      // The pen moves {wren}'s regard only if she has met the company (the
-      // engine's rule: regard follows what an NPC saw). One saved after the
-      // den misses it; that is the smaller cost.
       { id: 'leave', label: 'Leave them for the reeve\'s men', to: 'den-pens-left',
         effects: [{ kind: 'setFlag', flag: 'captives-left' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
     ],
@@ -1241,11 +1074,6 @@ const scenes: Record<string, Scene> = {
     lines: [
       'At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.',
       '"**{vex}**," he says. "The chief\'s lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven\'t seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"',
-      // Every winning route passes his fire before the hall, so no company
-      // misses the pen by not knowing it is there (it drives a Part 3 war
-      // asset and the epilogue's slide). Text only, so free to the search.
-      // The lead (PENS_LEAD) goes in the journal whatever the party says, if
-      // the pen is still unsettled (VEX_OFFERS).
       { if: [{ kind: 'notFlag', flag: 'pens-found' }, { kind: 'notFlag', flag: 'captives-taken' }],
         text: 'Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There\'s a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you\'re in that hall, don\'t count on walking back past the kennels."' },
       { if: [{ kind: 'notFlag', flag: 'pens-found' }, { kind: 'flag', flag: 'captives-taken' }],
@@ -1261,11 +1089,6 @@ const scenes: Record<string, Scene> = {
       { if: [{ kind: 'flag', flag: 'vex-threatened' }],
         text: '{vex} looks along your drawn blades, one by one, then slides his own home. "Not much of a choice, put like that. I\'ll take the road out of this valley, while I still have the legs for it."' },
       '"{hask} guards the chief, and {hask} answers to me. He\'ll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I\'m tired of soldiering for a man who burns barns and calls it strategy."'],
-    // Hask standing aside pays the gap between the guarded hall and the
-    // unguarded one, quartered like any avoided fight. Her snake and a raider
-    // take his place, so it is less than beating him would pay.
-    // The journal holds for a {vex} bought with a pardon or cowed at
-    // blade-point (`vex-threatened`), so it promises him nothing.
     next: [{ id: 'ok', label: 'Go and face the chief', to: HUB_REF,
       effects: [{ kind: 'npc', npc: 'vex', met: true, fate: 'turned' },
         { kind: 'xp', amount: avoidedFightXP('ashfang-hall') - avoidedFightXP('ashfang-warlord-alone') },
@@ -1317,11 +1140,6 @@ const scenes: Record<string, Scene> = {
         text: 'He keeps his branded hand shut in a fist. His eyes keep going back to it.' },
     ],
     next: [
-      // The talk with Vargan is always on offer (`turn`, one try however
-      // it is reached). The read on him first (he wears the hag's brand too)
-      // makes it easier, and a fight he starts a round behind; a missed read
-      // (`vargan-unread`) leaves the harder talk and the plain fight. Every
-      // copy splits on Vex's bargain, so each lands in the right hall.
       { id: 'insight', label: '[Insight DC 14] Look at his hands', to: 'vargan-brand', attempt: 'brand',
         requires: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }], hideWhenBlocked: true,
         effects: [{ kind: 'setFlag', flag: 'vargan-shaken' }],
@@ -1348,10 +1166,6 @@ const scenes: Record<string, Scene> = {
       { id: 'turn-shaken-alone', label: TURN_READ_LABEL, to: 'vargan-turns-alone', attempt: 'turn',
         requires: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, { kind: 'flag', flag: 'vargan-shaken' }], hideWhenBlocked: true,
         check: { skill: 'persuasion', dc: 10, failTo: 'boss-unguarded-shaken' } },
-      // Vex's bargain pays off here: his guard stands down, and the chief and
-      // the hag fight alone. The two choices are mutually exclusive on the flag.
-      // Back after a wipe with the brand already named (`vargan-shaken`): he
-      // still starts the fight a round behind.
       { id: 'fight-alone', label: 'End them both', to: 'boss-unguarded',
         requires: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, { kind: 'notFlag', flag: 'vargan-shaken' }], hideWhenBlocked: true },
       { id: 'fight-alone-shaken', label: 'End them both', to: 'boss-unguarded-shaken',
@@ -1409,9 +1223,6 @@ const scenes: Record<string, Scene> = {
     onWin: { to: 'vargan-beaten', text: [`{vargan} fights with one eye on his own shut fist. ${BOSS_FALLS} ${SNAKE_ENDS}`, BOSS_HOARD], effects: BOSS_WON },
   },
 
-  // The brand named: Vargan sees what he sold himself for, and the talk comes
-  // easier; a miss (or striking now) is the fight he starts behind.
-  // Two copies, split on Vex's bargain like every version of the hall.
   'vargan-brand': {
     id: 'vargan-brand', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '✋' },
     text: VARGAN_BRAND,
@@ -1430,9 +1241,6 @@ const scenes: Record<string, Scene> = {
       { id: 'strike', label: 'Strike while he stares', to: 'boss-unguarded-shaken' },
     ],
   },
-  // Vargan turned: the hag burns him down with his own brand. The turn is its
-  // own beat, so a party back from a wipe (`reedwife-lost`) does not watch him
-  // turn twice: the fights after it open on the hag alone.
   'vargan-turns': {
     id: 'vargan-turns', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '✋' },
     text: [...VARGAN_TURNS, 'The hag looks down at him a moment, and when she looks up she is smiling.'],
@@ -1482,10 +1290,6 @@ const scenes: Record<string, Scene> = {
     id: 'reedwife-lost-alone', kind: 'rest', variant: 'long', sameDay: true, next: 'reedwife-fight-alone',
     intro: REEDWIFE_LOST,
   },
-  // Won in the hall: the hag is dead and the chief is beaten, but breathing.
-  // The same three roads as `vargan-fate`. Finishing a man on his knees is an
-  // execution (`dead`) here too, and Mira and Wren (if she knows the
-  // company) hear of it the same way.
   'vargan-beaten': {
     id: 'vargan-beaten', kind: 'story', noBack: true, art: { imageId: 'loc-throne', emoji: '⚖️' },
     text: [
@@ -1522,9 +1326,6 @@ const scenes: Record<string, Scene> = {
     ],
   },
 
-  // The reckoning: your earlier choices surface here as rewards you can (or
-  // can't) claim — blocked options show *why*, so what you did back in the
-  // village and the marsh visibly mattered.
   aftermath: {
     id: 'aftermath', kind: 'story', art: { imageId: 'loc-village', emoji: '🏘️' },
     text: [
@@ -1543,11 +1344,6 @@ const scenes: Record<string, Scene> = {
       // sum named, since the loss takes only what the company still has.
       { if: [{ kind: 'flag', flag: 'vargan-let-go' }, { kind: 'flag', flag: 'bounty' }],
         text: 'He holds out his hand for the retainer you drew at the board. He does not lower it until the coin, or what is left of it, is back in the strongbox. "{thornwick} pays its debts," he says. "So will you."' },
-      // Mira's one near-smile is earned by more than the kill: the captives
-      // out, the scout brought home, or the mill turning again. It comes
-      // after the reeve's temper over a chief let go, so it reads as hers
-      // at his expense, not as a smile beside it ("Behind him": the reeve,
-      // or {vargan} marched in ahead of him).
       ...MIRA_WARM.map((when) => ({ if: [{ kind: 'npc' as const, npc: 'vargan', notFate: ['dead'] }, ...when],
         text: 'Behind him, {mira} catches your eye and very nearly smiles.' })),
       { if: [{ kind: 'npc', npc: 'vargan', notFate: ['dead'] }, ...MIRA_COOL],
@@ -1626,11 +1422,6 @@ const scenes: Record<string, Scene> = {
       { assumes: [{ kind: 'npc', npc: 'vargan', notFate: ['dead'] }],
         text: '"Same cot, same mug," {mira} says, and sets it down. "Try to need it less."' },
     ],
-    // A wipe costs time: the day goes by on Mira's cot. Then the square, or,
-    // once the party has walked it, straight back out on the marsh road, so a
-    // loss out there or in the den is not the whole road again.
-    // A party that fell inside the den goes straight back in, to the room it
-    // fell in (as Part 2's barrow stair), not the whole marsh road again.
     next: [{ id: 'up', label: 'Get back on your feet', to: 'square/city', effects: [{ kind: 'passDay' }] },
       { id: 'back', label: 'Go straight back out on the marsh road', to: 'trail', effects: [{ kind: 'passDay' }],
         requires: [{ kind: 'visited', scene: 'trail' }], hideWhenBlocked: true },
@@ -1638,9 +1429,6 @@ const scenes: Record<string, Scene> = {
         requires: [{ kind: 'at', hub: 'inner/delve' }, { kind: 'flag', flag: 'den-entered' }], hideWhenBlocked: true }], noBack: true,
   },
 
-  // The ending reads the run back: a short universal close, then one line for
-  // each person or place the party touched. Every slide stands alone, so any
-  // mix of them reads in order.
   epilogue: {
     id: 'epilogue', kind: 'ending', outcome: 'victory', art: { emoji: '🏆' },
     text: [
@@ -1648,11 +1436,6 @@ const scenes: Record<string, Scene> = {
       'By morning the carters are already complaining about the state of the road. {mira} lets them.',
     ],
     slides: [
-      // The chief, then the den, then the scout, then the inn, building to the
-      // pens: every victory ends on one of the captives' slides.
-      // Dead in his hall, or after it: every victory leaves him one fate.
-      // One card, first case that holds: let go is spared too, so it comes
-      // before plain spared.
       { thread: 'vargan', cases: [
         { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }, { kind: 'flag', flag: 'vargan-shaken' }],
           text: 'Round the bonfire they tell it in low voices: the {ashfang} chief wore the hag\'s brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.' },
@@ -1663,9 +1446,6 @@ const scenes: Record<string, Scene> = {
         { if: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }],
           text: 'The reeve does not hang {vargan}. He sends him out to cut reeds on the common land until the drowned houses stand again. {vargan} has not missed a day.' },
       ] },
-      // Turned; or, not turned, he refused the company and went up to the
-      // ridge (`vex-refuses`), or it refused him and he stayed at his fire
-      // (`vex-dismissed`, `vex-rebuffed`).
       { thread: 'vex', cases: [
         { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }],
           text: 'At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.' },
@@ -1674,9 +1454,6 @@ const scenes: Record<string, Scene> = {
         { if: [{ kind: 'npc', npc: 'vex', met: true }],
           text: '{vex} watched the end of it from the ridge above the den. At dawn he walks down into {thornwick} alone and gives himself up at the reeve\'s hall. He asks for a cell with a window.' },
       ] },
-      // The scout: saved; lost under the horse (the company covered her, and
-      // there is nothing more to tell; or stepped round her, and she crawled;
-      // or nobody came); or neither, and she lived (Part 2's limping {wren}).
       { thread: 'wren', cases: [
         { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }],
           text: 'At dawn {wren} limps out ahead of the reeve\'s men to round up what\'s left of the {ashfang}. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.' },
@@ -1689,10 +1466,6 @@ const scenes: Record<string, Scene> = {
           text: 'The reeve\'s men bring a scout in from the marsh road on a door. The other scout, who lost her horse in the fen and walked home the long way round, walks beside it. Whether the one on the door lives, nobody at the bonfire will say.' },
         { text: 'The other scout lost her horse in the fen and walked home the long way round. She leads the reeve\'s men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den\'s wall scratched into the mud.' },
       ] },
-      // Mira's thanks are earned, as her near-smile in the square is: the
-      // captives out, the scout brought home, or the mill turning again, and
-      // never from a company that killed a beaten man in front of her town.
-      // Otherwise she pours, and takes the coin like anyone's.
       { thread: 'mira', cases: [
         { if: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }],
           text: '{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.' },
@@ -1714,12 +1487,6 @@ const scenes: Record<string, Scene> = {
         text: 'At {door-midwinter} an old reed-cutter ties a {door-price} to a stake at the water\'s edge, the way his gran did. In the morning the rope hangs wet and empty, and nothing else is missing.' },
       { if: [{ kind: 'flag', flag: 'mill-saved' }],
         text: 'Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog\'s neck.' },
-      // The captives. Left, or never opened, with the moon still up: a {wren}
-      // pulled out from under the horse had the reeve's men in the reeds
-      // below the den when it fell (sent home, or running for them from the
-      // tree line), and the pen counts as freed (set on the way out of the
-      // square, AFTERMATH_CLAIMS). The company's own key never leaves it
-      // `captives-left` or unfound, so these two never show beside it.
       ...([{ kind: 'flag', flag: 'captives-left' }, { kind: 'notFlag', flag: 'pens-found' }] as Requirement[]).map((how) => ({
         if: [{ kind: 'npc' as const, npc: 'wren', fate: 'saved' }, { kind: 'notFlag' as const, flag: 'captives-taken' }, how],
         text: 'The reeve\'s men, sent up the marsh road on {wren}\'s word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe.' })),
@@ -1731,10 +1498,6 @@ const scenes: Record<string, Scene> = {
         text: 'Every evening, a widow walks the edge of the marsh and calls a name across the water.' },
       { if: [{ kind: 'flag', flag: 'captives-left' }, { kind: 'flag', flag: 'captives-taken' }],
         text: 'The reeve\'s men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child\'s shoe in the straw.' },
-      // Left, or never opened, the moon still up, and no {wren} to send
-      // anyone (a {wren} pulled out from under the horse would have made it
-      // `captives-freed` by now): the reeve's men come late, and the pen is
-      // empty. Those captives never came home (docs/canon.md, the captives).
       { if: [{ kind: 'notFlag', flag: 'captives-taken' }, { kind: 'notFlag', flag: 'captives-freed' }],
         text: 'The reeve\'s men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The {ashfang} who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.' },
     ],
@@ -1742,13 +1505,6 @@ const scenes: Record<string, Scene> = {
 
 };
 
-/**
- * What this chapter once said about people in flags of its own, and the NPC
- * state that says it now (old saves load under the new names). Exported for
- * the later chapters, which renamed the carried forms (`hollow-road:<flag>`).
- * `scout-met` marked the covered scout under the horse: Wren `lost`. Each
- * goes straight to its name under the ledger (docs/state-ledger.md).
- */
 export const HOLLOW_ROAD_RENAMED_NPC_FLAGS: Record<string, string> = {
   'saved-scout': npcFateFlag('wren', 'saved'),
   'scout-met': npcFateFlag('wren', 'lost'),
@@ -1759,9 +1515,6 @@ export const HOLLOW_ROAD_RENAMED_NPC_FLAGS: Record<string, string> = {
   'vargan-jailed': npcFateFlag('vargan', 'spared'),
   'vargan-freed': npcFateFlag('vargan', 'spared'),
 };
-/** And in this chapter's own saves: fates the ledger folded away, back to
- *  the chapter-local flags that still tell them apart here. (A chief let go
- *  in a save from before reads as `spared` only: marched in, in the square.) */
 const HOLLOW_ROAD_RENAMED: Record<string, string> = {
   ...HOLLOW_ROAD_RENAMED_NPC_FLAGS,
   'hag-dead': npcFateFlag('reedwife', 'dead'),
@@ -1776,28 +1529,9 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   blurb: 'Break the {ashfang} raiders — through the village, the marsh, and their den. By blade or by wit.',
   cover: 'loc-village',
   levelBand: { from: 1, to: 3 },
-  /*
-   * The den: laid out fresh every run (delve-spec), held by the Ashfang's
-   * gnolls, with the chapter's own pieces built in where they belong — the
-   * pit and its champion, the kennels, the pens, the plunder tent, Vex at
-   * his fire on the way to the hall, and the hall itself as the goal, where
-   * the story takes over (boss-approach). Every way in through the gate
-   * comes to its door (`inner`); out is back to the marsh road.
-   */
-  /*
-   * Thornwick's square answers to what Mira told the party and its own
-   * errands; the rest of the chapter sees only what it hands on: the spy
-   * dealt with (and how), the bounty taken, the mill saved.
-   */
   places: {
     'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
   },
-  /*
-   * {thornwick}: a village laid out fresh every run, its shops and the
-   * temple the generator's own. The story's places in it: {mira}'s inn, the
-   * reeve's notice board, the mill, the peddler's stall, and the gate, which
-   * stays shut until the peddler is caught.
-   */
   towns: {
     square: {
       spec: {
@@ -1810,9 +1544,6 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
           { label: 'The Old Mill', icon: 'tok-figure',
             text: ['The mill\'s sails are turning again, and the miller waves from the door. The stone dog keeps its vigil by the gate, forever pointing at nothing.'],
             event: { scene: 'mill', until: [{ kind: 'flag', flag: 'mill-saved' }] } },
-          // Always there under a plain label: the map doesn't know he's the
-          // leak until {mira} says so. A party that read the lead can stalk
-          // him, until he has whistled at them.
           { label: 'Peddler\'s Stall', icon: 'tok-figure',
             text: ['The peddler\'s stall stands bare, its awning taken down. He sits in the reeve\'s cells now, and the square has already moved on.'],
             event: { scene: 'spy-confront', until: [{ kind: 'flag', flag: 'spy-caught' }], when: [
@@ -1829,14 +1560,6 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     },
   },
   delves: {
-  /*
-   * The marsh road: small, walked carefully, laid out fresh every run. The
-   * tracks and the ravine before the story's own lock (the dry line read and
-   * the ravine crossed), the scout and the barrow off to the side, the webs
-   * and the hollow past it. The hollow is the goal, where the story takes
-   * over: its ambush, then on to the den's gate. Its rooms answer only to
-   * their own flags; the chapter sees its outside (proveApart).
-   */
   trail: {
     spec: {
       level: 1, theme: 'bog', shape: 'classic', rooms: 10, fights: 'inhabitants', factions: ['wild'],
@@ -1898,11 +1621,6 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   // The clock: the Ashfang keep their captives for the Reedwife, and she
   // takes them when the moon goes dark. Six nights' sleep and they are gone.
   dawns: [
-    // Every dawn here is read wherever the party woke: a camp on the marsh
-    // road, the den, or Mira's cot after a wipe (where `at` still names the
-    // place it fell). So none of them names a place to stand in.
-    // The warning before the dark moon, while the pen is still an open
-    // question: what {vex} told them (PENS_LEAD), or only what {mira} did.
     { day: 4, text: [
       'Last night\'s moon was a thin paring of light, and it was down long before dawn.',
       { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: true }],
@@ -1927,13 +1645,6 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     { day: 7, text: ['There was no moon at all last night. Far out on the marsh, something sang until dawn, and then stopped.'],
       effects: [{ kind: 'setFlag', flag: 'captives-taken' }, { kind: 'setFlag', flag: 'pens-settled' }] },
   ],
-  // What the rest of the campaign remembers (read as 'hollow-road:won', …),
-  // and no more than the ledger (docs/state-ledger.md): that the company won
-  // this chapter at all (`won`), and whether it cut the captives out of the
-  // pens (a war asset at the Wyrmcalling's council). What became of Wren,
-  // Vex, Vargan and the Reedwife is NPC state, which every later chapter sees
-  // without a carry. How each came to it (walked past, cowed, let go) stays
-  // here.
   carries: ['won', 'captives-freed'],
   // Saves from before that state moved onto the NPCs.
   renamedFlags: HOLLOW_ROAD_RENAMED,
