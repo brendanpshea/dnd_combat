@@ -23,6 +23,22 @@ describe('the story format', () => {
     });
   }
 
+  it('reads an obstacle as its approach, its fight, and a scene for each answer', () => {
+    const s = parseStory([
+      '# barrow', 'kind: obstacle', 'art: 🪦', 'fight: barrow-haunt on corridor', 'done: barrow-cleared', 'leave: Walk on  #leave',
+      'A cold mound.', 'again:', 'Still cold.',
+      'answer religion 13 > Say the words  #settle', 'It settles.',
+      'fight > Go down  #in', 'They rise.', 'won:', 'They fall.', 'do gold 45',
+    ].join('\n'), 'obstacle') as Record<string, any>;
+    expect(Object.keys(s)).toEqual(['barrow', 'barrow-fight', 'barrow-settle']);
+    expect(s.barrow.next.map((c: { id: string }) => c.id)).toEqual(['settle', 'in', 'leave']);
+    expect(s.barrow.next[0]).toMatchObject({ to: 'barrow-settle', once: true, hideWhenBlocked: true, check: { skill: 'religion', dc: 13, failTo: 'barrow-fight' } });
+    expect(s['barrow-fight']).toMatchObject({ kind: 'battle', encounterId: 'barrow-haunt', mapId: 'corridor', intro: ['They rise.'],
+      onWin: { to: '@hub', text: ['They fall.'], effects: [{ kind: 'setFlag', flag: 'barrow-cleared' }, { kind: 'gold', amount: 45 }] } });
+    expect(s['barrow-settle'].next[0].effects[0]).toEqual({ kind: 'setFlag', flag: 'barrow-cleared' });
+    expect(s['barrow-settle'].next[0].effects[1]).toEqual({ kind: 'xp', amount: { $avoided: 'barrow-haunt' } });
+  });
+
   it('reads the shorthands', () => {
     const s = parseStory([
       '# board',

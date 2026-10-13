@@ -388,12 +388,6 @@ Osk the miller still has his boat-hook in both hands. "Back, are you? The ugly t
 - » **Beat the hedgerows**
 - » **Leave him to his hedgerows**
 
-## `mill-smoked` · story
-
-You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
-
-- » **Back to the square**
-
 ## `mill-fight` · battle
 
 <sub>reads: return?</sub>
@@ -419,6 +413,12 @@ The cockatrices are still in the hedge, and this time they come out of it the mo
 *Won:*
 
 The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.
+
+## `mill-smoke` · story
+
+You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
+
+- » **Back to the square**
 
 ## `spy-bolts` · battle
 
@@ -825,12 +825,6 @@ The barrow-mound still breathes cold air through its cracked capstone. Down in t
 - » **[Religion DC 13] Say the old words over the capstone, and close it** [Religion DC 13] <sub>(once)</sub>
 - » **Leave the dead their peace**
 
-## `barrow-settled` · story
-
-You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
-
-- » **Back to the trail**
-
 ## `barrow-fight` · battle
 
 <sub>reads: return?</sub>
@@ -857,6 +851,12 @@ The two cold dead are waiting this time, down among the grave-goods. One is noth
 
 The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
 
+## `barrow-settle` · story
+
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+
+- » **Back to the trail**
+
 ## `thicket` · story
 
 <sub>reads: return?</sub>
@@ -876,12 +876,6 @@ The grey webs still sheet the reeds, and the man-shaped bundles still hang in th
 - » **Cut your way in**
 - » **[Survival DC 12] Fire the dry reeds upwind, and let the webs burn** [Survival DC 12] <sub>(once)</sub>
 - » **Give the webs a wide berth**
-
-## `thicket-burned` · story
-
-You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
-
-- » **Back to the trail**
 
 ## `thicket-fight` · battle
 
@@ -908,6 +902,12 @@ The spiders are waiting in the high webbing this time. They drop the moment your
 *Won:*
 
 The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
+
+## `thicket-burn` · story
+
+You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
+
+- » **Back to the trail**
 
 ## `ambush` · check
 

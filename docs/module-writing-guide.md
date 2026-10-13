@@ -116,6 +116,39 @@ The reeve's bounty still hangs on the board, a little greyer at the edges than b
   - `?! reqs | text` says what the line takes for granted.
   - Both can go on one line: `? with wren ?! npc wren met | …`.
 
+### Obstacles
+
+A threat in the way with more than one answer (a fight, or a skill) is one
+block, not three scenes. It reads as the approach, the fight and each
+answer's success; the fight won and every answer set `done`, and an answer
+pays the fight's avoided XP:
+
+```
+# barrow
+kind: obstacle
+art: 🪦
+fight: barrow-haunt on corridor
+done: barrow-cleared
+return: Back to the trail
+leave: Leave the dead their peace  #leave
+Half-swallowed by the reeds lies a barrow-mound…
+again:
+The barrow-mound still breathes cold air…
+fight > Go down into the dark  #in
+The cold answers you…
+answer religion 13 > Say the old words over the capstone, and close it  #settle
+You kneel at the cracked capstone…
+won:
+The cold shape shreds into mist…
+do gold 45
+```
+
+That is `barrow`, `barrow-fight` and `barrow-settle`. A failed answer leads
+into the fight. `back:` sets where every way out goes (default `@hub`), and
+`as: dialogue` makes the approach a conversation. A fight that differs only
+by who is there (a guard who has turned) is one battle with `encounterWhen`
+and conditional lines, not a twin.
+
 ### Ways out
 
 - **A choice:** `> label → scene  #id`. The `#id` is what a save remembers, so
@@ -232,6 +265,25 @@ and `exit`. A `goal` room's event is where the story takes over. A
 `lock: { requires, note }` makes the first floor's locked door the story's
 own: chapter one's marsh opens past the ravine only once the tracks are read
 and the ravine crossed.
+
+**Someone held there** (`hostage`) needs no scenes of your own. Name who,
+the two flags your story reads, and, if you like, your own lines, a quest, a
+guard and a deadline. The generator builds finding them, getting them out
+(quietly, or by force against the watch), and the empty cage once they are
+taken:
+
+```ts
+{ name: 'The Pens', text: 'Behind the kennels stands a pen of lashed stakes.',
+  hostage: { who: 'the captives', as: { freed: 'captives-freed', taken: 'captives-taken' },
+    found: ['…'], freed: ['…'], gone: ['…'], guard: { dc: 13, fight: 'pen-watch' },
+    quest: { title: 'Bring the Captives Home', body: '…' } } },
+```
+
+A held place's generated rooms come from who holds it (`src/data/archetypes.ts`):
+a camp has its watch, bunks, stores and trophies; a lieutenant at a gate every
+way to the boss runs through; and, past the boss, a vault. Give the place
+`lore` (lines of its past) and they turn up in its rooms' searches, on the way
+to the goal first.
 
 **`proveApart: true`** (do this for every place):
 

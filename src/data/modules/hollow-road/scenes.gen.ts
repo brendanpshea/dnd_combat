@@ -643,34 +643,13 @@ export const SCENES: Record<string, Scene> = {
       {
         id: "smoke",
         label: "[Nature DC 13] Smoke them out of the hedge with green wood",
-        to: "mill-smoked",
+        to: "mill-smoke",
         once: true,
         hideWhenBlocked: true,
         check: { skill: "nature", dc: 13, failTo: "mill-fight" },
       },
       { id: "help", label: "Beat the hedgerows", to: "mill-fight" },
       { id: "later", label: "Leave him to his hedgerows", to: "square/city" },
-    ],
-  },
-  "mill-smoked": {
-    id: "mill-smoked",
-    kind: "story",
-    noBack: true,
-    art: { emoji: "🌾" },
-    text: [
-      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.",
-    ],
-    next: [
-      {
-        id: "ok",
-        label: "Back to the square",
-        to: "square/city",
-        effects: [
-          { kind: "setFlag", flag: "mill-saved" },
-          { kind: "gold", amount: 35 },
-          { kind: "xp", amount: avoidedFightXP("cockatrice-flock") },
-        ],
-      },
     ],
   },
   "mill-fight": {
@@ -691,6 +670,27 @@ export const SCENES: Record<string, Scene> = {
       ],
       effects: [{ kind: "setFlag", flag: "mill-saved" }, { kind: "gold", amount: 35 }],
     },
+  },
+  "mill-smoke": {
+    id: "mill-smoke",
+    kind: "story",
+    noBack: true,
+    art: { emoji: "🌾" },
+    text: [
+      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.",
+    ],
+    next: [
+      {
+        id: "ok",
+        label: "Back to the square",
+        to: "square/city",
+        effects: [
+          { kind: "setFlag", flag: "mill-saved" },
+          { kind: "xp", amount: avoidedFightXP("cockatrice-flock") },
+          { kind: "gold", amount: 35 },
+        ],
+      },
+    ],
   },
   "spy-bolts": {
     id: "spy-bolts",
@@ -1271,32 +1271,12 @@ export const SCENES: Record<string, Scene> = {
       {
         id: "settle",
         label: "[Religion DC 13] Say the old words over the capstone, and close it",
-        to: "barrow-settled",
+        to: "barrow-settle",
         once: true,
         hideWhenBlocked: true,
         check: { skill: "religion", dc: 13, failTo: "barrow-fight" },
       },
       { id: "leave", label: "Leave the dead their peace", to: "@hub" },
-    ],
-  },
-  "barrow-settled": {
-    id: "barrow-settled",
-    kind: "story",
-    noBack: true,
-    art: { emoji: "🪦" },
-    text: [
-      "You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.",
-    ],
-    next: [
-      {
-        id: "ok",
-        label: "Back to the trail",
-        to: "@hub",
-        effects: [
-          { kind: "setFlag", flag: "barrow-cleared" },
-          { kind: "xp", amount: avoidedFightXP("barrow-haunt") },
-        ],
-      },
     ],
   },
   "barrow-fight": {
@@ -1318,6 +1298,26 @@ export const SCENES: Record<string, Scene> = {
       effects: [{ kind: "setFlag", flag: "barrow-cleared" }, { kind: "gold", amount: 45 }],
     },
   },
+  "barrow-settle": {
+    id: "barrow-settle",
+    kind: "story",
+    noBack: true,
+    art: { emoji: "🪦" },
+    text: [
+      "You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.",
+    ],
+    next: [
+      {
+        id: "ok",
+        label: "Back to the trail",
+        to: "@hub",
+        effects: [
+          { kind: "setFlag", flag: "barrow-cleared" },
+          { kind: "xp", amount: avoidedFightXP("barrow-haunt") },
+        ],
+      },
+    ],
+  },
   "thicket": {
     id: "thicket",
     kind: "story",
@@ -1334,29 +1334,12 @@ export const SCENES: Record<string, Scene> = {
       {
         id: "burn",
         label: "[Survival DC 12] Fire the dry reeds upwind, and let the webs burn",
-        to: "thicket-burned",
+        to: "thicket-burn",
         once: true,
         hideWhenBlocked: true,
         check: { skill: "survival", dc: 12, failTo: "thicket-fight" },
       },
       { id: "leave", label: "Give the webs a wide berth", to: "@hub" },
-    ],
-  },
-  "thicket-burned": {
-    id: "thicket-burned",
-    kind: "story",
-    noBack: true,
-    art: { emoji: "🔥" },
-    text: [
-      "You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.",
-    ],
-    next: [
-      {
-        id: "ok",
-        label: "Back to the trail",
-        to: "@hub",
-        effects: [{ kind: "setFlag", flag: "thicket-cleared" }, { kind: "xp", amount: avoidedFightXP("spiders") }],
-      },
     ],
   },
   "thicket-fight": {
@@ -1379,6 +1362,23 @@ export const SCENES: Record<string, Scene> = {
         { kind: "addItem", itemId: "potion-healing", qty: 1 },
       ],
     },
+  },
+  "thicket-burn": {
+    id: "thicket-burn",
+    kind: "story",
+    noBack: true,
+    art: { emoji: "🕸️" },
+    text: [
+      "You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.",
+    ],
+    next: [
+      {
+        id: "ok",
+        label: "Back to the trail",
+        to: "@hub",
+        effects: [{ kind: "setFlag", flag: "thicket-cleared" }, { kind: "xp", amount: avoidedFightXP("spiders") }],
+      },
+    ],
   },
   "ambush": {
     id: "ambush",
@@ -2483,8 +2483,8 @@ export const ACTS: Record<string, string> = {
   "gate-wall-caught": "thornwick",
   "gate-slipped": "thornwick",
   "mill": "thornwick",
-  "mill-smoked": "thornwick",
   "mill-fight": "thornwick",
+  "mill-smoke": "thornwick",
   "spy-bolts": "thornwick",
   "spy-ambush": "thornwick",
   "spy-balked": "thornwick",
@@ -2511,11 +2511,11 @@ export const ACTS: Record<string, string> = {
   "scout-along": "marsh",
   "scout-sent": "marsh",
   "barrow": "marsh",
-  "barrow-settled": "marsh",
   "barrow-fight": "marsh",
+  "barrow-settle": "marsh",
   "thicket": "marsh",
-  "thicket-burned": "marsh",
   "thicket-fight": "marsh",
+  "thicket-burn": "marsh",
   "ambush": "marsh",
   "ambush-wet": "marsh",
   "ambush-wren": "marsh",

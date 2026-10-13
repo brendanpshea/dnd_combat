@@ -482,7 +482,15 @@ const rawJson = (l: Line): string => [l.text, ...l.kids.map(rawJson)].join('\n')
 export function parseStory(text: string, file = 'story'): Record<Id, unknown> {
   const scenes: Record<Id, unknown> = {};
   let cur: { id: Id; lines: Array<{ text: string; no: number }>; head: string; no: number } | undefined;
-  const flush = () => { if (cur) scenes[cur.id] = parseScene(cur.id, cur.head, cur.lines, `${file}:${cur.no}`); };
+  const flush = () => {
+    if (!cur) return;
+    if (cur.lines.some((l) => l.text.trim() === 'kind: obstacle')) {
+      for (const [id, lines] of expandObstacle(cur.id, cur.lines, `${file}:${cur.no}`)) {
+        if (scenes[id]) throw new Error(`${file}:${cur.no}: '${id}' twice`);
+        scenes[id] = parseScene(id, '', lines, `${file}:${cur.no}`);
+      }
+    } else scenes[cur.id] = parseScene(cur.id, cur.head, cur.lines, `${file}:${cur.no}`);
+  };
   text.split('\n').forEach((raw, i) => {
     const no = i + 1;
     if (/^\s*\/\//.test(raw) || !raw.trim()) return;
@@ -498,6 +506,84 @@ export function parseStory(text: string, file = 'story'): Record<Id, unknown> {
   });
   flush();
   return scenes;
+}
+
+/**
+ * An obstacle (`kind: obstacle`): a threat in the way, met by a fight or by
+ * a skill, written as one block and read as the scenes it always was.
+ *
+ *     # barrow
+ *     kind: obstacle
+ *     art: 🪦
+ *     fight: barrow-haunt on corridor      the encounter, and its board
+ *     done: barrow-cleared                 set by the fight won or any answer
+ *     back: @hub                           where every way out goes (default)
+ *     return: Back to the trail            an answer's way out (default "Go on")
+ *     leave: Leave the dead their peace  #leave
+ *     as: dialogue                         the approach's kind, if not a story
+ *     (the approach: prose, and its own again:)
+ *     answer religion 13 > Say the old words over the capstone  #settle
+ *     (what that answer does: prose, and do lines)
+ *     fight > Go down into the dark  #in
+ *     (the fight's own intro, and again:)
+ *     won:
+ *     (what winning does: prose, and do lines)
+ *
+ * It becomes `barrow` (the approach, with its choices in the order written),
+ * `barrow-fight` (the battle), and `barrow-settle` (each answer's success,
+ * which pays the fight's avoided XP). A failed answer leads into the fight.
+ */
+function expandObstacle(id: Id, lines: Array<{ text: string; no: number }>, where: string): Array<[Id, Array<{ text: string; no: number }>]> {
+  type L = { text: string; no: number };
+  const field = (k: string) => lines.find((l) => l.text.startsWith(`${k}: `))?.text.slice(k.length + 2);
+  const fight = /^(\S+) on (\S+)$/.exec(field('fight') ?? '');
+  const done = field('done');
+  if (!fight || !done) throw new Error(`${where}: an obstacle needs 'fight: <encounter> on <map>' and 'done: <flag>'`);
+  const back = field('back') ?? '@hub', ret = field('return') ?? 'Go on', leave = field('leave');
+  const own = new Set(['kind', 'as', 'fight', 'done', 'back', 'return', 'leave']);
+  const SECTION = /^(fight|answer (\S+) (\d+)) > (.+?)\s+#([\w-]+)$|^won:$/;
+  const approach: L[] = [], choices: string[] = [];
+  const fightLines: L[] = [], won: L[] = [];
+  const answers: Array<{ id: string; lines: L[] }> = [];
+  let into: L[] = approach;
+  let fightChoice = '';
+  for (const l of lines) {
+    const k = /^(\w[\w-]*): /.exec(l.text)?.[1];
+    if (into === approach && k && own.has(k)) continue;
+    const m = SECTION.exec(l.text);
+    if (!m) { into.push(l); continue; }
+    if (l.text === 'won:') { into = won; continue; }
+    if (m[1] === 'fight') {
+      fightChoice = `> ${m[4]} → ${id}-fight  #${m[5]}`;
+      choices.push(fightChoice);
+      into = fightLines;
+    } else {
+      const skill = m[2]!, dc = m[3]!, aid = m[5]!;
+      const name = skill.split('-').map((w, i) => (i && ['of', 'and'].includes(w) ? w : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+      choices.push(`> [${name} DC ${dc}] ${m[4]} → ${id}-${aid}  #${aid}`, '  once hide', `  check ${skill} ${dc} → ${id}-fight`);
+      const a = { id: aid, lines: [] as L[] };
+      answers.push(a);
+      into = a.lines;
+    }
+  }
+  if (!fightChoice) throw new Error(`${where}: an obstacle needs a 'fight > <label>  #id' section`);
+  if (leave) choices.push(`> ${leave.replace(/\s+#([\w-]+)$/, ` → ${back}  #$1`)}`);
+  const at = lines[0]?.no ?? 0;
+  const mk = (text: string): L => ({ text, no: at });
+  const art = field('art');
+  // A section's `do` lines go on its way out; its prose is the scene's.
+  const split = (ls: L[]) => ({ prose: ls.filter((l) => !l.text.startsWith('do ')), does: ls.filter((l) => l.text.startsWith('do ')).map((l) => l.text.slice(3)) });
+  const w = split(won);
+  return [
+    [id, [...(field('as') ? [mk(`kind: ${field('as')}`)] : []), ...approach, ...choices.map(mk)]],
+    [`${id}-fight`, [mk('kind: battle'), mk(`encounterId: ${fight[1]}`), mk(`mapId: ${fight[2]}`), ...fightLines,
+      mk(`won → ${back}`), ...w.prose.map((l) => ({ ...l, text: `  ${l.text}` })), mk(`  do +${done}${w.does.length ? `; ${w.does.join('; ')}` : ''}`)]],
+    ...answers.map((a): [Id, L[]] => {
+      const x = split(a.lines);
+      return [`${id}-${a.id}`, [mk('noBack: true'), ...(art ? [mk(`art: ${art}`)] : []), ...x.prose,
+        mk(`> ${ret} → ${back}  #ok`), mk(`  do +${done}; xp avoided ${fight[1]}${x.does.length ? `; ${x.does.join('; ')}` : ''}`)]];
+    }),
+  ];
 }
 
 function parseScene(id: Id, head: string, lines: Array<{ text: string; no: number }>, where: string): unknown {
