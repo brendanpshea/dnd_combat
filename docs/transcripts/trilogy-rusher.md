@@ -435,7 +435,7 @@ _A hidden door: A Lone Fire ↔ Hidden Cache._
 
 **→ Trophy Pole** <sub>(room `m4`)</sub>
 
-A rough map is pinned to the wall, with every farm on it marked.
+Things taken from people who said no, hung up where everyone can see.
 
 → The Chief's Hall
 

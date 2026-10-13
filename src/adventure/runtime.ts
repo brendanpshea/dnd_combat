@@ -1094,6 +1094,7 @@ function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, 
     if (link.door?.secret && !p.revealed.includes(key) && passive >= link.door.secret.dc) {
       p.revealed.push(key);
       events.push({ type: 'doorFound', link: key });
+      if (link.door.note) events.push({ type: 'text', paragraphs: [link.door.note] });
     }
   }
 
@@ -1305,6 +1306,8 @@ export function searchRoom(state: AdventureState, module: Module): AdventureEven
       if (roll.total >= link.door!.secret!.dc) {
         p.revealed.push(linkKey(link));
         events.push({ type: 'doorFound', link: linkKey(link) });
+        // A hidden way says what it is (a gap in the stakes, a priest's hole).
+        if (link.door!.note) events.push({ type: 'text', paragraphs: [link.door!.note] });
         found++;
       }
     }
