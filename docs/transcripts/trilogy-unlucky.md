@@ -519,7 +519,7 @@ Boot-prints and drag-marks cross the mud. Read them right, and they will lead yo
 
 `[Survival DC 12 — Elaine the Holy rolls 7 — failed]`
 
-<sub>scene `tracks-lost`</sub>
+<sub>scene `tracks-read-failed`</sub>
 
 The prints tangle and double back on themselves until your eyes water, but they point roughly toward the hills. That's enough to find the hollow by, if not the dry way there.
 

@@ -873,28 +873,29 @@ export const SCENES: Record<string, Scene> = {
     ],
     next: [
       {
+        id: "read",
+        label: "[Survival DC 12] Follow the boot-prints",
+        to: "tracks-read",
+        hideWhenBlocked: true,
+        attempt: "tracks",
+        check: { skill: "survival", dc: 12, failTo: "tracks-read-failed" },
+      },
+      {
         id: "ranger",
         label: "[Ranger · Survival DC 9] Read the patrols' line at a glance",
         to: "tracks-read",
         hideWhenBlocked: true,
         requires: [{ kind: "classInParty", classId: "ranger" }],
         attempt: "tracks",
-        check: { skill: "survival", dc: 9, failTo: "tracks-lost" },
-      },
-      {
-        id: "read",
-        label: "[Survival DC 12] Follow the boot-prints",
-        to: "tracks-read",
-        attempt: "tracks",
-        check: { skill: "survival", dc: 12, failTo: "tracks-lost" },
+        check: { skill: "survival", dc: 9, failTo: "tracks-read-failed" },
       },
     ],
   },
   "tracks-read": {
     id: "tracks-read",
     kind: "story",
-    art: { emoji: "👣" },
     noBack: true,
+    art: { emoji: "👣" },
     text: [
       "The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You've found the **safe path to the hollow**.",
     ],
@@ -907,11 +908,11 @@ export const SCENES: Record<string, Scene> = {
       },
     ],
   },
-  "tracks-lost": {
-    id: "tracks-lost",
+  "tracks-read-failed": {
+    id: "tracks-read-failed",
     kind: "story",
-    art: { emoji: "👣" },
     noBack: true,
+    art: { emoji: "👣" },
     text: [
       "The prints tangle and double back on themselves until your eyes water, but they point roughly toward the hills. That's enough to find the hollow by, if not the dry way there.",
       "The wet way is slow and loud. You will come at the hollow splashing from one tussock to the next. Anything waiting in the reeds will hear you long before you see it.",
@@ -2543,7 +2544,7 @@ export const ACTS: Record<string, string> = {
   "road-out": "marsh",
   "tracks": "marsh",
   "tracks-read": "marsh",
-  "tracks-lost": "marsh",
+  "tracks-read-failed": "marsh",
   "tracks-mapped": "marsh",
   "hollow-quiet": "marsh",
   "ravine": "marsh",

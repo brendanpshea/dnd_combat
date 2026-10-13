@@ -572,8 +572,8 @@ The goblin boss counts your blades, then counts his pack, and likes his own sum 
 
 Boot-prints and drag-marks cross the mud. Read them right, and they will lead you through the reeds.
 
-- » **[Ranger · Survival DC 9] Read the patrols' line at a glance** [Survival DC 9] <sub>open when a ranger in the party?; otherwise hidden</sub>
 - » **[Survival DC 12] Follow the boot-prints** [Survival DC 12]
+- » **[Ranger · Survival DC 9] Read the patrols' line at a glance** [Survival DC 9] <sub>open when a ranger in the party?; otherwise hidden</sub>
 
 ## `tracks-read` · story
 
@@ -581,7 +581,7 @@ The tracks tell their whole story: a heavy patrol out at dusk, a lighter one bac
 
 - » **Follow the dry line**
 
-## `tracks-lost` · story
+## `tracks-read-failed` · story
 
 The prints tangle and double back on themselves until your eyes water, but they point roughly toward the hills. That's enough to find the hollow by, if not the dry way there.
 
