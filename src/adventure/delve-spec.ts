@@ -1070,7 +1070,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
           req.loot === 'gold' ? [{ kind: 'gold', amount: 30 + 10 * level }] : [{ kind: 'addItem', itemId: req.loot }]);
       } else if (id === 'cache' && dress) {
         // (A story's place: somebody's own stash, and no potion.)
-        room.search = find(id, `Somebody's stash, wrapped in oilcloth: ${holders.length ? `the savings of ${dice.pick(holders[0]!.names.length ? [holders[0]!.one] : ['someone'])} who meant to run` : 'a purse nobody came back for'}.`,
+        room.search = find(id, `Somebody's stash, wrapped in oilcloth: ${holders.length && !holders[0]!.beastly ? `the savings of ${dice.pick(holders[0]!.names.length ? [holders[0]!.one] : ['someone'])} who meant to run` : 'a purse nobody came back for'}.`,
           [{ kind: 'gold', amount: 20 + 10 * level }]);
       } else if (id === 'cache') {
         room.search = find(id, 'Someone hid their best here: coin, and a flask of something red.',

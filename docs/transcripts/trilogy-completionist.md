@@ -499,6 +499,8 @@ You haul each other up and over, hand over hand.
 
 **→ Fresh Tracks** <sub>(room `s2`)</sub>
 
+Boot-prints and clawed feet in the mud, all going the same way, along a line of firmer ground.
+
 → Sunken Ravine
 
 **→ Sunken Ravine** <sub>(room `m1`)</sub>
@@ -543,7 +545,7 @@ _Journal (lead): Vex, the Lieutenant_
 
 <sub>scene `trail/f1-find-cache`</sub>
 
-Somebody's stash, wrapped in oilcloth: the savings of one of the marsh's things who meant to run.
+Somebody's stash, wrapped in oilcloth: a purse nobody came back for.
 
 **» Take it**
 
@@ -859,7 +861,7 @@ A tally stick hangs from a tent pole, with a notch for every cart taken. At the 
 
 A raider looks up from the fire with his mouth full, and shouts with it.
 
-**Battle:** gen:berserker+berserker+berserker+guard <sub>(`gen:berserker+berserker+berserker+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+berserker+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -903,7 +905,7 @@ A drowned house is scratched into a plank: a boy on the roof, and the water at t
 
 _(a paragraph shown before: “A raider looks up from the fire…”)_
 
-**Battle:** gen:berserker+berserker+berserker+guard <sub>(`gen:berserker+berserker+berserker+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+berserker+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 

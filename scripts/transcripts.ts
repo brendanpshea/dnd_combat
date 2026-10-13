@@ -54,7 +54,7 @@ import { ROOM_MAP_REF } from '../src/adventure/types.js';
 import type { MapData } from '../src/data/maps.js';
 import { type CampaignState, newCampaign, xpAward, levelForXp, itemName, fullRest } from '../src/campaign/campaign.js';
 import { seedRng } from '../src/engine/rng.js';
-import { ENCOUNTERS } from '../src/data/encounters.js';
+import { ENCOUNTERS, encounterFor } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
 import { moduleById } from '../src/data/modules/index.js';
 import { expandModule } from '../src/adventure/embed.js';
@@ -504,7 +504,7 @@ class Transcript {
           break;
         }
         case 'startBattle':
-          this.line(`**Battle:** ${ENCOUNTERS[e.encounterId]?.name ?? e.encounterId} <sub>(\`${e.encounterId}\` on \`${e.mapId}\`)</sub>`);
+          this.line(`**Battle:** ${encounterFor(e.encounterId)?.name ?? e.encounterId} <sub>(\`${e.encounterId}\` on \`${e.mapId}\`)</sub>`);
           break;
         case 'rest': this.line(`_${e.variant === 'long' ? 'Long' : 'Short'} rest._`); break;
         case 'ending': this.line(`### Ending: ${e.outcome}`); break;

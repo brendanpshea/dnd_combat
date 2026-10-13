@@ -57,7 +57,7 @@ import {
   slideLines,
 } from '../src/adventure/runtime.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
-import { ENCOUNTERS } from '../src/data/encounters.js';
+import { ENCOUNTERS, encounterFor } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
 import { moduleById } from '../src/data/modules/index.js';
 import { LEDGER_BANDS } from '../src/data/modules/ledger.js';
@@ -538,7 +538,7 @@ function renderScene(scene: Scene, st: AdventureState, note: (text: string) => s
       break;
     case 'battle':
       para(introParagraphs(st, scene));
-      out.push(`**Battle:** ${ENCOUNTERS[scene.encounterId]?.name ?? scene.encounterId}${scene.parley ? ` · parley: ${scene.parley.label ?? 'Parley'}${scene.parley.skill ? ` ${skill(scene.parley.skill, scene.parley.dc)}` : ''}` : ''}`, '');
+      out.push(`**Battle:** ${encounterFor(scene.encounterId)?.name ?? scene.encounterId}${scene.parley ? ` · parley: ${scene.parley.label ?? 'Parley'}${scene.parley.skill ? ` ${skill(scene.parley.skill, scene.parley.dc)}` : ''}` : ''}`, '');
       section('Won', scene.onWin.text);
       section('Lost', scene.onLoss?.text);
       if (scene.parley) {
