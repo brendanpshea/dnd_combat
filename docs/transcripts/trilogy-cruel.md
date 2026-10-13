@@ -329,7 +329,7 @@ You slip back out through the gate, into the quiet of the hollow.
 
 <sub>scene `inner/f1-patrol`</sub>
 
-Two of them come out of a tent still buckling on stolen mail.
+Torches come round the tents, and a voice shouts that it has found you.
 
 **Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
 
@@ -425,7 +425,7 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 <sub>scene `inner/f1-patrol` (again)</sub>
 
-_(a paragraph shown before: “Two of them come out of a…”)_
+_(a paragraph shown before: “Torches come round the tents, and a…”)_
 
 **Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
 
@@ -457,7 +457,7 @@ The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sittin
 
 She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
 
-The hall is full of raiders who heard you coming, and none of them is sitting down.
+Word of you has run ahead of you through the den. Nobody in this hall is sitting down.
 
 **» End them both**
 
@@ -471,7 +471,7 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 **» Fight — won**
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 

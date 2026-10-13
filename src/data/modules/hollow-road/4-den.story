@@ -167,7 +167,7 @@ The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his
 ? not price-heard | The hag laughs. "Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark."
 ? price-heard | The hag laughs. "Little thief. I told you my price at the water-gate, and you came anyway."
 She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
-? alarm inner/delve >= 3 | The hall is full of raiders who heard you coming, and none of them is sitting down.
+? alarm inner/delve >= 3 | Word of you has run ahead of you through the den. Nobody in this hall is sitting down.
 ? npc vex fate turned | By the door, {hask} grounds his spear and does not move to help. If {vargan} is ever going to listen to anyone, it is now.
 again:
 The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
@@ -216,7 +216,7 @@ again:
 ? npc vex fate turned | {hask} is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 won → vargan-beaten
   ? vargan-shaken | {vargan} fights with one eye on his own shut fist.
-  The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+  The chief's axe goes spinning out of his hand. When the **{reedwife}** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
   ? npc vex not fate turned | By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
   ? npc vex fate turned | Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
   @BOSS_HOARD

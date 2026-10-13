@@ -54,7 +54,7 @@ export const WREN_ON_VEX: Para[] = [
     text: '"You got the horse off me. Let me pay some of that back." She looks at the den-mud on your boots. "You\'ve been inside already, so you\'ve met {vex} at his fire. He hates the chief worse than you do. Whatever you said to him, he\'ll remember it when the chief calls for his guards."' },
 ];
 
-export const BOSS_FALLS = 'The chief\'s axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.';
+export const BOSS_FALLS = 'The chief\'s axe goes spinning out of his hand. When the **{reedwife}** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.';
 /** The unguarded hall's whistled help, ended (`boss-unguarded`). */
 // The guarded hall: the chief's guard and a raider fight beside him.
 export const GUARD_ENDS = 'By the door the chief\'s grey old guard is down, and the raider who stood with him lies across the threshold.';

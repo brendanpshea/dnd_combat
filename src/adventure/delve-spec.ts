@@ -1116,7 +1116,8 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     let alarm: Dungeon['alarm'];
     if (holder) {
       const pid = `${pre}patrol`;
-      const opens = holder.intros ?? T.outdoor?.fights;
+      // Not a room's intro: the patrol comes looking for the party.
+      const opens = holder.patrol ?? [`${capFirst(holder.names[0] ?? 'they')} have come looking for you.`];
       // A patrol is who they send when they mean it: an elite fight, drawn a
       // level up, since it finds a party that has fought its way in.
       scenes[pid] = { id: pid, kind: 'battle', encounterId: fightOf(Math.min(MAX_LEVEL, level + 1), 'elite', undefined, holder), mapId: '@room', loot: false,

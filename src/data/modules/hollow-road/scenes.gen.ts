@@ -1981,7 +1981,7 @@ export const SCENES: Record<string, Scene> = {
       "She turns to you, delighted. \"You've been *busy*.\" At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.",
       {
         if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 3 }],
-        text: "The hall is full of raiders who heard you coming, and none of them is sitting down.",
+        text: "Word of you has run ahead of you through the den. Nobody in this hall is sitting down.",
       },
       {
         if: [{ kind: "npc", npc: "vex", fate: "turned" }],
@@ -2092,7 +2092,7 @@ export const SCENES: Record<string, Scene> = {
           if: [{ kind: "flag", flag: "vargan-shaken" }],
           text: "{vargan} fights with one eye on his own shut fist.",
         },
-        "The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.",
+        "The chief's axe goes spinning out of his hand. When the **{reedwife}** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.",
         {
           if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
           text: "By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.",
