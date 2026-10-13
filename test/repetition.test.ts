@@ -24,6 +24,7 @@ const MOTIFS = new Set([
   'door under the fen',                             // the Warden's door, by its one name
   'of the wander inn',                              // a place's name
   'mark of reeds and', 'reeds and a reaching', 'and a reaching hand', // the brand, recognised each time
+  'door in the dark', 'by their door in', // the hag's price, bound with her own words
 ]);
 
 /** Tics found and not yet fixed. Strike each off as it is fixed. (The
