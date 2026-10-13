@@ -1,6 +1,7 @@
 /**
  * Every faction, on every theme it can hold, at the levels it can field, in
- * two shapes: a held place must read as a place (archetypes.ts), not a list.
+ * every shape, at three seeds: a held place must read as a place
+ * (archetypes.ts), not a list.
  * Its rooms are named once each, most of them say what they are for, its
  * fights are neither none nor all, and no text is left with a `$` in it.
  */
@@ -65,5 +66,47 @@ describe('a held place, for every faction', () => {
     }
     expect(round / locked, `${round} of ${locked} locked floors have a back way`).toBeGreaterThan(0.3);
     for (const id of Object.keys(ARCHETYPES)) expect(byKind.get(id) ?? 0, `back ways in a ${id}`).toBeGreaterThan(0);
+  }, 60_000);
+
+  it('puts its gatekeeper where every open way to the goal runs through, and its vault past the goal', () => {
+    let gates = 0, vaults = 0, floors = 0;
+    for (const g of grid) {
+      const module = build(g);
+      const kind = ARCHETYPES[g.f.archetype]!;
+      const gateNames = new Set(kind.roles.filter((r) => r.where === 'gate').flatMap((r) => [...r.names.in, ...r.names.out]));
+      for (const sc of Object.values(module.scenes)) {
+        if (sc.kind !== 'dungeon') continue;
+        floors++;
+        const d = sc.dungeon;
+        const goal = d.rooms.find((r) => r.goal)!.id;
+        const reaches = (without?: string) => {
+          const seen = new Set([d.entry]);
+          for (let grew = true; grew;) {
+            grew = false;
+            for (const l of d.links) {
+              if (l.door?.secret) continue;
+              for (const [x, y] of [[l.a, l.b], [l.b, l.a]] as const) if (seen.has(x) && !seen.has(y) && y !== without) { seen.add(y); grew = true; }
+            }
+          }
+          return seen;
+        };
+        for (const r of d.rooms.filter((x) => gateNames.has(x.name))) {
+          gates++;
+          expect(r.fight, `${d.title}: the gatekeeper fights`).toBeDefined();
+          expect(reaches(r.id).has(goal), `${d.title}: a way to the goal round ${r.name}`).toBe(false);
+        }
+        const vault = d.rooms.find((r) => r.id === 'vault');
+        if (vault) {
+          vaults++;
+          const by = d.links.filter((l) => l.a === 'vault' || l.b === 'vault');
+          expect(by.map((l) => (l.a === 'vault' ? l.b : l.a)), `${d.title}: the vault opens only off the goal`).toEqual([goal]);
+          expect(vault.exit?.to).toBe('won');
+          const boss = module.scenes[d.rooms.find((r) => r.goal)!.fight!];
+          expect(boss?.kind === 'battle' && boss.onWin.to, 'the goal won leads on into the vault').toBe('@hub');
+        }
+      }
+    }
+    expect(gates / floors, `${gates} gatekeepers on ${floors} floors`).toBeGreaterThan(0.3);
+    expect(vaults, 'vaults').toBeGreaterThan(0);
   }, 60_000);
 });

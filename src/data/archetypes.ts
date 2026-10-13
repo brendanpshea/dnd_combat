@@ -14,7 +14,9 @@
  */
 import type { Id } from '../engine/types.js';
 
-export type RoleWhere = 'near' | 'mid' | 'deep' | 'side' | 'any';
+/** Where on the floor. `gate`: a room every way to the goal runs through
+ *  (its sub-boss); `vault`: beyond the goal, reached only past its holder. */
+export type RoleWhere = 'near' | 'mid' | 'deep' | 'side' | 'any' | 'gate' | 'vault';
 
 export interface RoomRole {
   id: Id;
@@ -63,6 +65,11 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     key: 'The keeper wore the gate key on a thong round his neck.',
     backWay: { in: 'A gap behind the stores, where the wall has rotted. Someone has been using it.', out: 'A gap in the stakes behind the midden, just wide enough to squeeze through.' },
     roles: [
+      role({ id: 'lieutenant', where: 'gate', fight: 'elite', names: { in: ['Inner Gate', 'Captain\'s Post'], out: ['Inner Stockade', 'Lieutenant\'s Fire'] },
+        text: ['The chief\'s second holds the only way on, and has picked the best of them to help.', 'Someone has to keep the way to the chief. This one wants the job.'],
+        quiet: ['A stool across the only way on, and nobody on it now.'] }),
+      role({ id: 'plunder', where: 'vault', find: 'coin', names: { in: ['Strongroom', 'Chief\'s Hoard'], out: ['Plunder Tent', 'Chief\'s Wagon'] },
+        text: ['Everything worth keeping, kept where only the chief could reach it.', 'Chests, sacks, and a cage. What they took, and who.'] }),
       role({ id: 'watch', where: 'near', fight: 'room', names: { in: ['Guardroom', 'Gatehouse'], out: ['Watch Platform', 'Sentry Gap'] },
         text: ['A stool, a dice cup, and a view of the way you came in.', 'Someone was meant to be watching this door.'], quiet: ['An empty stool and a cold brazier. Whoever kept watch here has gone.'] , out: { text: ['A plank on two barrels, a dice cup, and a view of the way you came in.', 'Someone was meant to be watching the gap in the stakes.'], quiet: ['An empty platform and a cold brazier. Whoever kept watch here has gone.'] } }),
       role({ id: 'bunks', where: 'mid', fight: 'room', names: { in: ['Barracks', 'Bunkroom'], out: ['Tents', 'Bedrolls'] },
@@ -84,6 +91,11 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     key: 'Under the biggest of them, a gnawed bone with a key still tied to it.',
     backWay: { in: 'A crawlway, scraped smooth by something that uses it often.', out: 'A tunnel under the roots, scraped smooth by something that uses it often.' },
     roles: [
+      role({ id: 'mate', where: 'gate', fight: 'elite', names: { in: ['Narrows', 'Guarded Hollow'], out: ['Narrow Run', 'Thorn Gap'] },
+        text: ['The way on narrows to one track, and something big lies across it.', 'The great one\'s mate keeps the way to its den, and does not move aside.'],
+        quiet: ['The way on narrows to one track, flattened by something big that sleeps here.'] }),
+      role({ id: 'hoard', where: 'vault', find: 'coin', names: { in: ['Back of the Den', 'Bone Hoard'], out: ['Hollow Under the Roots', 'Bone Hoard'] },
+        text: ['Behind where it sleeps: everything it dragged home, and everyone it carried off.', 'Bones, packs and torn cloth. Some of it was carried here alive.'] }),
       role({ id: 'trail', where: 'near', names: { in: ['Scratched Passage', 'Claw Run'], out: ['Game Trail', 'Trampled Reeds'] },
         text: ['The walls are scored with claw marks, low down.', 'Something big comes this way often. The ground is worn smooth.'] , out: { text: ['The reeds are snapped flat in a wide path, low down.', 'Something big comes this way often. The ground is worn smooth.'] } }),
       role({ id: 'den', where: 'mid', fight: 'room', names: { in: ['Den', 'Sleeping Hollow'], out: ['Wallow', 'Flattened Nest'] },
@@ -105,6 +117,11 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     key: 'Round its neck on a chain: the key to the grave-gate.',
     backWay: { in: 'A wall where the old graves have fallen in. There is a way through the bones.', out: 'A grave fallen in on itself, opening into the vault beyond.' },
     roles: [
+      role({ id: 'warden', where: 'gate', fight: 'elite', names: { in: ['Warden\'s Arch', 'Sealed Stair'], out: ['Lych Arch', 'Sealed Gate'] },
+        text: ['A warden of the dead stands in the arch, as it has stood for a hundred years.', 'The way down is held by one who was buried to hold it.'],
+        quiet: ['An arch, and an empty niche beside it where something used to stand.'] }),
+      role({ id: 'reliquary', where: 'vault', find: 'coin', names: { in: ['Sealed Reliquary', 'Inner Tomb'], out: ['Sealed Vault', 'Founder\'s Tomb'] },
+        text: ['The tomb behind the tomb. Whatever the dead were guarding, it is here.', 'A sealed room, opened now. Grave-gold, and other things put away down here.'] }),
       role({ id: 'antechamber', where: 'near', names: { in: ['Antechamber', 'Mourners\' Hall'], out: ['Lych Gate', 'Grave Row'] },
         text: ['Names cut in the wall, most of them worn away.', 'Dust lies thick on everything except the floor.'] , out: { text: ['Names cut in the headstones, most of them worn away.', 'The grass grows thick on everything except the path.'] } }),
       role({ id: 'ossuary', where: 'mid', fight: 'room', names: { in: ['Ossuary', 'Bone Gallery'], out: ['Charnel Pit', 'Open Graves'] },
@@ -126,6 +143,11 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     key: 'A key on a cord, warm from its keeper\'s hand.',
     backWay: { in: 'A priest\'s hole behind a hanging, for leaving in a hurry.', out: 'A path behind the woodshed that the faithful are told not to use.' },
     roles: [
+      role({ id: 'deacon', where: 'gate', fight: 'elite', names: { in: ['Deacon\'s Door', 'Veiled Arch'], out: ['Inner Ring', 'Veiled Path'] },
+        text: ['The high priest\'s right hand bars the inner way, and the faithful stand with them.', 'Only the chosen pass here. The one who chooses is waiting.'],
+        quiet: ['A veil across the inner way, and a stool for whoever keeps it.'] }),
+      role({ id: 'sanctum', where: 'vault', find: 'coin', names: { in: ['Hidden Sanctum', 'Reliquary'], out: ['Hidden Grove', 'Offering Pit'] },
+        text: ['What they prayed over, and who they meant to give it.', 'The cult\'s true treasure, and the ones they were saving for the last night.'] }),
       role({ id: 'front', where: 'near', fight: 'room', names: { in: ['Robing Room', 'Doorkeeper\'s Cell'], out: ['Woodshed', 'Lantern Post'] },
         text: ['Robes on hooks, one hook empty. Whoever wore it is close.', 'A bell on a string over the door. You have already rung it.'], quiet: ['Robes on hooks, and a bell on a string over the door.'] , out: { text: ['Robes hung on a branch, one branch bare. Whoever wore it is close.', 'A bell on a string across the path. You have already rung it.'], quiet: ['Robes hung on a branch, and a bell on a string across the path.'] } }),
       role({ id: 'dorm', where: 'mid', fight: 'room', names: { in: ['Dormitory', 'Cells'], out: ['Huts', 'Pilgrims\' Tents'] },
@@ -145,6 +167,11 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     key: 'A key of gold, small and fine, that was never meant for a guest.',
     backWay: { in: 'A servants\' passage behind a panel, for coming and going unseen.', out: 'A servants\' path through the hedge, for coming and going unseen.' },
     roles: [
+      role({ id: 'champion', where: 'gate', fight: 'elite', names: { in: ['Champion\'s Hall', 'Guarded Door'], out: ['Champion\'s Ring', 'Thorn Door'] },
+        text: ['The court\'s champion stands at the inner door, and asks your names with a smile.', 'No one sees the throne without passing its champion first.'],
+        quiet: ['A gilded door, and an empty place beside it where a champion stood.'] }),
+      role({ id: 'treasury', where: 'vault', find: 'coin', names: { in: ['Private Treasury', 'Gilded Cage'], out: ['Hidden Bower', 'Gilded Cage'] },
+        text: ['The court\'s best things, kept behind its ruler. Some of them can talk.', 'Gold, and gifts, and a cage hung with silk.'] }),
       role({ id: 'threshold', where: 'near', names: { in: ['Threshold', 'Hall of Petitions'], out: ['Gate of Thorns', 'First Ring'] },
         text: ['Everything here is made to make you feel small.', 'A space to wait in, and to be watched while you wait.'] }),
       role({ id: 'courtiers', where: 'mid', fight: 'room', names: { in: ['Gallery', 'Audience Hall'], out: ['Revel Ground', 'Dancing Ring'] },
@@ -164,6 +191,11 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     key: 'A bone key, carved with their god\'s face.',
     backWay: { in: 'A tunnel too low for them to bother guarding.', out: 'A ditch under the reed wall, too low for them to bother guarding.' },
     roles: [
+      role({ id: 'brood-guard', where: 'gate', fight: 'elite', names: { in: ['Royal Tunnel', 'Guard Chamber'], out: ['Royal Mound', 'Guard Ring'] },
+        text: ['The biggest of them stand shoulder to shoulder in the only way on.', 'A tunnel to the heart of the place, and its best guards in it.'],
+        quiet: ['A wide tunnel to the heart of the place, scraped smooth by many feet.'] }),
+      role({ id: 'heart', where: 'vault', find: 'coin', names: { in: ['Heart Chamber', 'Hoard Pit'], out: ['Heart Mound', 'Hoard Pit'] },
+        text: ['The heart of the hive: everything they gathered, and everyone they took.', 'They bring their best finds here. Some of the finds are still alive.'] }),
       role({ id: 'traps', where: 'near', names: { in: ['Trap Workshop', 'Snare Run'], out: ['Snare Line', 'Pit Field'] },
         text: ['Tripwires, deadfalls, and a pile of springs. Mind your feet.', 'Little traps everywhere, most of them already sprung.'] }),
       role({ id: 'warren', where: 'mid', fight: 'room', names: { in: ['Warren', 'Burrows'], out: ['Mud Huts', 'Reed Huts'] },

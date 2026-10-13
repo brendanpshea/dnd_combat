@@ -31,12 +31,12 @@ import { ITEMS } from '../data/items.js';
 import { generateEncounter, type EncounterBrief } from '../arena/encounter.js';
 import { evenBudgetFor, memberCapFor, maxCountFor } from '../arena/run.js';
 import { LEVEL_XP, levelForXp, MAX_LEVEL } from '../campaign/campaign.js';
-import type { Dungeon, DungeonLink, DungeonRoom, Module, Scene, RoomSize, Effect, Requirement, SceneRef } from './types.js';
+import { ALARM_ROUSED, type Dungeon, type DungeonLink, type DungeonRoom, type Module, type Scene, type RoomSize, type Effect, type Requirement, type SceneRef } from './types.js';
 import { goalCost } from './dungeon.js';
 import { validateModule } from './validate.js';
 import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
 import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
-import { beastName, bossName, styleFor } from './names.js';
+import { beastName, bossName, personName, styleFor } from './names.js';
 import { FACTIONS, ROUSED, canHold, factionsFor, type Faction } from '../data/factions.js';
 import { ARCHETYPES, type RoomRole, type RoleWhere } from '../data/archetypes.js';
 import { drawHistory, type History } from './delve-history.js';
@@ -57,7 +57,10 @@ export const SPEC_THEMES = Object.keys(ROOMS) as SpecTheme[];
 export type DelveShape = 'classic' | 'spine' | 'hub' | 'ring' | 'keys';
 export const DELVE_SHAPES: DelveShape[] = ['classic', 'spine', 'hub', 'ring', 'keys'];
 
-export type RoomPlace = 'goal' | 'main' | 'side' | 'beforeLock' | 'afterLock';
+/** `vault`: the room past the last floor's goal (DelveSpec.vault), reached
+ *  only by dealing with whoever holds the goal: where a story keeps what the
+ *  party came to fetch. */
+export type RoomPlace = 'goal' | 'main' | 'side' | 'beforeLock' | 'afterLock' | 'vault';
 
 /** A room the delve must have. Everything left out is rolled as usual. */
 export interface RequiredRoom {
@@ -139,6 +142,14 @@ export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
   /** Draw a past for the place: its title, its story, traces in the rooms. */
   history?: boolean;
   /**
+   * A room past the last floor's goal, reached only past its holder: the
+   * holders' hoard (`true`), or someone they took (`'hostage'`, who is moved
+   * if the place is roused before the party gets there). Default: a held
+   * place has one half the time, unless a story dresses it; a required room
+   * placed `where: 'vault'` asks for one.
+   */
+  vault?: boolean | 'hostage';
+  /**
    * Lines of the place's past, for the rooms whose role keeps it (a held
    * floor's `find: 'lore'` rooms: a ledger, an oath stone). A story's own
    * lore goes here, so the place tells its chapter's story; each line is
@@ -191,7 +202,7 @@ export { SHARES, shareFor, delveFightXpBound } from './delve-budget.js';
 import { shareFor } from './delve-budget.js';
 
 /** Throws on a spec no candidate could satisfy; returns it with defaults. */
-export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights' | 'lore'>> & Pick<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights' | 'lore'> {
+export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights' | 'lore' | 'vault'>> & Pick<DelveSpec, 'size' | 'lock' | 'dressing' | 'maxFights' | 'lore' | 'vault'> {
   const err = (m: string) => { throw new Error(`Bad delve spec: ${m}`); };
   const level = spec.level ?? 2;
   if (!Number.isInteger(level) || level < 1 || level > MAX_LEVEL) err(`level ${level} is not 1–${MAX_LEVEL}`);
@@ -208,6 +219,13 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'l
   for (const [i, r] of require.entries()) {
     const floor = r.floor ?? (r.where === 'goal' ? floors : 1);
     if (!Number.isInteger(floor) || floor < 1 || floor > floors) err(`required room ${i} is on floor ${floor} of ${floors}`);
+    if (r.where === 'vault') {
+      if (floor !== floors) err(`required room ${i}: a vault lies past the last floor's goal, not on floor ${floor}`);
+      if (spec.vault === false) err(`required room ${i} is a vault, and the spec says the place has none`);
+      if (require.filter((x) => x.where === 'vault').length > 1) err('two required vaults');
+      if ((spec.pieces ?? []).some((pl) => PIECES[pl.piece]?.where === 'goal' && (pl.floor ?? floors) === floors)) err(`required room ${i} is a vault, and a goal piece ends the last floor`);
+      continue;
+    }
     if (r.where === 'goal') {
       if (goals.has(floor)) err(`two required goals on floor ${floor}`);
       goals.add(floor);
@@ -268,6 +286,7 @@ export function checkSpec(spec: DelveSpec): Required<Omit<DelveSpec, 'size' | 'l
     ...(spec.dressing ? { dressing: spec.dressing } : {}),
     ...(spec.maxFights !== undefined ? { maxFights: spec.maxFights } : {}),
     ...(spec.lore?.length ? { lore: spec.lore } : {}),
+    ...(spec.vault !== undefined ? { vault: spec.vault } : {}),
   };
 }
 
@@ -284,6 +303,8 @@ interface Graph {
   afterLock: Set<Id>;
   /** Rooms a set piece built: sealed, never re-rolled or re-used. */
   pieceRooms: Set<Id>;
+  /** The room past the goal, where the floor has one. */
+  vault?: Id;
 }
 
 /** `open`: no lock of the generator's own (a place a story dresses keeps only
@@ -384,6 +405,7 @@ function placesFor(g: Graph, where: RoomPlace | undefined): Id[] {
   const plain = [...g.main.slice(1, -1), ...g.side].filter((id) => !keyRooms.has(id) && id !== 'cache' && !g.pieceRooms.has(id));
   switch (where) {
     case 'goal': return [goal];
+    case 'vault': return g.vault ? [g.vault] : [];
     case 'main': return g.main.slice(1, -1);
     case 'side': return g.side.filter((id) => !keyRooms.has(id) && id !== 'cache' && !g.pieceRooms.has(id));
     case 'beforeLock': return plain.filter((id) => !g.afterLock.has(id));
@@ -410,6 +432,30 @@ const FIND_WORDS = {
     'A healing draught, wrapped in a rag and tucked out of sight.', 'A stoppered bottle, its wax seal unbroken.'],
 };
 
+/**
+ * The deepest room on the main path, at least halfway in, that every open way
+ * from the entrance to the goal runs through (a secret way does not count: that is the way round
+ * it), and that `ok` allows. Undefined where there is none.
+ */
+function cutRoom(g: Graph, goal: Id, ok: (id: Id) => boolean): Id | undefined {
+  const entry = g.main[0]!;
+  const reaches = (without: Id) => {
+    const seen = new Set([entry]);
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const l of g.links) {
+        if (l.door?.secret) continue;
+        for (const [x, y] of [[l.a, l.b], [l.b, l.a]] as const) {
+          if (seen.has(x) && !seen.has(y) && y !== without && !(l.door?.oneWay && x === l.b)) { seen.add(y); grew = true; }
+        }
+      }
+    }
+    return seen.has(goal);
+  };
+  // At least halfway in: a second by the front door is only a doorman.
+  return [...g.main.slice(1, -1)].reverse().find((id) => g.main.indexOf(id) >= (g.main.length - 1) / 2 && ok(id) && !reaches(id));
+}
+
 /** A held room's part in the place: its role (archetypes.ts), and its name. */
 interface Cast { role?: RoomRole; faction: Faction; name?: string }
 
@@ -423,11 +469,11 @@ interface Cast { role?: RoomRole; faction: Faction; name?: string }
  */
 function castRoles(
   g: Graph, goal: Id, placed: ReadonlyMap<Id, unknown>, safe: ReadonlySet<Id>, keyOf: ReadonlyMap<Id, string>,
-  dice: Dice, facOf: (id: Id) => Faction, outdoor: boolean,
+  dice: Dice, facOf: (id: Id) => Faction, outdoor: boolean, gate?: Id,
 ): Map<Id, Cast> {
   const out = new Map<Id, Cast>();
   const free = [...g.main.slice(1, -1), ...g.side]
-    .filter((id) => id !== goal && id !== 'cache' && !placed.has(id) && !safe.has(id) && !g.pieceRooms.has(id));
+    .filter((id) => id !== goal && id !== gate && id !== 'cache' && !placed.has(id) && !safe.has(id) && !g.pieceRooms.has(id));
   const whereOf = (id: Id): RoleWhere => {
     const i = g.main.indexOf(id);
     if (i < 0) return 'side';
@@ -443,7 +489,11 @@ function castRoles(
     if (role) used.add(`${faction.id}/${role.id}`);
     out.set(id, { faction, ...(role ? { role } : {}), ...(name ? { name } : {}) });
   };
-  const rolesOf = (f: Faction) => ARCHETYPES[f.archetype]?.roles ?? [];
+  const all = (f: Faction) => ARCHETYPES[f.archetype]?.roles ?? [];
+  // The gate's and the vault's roles are theirs alone.
+  const rolesOf = (f: Faction) => all(f).filter((r) => r.where !== 'gate' && r.where !== 'vault');
+  if (gate) give(gate, facOf(gate), all(facOf(gate)).find((r) => r.where === 'gate'));
+  if (g.vault && !placed.has(g.vault)) give(g.vault, facOf(goal), all(facOf(goal)).find((r) => r.where === 'vault'));
   // The first key with whoever keeps things; a second with another who fights.
   for (const id of free.filter((x) => keyOf.has(x))) {
     const f = facOf(id);
@@ -562,6 +612,16 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const kind = holders[0] ? ARCHETYPES[holders[0].archetype] : undefined;
     const g = wire(spec.shape, n, dice, f, kind ? kind.lock[T.outdoor ? 'out' : 'in'] : T.door, f === 1 ? spec.lock : undefined, !!dress);
     let goal = g.main[g.main.length - 1]!;
+    // The vault (DelveSpec.vault): past the last floor's goal.
+    const askedVault = spec.require.some((r) => r.where === 'vault');
+    // (A goal piece brings its own goal, and its own end: no vault past it.)
+    const goalPiece = spec.pieces.some((pl) => PIECES[pl.piece]!.where === 'goal' && (pl.floor ?? spec.floors) === spec.floors);
+    const vaultKind = goalPiece ? false : askedVault ? true : spec.vault ?? (holders.length && !dress ? (dice.chance(0.5) ? true : false) : false);
+    if (last && vaultKind) {
+      g.vault = 'vault';
+      g.links.push({ a: goal, b: 'vault' });
+      if (g.afterLock.has(goal)) g.afterLock.add('vault');
+    }
     /** A goal piece's floor keeps the generated goal in its graph (so every
      *  "the last main room" reading stays right) but never builds it. */
     let replacedGoal: Id | undefined;
@@ -596,6 +656,27 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const told = { coin: 0, potion: 0 };
     // (A floor nobody holds says what it always said: its seeds build as before.)
     const said = (k: keyof typeof FIND_WORDS) => FIND_WORDS[k][held ? told[k]++ % FIND_WORDS[k].length : 0]!;
+    /**
+     * Someone the holders took, kept in the vault: freed if the party reaches
+     * them while the place is quiet; moved, and gone, if it is roused first
+     * (ALARM_ROUSED). Its flags are the place's own, for a story to export.
+     */
+    const hostage = (): NonNullable<DungeonRoom['event']> => {
+      const rng = () => dice.float();
+      const who = personName(styleFor('delve', spec.theme, rng), dice.chance(0.5) ? 'female' : 'male', rng).first;
+      const here = `${pre}hostage`, moved = `${pre}hostage-moved`;
+      const done: Requirement = { kind: 'flag', flag: `${pre}hostage-done` };
+      scenes[here] = { id: here, kind: 'story', noBack: true,
+        text: [`At the back, behind a cage door, ${who} looks up as if you might be one more trick.`],
+        next: [{ id: 'free', label: `Get ${who} out`, to: '@hub', effects: [
+          { kind: 'setFlag', flag: `${pre}hostage-freed` }, { kind: 'setFlag', flag: done.flag }, { kind: 'xp', amount: 50 * level },
+          { kind: 'journal', entry: { id: `${pre}hostage-freed`, kind: 'npc', title: who, body: 'Freed from a cage at the back of a hoard, and gone up into the daylight with a promise to repay it.' } },
+        ] }] };
+      scenes[moved] = { id: moved, kind: 'story', noBack: true,
+        text: [`The cage at the back stands open, and the straw in it is still warm. They heard you coming, and they took ${who} with them.`],
+        next: [{ id: 'on', label: 'Go on', to: '@hub', effects: [{ kind: 'setFlag', flag: `${pre}hostage-gone` }, { kind: 'setFlag', flag: done.flag }] }] };
+      return { scene: here, until: [done], when: [{ if: [{ kind: 'alarm', dungeon: sceneId, atLeast: ALARM_ROUSED }], to: moved }] };
+    };
     const read = (roomId: Id, text: string): Id => {
       const id = `${pre}read-${roomId}`;
       scenes[id] = { id, kind: 'story', text: [text], next: [{ id: 'on', label: 'Go on', to: '@hub' }] };
@@ -607,7 +688,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       return id;
     };
 
-    const goalOutcome = (): Win => (last
+    const goalOutcome = (): Win => (last && g.vault
+      ? { to: '@hub', text: ['The last of them falls. Behind them, the way into their hoard stands open.'], effects: [{ kind: 'gold', amount: 20 + 10 * level }] }
+      : last
       ? { to: 'won', text: ['The last of them falls, and the place is yours.'], effects: [{ kind: 'gold', amount: 60 + 20 * level }] }
       : { to: '@hub', text: ['Past them, a stair goes down into the dark.'], effects: [{ kind: 'gold', amount: 20 + 10 * level }] });
 
@@ -763,7 +846,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       }
       // Never into a room the story keeps (its goal above all): the story
       // decides who may walk in on its hall.
-      const to = [...reach].filter((id) => degree(id) < 4 && !placed.has(id) && !(id === goal && spec.require.some((r) => r.where === 'goal')));
+      const to = [...reach].filter((id) => id !== g.vault && degree(id) < 4 && !placed.has(id) && !(id === goal && spec.require.some((r) => r.where === 'goal')));
       const from = g.main.filter((id) => !g.afterLock.has(id) && degree(id) < 4);
       if (from.length && to.length) {
         g.links.push({ a: dice.pick(from), b: dice.pick(to), length: 2, door: { secret: { dc: dice.int(12, 15) }, note: kind.backWay[T.outdoor ? 'out' : 'in'] } });
@@ -795,7 +878,13 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     // that fight come first, and rooms with no role make up the rest.
     const castable = [...g.main.slice(1, -1), ...g.side].filter((id) => id !== goal && id !== 'cache' && !placed.has(id) && !g.pieceRooms.has(id));
     const target = Math.round(castable.length * 0.5);
-    const roleOf = held ? castRoles(g, goal, placed, safe, keyOf, dice, (id) => factionOf(id) ?? holders[0]!, !!T.outdoor) : new Map<Id, Cast>();
+    /*
+     * The gatekeeper: on a held floor (not one a story dresses), the deepest
+     * room every open way to the goal runs through, held by the holders'
+     * second. A back way may slip round it; nothing else does.
+     */
+    const gate = held && !dress ? cutRoom(g, goal, (id) => !placed.has(id) && !keyOf.has(id) && !safe.has(id) && !g.pieceRooms.has(id)) : undefined;
+    const roleOf = held ? castRoles(g, goal, placed, safe, keyOf, dice, (id) => factionOf(id) ?? holders[0]!, !!T.outdoor, gate) : new Map<Id, Cast>();
     const rooms: DungeonRoom[] = [];
 
     const contents = (id: Id): DungeonRoom => {
@@ -816,15 +905,17 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       // A goal the story takes over (its own scene on walking in) is not
       // also a generated boss.
       const must = !!key || (isGoal && !req?.event);
+      // With a gatekeeper on the floor, it is the floor's elite: the rest fight as rooms.
+      const roleFight = cast?.role?.fight === 'elite' && gate && id !== gate ? 'room' : cast?.role?.fight;
       if (typeof reqFight === 'string') room.fight = fight(id, reqFight, win);
       else if (reqFight) room.fight = fight(id, fightOf(level, reqFight.boss ?? isGoal, reqFight.brief, factionOf(id)), win);
-      else if (must) room.fight = fight(id, fightOf(level, isGoal ? true : cast?.role?.fight ?? 'room', undefined, factionOf(id)), win);
+      else if (must) room.fight = fight(id, fightOf(level, isGoal ? true : roleFight ?? 'room', undefined, factionOf(id)), win);
       // A held floor's rooms fight as their role says (and a room with no
       // role, of the holders' own naming, half the time); any other floor's,
       // about half of them.
-      else if (!req && id !== 'cache' && (cast ? (cast.role ? !!cast.role.fight : filler < target) : dice.chance(0.55)) && filler < (spec.maxFights ?? Infinity)) {
+      else if (!req && id !== 'cache' && id !== g.vault && (cast ? (cast.role ? !!cast.role.fight : filler < target) : dice.chance(0.55)) && (filler < (spec.maxFights ?? Infinity) || id === gate)) {
         filler++;
-        room.fight = fight(id, fightOf(level, cast?.role?.fight ?? 'room', undefined, factionOf(id)), win);
+        room.fight = fight(id, fightOf(level, roleFight ?? 'room', undefined, factionOf(id)), win);
       }
       // A role's line, once its fight is settled: who is here, or how they left it.
       if (!req?.text && cast?.role) {
@@ -850,8 +941,16 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       if (req?.rest) room.rest = req.rest;
       else if (safe.has(id)) Object.assign(room, { name: T.safe[0], rest: 'safe', firstVisit: [T.safe[1]] });
       const finds = cast?.role?.find;
+      if (id === g.vault) {
+        // The way out is past what the party came for.
+        if (!req?.exit) room.exit = { to: 'won', label: 'Leave with what you came for' };
+        if (!req && vaultKind === 'hostage') room.event = hostage();
+      }
       if (req?.search) {
         room.search = req.search;
+      } else if (id === g.vault && !req) {
+        room.search = find(id, 'The best of everything they took: coin by the sackful, and a flask of something that glows.',
+          [{ kind: 'gold', amount: 60 + 20 * level }, { kind: 'addItem', itemId: 'potion-greater-healing' }]);
       } else if (finds === 'lore') {
         const line = lore.shift() ?? (history ? dice.pick(history.traces) : undefined);
         if (line) room.search = read(id, line);
@@ -883,6 +982,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       } else if (id !== replacedGoal) rooms.push(contents(id));
     });
     for (const id of g.side) rooms.push(contents(id));
+    if (g.vault) rooms.push(contents(g.vault));
     // The past showing through, in rooms that have nothing else to say.
     if (history) {
       for (const r of rooms) if (!r.firstVisit && r.id !== g.main[0] && dice.chance(0.35)) r.firstVisit = [dice.pick(history.traces)];
