@@ -89,7 +89,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       lock: { requires: [{ kind: 'flag', flag: 'trail-read' }],
         note: 'The reeds hide the way to the hollow. Read the patrols\' tracks, or cross the ravine and come at it from the far side.' },
       require: [
-        { name: 'Fresh Tracks', where: 'beforeLock', event: { scene: 'tracks', until: [{ kind: 'flag', flag: 'trail-read' }],
+        { name: 'Fresh Tracks', where: 'beforeLock', text: 'Boot-prints and clawed feet in the mud, all going the same way, along a line of firmer ground.', event: { scene: 'tracks', until: [{ kind: 'flag', flag: 'trail-read' }],
           // The trapper's sketch from the inn round: no need to roll for the line.
           when: [{ if: [{ kind: 'flag', flag: 'trail-known' }], to: 'tracks-mapped' }] } },
         { name: 'Sunken Ravine', where: 'beforeLock', event: { scene: 'ravine', until: [{ kind: 'flag', flag: 'crossed-ravine' }] } },

@@ -181,6 +181,8 @@ Behind you the reeds close over the trail. You don't look back.
 
 **→ Fresh Tracks** <sub>(room `m2`)</sub>
 
+Boot-prints and clawed feet in the mud, all going the same way, along a line of firmer ground.
+
 <sub>scene `tracks`</sub>
 
 Boot-prints and drag-marks cross the mud. Read them right, and they will lead you through the reeds.
@@ -329,7 +331,7 @@ You slip back out through the gate, into the quiet of the hollow.
 
 Two of them come out of a tent still buckling on stolen mail.
 
-**Battle:** gen:berserker+giant-hyena+giant-hyena+berserker+guard <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -425,7 +427,7 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 _(a paragraph shown before: “Two of them come out of a…”)_
 
-**Battle:** gen:berserker+giant-hyena+giant-hyena+berserker+guard <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 

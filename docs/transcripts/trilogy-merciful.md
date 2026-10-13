@@ -493,6 +493,8 @@ You haul each other up and over, hand over hand.
 
 **→ Fresh Tracks** <sub>(room `m3`)</sub>
 
+Boot-prints and clawed feet in the mud, all going the same way, along a line of firmer ground.
+
 _A hidden door: Fresh Tracks ↔ Hidden Cache._
 
 → Black Pool

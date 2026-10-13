@@ -361,6 +361,8 @@ The reeds open, and the road back to Thornwick runs dry under your boots.
 
 **→ Fresh Tracks** <sub>(room `m1`)</sub>
 
+Boot-prints and clawed feet in the mud, all going the same way, along a line of firmer ground.
+
 <sub>scene `tracks-mapped`</sub>
 
 The old trapper's ale-sketch was a good one. The reeds, the pools and the hollow in the hills all line up with the mud. The patrols' dry line runs just where his finger traced it.

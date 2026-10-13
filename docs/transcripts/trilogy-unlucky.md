@@ -743,7 +743,7 @@ _+40 gold (276)_
 
 Two of them come out of a tent still buckling on stolen mail.
 
-**Battle:** gen:berserker+giant-hyena+berserker+giant-hyena+guard <sub>(`gen:berserker+giant-hyena+berserker+giant-hyena+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+berserker+giant-hyena+guard` on `@room`)</sub>
 
 **» Fight — lost**
 
@@ -827,7 +827,7 @@ Something has come for them out of the water, and gone again. In the corner lies
 
 _(a paragraph shown before: “Two of them come out of a…”)_
 
-**Battle:** gen:berserker+giant-hyena+berserker+giant-hyena+guard <sub>(`gen:berserker+giant-hyena+berserker+giant-hyena+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+berserker+giant-hyena+guard` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -873,7 +873,7 @@ _(a paragraph shown before: “You think better of it and fall…”)_
 
 _(a paragraph shown before: “Two of them come out of a…”)_
 
-**Battle:** gen:berserker+giant-hyena+berserker+giant-hyena+guard <sub>(`gen:berserker+giant-hyena+berserker+giant-hyena+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+berserker+giant-hyena+guard` on `@room`)</sub>
 
 **» Fight — won**
 
