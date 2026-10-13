@@ -51,9 +51,9 @@ _Journal (clue): The Ashfang Own the Valley_
 
 <sub>scene `thornwick`</sub>
 
-The road brings you into **Thornwick** at last, through a scorched gate and past barred shutters. Faces watch you from the dark of doorways.
+The road brings you into **Thornwick** at last, through a scorched gate. Every shutter on the street is barred, one of them with a bread paddle. Somewhere behind a door, somebody is keeping a goose indoors, and the goose is telling everyone.
 
-For a month the Ashfang have bled this valley dry, and the whole country locks its doors by dark.
+For a month the Ashfang have bled this valley dry. Nobody here goes out after dark, and nobody means to let the goose out either.
 
 **» Enter the Wander-Inn**
 
@@ -63,7 +63,7 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 > Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you'll do.
 
-> "Sellswords. Good. You read my note, then." **Mira** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
+> "Sellswords. Good. You read my note, then." **Mira** sets the cup down, dry. "The reeve's too proud to beg, so I wrote it for him. Sit."
 
 > "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon. Six, by my count, and none of them will say why."
 
@@ -737,6 +737,8 @@ You strike first. Scaled backs rise out of the water where they lay, a hunting-p
 
 _Level up: 2 → 3_
 
+Every frog in the marsh stops at once. In the silence, something big turns over in the water, and starts toward you.
+
 The lizardfolk sink back into the dark water they came from, one by one.
 
 <sub>scene `hollow-won`</sub>
@@ -769,6 +771,8 @@ Halfway over the wall, a stake shifts under a boot and cracks. A horn brays righ
 
 The big one goes down last, face-first in the mud at the foot of the wall.
 
+_(a paragraph shown before: “A horn brays from the watch platform,…”)_
+
 <sub>scene `inner`</sub>
 
 Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp at its fires.
@@ -796,16 +800,6 @@ You slip back out through the gate, into the quiet of the hollow.
 **→ Gate** <sub>(room `m0`)</sub>
 
 → A Lone Fire
-
-<sub>scene `inner/f1-patrol`</sub>
-
-They were throwing dice for a carter's boots. They stop.
-
-**Battle:** gen:giant-hyena+bugbear+bandit <sub>(`gen:giant-hyena+bugbear+bandit` on `@room`)</sub>
-
-**» Fight — won**
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 **→ A Lone Fire** <sub>(room `m1`)</sub>
 
@@ -835,16 +829,6 @@ _Journal (quest): Bring the Captives Home_
 
 → Kennels
 
-<sub>scene `inner/f1-patrol` (again)</sub>
-
-_(a paragraph shown before: “They were throwing dice for a carter's…”)_
-
-**Battle:** gen:giant-hyena+bugbear+bandit <sub>(`gen:giant-hyena+bugbear+bandit` on `@room`)</sub>
-
-**» Fight — won**
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
 **→ Kennels** <sub>(room `m2`)</sub>
 
 <sub>scene `den-hyenas`</sub>
@@ -864,6 +848,16 @@ _Gained: Potion of Healing_
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → The Pit
+
+<sub>scene `inner/f1-patrol`</sub>
+
+They were throwing dice for a carter's boots. They stop.
+
+**Battle:** gen:ogre+bandit+worg+bandit <sub>(`gen:ogre+bandit+worg+bandit` on `@room`)</sub>
+
+**» Fight — won**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 **→ The Pit** <sub>(room `m3`)</sub>
 
@@ -911,7 +905,7 @@ A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes b
 
 **» [Sleight of Hand DC 13] Work the padlock open quietly**
 
-`[Sleight of Hand DC 13 — Ash the Sneaky rolls 16 — passed]`
+`[Sleight of Hand DC 13 — Ash the Sneaky rolls 19 — passed]`
 
 <sub>scene `den-pens-freed`</sub>
 
@@ -1217,7 +1211,17 @@ Wren watches you fill your pockets with the drowned folk's coin and their two po
 
 **» Make camp (long rest)** <sub>(day 1)</sub>
 
-**Dawn — day 2.**
+<sub>scene `fen-night`</sub>
+
+You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
+
+**Battle:** The Fen Dead <sub>(`fen-dead` on `bog`)</sub>
+
+**» Fight — won**
+
+The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
+
+**↳ The Deep Fen** <sub>(map `fen`)</sub>
 
 → The Drowned Chapel
 
@@ -1265,6 +1269,10 @@ _Journal (clue): The Rites of Sealing_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
+**» Make camp (long rest)** <sub>(day 1)</sub>
+
+**Dawn — day 2.**
+
 → The Serpent Pool
 
 <sub>scene `pool`</sub>
@@ -1288,20 +1296,6 @@ The serpents lie in loops like dropped rope. Your boots turn up everything the f
 _+85 gold (786)_
 
 _Gained: Potion of Greater Healing_
-
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-<sub>scene `fen-night`</sub>
-
-You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
-
-**Battle:** The Fen Dead <sub>(`fen-dead` on `bog`)</sub>
-
-**» Fight — won**
-
-The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
@@ -1461,9 +1455,21 @@ The cut is just wide enough for them. To get past, you will have to get through 
 
 **» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
-`[Group Stealth DC 12 — 2/4 pass — passed]`
+`[Group Stealth DC 12 — 1/4 pass — failed]`
 
-You edge along the wall between swings. Not one head turns. At the far end, the digger with the chain lowers its pick, and does not lift it again.
+A loose stone skitters across the floor, and every pick in the cut stops. After a long moment they start again, and you remember to breathe.
+
+**» Say the burial words over them — Halden said these over every grave in Thornwick.**
+
+`[Religion DC 13 — Morgan Le Fey rolls 9 — failed]`
+
+The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
+
+**» Pick up a tool and fall into step**
+
+`[Deception DC 13 — Ash the Sneaky rolls 15 — passed]`
+
+You take a pick from the pile and shuffle in among them. Swing, step, swing. Not one of them looks twice at one more digger. You walk out the far end, still swinging.
 
 <sub>scene `diggers-chain`</sub>
 
@@ -1482,6 +1488,20 @@ _Gained: Silvered Spear_
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → The Barrow-Guard
+
+<sub>scene `crypt-ambush`</sub>
+
+A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
+
+"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
+
+**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+
+**» Fight — won**
+
+The man in the robe dies still holding his candle. It smells of the fen.
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
@@ -1505,17 +1525,9 @@ _+40 gold (866)_
 
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
-<sub>scene `crypt-night` (again)</sub>
+**Dawn — day 3.**
 
-_(a paragraph shown before: “You bank a fire in a dry…”)_
-
-**Battle:** The Painted Dead <sub>(`painted-dead` on `corridor`)</sub>
-
-**» Fight — won**
-
-_(a paragraph shown before: “The painted dead fall flat to the…”)_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
 
 → The King's Chamber
 
@@ -1544,12 +1556,6 @@ _+60 gold (926)_
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
-
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
 
 → Drop down the burial shaft
 

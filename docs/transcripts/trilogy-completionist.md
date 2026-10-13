@@ -51,9 +51,9 @@ _Journal (clue): The Ashfang Own the Valley_
 
 <sub>scene `thornwick`</sub>
 
-The road brings you into **Thornwick** at last, through a scorched gate and past barred shutters. Faces watch you from the dark of doorways.
+The road brings you into **Thornwick** at last, through a scorched gate. Every shutter on the street is barred, one of them with a bread paddle. Somewhere behind a door, somebody is keeping a goose indoors, and the goose is telling everyone.
 
-For a month the Ashfang have bled this valley dry, and the whole country locks its doors by dark.
+For a month the Ashfang have bled this valley dry. Nobody here goes out after dark, and nobody means to let the goose out either.
 
 **» Enter the Wander-Inn**
 
@@ -63,7 +63,7 @@ For a month the Ashfang have bled this valley dry, and the whole country locks i
 
 > Inside the **Wander-Inn** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you'll do.
 
-> "Sellswords. Good. You read my note, then." **Mira** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
+> "Sellswords. Good. You read my note, then." **Mira** sets the cup down, dry. "The reeve's too proud to beg, so I wrote it for him. Sit."
 
 > "The Ashfang came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon. Six, by my count, and none of them will say why."
 
@@ -151,9 +151,9 @@ Thornwick's older hands have claimed the long table by the fire — the sort who
 
 <sub>scene `rumor-tactics`</sub>
 
-A grey-bearded man with a soldier's too-straight back taps the boards. "Rule one, and it's the reason I've still got both legs: don't turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you as you go."
+A grey-bearded man with a soldier's too-straight back taps the boards. "Lost my leg-man at the ford last week. Good lad. He turned his back on a raider with a blade still in reach, and the raider took the free cut he was given."
 
-"Want out of a scrap without the parting gift? Then do nothing else but get out of it. Eyes on his blade, back off slow, and don't try anything clever on the way. Especially you wand-wavers: get clear before you start your muttering, or you'll be eating steel halfway through the word."
+He drinks. "Want out of a scrap? Then do nothing but get out of it. Back off slow, with your eyes on his blade. You wand-wavers most of all: get clear before you start your muttering, or you'll eat steel halfway through the word."
 
 **» Nod your thanks**
 
@@ -165,9 +165,9 @@ The old hands at the long table shove along the bench to make room for you again
 
 <sub>scene `rumor-magic`</sub>
 
-A woman with river-stones knotted in her hair doesn't look up from her knitting. "Magic's never free, whatever the college boys tell you. Every real working takes something out of you, and you've only so much to give before you sleep. Spend it like your last coppers, because in a long fight, that's what it is."
+A woman with river-stones knotted in her hair doesn't look up from her knitting. "My sister went down to the reeds a month back, to put a ward round the reed-beds. She held it two nights. Then an arrow took her in the shoulder, and the ward went out like a candle."
 
-"The strong workings, a held foe or a ward of blades, burn only as long as you hold them in your head. Take a hard knock and you'd best keep your focus, or the whole thing slips through your fingers. Can't hold two at once, either. So pick the one that'll matter."
+The needles click. "A working you hold in your head lasts only while you hold it. Take a hard knock and you can lose it, and you can't hold two at once. Every spell costs you, too, till you sleep. Spend them like your last coppers."
 
 **» Nod your thanks**
 
@@ -179,9 +179,9 @@ _(a paragraph shown before: “The old hands at the long table…”)_
 
 <sub>scene `rumor-weapons`</sub>
 
-A scarred caravan guard rolls her axe over on the table. "Every weapon's got a trick in it, if you know how to ask. A heavy blade bites one man and the swing carries on into the next. A mace'll rattle a foe, so his next swing at you goes wide."
+A scarred caravan guard rolls her axe over on the table. "I took three carts down the marsh road this spring. I brought one back." She taps the blade. "A heavy blade bites one man, and the swing carries on into the next. A mace rattles a man, so his next swing at you goes wide."
 
-"Learn what the thing in your hand actually *does*. That's how you put down men twice your size."
+"Learn what yours does. The raiders who met me on that road didn't, and I'm still here."
 
 **» Nod your thanks**
 
@@ -675,6 +675,8 @@ You strike first. Scaled backs rise out of the water where they lay, a hunting-p
 
 **» Fight — won**
 
+Every frog in the marsh stops at once. In the silence, something big turns over in the water, and starts toward you.
+
 The lizardfolk sink back into the dark water they came from, one by one.
 
 <sub>scene `hollow-won`</sub>
@@ -949,7 +951,7 @@ A drowned house is scratched into a plank: a boy on the roof, and the water at t
 
 A raider looks up from the fire with his mouth full, and shouts with it.
 
-**Battle:** gen:orc+bugbear+scout+bandit <sub>(`gen:orc+bugbear+scout+bandit` on `@room`)</sub>
+**Battle:** gen:bugbear+bugbear+giant-hyena+bandit <sub>(`gen:bugbear+bugbear+giant-hyena+bandit` on `@room`)</sub>
 
 **» Fight — won**
 

@@ -2,6 +2,7 @@
 back: true
 art: loc-camp 🏚️
 A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.
+? with wren; not pens-settled | {wren} crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. "That's where they keep them," she says. "The carter, and the girl. Whatever else you do in there, do that first."
 > Slip back in the way you left → inner  #back
   hide
   ? den-entered
@@ -38,6 +39,7 @@ Down where the wall meets the marsh, a little gate lets the den draw water. Its 
 art: loc-camp 🗝️
 noBack: true
 Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.
+As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. "Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One {door-price} a winter, for sitting by their door in the dark." Then the water moves again, and she is gone.
 > Slip inside → inner  #in
   do @GATE_PASSED
 
@@ -57,7 +59,7 @@ again:
 The watch-post saw you coming this time. The big one already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls and their hyena slavers.
 won → inner
   The big one goes down last, folding across the gateway.
-  do +den-entered; +signal-spent; alarm inner/delve +2
+  do +den-entered; +signal-spent; alarm inner/delve +3
 parley deception 15 > Pass yourselves off as new blood
   refused: The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
   success → inner
@@ -70,7 +72,7 @@ art: loc-camp 📯
 The watch-post goes quiet, and a voice calls down a countersign you never learned. Somebody up there knows that someone sold the gate-signal.
 A horn brays, and torches run along the wall. You fall back into the reeds and lie in the mud while the watch hunts the hollow. It takes all night and most of the next day before the den settles. By then the watch has a new signal, and you do not know it.
 > Crawl back up to the gate → gate  #back
-  do day; -know-signal; alarm inner/delve +2
+  do day; -know-signal; alarm inner/delve +3
   journal clue c-signal-burned: The Gate-Signal Is Burned
     The den's watch knew someone sold the gate-signal, and they changed it. You will need another way past the gate: over the wall, or through it.
 
@@ -82,7 +84,7 @@ surprise: party
 Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, something hairy and twice a man's size is already waiting at the foot of the wall. A pack of spotted, dog-faced things yammers behind it.
 won → inner
   The big one goes down last, face-first in the mud at the foot of the wall.
-  do +den-entered; +signal-spent; alarm inner/delve +2
+  do +den-entered; +signal-spent; alarm inner/delve +3
 
 # den-muster
 kind: battle
@@ -139,11 +141,11 @@ loot: false
 noFlee: true
 The noise carries. The raider by the fire jumps up and yells, and the den's watch comes running with him. Two hulking raiders with greataxes, four archers and an orc spread out in front of the pen. The carter pulls the girl down into the straw.
 won → den-pens-freed
-  do alarm inner/delve +2
+  do alarm inner/delve +3
   The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.
 lost → @hub
   You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.
-  do +captives-taken; alarm inner/delve +2
+  do +captives-taken; alarm inner/delve +3
 
 # den-pens-freed
 art: loc-camp ⛓️
@@ -190,7 +192,7 @@ At the lone fire a lean, grey-templed raider watches you come. A bare blade lies
 "**{vex}**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
 ? not pens-found; not captives-taken | Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
 ? not pens-found; captives-taken | Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
-? alarm inner/delve >= 2 | "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
+? alarm inner/delve >= 3 | "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
 > @VEX_OFFERS(true)
 > @VEX_OFFERS(false)
 
@@ -240,7 +242,7 @@ The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his
 "Up, **{vargan}**, my sweet," the hag says. "Guests." The chief rises.
 "I was born down in {thornwick}," {vargan} says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. {thornwick} watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
 The hag laughs. "Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
-? alarm inner/delve >= 2 | The hall is full of raiders who heard you coming, and none of them is sitting down.
+? alarm inner/delve >= 3 | The hall is full of raiders who heard you coming, and none of them is sitting down.
 again:
 The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
 **{vargan}** is back on his throne of spears, and the **{reedwife}** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." {vargan} only rolls the great axe off his shoulder.

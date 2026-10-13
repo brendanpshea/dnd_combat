@@ -20,7 +20,9 @@ const STOP = new Set(("a an the and or but of to in on at by for with from up ou
 
 /** Phrases that repeat on purpose: names, places, and the liturgy. */
 const MOTIFS = new Set([
-  'the bell will wake', 'bell will wake you',      // the liturgy, on every headstone
+  // The liturgy, on every headstone, said over the dead and at the seal: all of it.
+  'lie down and be', 'down and be at', 'and be at peace', 'be at peace your', 'at peace your work', 'peace your work is',
+  'your work is done', 'work is done the', 'is done the bell', 'done the bell will', 'the bell will wake', 'bell will wake you',
   'door under the fen',                             // the Warden's door, by its one name
   'of the wander inn',                              // a place's name
   'mark of reeds and', 'reeds and a reaching', 'and a reaching hand', // the brand, recognised each time

@@ -3,7 +3,7 @@
  * once, and every step through a roused place may meet a patrol.
  */
 import { describe, it, expect } from 'vitest';
-import { startAdventure, enterScene, walkTo, resolveBattle, choose, requirementMet, raiseAlarm } from '../src/adventure/runtime.js';
+import { startAdventure, enterScene, walkTo, resolveBattle, choose, requirementMet, raiseAlarm, endDay, ALARM_ROUSED } from '../src/adventure/runtime.js';
 import { validateModule } from '../src/adventure/validate.js';
 import { newCampaign } from '../src/campaign/campaign.js';
 import type { Module } from '../src/adventure/types.js';
@@ -41,21 +41,32 @@ describe('a dungeon alarm', () => {
     expect(validateModule(camp(true)).some((e) => e.includes('patrol') && e.includes('loot: false'))).toBe(true);
   });
 
-  it('is raised by a room fight, and says so once when the place is roused', () => {
+  it('is raised by a fight won, not by walking into one, and says so once when roused', () => {
     const m = camp();
     const s = startAdventure(newCampaign(1), m);
     enterScene(s, m, 'camp');
-    const first = walkTo(s, m, 'b');
-    expect(s.alarms?.camp).toBe(1);
+    walkTo(s, m, 'b');
+    expect(s.alarms?.camp ?? 0).toBe(0);
     expect(s.sceneId).toBe('tents');
-    expect(texts(first)).not.toContain(ROUSED);
     resolveBattle(s, m, true);
+    expect(s.alarms?.camp).toBe(1);
     const loud = [] as ReturnType<typeof walkTo>;
-    raiseAlarm(s, m, 'camp', 1, loud);
+    raiseAlarm(s, m, 'camp', ALARM_ROUSED - 1, loud);
     expect(texts(loud)).toEqual([ROUSED]);
     const again = [] as ReturnType<typeof walkTo>;
     raiseAlarm(s, m, 'camp', 1, again);
     expect(texts(again)).toEqual([]);
+  });
+
+  it('settles a little each night', () => {
+    const m = camp();
+    const s = startAdventure(newCampaign(1), m);
+    (s.alarms ??= {}).camp = 5;
+    endDay(s, m);
+    expect(s.alarms.camp).toBe(3);
+    endDay(s, m);
+    endDay(s, m);
+    expect(s.alarms.camp).toBe(0);
   });
 
   it('can be raised by the story before the party is inside, and read by it', () => {
@@ -83,7 +94,7 @@ describe('a dungeon alarm', () => {
       return patrols;
     };
     expect(met(0)).toBe(0);
-    expect(met(1)).toBe(0);
-    expect(met(4)).toBeGreaterThan(5);
+    expect(met(ALARM_ROUSED - 1)).toBe(0);
+    expect(met(ALARM_ROUSED + 2)).toBeGreaterThan(5);
   });
 });
