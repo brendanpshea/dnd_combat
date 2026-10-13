@@ -10,6 +10,7 @@ import { TRILOGY_FACTS } from './canon.js';
 // The scenes are written in hollow-road/*.story (one file per place) and
 // built by `npm run stories`.
 import { SCENES as scenes, ACTS } from './hollow-road/scenes.gen.js';
+import { rescueWhen } from '../../adventure/rescue.js';
 
 export const HOLLOW_ROAD_RENAMED_NPC_FLAGS: Record<string, string> = {
   'saved-scout': npcFateFlag('wren', 'saved'),
@@ -89,13 +90,8 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
           when: [{ if: [{ kind: 'flag', flag: 'trail-known' }], to: 'tracks-mapped' }] } },
         { name: 'Sunken Ravine', where: 'beforeLock', event: { scene: 'ravine', until: [{ kind: 'flag', flag: 'crossed-ravine' }] } },
         // The scout: every visit says where she stands now.
-        { name: 'A Cry for Help', where: 'beforeLock', event: { scene: 'wounded', when: [
-          { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'companion', companion: 'wren' }], to: 'scout-along' },
-          { if: [{ kind: 'npc', npc: 'wren', fate: 'saved' }], to: 'scout-sent' },
-          { if: [{ kind: 'npc', npc: 'wren', fate: 'lost' }], to: 'scout-gone' },
-          // Untended until the fifth morning (see `wounded`), walked past or not.
-          { if: [{ kind: 'flag', flag: 'scout-bled-out' }], to: 'scout-dead' },
-          { if: [{ kind: 'flag', flag: 'scout-walked-past' }], to: 'scout-passed' }] } },
+        { name: 'A Cry for Help', where: 'beforeLock', event: { scene: 'wounded',
+          when: rescueWhen('wounded', 'wren', { walked: 'scout-walked-past', bled: 'scout-bled-out' }) } },
         { name: 'A Sunken Barrow', where: 'side', event: { scene: 'barrow', until: [{ kind: 'flag', flag: 'barrow-cleared' }] } },
         { name: 'Webbed Thicket', where: 'afterLock', event: { scene: 'thicket', until: [{ kind: 'flag', flag: 'thicket-cleared' }] } },
         { name: 'The Hollow', where: 'goal', event: { scene: 'ambush', until: [{ kind: 'flag', flag: 'know-hag' }], when: [

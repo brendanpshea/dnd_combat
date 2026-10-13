@@ -421,7 +421,7 @@ There is still no word of the reeve's scouts. If one of them is lying hurt out o
 
 _Lost: Potion of Healing_
 
-<sub>scene `scout-saved`</sub>
+<sub>scene `wounded-saved`</sub>
 
 The horse comes off and the bleeding stops, and the scout lets out a breath she has been holding for hours. "**Wren**," she offers, as if admitting to a name costs her something. She scratches the den's watch-posts into the mud, quick and exact.
 

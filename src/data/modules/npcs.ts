@@ -44,7 +44,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     // and she lived to limp home.
     fates: ['saved', 'lost'],
     introducedAt: {
-      'hollow-road': ['scout-saved', 'scout-fail'],
+      'hollow-road': ['wounded-saved', 'wounded-failed'],
       'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-partner', 'fen-reunion'],
       // Her fire, the council on the rim, and "Wren's scouts" at the forts they took.
       wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'scouts-late', 'war-council'],
@@ -62,7 +62,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     // Refusing it, or being refused, is no fate: he was not turned.
     fates: ['turned'],
     introducedAt: {
-      'hollow-road': ['scout-saved', 'scout-fail', 'vex-parley'],
+      'hollow-road': ['wounded-saved', 'wounded-failed', 'vex-parley'],
       // His briefing, and "Captain Vex" on the morning after the peak, and at
       // his map in the command tent.
       wyrmcalling: ['vex-brief', 'vex-brief-turned', 'peak-night', 'peak-line',

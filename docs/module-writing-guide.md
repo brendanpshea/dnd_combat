@@ -160,6 +160,16 @@ Choices of the approach's own (a way back) go before the first section. A fight 
 by who is there (a guard who has turned) is one battle with `encounterWhen`
 and conditional lines, not a twin.
 
+### Rescues
+
+Someone hurt on the road is a `kind: rescue` block: the approach (a
+conversation with them), its heals (`heal item <id>`, or `heal <skill> <dc>
+[class]`), `leave`, and what follows in sections: `saved:` (with `send` and
+an optional `join`), `joins:`, `failed:` (saved, slower: it costs the day),
+and the later visits `passed:`, `dead:`, `gone:`, `along:`, `sent:`. Its
+room's `when` is `rescueWhen(scene, who, { walked, bled })`. Chapter one's
+scout is one (`wounded` in `3-marsh.story`).
+
 ### Ways out
 
 - **A choice:** `> label → scene  #id`. The `#id` is what a save remembers, so
