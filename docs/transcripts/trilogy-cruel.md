@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.fate.lost`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.fate.lost`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.fate.lost`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.fate.lost`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -817,8 +817,6 @@ You slip back out through the gate, into the quiet of the hollow.
 
 **» Refuse to deal with a raider**
 
-_Journal (quest): Bring the Captives Home_
-
 <sub>scene `vex-dismissed`</sub>
 
 "Suit yourself." Vex turns back to his fire. "I won't help you. I won't get in your way, either."
@@ -887,31 +885,15 @@ _+40 gold (391)_
 
 **→ The Pens** <sub>(room `m4`)</sub>
 
-<sub>scene `den-pens-door`</sub>
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in.
 
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
+<sub>scene `inner/f1-m4-moved`</sub>
 
-**» Look in the pen**
+There are no pigs in the pen, and no people. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.
 
-_Journal (quest): Bring the Captives Home_
+Something has come for them out of the water, and gone again. In the corner lies one small shoe.
 
-<sub>scene `den-pens`</sub>
-
-There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
-
-The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a lamb every midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
-
-A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
-
-**» [Sleight of Hand DC 13] Work the padlock open quietly**
-
-`[Sleight of Hand DC 13 — Ash the Sneaky rolls 19 — passed]`
-
-<sub>scene `den-pens-freed`</sub>
-
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
-
-**» Back to the den**
+**» Go on**
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
@@ -1007,7 +989,7 @@ Up in the hollow, the reeve's men pull down the den's timber wall one post at a 
 
 The bounty notice comes down off the board in the square. Someone tears off the bottom corner first, the line in the prouder hand, and keeps it.
 
-The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.
+Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
 
 ### Ending: victory
 
@@ -1211,17 +1193,7 @@ Wren watches you fill your pockets with the drowned folk's coin and their two po
 
 **» Make camp (long rest)** <sub>(day 1)</sub>
 
-<sub>scene `fen-night`</sub>
-
-You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
-
-**Battle:** The Fen Dead <sub>(`fen-dead` on `bog`)</sub>
-
-**» Fight — won**
-
-The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
-
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**Dawn — day 2.**
 
 → The Drowned Chapel
 
@@ -1269,10 +1241,6 @@ _Journal (clue): The Rites of Sealing_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
-**» Make camp (long rest)** <sub>(day 1)</sub>
-
-**Dawn — day 2.**
-
 → The Serpent Pool
 
 <sub>scene `pool`</sub>
@@ -1298,6 +1266,12 @@ _+85 gold (786)_
 _Gained: Potion of Greater Healing_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
+
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+**Dawn — day 3.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
 
 → The Barrow Gate
 
@@ -1348,20 +1322,6 @@ She sits down on the nearest stone with her bow strung beside her, facing the fe
 **→ The Barrow Stair** <sub>(room `stair`)</sub>
 
 Worked steps lead down into the cold. Your torch makes a small, brave circle, and the dark waits politely outside it.
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-<sub>scene `crypt-night`</sub>
-
-You bank a fire in a dry side-vault, and the Undercrypt notices. The paint on the far wall begins to move. Two of the painted soldiers peel loose from it, grey and flat and cold, with green-bronze swords in their hands, and step down toward your fire.
-
-**Battle:** The Painted Dead <sub>(`painted-dead` on `corridor`)</sub>
-
-**» Fight — won**
-
-The painted dead fall flat to the floor and crumble into flakes of grey paint. Where they came from, two bare patches of plaster show on the painted wall. Your fire lies kicked across the vault floor, and you have never been more awake.
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → Climb out to the barrow-field
 
@@ -1461,15 +1421,11 @@ A loose stone skitters across the floor, and every pick in the cut stops. After 
 
 **» Say the burial words over them — Halden said these over every grave in Thornwick.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 9 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 14 — passed]`
 
-The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
+You speak the old words, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*
 
-**» Pick up a tool and fall into step**
-
-`[Deception DC 13 — Ash the Sneaky rolls 15 — passed]`
-
-You take a pick from the pile and shuffle in among them. Swing, step, swing. Not one of them looks twice at one more digger. You walk out the far end, still swinging.
+One by one, the picks go quiet. The dead lie down in the cut in rows, as if they had only ever been asleep.
 
 <sub>scene `diggers-chain`</sub>
 
@@ -1488,20 +1444,6 @@ _Gained: Silvered Spear_
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → The Barrow-Guard
-
-<sub>scene `crypt-ambush`</sub>
-
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
-
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
-
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
-
-**» Fight — won**
-
-The man in the robe dies still holding his candle. It smells of the fen.
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
@@ -1523,11 +1465,9 @@ _+40 gold (866)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
-**» Make camp (long rest)** <sub>(day 2)</sub>
+**» Make camp (long rest)** <sub>(day 3)</sub>
 
-**Dawn — day 3.**
-
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
+**Dawn — day 4.**
 
 → The King's Chamber
 
@@ -1615,27 +1555,21 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 8 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 12 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — They are cut deeper than any prayer needs.**
 
-`[Arcana DC 14 — Morgan Le Fey rolls 12 — failed]`
+`[Arcana DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They came here to chant at this door.**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 7 — failed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 17 — passed]`
 
-The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
-
-**» Let your wizard pick the lock the old masons cut — A ward, and only half-broken.**
-
-`[Arcana DC 11 — Morgan Le Fey rolls 12 — passed]`
-
-Your wizard has read about wards like this in dusty books. This one is a lock, and the rites are its key. Letter by letter, your wizard finds where Marrow's chisel broke it and mends it with the line that belongs there. The lead glows, and sets hard.
+You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them. The Warden's own faithful sing him back to sleep.
 
 <sub>scene `seal-clean`</sub>
 
@@ -1797,7 +1731,19 @@ The last griffon tumbles away down the loose rock. Above you the whole mountain 
 
 **» Make camp (long rest)** <sub>(day 1)</sub>
 
-**Dawn — day 2.**
+<sub>scene `hills-night`</sub>
+
+In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
+
+The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
+
+**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
+
+**» Fight — won**
+
+The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Toll-Cliff
 
@@ -1839,6 +1785,10 @@ _+40 gold (1236)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
+**» Make camp (long rest)** <sub>(day 1)</sub>
+
+**Dawn — day 2.**
+
 → The Green Den
 
 <sub>scene `greenden`</sub>
@@ -1864,14 +1814,6 @@ Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind
 _+75 gold (1311)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
-
-The stone's note is louder this morning.
-
-A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Flooded Pass
 
@@ -1899,6 +1841,20 @@ _+50 gold (1361)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+<sub>scene `hills-night` (again)</sub>
+
+The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women's faces come riding the night wind down from the crags, the grey drake behind them. You wake in time, because the sentry is shouting.
+
+**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
+
+**» Fight — won**
+
+_(a paragraph shown before: “The drake goes down thrashing, and the…”)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
+
 → The Blue Mesa
 
 <sub>scene `blueden`</sub>
@@ -1917,13 +1873,19 @@ _+95 gold (1456)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
-**» Make camp (long rest)** <sub>(day 3)</sub>
+**» Make camp (long rest)** <sub>(day 2)</sub>
 
-**Dawn — day 4.**
+<sub>scene `hills-night` (again)</sub>
 
-Before first light the stone's note thins, and for a while the mountain is almost quiet.
+_(a paragraph shown before: “The same dream comes back: the stone…”)_
 
-A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
+**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
+
+**» Fight — won**
+
+_(a paragraph shown before: “The drake goes down thrashing, and the…”)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Middle Pass
 
@@ -1951,6 +1913,20 @@ _+130 gold (1586)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+<sub>scene `hills-night` (again)</sub>
+
+_(a paragraph shown before: “The same dream comes back: the stone…”)_
+
+**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
+
+**» Fight — won**
+
+_(a paragraph shown before: “The drake goes down thrashing, and the…”)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
+
 → The Burning Den
 
 <sub>scene `redden`</sub>
@@ -1971,13 +1947,13 @@ _+120 gold (1706)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
-**» Make camp (long rest)** <sub>(day 4)</sub>
+**» Make camp (long rest)** <sub>(day 2)</sub>
 
-**Dawn — day 5.**
+**Dawn — day 3.**
 
-The stone sang all night. Loose stones crept down the slope in the dark, ticking against each other, and nothing had touched them.
+The stone's note is louder this morning.
 
-A runner from the command tent brings Vex's word: he has doubled the watch. "Tonight," the message says. "Anything still in those dens will fly."
+A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Valley of Statues
 
@@ -2033,11 +2009,13 @@ _+140 gold (1946)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
-**» Make camp (long rest)** <sub>(day 5)</sub>
+**» Make camp (long rest)** <sub>(day 3)</sub>
 
-**Dawn — day 6.**
+**Dawn — day 4.**
 
-The Calling peaked in the night. The whole mountain hummed with it, and horns sounded from the war-camp until dawn. Anything still nesting in the hills has gone up to the ridge.
+Before first light the stone's note thins, and for a while the mountain is almost quiet.
+
+A woman's voice comes down the wind in the hush, hoarse with crying. "Who keeps it now?" she asks, of no one. "Who keeps her door now?" Then the note swells back over her, and she is gone.
 
 → The Last Ridge
 
@@ -2045,9 +2023,17 @@ The Calling peaked in the night. The whole mountain hummed with it, and horns so
 
 You reach the last ridge. The Calling is not a pull any more. It is a pressure, a note held so long that the mountain hums it back at you. Beyond the ridge, a bowl of bare rock opens under the sky. At its centre stands the **stone**: a single black fang of rock, wrapped in a bruise-coloured light.
 
-Nothing moves overhead. Old scorch marks blacken the bare rim where wyrms once perched, and you cross the ridge with the wind for company.
+Down in the bowl, two tall green women at the foot of the stone lift their heads. They have seen you. The note climbs, and climbs, and does not come down. The Calling is peaking.
+
+Behind you, everything still loose in the hills turns at once and starts down toward the war-camp. You hold the ridge through the night, and watch. Not much of it reaches the camp. The horns sound twice, and the torches on the east line never waver. By midnight the camp is quiet.
+
+Nothing comes over the rim all night. It is bare, and only old scorch marks show where wyrms once perched.
 
 **» Go down into the bowl**
+
+**Dawn — day 5.**
+
+The stone sang all night. Loose stones crept down the slope in the dark, ticking against each other, and nothing had touched them.
 
 <sub>scene `war-council`</sub>
 
@@ -2057,11 +2043,11 @@ Vex's boots are white with rock-dust from the climb, but his eyes are clear. "Th
 
 **Wren**, the Chief of Scouts, is first up the last slope, bow on her back and map under her arm.
 
-She reports to Vex first. You get a nod, later. When Vex asks who is going down with you, she says the rim needs its scout more than you do.
+"My riders were on the east line all night," Wren says. "Every one of them came back."
 
 Vex holds this column on the reeve's terms. Two of the reeve's pikemen walk behind him, close enough to count his steps.
 
-"We hold the ridge. You go down," Vex says. He looks along the rim. No one steps forward. "That's the whole plan. A small party's a quiet one."
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
 
 **» Let them hold the rim while you go down**
 
@@ -2095,7 +2081,7 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 **» Drag their hands out of the rock**
 
-`[Athletics DC 15 — Arthur the Bold rolls 21 — passed]`
+`[Athletics DC 15 — Arthur the Bold rolls 22 — passed]`
 
 The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
@@ -2151,6 +2137,6 @@ In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain 
 
 Down in Thornwick, the reeve orders a plaque for the square, for the war-camp on the meadows. He has the wording changed twice.
 
-Wren keeps a list of the people she would follow anywhere. It is a short list, and she has never said whether you are on it.
+Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
 
 ### Ending: victory

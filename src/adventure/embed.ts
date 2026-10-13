@@ -38,7 +38,7 @@ const SCENE_LIST_KEYS = new Set(['patrols']);
 /** Keys whose string value names a flag. `resolvedBy` too: a journal lead
  *  closes on a flag, and left un-renamed it waits forever on a name the
  *  splice gave to something else. */
-const FLAG_KEYS = new Set(['flag', 'resolvedBy']);
+const FLAG_KEYS = new Set(['flag', 'resolvedBy', 'failedBy']);
 
 /** Rewrite, in place, every scene reference and every flag. */
 function rewrite(x: unknown, scene: (id: string) => string, flag: (f: string) => string): void {
@@ -50,6 +50,7 @@ function rewrite(x: unknown, scene: (id: string) => string, flag: (f: string) =>
       if (FLAG_KEYS.has(k)) o[k] = flag(v);
       else if (SCENE_REF_KEYS.has(k)) o[k] = scene(v);
     } else if (SCENE_LIST_KEYS.has(k) && Array.isArray(v)) o[k] = v.map((s) => (typeof s === 'string' ? scene(s) : s));
+    else if (FLAG_KEYS.has(k) && Array.isArray(v)) o[k] = v.map((f) => (typeof f === 'string' ? flag(f) : f));
     else rewrite(v, scene, flag);
   }
 }
@@ -131,8 +132,10 @@ export function expandDelve(at: Id, delve: EmbeddedDelve, seed: number, story: R
   const built = generateSpecDelve(seed, delve.spec, story).module;
   // A required room's story scene waits on the story's own flags: those stay
   // the story's.
-  const own = (delve.spec.require ?? []).flatMap((r) => [...(r.event?.until ?? []), ...(r.event?.when ?? []).flatMap((w) => w.if)])
-    .flatMap((r) => ('flag' in r ? [r.flag] : []));
+  const own = [...(delve.spec.require ?? []).flatMap((r) => [...(r.event?.until ?? []), ...(r.event?.when ?? []).flatMap((w) => w.if), ...(r.hostage?.takenWhen ?? [])])
+    .flatMap((r) => ('flag' in r ? [r.flag] : [])),
+    // …and a hostage's two flags, named by the story.
+    ...(delve.spec.require ?? []).flatMap((r) => (r.hostage ? [r.hostage.as.freed, r.hostage.as.taken] : []))];
   return splice(at, built.scenes, { won: delve.onWin, 'gave-up': delve.onLeave }, 'fallen', [...(delve.reads ?? []), ...own], delve.exports);
 }
 

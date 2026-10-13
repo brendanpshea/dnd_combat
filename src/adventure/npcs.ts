@@ -51,8 +51,8 @@ function mapStrings<T>(value: T, f: (s: string) => string): T {
 }
 
 /** Arrays holding requirements, and arrays holding effects, by their key. */
-const REQUIREMENT_LISTS = new Set(['requires', 'if', 'assumes', 'until', 'locked']);
-const EFFECT_LISTS = new Set(['effects', 'failEffects']);
+const REQUIREMENT_LISTS = new Set(['requires', 'if', 'assumes', 'until', 'locked', 'takenWhen']);
+const EFFECT_LISTS = new Set(['effects', 'failEffects', 'onFreed']);
 
 /**
  * NPC requirements and effects, compiled to the flags they stand for. Throws

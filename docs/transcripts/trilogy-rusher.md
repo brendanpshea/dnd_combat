@@ -391,8 +391,6 @@ _A hidden door: A Lone Fire ↔ Hidden Cache._
 
 **» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
 
-_Journal (quest): Bring the Captives Home_
-
 `[Persuasion DC 9 — Elaine the Holy rolls 11 — passed]`
 
 <sub>scene `vex-turned`</sub>

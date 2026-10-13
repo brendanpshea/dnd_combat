@@ -2,7 +2,7 @@
 back: true
 art: loc-camp 🏚️
 A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.
-? with wren; not pens-settled | {wren} crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. "That's where they keep them," she says. "The carter, and the girl. Whatever else you do in there, do that first."
+? with wren; not captives-freed | {wren} crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. "That's where they keep them," she says. "The carter, and the girl. Whatever else you do in there, do that first."
 > Slip back in the way you left → inner  #back
   hide
   ? den-entered
@@ -100,60 +100,6 @@ won → @hub
   Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
   do gold 40; +pit-won
 
-# den-pens-door
-noBack: true
-art: loc-camp ⛓️
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
-> Look in the pen → den-pens  #look
-  hide
-  ? not captives-taken
-  do +pens-found; @PENS_LEAD
-> Look in the pen → den-pens-empty  #look-late
-  hide
-  ? captives-taken
-  do +pens-found
-
-# den-pens-empty
-noBack: true
-art: loc-camp ⛓️
-assumes: captives-taken
-There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.
-Something has come for them out of the water, and gone again. In the corner lies one small shoe.
-> Back to the den → @hub  #ok
-
-# den-pens
-art: loc-camp ⛓️
-assumes: not captives-taken
-back: true
-There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
-The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
-A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
-> [Sleight of Hand DC 13] Work the padlock open quietly → den-pens-freed  #pick
-  once
-  check sleight-of-hand 13 → pens-alarm
-> Hack through the stakes, and never mind the noise → pens-alarm  #hack
-
-# pens-alarm
-kind: battle
-encounterId: pen-watch
-mapId: ruins
-loot: false
-noFlee: true
-The noise carries. The raider by the fire jumps up and yells, and the den's watch comes running with him. Two hulking raiders with greataxes, four archers and an orc spread out in front of the pen. The carter pulls the girl down into the straw.
-won → den-pens-freed
-  do alarm inner/delve +3
-  The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.
-lost → @hub
-  You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.
-  do +captives-taken; alarm inner/delve +3
-
-# den-pens-freed
-art: loc-camp ⛓️
-noBack: true
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in {thornwick}, after." They slip off toward the dark of the marsh road, not making a sound.
-> Back to the den → @hub  #ok
-  do +captives-freed; +pens-settled; npc wren attitude 1
-
 # den-hyenas
 kind: battle
 encounterId: kennel-hyenas
@@ -190,11 +136,10 @@ npc: @LIEUTENANT
 art: 🗡️
 At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
 "**{vex}**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-? not pens-found; not captives-taken | Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
-? not pens-found; captives-taken | Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
+? not captives-freed; not captives-taken | Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
+? captives-taken | Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
 ? alarm inner/delve >= 3 | "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
-> @VEX_OFFERS(true)
-> @VEX_OFFERS(false)
+> @VEX_OFFERS
 
 # vex-turned
 noBack: true
@@ -279,12 +224,12 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns  #turn-carter
   hide
   attempt: turn
-  ? pens-settled; npc vex not fate turned
+  ? captives-freed; npc vex not fate turned
   check persuasion 10 → boss
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns-alone  #turn-carter-alone
   hide
   attempt: turn
-  ? pens-settled; npc vex fate turned
+  ? captives-freed; npc vex fate turned
   check persuasion 10 → boss-unguarded
 > [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns  #turn-shaken
   hide

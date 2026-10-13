@@ -25,23 +25,47 @@ describe('a vault', () => {
     const m = held('hostage');
     const d = floor(m);
     const event = d.dungeon.rooms.find((r) => r.id === 'vault')!.event!;
-    const roused = event.when![0]!.if;
+    const roused = event.when!.find((w) => w.if.some((r) => r.kind === 'alarm'))!;
     const s = startAdventure(newCampaign(1), m);
-    expect(roused.every((r) => requirementMet(s, r))).toBe(false);
+    expect(roused.if.every((r) => requirementMet(s, r))).toBe(false);
     (s.alarms ??= {})[d.id] = ALARM_ROUSED;
-    expect(roused.every((r) => requirementMet(s, r))).toBe(true);
+    expect(roused.if.every((r) => requirementMet(s, r))).toBe(true);
     // Quiet: the party gets them out, and the room is done with.
     const q = startAdventure(newCampaign(1), m);
     enterScene(q, m, event.scene);
     choose(q, m, 'free');
-    expect(Object.keys(q.flags).some((f) => f.endsWith('hostage-freed'))).toBe(true);
+    expect(Object.keys(q.flags).some((f) => f.endsWith('-freed'))).toBe(true);
     expect(event.until!.every((r) => requirementMet(q, r))).toBe(true);
-    // Roused: they were moved, and the room is done with too.
+    // Roused: they were moved; the cage stays empty after.
     const r = startAdventure(newCampaign(1), m);
-    enterScene(r, m, event.when![0]!.to);
+    enterScene(r, m, roused.to);
     choose(r, m, 'on');
-    expect(Object.keys(r.flags).some((f) => f.endsWith('hostage-gone'))).toBe(true);
-    expect(event.until!.every((x) => requirementMet(r, x))).toBe(true);
+    expect(Object.keys(r.flags).some((f) => f.endsWith('-gone'))).toBe(true);
+    expect(event.when![0]!.if.every((x) => requirementMet(r, x))).toBe(true);
+  });
+
+  it('holds whoever a story names, with its own flags, lines and quest', () => {
+    const m = generateSpecDelve(3, { theme: 'stone', level: 3, fights: 'inhabitants', factions: ['goblins'], require: [{ name: 'The Pens', where: 'side',
+      hostage: { who: 'the carter', as: { freed: 'carter-freed', taken: 'carter-taken' }, freed: ['He is out.'], quest: { title: 'Bring Him Home', body: 'He is in the pens.' },
+        takenWhen: [{ kind: 'flag', flag: 'moon-dark' }] } }] }).module;
+    const room = floor(m).dungeon.rooms.find((r) => r.name === 'The Pens')!;
+    const held = m.scenes[room.event!.scene];
+    expect(held?.kind === 'story' && held.next.find((c) => c.id === 'free')!.effects!.some((e) => e.kind === 'journal' && e.entry.kind === 'quest' && e.entry.resolvedBy === 'carter-freed')).toBe(true);
+    expect(room.event!.until).toEqual([{ kind: 'flag', flag: 'carter-freed' }]);
+    expect(room.event!.when!.some((w) => w.if.some((r) => r.kind === 'flag' && r.flag === 'moon-dark'))).toBe(true);
+  });
+
+  it('watched, is got out quietly or by force; the watch cannot be fled, and beaten by it the party loses them', () => {
+    const m = generateSpecDelve(3, { theme: 'stone', level: 3, fights: 'inhabitants', factions: ['goblins'], require: [{ name: 'The Pens', where: 'side',
+      hostage: { who: 'the carter', as: { freed: 'carter-freed', taken: 'carter-taken' }, guard: { dc: 13 } } }] }).module;
+    const room = floor(m).dungeon.rooms.find((r) => r.name === 'The Pens')!;
+    const held = m.scenes[room.event!.scene] as Extract<Scene, { kind: 'story' }>;
+    const pick = held.next.find((c) => c.id === 'pick')!;
+    expect(pick.check?.skill).toBe('sleight-of-hand');
+    expect(pick.effects?.some((e) => e.kind === 'setFlag')).toBeFalsy();
+    const watch = m.scenes[pick.check!.failTo!];
+    expect(watch?.kind === 'battle' && watch.noFlee).toBe(true);
+    expect(watch?.kind === 'battle' && watch.onLoss?.effects).toContainEqual({ kind: 'setFlag', flag: 'carter-taken' });
   });
 
   it('can be asked for by a story, which keeps what is in it', () => {

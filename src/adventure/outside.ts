@@ -59,6 +59,17 @@ export function outsideOf(module: Module): Module {
       const doneIf = (r.event?.until ?? []).filter((q) => q.kind === 'flag');
       const done = !gates && doneIf.length ? [{ if: doneIf, to: doneScene(hub) }] : [];
       if (r.event) at_(r.event.scene, 'e', [...until, ...before], [...done, ...(r.event.when ?? [])]);
+      // Someone held there (RequiredRoom.hostage): what the chapter sees is
+      // its two flags. Got out (with what that pays and the story's own
+      // effects), until either is set; taken, by whatever the story says.
+      if (r.hostage) {
+        const h = r.hostage, stub = `${hub}-held${i}`;
+        scenes[stub] = { id: stub, kind: 'story', text: [`(${h.who}.)`], next: [
+          { id: 'free', label: 'Get them out', to: hub, effects: [{ kind: 'setFlag', flag: h.as.freed }, { kind: 'xp', amount: 50 * (d.spec.level ?? 2) }, ...(h.onFreed ?? [])] },
+          { id: 'later', label: 'Not yet', to: hub }] };
+        at_(stub, 'h', [...before, { kind: 'notFlag', flag: h.as.freed }, { kind: 'notFlag', flag: h.as.taken }, ...(h.takenWhen ?? []).flatMap((q): Requirement[] =>
+          q.kind === 'flag' ? [{ kind: 'notFlag', flag: q.flag }] : [])]);
+      }
       if (r.search) at_(r.search, 's');
       // A way out is past the room's event: walking in plays it until it is done.
       if (r.exit) at_(r.exit.to, 'x', [...before, ...(gates ? r.event?.until ?? [] : [])]);

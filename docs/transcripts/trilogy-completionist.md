@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -823,41 +823,17 @@ A tally stick hangs from a tent pole, with a notch for every cart taken. At the 
 
 **→ The Pens** <sub>(room `m2`)</sub>
 
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in.
+
 _A hidden door: The Pens ↔ Hidden Cache._
 
-<sub>scene `den-pens-door`</sub>
+<sub>scene `inner/f1-m2-moved`</sub>
 
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
+There are no pigs in the pen, and no people. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.
 
-**» Look in the pen**
+Something has come for them out of the water, and gone again. In the corner lies one small shoe.
 
-_Journal (quest): Bring the Captives Home_
-
-<sub>scene `den-pens`</sub>
-
-There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
-
-The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a lamb every midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
-
-A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
-
-**» Hack through the stakes, and never mind the noise**
-
-<sub>scene `pens-alarm`</sub>
-
-The noise carries. The raider by the fire jumps up and yells, and the den's watch comes running with him. Two hulking raiders with greataxes, four archers and an orc spread out in front of the pen. The carter pulls the girl down into the straw.
-
-**Battle:** The Watch at the Pen <sub>(`pen-watch` on `ruins`)</sub>
-
-**» Fight — won**
-
-The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.
-
-<sub>scene `den-pens-freed`</sub>
-
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
-
-**» Back to the den**
+**» Go on**
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
@@ -882,6 +858,14 @@ _Gained: Potion of Greater Healing_
 → The Pens
 
 **→ The Pens** <sub>(room `m2`)</sub>
+
+<sub>scene `inner/f1-m2-moved` (again)</sub>
+
+_(2 paragraphs shown before: “There are no pigs in the pen,…” / “Something has come for them out of…”)_
+
+**» Go on**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → Search the room
 
@@ -922,6 +906,8 @@ _+35 gold (601)_
 > At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
 
 > "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
 
 > "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
 
@@ -1009,7 +995,7 @@ Vargan walks in front of you with his hands tied, and the crowd goes quiet to le
 
 The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He sets the strongbox on the well and opens it. "Thornwick keeps its word," he says, as though daring you to make something of it.
 
-Behind him, Mira catches your eye and very nearly smiles.
+Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
 **» Let the reeve settle the rest of the bounty**
 
@@ -1075,7 +1061,7 @@ Vex sat out the end of it at his own fire, the bare blade across his knees. At d
 
 At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.
 
-Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
 
 By the week's end the Ashfang banner hangs upside down over Mira's bar, still spattered with the children's mud.
 
@@ -1085,7 +1071,7 @@ The bounty notice comes down off the board in the square. Someone tears off the 
 
 Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.
 
-The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.
+Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
 
 ### Ending: victory
 
@@ -1417,19 +1403,19 @@ Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowl
 
 Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 
-"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
-
-She ties a strip of the reeve's colours round your arm, quick and tight, and does not explain it.
+"Shout if it goes bad. I'll hear you from up here."
 
 **» Ask Wren to come down with you**
 
-<sub>scene `lychgate-wren-comes`</sub>
+_Wren leaves the party._
 
-Wren looks at the strip of colours she has just tied round your arm. Then she unties it, and ties it round her own. "Fine," she says. "I still don't know the ground down there. I know you."
+<sub>scene `lychgate-wren-stays`</sub>
 
-She lights a second torch from yours and takes the first step down before anyone can think better of it. Behind you the Barrow Gate stands empty.
+Wren shakes her head. "Down there I'm one more thing for you to watch. Up here I'm some use."
 
-**» Follow her down the steps**
+She sits down on the nearest stone with her bow strung beside her, facing the fen. You leave her at her post and start down the worked steps.
+
+**» Go down into the Undercrypt**
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1472,8 +1458,6 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses out
 The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
 
 He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
-
-Wren keeps an arrow on the string until his lantern is gone. "The dead don't tell you to mind the cut," she says.
 
 **» Go deeper in**
 
@@ -1538,8 +1522,6 @@ You edge along the wall between swings. Not one head turns. At the far end, the 
 At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
 
 He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
-
-Wren kneels and straightens the chain on his chest. "The reeve's grandfather," she says, and nothing else.
 
 The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 
@@ -1747,11 +1729,11 @@ Among the cult's packs you find how they came down: a rope ladder and a grapnel.
 
 The rope ladder brings you up out of the great barrow and into the open air.
 
-Wren comes up behind you. At the top she stands a long moment in the barrow-field, among dead who have finally stopped moving, and then she unstrings her bow.
+Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
 
 Marrow climbs out after you, and walks off alone across the barrow-field toward Saltmere. Wren keeps her hand on her knife until the fog takes him. "If he comes back," she says, "I'll know."
 
-Since the lead cut Wren has taken the old man's feet wherever the roof drops low, and she will not hand them over now. "Mind the ruts," she says, at every rut.
+Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
@@ -1927,19 +1909,11 @@ _Journal (clue): Wren's Map-Notes_
 
 → The Supply Wagons
 
-<sub>scene `wagons-carter`</sub>
+<sub>scene `wagons-busy`</sub>
 
-A grey-bearded carter is backing a supply wagon up to Bram's stores, and he stops halfway when he sees you. "I was in the stake pen behind the Ashfang kennels the season your company broke the den," he says. "Me, and my granddaughter on my back. We walked home."
+Supply wagons come and go from Bram's stores in a slow line. A driver hands down a crate of healing flasks, the good kind, and Bram's clerk inks a price on every one. None of the drivers knows your faces, and none of them looks up.
 
-"I drive for the army now. The pay's bad, and nobody locks me in at night." He reaches under the wagon-seat and comes up with a crate. "The best of the stores. Two flasks of the strong healing, and one that keeps fire off you up where the dragons are. I took it off the top before Bram could price it. Don't tell him."
-
-**» Take the carter's crate**
-
-_Gained: Potion of Greater Healing ×2_
-
-_Gained: Potion of Fire Resistance_
-
-_Journal (clue): The Carter's Crate_
+**» Head back to the camp**
 
 **↳ The War-Camp** <sub>(map `warcamp`)</sub>
 
@@ -2349,8 +2323,6 @@ Nettle's hands shake in the rock. "Well?" she says. "Say you owe it, and we can 
 
 Nettle laughs, a dry rustle with no breath behind it. "She grew greedy at the end. We do not deny it. But for a thousand winters she kept that door, and not one of the dead walked. Set that against your carters."
 
-"Her pen is empty," you tell her. "Everyone in it walked home." Nettle's lip curls. "Very brave. And the next season, the dead walked out of their graves."
-
 Sedge does not laugh. "You owe nothing?" she says, very quietly. "Then neither do we. Ask your barrows what her fall bought you, and let your priest's book keep the door." She turns back to the stone. Nettle rounds on you instead, and her hands come half out of the rock as she does. Her song climbs, louder and angrier than before, and the burning ground creeps toward your boots.
 
 **» Tear them out of the stone**
@@ -2428,8 +2400,6 @@ In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain 
 In Saltmere, a lamp burns all night among forty graves, every one of them mended. No one in the valley has seen who fills it.
 
 Thornwick's watch stood at the thin end of the east line on the Calling's last night. Reeve Aldous has every man's name cut into a plaque for the square, and he has the wording changed twice.
-
-The carter from the Ashfang pens drives the last wagon home to Thornwick. The girl in her new shoes rides on top.
 
 Wren keeps a short list folded in her bracer. It is the people she would follow anywhere. Your names are at the top, in her best hand.
 
