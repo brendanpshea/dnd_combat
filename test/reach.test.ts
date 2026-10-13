@@ -241,7 +241,7 @@ describe('campaign bugs found by the fifth read-through', () => {
   };
 
   it('a fight that cannot be come back to cannot be fled', () => {
-    for (const [mod, id] of [['hollow-road', 'reedwife-fight'], ['hollow-road', 'reedwife-fight-alone'], ['sunken-barrows', 'seal-doubt']] as const) {
+    for (const [mod, id] of [['hollow-road', 'reedwife-fight'], ['sunken-barrows', 'seal-doubt']] as const) {
       expect(battle(mod, id).noFlee, `${mod}:${id}`).toBe(true);
     }
     // Losing the pens fight loses the captives, rather than leaving them in limbo.

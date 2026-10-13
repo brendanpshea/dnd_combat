@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-119 scenes · 177 versions · 1,259,030 states searched (with text conditions tracked).
+111 scenes · 173 versions · 1,256,950 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -21,33 +21,17 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `scout-saved`, `scout-fail`:
   - **S2** “"You got the horse off me. Let me pay some of that back." She catches …”
   - **S3** “"You got the horse off me. Let me pay some of that back." She looks …”
-- `boss`, `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`:
-  - **S4** “Behind the throne stands the chief's strongbox, its lid forced …”
-- `vargan-brand`, `vargan-brand-alone`:
-  - **S5** “The rag on his axe hand has slipped. Burned into …”
-  - **S6** “He stares down at his own hand as if it …”
-- `vargan-turns`, `vargan-turns-alone`:
-  - **S7** “Vargan looks from the brand to the hag, and turns, …”
-  - **S8** “Vargan looks at the hag without a word, and turns, …”
-  - **S9** “The hag looks down at him a moment, and when …”
-- `bind-hag-rite`, `bind-hag-rite-alone`:
-  - **S10** “Before she can whistle for anyone, you speak her price …”
-  - **S12** “One word comes out wrong, and the rite falls apart …”
-- `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`, `reedwife-fight-alone`:
-  - **S11** “The words catch in her like a hook. She hisses …”
-- `reedwife-fight`, `reedwife-fight-alone`:
-  - **S13** “A sodden purse hangs at her belt on a cord …”
-  - **S14** “You say her price back to her, in her own …”
-  - **S15** “You start the words, and she hears the place where …”
-- `reedwife-lost`, `reedwife-lost-alone`:
-  - **S16** “The hag's cold fingers close over your eyes, and the …”
-  - **S17** “You wake behind the throne, where somebody dragged you. Vargan …”
+- `bind-hag-rite`, `reedwife-fight`:
+  - **S4** “The words catch in her like a hook. She hisses …”
+  - **S5** “She goes out of the hall into the night, toward …”
+  - **S6** “The chief's guard watches her go, and then walks out …”
+  - **S7** “Her two raiders watch her go, and then they run …”
 - `trail/fights`, `inner/fights`:
-  - **S18** “(The place's own fights.)”
+  - **S8** “(The place's own fights.)”
 - `trail`, `inner`:
-  - **S19** “In.”
+  - **S9** “In.”
 - `trail/delve-done`, `inner/delve-done`, `square/city-done`:
-  - **S20** “(Done.)”
+  - **S10** “(Done.)”
 
 ## `road` · story
 
@@ -1317,18 +1301,14 @@ Vex studies you a long moment, then shakes his head, almost sorry about it. "No.
 
 ## `vargan-unread` · story
 
-<sub>reads: flag:npc.vex.fate.turned</sub>
-
 His axe hand stays wrapped in its rag, and his face gives you nothing at all. Behind the throne the hag watches you look, and smiles.
 
-- » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when Vex not turned; otherwise hidden</sub>
-- » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when Vex turned; otherwise hidden</sub>
-- » **End them both** <sub>open when Vex not turned; otherwise hidden</sub>
-- » **End them both** <sub>open when Vex turned; otherwise hidden</sub>
+- » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14]
+- » **End them both**
 
 ## `boss-approach` · story
 
-<sub>reads: flag:vargan-shaken, flag:npc.vex.fate.turned, class:warlock?, flag:captives-freed, return?</sub>
+<sub>reads: flag:vargan-shaken, class:warlock?, flag:captives-freed, return?</sub>
 
 **3 versions**
 
@@ -1358,28 +1338,20 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 
 He keeps his branded hand shut in a fist. His eyes keep going back to it.
 
-- » **[Insight DC 14] Look at his hands** [Insight DC 14] <sub>open when Vex not turned; otherwise hidden</sub>
-- » **[Insight DC 14] Look at his hands** [Insight DC 14] <sub>open when Vex turned; otherwise hidden</sub>
-- » **[Warlock · Arcana DC 11] Name the bargain burned into his hand** [Arcana DC 11] <sub>open when Vex not turned · a warlock in the party?; otherwise hidden</sub>
-- » **[Warlock · Arcana DC 11] Name the bargain burned into his hand** [Arcana DC 11] <sub>open when Vex turned · a warlock in the party?; otherwise hidden</sub>
-- » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken` · Vex not turned; otherwise hidden</sub>
-- » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken` · Vex turned; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when Vex not turned · `captives-freed`; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when Vex turned · `captives-freed`; otherwise hidden</sub>
-- » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken` · Vex not turned; otherwise hidden</sub>
-- » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken` · Vex turned; otherwise hidden</sub>
-- » **End them both** <sub>open when not `vargan-shaken` · Vex turned; otherwise hidden</sub>
-- » **End them both** <sub>open when `vargan-shaken` · Vex turned; otherwise hidden</sub>
-- » **End them both** <sub>open when not `vargan-shaken` · Vex not turned; otherwise hidden</sub>
-- » **End them both** <sub>open when `vargan-shaken` · Vex not turned; otherwise hidden</sub>
+- » **[Insight DC 14] Look at his hands** [Insight DC 14]
+- » **[Warlock · Arcana DC 11] Name the bargain burned into his hand** [Arcana DC 11] <sub>open when a warlock in the party?; otherwise hidden</sub>
+- » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when `captives-freed`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken`; otherwise hidden</sub>
+- » **End them both**
 
 ## `boss` · battle
 
-<sub>reads: return?</sub>
+<sub>reads: flag:npc.vex.fate.turned, flag:vargan-shaken, return?</sub>
 
-**2 versions**
+**8 versions**
 
-### 1. when the first visit?
+### 1. when Vex not turned · not `vargan-shaken` · the first visit?
 
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
@@ -1389,13 +1361,15 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
+### 2. when Vex not turned · not `vargan-shaken` · a return visit?
 
-### 2. when a return visit?
+The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
 
 The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 
@@ -1403,148 +1377,129 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss-shaken`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
-
-## `boss-shaken` · battle
-
-<sub>reads: return?</sub>
-
-**2 versions**
-
-### 1. when the first visit?
+### 3. when Vex not turned · `vargan-shaken` · the first visit?
 
 Vargan closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.
 
-By the door, the chief's guard is still reaching for his weapon. He is a grey and scarred old soldier. The raider beside him is still fumbling for his knife.
+"You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
+
+The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.
 
 **Battle:** The Ashfang Chief and His Guard
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
+Vargan fights with one eye on his own shut fist.
+
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
+### 4. when Vex not turned · `vargan-shaken` · a return visit?
 
-### 2. when a return visit?
+The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
 
-Vargan's eyes go to his shut fist again, and the hag lets them. By then you are already moving.
+The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 
 **Battle:** The Ashfang Chief and His Guard
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
+Vargan fights with one eye on his own shut fist.
+
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss`, `boss-unguarded`, `boss-unguarded-shaken`)</sub>
+### 5. when Vex turned · not `vargan-shaken` · the first visit?
 
-## `boss-unguarded` · battle
-
-<sub>reads: return?</sub>
-
-**2 versions**
-
-### 1. when the first visit?
+"You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
 The chief bellows for Hask, his guard. Hask stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. Vex has kept his word.
 
-"You've cost me a good season," Vargan says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
+The hag whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 
-She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
-
-**Battle:** The Ashfang Chief, Unguarded
+**Battle:** The Ashfang Chief and His Guard
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded-shaken`)</sub>
+### 6. when Vex turned · not `vargan-shaken` · a return visit?
 
-### 2. when a return visit?
+The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
 
-Hask is nowhere in the hall. Vex's word still holds.
+Hask is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 
-Vargan rolls the great axe off his shoulder again. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
-
-**Battle:** The Ashfang Chief, Unguarded
+**Battle:** The Ashfang Chief and His Guard
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded-shaken`)</sub>
+### 7. when Vex turned · `vargan-shaken` · the first visit?
 
-## `boss-unguarded-shaken` · battle
+Vargan closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.
 
-<sub>reads: return?</sub>
+"You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
-**2 versions**
+The chief bellows for Hask, his guard. Hask stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. Vex has kept his word.
 
-### 1. when the first visit?
+The hag whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 
-Vargan closes his fist over the brand and bellows for Hask. By the door, Hask grounds his spear, steps aside to let you pass, and walks out into the smoke.
-
-"Waste not," the hag hisses, and whistles. One raider comes in from the yard. Behind him a marsh snake as thick as a man's waist pours over the threshold, with reeds and a reaching hand branded into its scales. By then you are already moving.
-
-**Battle:** The Ashfang Chief, Unguarded
+**Battle:** The Ashfang Chief and His Guard
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
+Vargan fights with one eye on his own shut fist.
+
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded`)</sub>
+### 8. when Vex turned · `vargan-shaken` · a return visit?
 
-### 2. when a return visit?
+The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
 
-Hask is still gone, and Vargan still keeps his branded hand shut in a fist.
+Hask is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 
-"Waste not," the hag hisses, and her branded snake pours over the threshold again with the one raider who stayed. By then you are already moving.
-
-**Battle:** The Ashfang Chief, Unguarded
+**Battle:** The Ashfang Chief and His Guard
 
 *Won:*
 
-Vargan fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
+Vargan fights with one eye on his own shut fist.
+
+The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+
+Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
-
-<sub>(shared with: `boss`, `boss-shaken`, `boss-unguarded`)</sub>
 
 ## `vargan-brand` · story
 
 The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand, the same brand the lizardfolk wore in the hollow.
 
-<sub>(shared with: `vargan-brand-alone`)</sub>
-
 He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.
-
-<sub>(shared with: `vargan-brand-alone`)</sub>
-
-- » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10]
-- » **Strike while he stares**
-
-## `vargan-brand-alone` · story
-
-The rag on his axe hand has slipped. Burned into the skin beneath is a mark of reeds and a reaching hand, the same brand the lizardfolk wore in the hollow.
-
-<sub>(shared with: `vargan-brand`)</sub>
-
-He stares down at his own hand as if it belongs to someone else. Behind him the hag has stopped smiling.
-
-<sub>(shared with: `vargan-brand`)</sub>
 
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10]
 - » **Strike while he stares**
@@ -1559,59 +1514,26 @@ He stares down at his own hand as if it belongs to someone else. Behind him the 
 
 Vargan looks at the hag without a word, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers. Through the rag on his axe hand a brand burns white, a mark of reeds and a reaching hand, and he drops to the floor, screaming.
 
-<sub>(shared with: `vargan-turns-alone`)</sub>
-
 The hag looks down at him a moment, and when she looks up she is smiling.
-
-<sub>(shared with: `vargan-turns-alone`)</sub>
 
 ### 2. when `vargan-shaken`
 
 Vargan looks from the brand to the hag, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers, and the brand on his hand burns white. He drops to the floor, screaming.
 
-<sub>(shared with: `vargan-turns-alone`)</sub>
-
 The hag looks down at him a moment, and when she looks up she is smiling.
-
-<sub>(shared with: `vargan-turns-alone`)</sub>
-
-- » **Face the Reedwife**
-- » **[Religion DC 15] Bind her to her old price as a rite: one lamb a winter, by their door** — _One try at binding her, whichever way the words are said._
-
-## `vargan-turns-alone` · story
-
-<sub>reads: flag:vargan-shaken</sub>
-
-**2 versions**
-
-### 1. when not `vargan-shaken`
-
-Vargan looks at the hag without a word, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers. Through the rag on his axe hand a brand burns white, a mark of reeds and a reaching hand, and he drops to the floor, screaming.
-
-<sub>(shared with: `vargan-turns`)</sub>
-
-The hag looks down at him a moment, and when she looks up she is smiling.
-
-<sub>(shared with: `vargan-turns`)</sub>
-
-### 2. when `vargan-shaken`
-
-Vargan looks from the brand to the hag, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers, and the brand on his hand burns white. He drops to the floor, screaming.
-
-<sub>(shared with: `vargan-turns`)</sub>
-
-The hag looks down at him a moment, and when she looks up she is smiling.
-
-<sub>(shared with: `vargan-turns`)</sub>
 
 - » **Face the Reedwife**
 - » **[Religion DC 15] Bind her to her old price as a rite: one lamb a winter, by their door** — _One try at binding her, whichever way the words are said._
 
 ## `bind-hag-rite` · check
 
-Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
+<sub>reads: flag:npc.vex.fate.turned</sub>
 
-<sub>(shared with: `bind-hag-rite-alone`)</sub>
+**2 versions**
+
+### 1. when Vex not turned
+
+Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
 
 **Check:** [Religion DC 15]
 
@@ -1619,21 +1541,23 @@ Before she can whistle for anyone, you speak her price the way a priest speaks a
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `bind-hag-rite-alone`, `reedwife-fight`, `reedwife-fight-alone`)</sub>
+<sub>(shared with: `reedwife-fight`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for the chief's guard. He comes out of the smoke at her call with four raiders at his back. He watches her go, and then walks out into the smoke after her, and his raiders go with him.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+<sub>(shared with: `reedwife-fight`)</sub>
+
+The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 *Fail:*
 
 One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.
 
-<sub>(shared with: `bind-hag-rite-alone`)</sub>
-
-## `bind-hag-rite-alone` · check
+### 2. when Vex turned
 
 Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
-
-<sub>(shared with: `bind-hag-rite`)</sub>
 
 **Check:** [Religion DC 15]
 
@@ -1641,175 +1565,175 @@ Before she can whistle for anyone, you speak her price the way a priest speaks a
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `bind-hag-rite`, `reedwife-fight`, `reedwife-fight-alone`)</sub>
+<sub>(shared with: `reedwife-fight`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+<sub>(shared with: `reedwife-fight`)</sub>
+
+Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.
+
+<sub>(shared with: `reedwife-fight`)</sub>
 
 *Fail:*
 
 One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.
-
-<sub>(shared with: `bind-hag-rite`)</sub>
 
 ## `reedwife-fight` · battle
 
-<sub>reads: return?</sub>
+<sub>reads: flag:npc.vex.fate.turned, return?</sub>
 
-**2 versions**
+**4 versions**
 
-### 1. when the first visit?
+### 1. when Vex not turned · the first visit?
 
-The **Reedwife** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.
+The **Reedwife** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again.
 
-**Battle:** The Reedwife and the Chief's Guard · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
-
-*Won:*
-
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. The four raiders lie where they fell, and the chief's grey old guard is down among them.
-
-A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
-
-<sub>(shared with: `reedwife-fight-alone`)</sub>
-
-*Talked down:*
-
-You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
-
-<sub>(shared with: `reedwife-fight-alone`)</sub>
-
-The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
-
-<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight-alone`)</sub>
-
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
-
-*Talk refused:*
-
-You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
-
-<sub>(shared with: `reedwife-fight-alone`)</sub>
-
-### 2. when a return visit?
-
-The Reedwife is still by the fire-pit. "Up again, sweetlings?" She whistles, and the chief's guard comes back out of the smoke with his four raiders.
+He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.
 
 **Battle:** The Reedwife and the Chief's Guard · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. The four raiders lie where they fell, and the chief's grey old guard is down among them.
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+
+The four raiders lie where they fell, and the chief's grey old guard is down among them.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
-
-<sub>(shared with: `reedwife-fight-alone`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
-<sub>(shared with: `reedwife-fight-alone`)</sub>
-
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight-alone`)</sub>
+<sub>(shared with: `bind-hag-rite`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
 
 *Talk refused:*
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
 
-<sub>(shared with: `reedwife-fight-alone`)</sub>
+### 2. when Vex not turned · a return visit?
 
-## `reedwife-fight-alone` · battle
+The Reedwife is still by the fire-pit. "Up again, sweetlings?"
 
-<sub>reads: return?</sub>
+She whistles, and the chief's guard comes back out of the smoke with his four raiders.
 
-**2 versions**
-
-### 1. when the first visit?
-
-The **Reedwife** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. Hask still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
-
-**Battle:** The Reedwife at Bay · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
+**Battle:** The Reedwife and the Chief's Guard · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+
+The four raiders lie where they fell, and the chief's grey old guard is down among them.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
-
-<sub>(shared with: `reedwife-fight`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
-<sub>(shared with: `reedwife-fight`)</sub>
-
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`)</sub>
+<sub>(shared with: `bind-hag-rite`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+The chief's guard watches her go, and then walks out into the smoke after her. His four raiders go with him.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
 
 *Talk refused:*
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
 
-<sub>(shared with: `reedwife-fight`)</sub>
+### 3. when Vex turned · the first visit?
 
-### 2. when a return visit?
+The **Reedwife** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again.
 
-The Reedwife is still by the fire-pit. She whistles for Hask once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.
+Hask still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 
-**Battle:** The Reedwife at Bay · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
+**Battle:** The Reedwife and the Chief's Guard · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
 
 *Won:*
 
-The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+
+Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
 
 A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
-
-<sub>(shared with: `reedwife-fight`)</sub>
 
 *Talked down:*
 
 You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
 
-<sub>(shared with: `reedwife-fight`)</sub>
-
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-<sub>(shared with: `bind-hag-rite`, `bind-hag-rite-alone`, `reedwife-fight`)</sub>
+<sub>(shared with: `bind-hag-rite`)</sub>
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
 
 *Talk refused:*
 
 You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
 
-<sub>(shared with: `reedwife-fight`)</sub>
+### 4. when Vex turned · a return visit?
+
+The Reedwife is still by the fire-pit. "Up again, sweetlings?"
+
+She whistles for Hask once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.
+
+**Battle:** The Reedwife and the Chief's Guard · parley: Hold her to her old price: one lamb a winter, by their door [Arcana DC 15]
+
+*Won:*
+
+The **Reedwife** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+
+Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
+
+A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.
+
+*Talked down:*
+
+You say her price back to her, in her own words. One lamb each midwinter, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.
+
+The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.
+
+<sub>(shared with: `bind-hag-rite`)</sub>
+
+*Talk refused:*
+
+You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.
 
 ## `reedwife-lost` · rest
 
 The hag's cold fingers close over your eyes, and the hall goes dark.
 
-<sub>(shared with: `reedwife-lost-alone`)</sub>
-
 You wake behind the throne, where somebody dragged you. Vargan sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."
-
-<sub>(shared with: `reedwife-lost-alone`)</sub>
-
-## `reedwife-lost-alone` · rest
-
-The hag's cold fingers close over your eyes, and the hall goes dark.
-
-<sub>(shared with: `reedwife-lost`)</sub>
-
-You wake behind the throne, where somebody dragged you. Vargan sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."
-
-<sub>(shared with: `reedwife-lost`)</sub>
 
 ## `vargan-beaten` · story
 

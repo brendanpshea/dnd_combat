@@ -128,6 +128,7 @@ export function maxXpReport(
   const farmable = new Set<string>();
   const reach = traceXp(module, {
     battleXp,
+    encounterXp: (e: Id) => xpAward(e, partySize),
     group: (id) => trips.get(id),
     levelXp: (level) => LEVEL_XP[level - 1] ?? 0,
     onGraph: (g) => {

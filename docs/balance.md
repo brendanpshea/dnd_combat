@@ -26,7 +26,7 @@ Main-path fights per chapter, counted **below / in / above** the band.
 
 | Chapter | Main-path fights | Bosses | Fresh | Arrival | Worn | EASY | OVER |
 |---|---|---|---|---|---|---|---|
-| The Hollow Road | 16 | 2 | 1 / 11 / 4 | 9 / 3 / 4 | 13 / 0 / 3 | 3 | 0 |
+| The Hollow Road | 15 | 1 | 1 / 10 / 4 | 8 / 3 / 4 | 12 / 0 / 3 | 3 | 0 |
 | The Sunken Barrows | 15 | 2 | 1 / 6 / 8 | 5 / 4 / 6 | 9 / 1 / 5 | 7 | 0 |
 | The Wyrmcalling | 17 | 2 | 1 / 8 / 8 | 8 / 4 / 5 | 14 / 0 / 3 | 4 | 0 |
 
@@ -130,7 +130,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | trilogy-rusher | `ambush-sprung` | The Hag's Thralls `hag-thralls` | `bog` | party surprised | 2 (468 XP) | 2 | 86% | 23% (2) | 23% | fought |  |
 | trilogy-rusher | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (981 XP) | 3 | 80% | 20% (3) | 20% | parleyed |  |
 | trilogy-rusher | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1269 XP) | 2 | 100% | 100% (3) | 100% | fought | **EASY** |
-| trilogy-rusher | `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 (1544 XP) | 3 | 70% | 10% (4) | 10% | fought |  |
+| trilogy-rusher | `boss` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 (1544 XP) | 3 | 70% | 10% (4) | 10% | fought |  |
 | trilogy-cruel | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought |  |
 | trilogy-cruel | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (113 XP) | 1 | 84% | 47% (1) | 40% | fought |  |
 | trilogy-cruel | `barrow-fight` | The Barrow Haunt `barrow-haunt` | `corridor` | — | 2 (411 XP) | 2 | 88% | 88% (0) | 43% | fought |  |
@@ -181,11 +181,7 @@ Low and high: the lowest and highest level any route arrives at this encounter i
 | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 2 | routes 3 | 100% | 100% | ″ | ″ | **EASY** |
 | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 | routes 3 | 80% | 20% | ″ | ″ |  |
 | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 | routes 3 | 70% | 13% | ″ | ″ |  |
-| `boss-shaken` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | foes surprised | 3 | routes 3 | 80% | 23% | ″ | ″ |  |
-| `boss-unguarded` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | — | 3 | routes 3 | 70% | 10% | ″ | ″ |  |
-| `boss-unguarded-shaken` ★ | The Ashfang Chief, Unguarded `ashfang-warlord-alone` | `firepit` | foes surprised | 3 | routes 3 | 78% | 10% | ″ | ″ |  |
 | `reedwife-fight` ★ | The Reedwife and the Chief's Guard `hag-guarded` | `firepit` | — | 3 | not met; late chapter 3 | 74% | 23% | ″ | ″ |  |
-| `reedwife-fight-alone` ★ | The Reedwife at Bay `hag-whistled` | `firepit` | — | 3 | not met; late chapter 3 | 92% | 50% | ″ | ″ |  |
 
 ## The Sunken Barrows `sunken-barrows`
 

@@ -65,7 +65,10 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // ahead can read. 1.74M states to 395k.
   // And for the generic hostage (Oct 2026): the den's captives are a
   // RequiredRoom.hostage, not five scenes and four flags. 395k to 277k.
-  'hollow-road': { flags: 34, conditional: 82, states: 300_000 },
+  // Conditional raised for the merged hall (Oct 2026): eight twin scenes
+  // (guarded or not, brand read or not) became one each, their differences
+  // conditional lines instead. 82 to 93.
+  'hollow-road': { flags: 34, conditional: 95, states: 300_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },

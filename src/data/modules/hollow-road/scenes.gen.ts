@@ -3,7 +3,7 @@
 import type { Scene } from '../../../adventure/types.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';
-import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
+import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, TURN_UNREAD, TURN_UNREAD_FRESH, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED } from './parts.js';
 
 export const SCENES: Record<string, Scene> = {
   "road": {
@@ -1890,23 +1890,7 @@ export const SCENES: Record<string, Scene> = {
     text: [
       "His axe hand stays wrapped in its rag, and his face gives you nothing at all. Behind the throne the hag watches you look, and smiles.",
     ],
-    next: [
-      ...[turnUnread([])].flat(),
-      {
-        id: "fight",
-        label: "End them both",
-        to: "boss",
-        hideWhenBlocked: true,
-        requires: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
-      },
-      {
-        id: "fight-alone",
-        label: "End them both",
-        to: "boss-unguarded",
-        hideWhenBlocked: true,
-        requires: [{ kind: "npc", npc: "vex", fate: "turned" }],
-      },
-    ],
+    next: [...[TURN_UNREAD].flat(), { id: "fight", label: "End them both", to: "boss" }],
   },
   "boss-approach": {
     id: "boss-approach",
@@ -1936,24 +1920,7 @@ export const SCENES: Record<string, Scene> = {
         id: "insight",
         label: "[Insight DC 14] Look at his hands",
         to: "vargan-brand",
-        hideWhenBlocked: true,
         attempt: "brand",
-        requires: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
-        effects: [{ kind: "setFlag", flag: "vargan-shaken" }],
-        check: {
-          skill: "insight",
-          dc: 14,
-          failTo: "vargan-unread",
-          failEffects: [{ kind: "clearFlag", flag: "vargan-shaken" }],
-        },
-      },
-      {
-        id: "insight-alone",
-        label: "[Insight DC 14] Look at his hands",
-        to: "vargan-brand-alone",
-        hideWhenBlocked: true,
-        attempt: "brand",
-        requires: [{ kind: "npc", npc: "vex", fate: "turned" }],
         effects: [{ kind: "setFlag", flag: "vargan-shaken" }],
         check: {
           skill: "insight",
@@ -1968,7 +1935,7 @@ export const SCENES: Record<string, Scene> = {
         to: "vargan-brand",
         hideWhenBlocked: true,
         attempt: "brand",
-        requires: [{ kind: "classInParty", classId: "warlock" }, { kind: "npc", npc: "vex", notFate: ["turned"] }],
+        requires: [{ kind: "classInParty", classId: "warlock" }],
         effects: [{ kind: "setFlag", flag: "vargan-shaken" }],
         check: {
           skill: "arcana",
@@ -1977,39 +1944,15 @@ export const SCENES: Record<string, Scene> = {
           failEffects: [{ kind: "clearFlag", flag: "vargan-shaken" }],
         },
       },
-      {
-        id: "pact-alone",
-        label: "[Warlock · Arcana DC 11] Name the bargain burned into his hand",
-        to: "vargan-brand-alone",
-        hideWhenBlocked: true,
-        attempt: "brand",
-        requires: [{ kind: "classInParty", classId: "warlock" }, { kind: "npc", npc: "vex", fate: "turned" }],
-        effects: [{ kind: "setFlag", flag: "vargan-shaken" }],
-        check: {
-          skill: "arcana",
-          dc: 11,
-          failTo: "vargan-unread",
-          failEffects: [{ kind: "clearFlag", flag: "vargan-shaken" }],
-        },
-      },
-      ...[turnUnread([{ kind: 'notFlag', flag: 'vargan-shaken' }])].flat(),
+      ...[TURN_UNREAD_FRESH].flat(),
       {
         id: "turn-carter",
         label: "[Persuasion DC 10] \"The carter's girl is home. Your mother's house is still under the water.\"",
         to: "vargan-turns",
         hideWhenBlocked: true,
         attempt: "turn",
-        requires: [{ kind: "flag", flag: "captives-freed" }, { kind: "npc", npc: "vex", notFate: ["turned"] }],
+        requires: [{ kind: "flag", flag: "captives-freed" }],
         check: { skill: "persuasion", dc: 10, failTo: "boss" },
-      },
-      {
-        id: "turn-carter-alone",
-        label: "[Persuasion DC 10] \"The carter's girl is home. Your mother's house is still under the water.\"",
-        to: "vargan-turns-alone",
-        hideWhenBlocked: true,
-        attempt: "turn",
-        requires: [{ kind: "flag", flag: "captives-freed" }, { kind: "npc", npc: "vex", fate: "turned" }],
-        check: { skill: "persuasion", dc: 10, failTo: "boss-unguarded" },
       },
       {
         id: "turn-shaken",
@@ -2017,154 +1960,66 @@ export const SCENES: Record<string, Scene> = {
         to: "vargan-turns",
         hideWhenBlocked: true,
         attempt: "turn",
-        requires: [{ kind: "npc", npc: "vex", notFate: ["turned"] }, { kind: "flag", flag: "vargan-shaken" }],
-        check: { skill: "persuasion", dc: 10, failTo: "boss-shaken" },
+        requires: [{ kind: "flag", flag: "vargan-shaken" }],
+        check: { skill: "persuasion", dc: 10, failTo: "boss" },
       },
-      {
-        id: "turn-shaken-alone",
-        label: "[Persuasion DC 10] \"She owns you too. Help us end her.\"",
-        to: "vargan-turns-alone",
-        hideWhenBlocked: true,
-        attempt: "turn",
-        requires: [{ kind: "npc", npc: "vex", fate: "turned" }, { kind: "flag", flag: "vargan-shaken" }],
-        check: { skill: "persuasion", dc: 10, failTo: "boss-unguarded-shaken" },
-      },
-      {
-        id: "fight-alone",
-        label: "End them both",
-        to: "boss-unguarded",
-        hideWhenBlocked: true,
-        requires: [{ kind: "npc", npc: "vex", fate: "turned" }, { kind: "notFlag", flag: "vargan-shaken" }],
-      },
-      {
-        id: "fight-alone-shaken",
-        label: "End them both",
-        to: "boss-unguarded-shaken",
-        hideWhenBlocked: true,
-        requires: [{ kind: "npc", npc: "vex", fate: "turned" }, { kind: "flag", flag: "vargan-shaken" }],
-      },
-      {
-        id: "fight",
-        label: "End them both",
-        to: "boss",
-        hideWhenBlocked: true,
-        requires: [{ kind: "npc", npc: "vex", notFate: ["turned"] }, { kind: "notFlag", flag: "vargan-shaken" }],
-      },
-      {
-        id: "fight-shaken",
-        label: "End them both",
-        to: "boss-shaken",
-        hideWhenBlocked: true,
-        requires: [{ kind: "npc", npc: "vex", notFate: ["turned"] }, { kind: "flag", flag: "vargan-shaken" }],
-      },
+      { id: "fight", label: "End them both", to: "boss" },
     ],
   },
   "boss": {
     id: "boss",
     kind: "battle",
     encounterId: "ashfang-hall",
+    encounterWhen: [{ if: [{ kind: "npc", npc: "vex", fate: "turned" }], encounterId: "ashfang-warlord-alone" }],
+    surpriseWhen: [{ kind: "flag", flag: "vargan-shaken" }],
     mapId: "firepit",
-    loot: { bonusTier: "rare" },
-    intro: [
-      "\"You've cost me a good season,\" the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. \"Oh, don't kill them quickly,\" she tells him. \"Waste not.\"",
-      "The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.",
-    ],
-    again: [
-      "The hag's fingers are already weaving something cold out of the smoke. \"Don't kill them quickly this time,\" she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.",
-    ],
-    onWin: {
-      to: "vargan-beaten",
-      text: [
-        "The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.",
-        ...[BOSS_HOARD].flat(),
-      ],
-      effects: [...[BOSS_WON].flat()],
-    },
-  },
-  "boss-shaken": {
-    id: "boss-shaken",
-    kind: "battle",
-    encounterId: "ashfang-hall",
-    mapId: "firepit",
-    surprise: "enemies",
     loot: { bonusTier: "rare" },
     intro: [
       {
-        assumes: [{ kind: "flag", flag: "vargan-shaken" }],
+        if: [{ kind: "flag", flag: "vargan-shaken" }],
         text: "{vargan} closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.",
       },
-      "By the door, the chief's guard is still reaching for his weapon. He is a grey and scarred old soldier. The raider beside him is still fumbling for his knife.",
-    ],
-    again: [
+      "\"You've cost me a good season,\" the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. \"Oh, don't kill them quickly,\" she tells him. \"Waste not.\"",
       {
-        assumes: [{ kind: "flag", flag: "vargan-shaken" }],
-        text: "{vargan}'s eyes go to his shut fist again, and the hag lets them. By then you are already moving.",
+        if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
+        text: "The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.",
       },
-    ],
-    onWin: {
-      to: "vargan-beaten",
-      text: [
-        "{vargan} fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.",
-        ...[BOSS_HOARD].flat(),
-      ],
-      effects: [...[BOSS_WON].flat()],
-    },
-  },
-  "boss-unguarded": {
-    id: "boss-unguarded",
-    kind: "battle",
-    encounterId: "ashfang-warlord-alone",
-    mapId: "firepit",
-    loot: { bonusTier: "rare" },
-    intro: [
       {
-        assumes: [{ kind: "npc", npc: "vex", fate: "turned" }],
+        if: [{ kind: "npc", npc: "vex", fate: "turned" }],
         text: "The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.",
       },
-      "\"You've cost me a good season,\" {vargan} says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.",
-      "She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.",
+      {
+        if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+        text: "The hag whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.",
+      },
     ],
     again: [
+      "The chief's hall still reeks of smoke, and {vargan} rolls the great axe off his shoulder again.",
       {
-        assumes: [{ kind: "npc", npc: "vex", fate: "turned" }],
-        text: "{hask} is nowhere in the hall. {vex}'s word still holds.",
+        if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
+        text: "The hag's fingers are already weaving something cold out of the smoke. \"Don't kill them quickly this time,\" she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.",
       },
-      "{vargan} rolls the great axe off his shoulder again. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.",
+      {
+        if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+        text: "{hask} is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.",
+      },
     ],
     onWin: {
       to: "vargan-beaten",
       text: [
-        "The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.",
-        ...[BOSS_HOARD].flat(),
-      ],
-      effects: [...[BOSS_WON].flat()],
-    },
-  },
-  "boss-unguarded-shaken": {
-    id: "boss-unguarded-shaken",
-    kind: "battle",
-    encounterId: "ashfang-warlord-alone",
-    mapId: "firepit",
-    surprise: "enemies",
-    loot: { bonusTier: "rare" },
-    intro: [
-      {
-        assumes: [{ kind: "npc", npc: "vex", fate: "turned" }, { kind: "flag", flag: "vargan-shaken" }],
-        text: "{vargan} closes his fist over the brand and bellows for {hask}. By the door, {hask} grounds his spear, steps aside to let you pass, and walks out into the smoke.",
-      },
-      "\"Waste not,\" the hag hisses, and whistles. One raider comes in from the yard. Behind him a marsh snake as thick as a man's waist pours over the threshold, with reeds and a reaching hand branded into its scales. By then you are already moving.",
-    ],
-    again: [
-      {
-        assumes: [{ kind: "npc", npc: "vex", fate: "turned" }, { kind: "flag", flag: "vargan-shaken" }],
-        text: "{hask} is still gone, and {vargan} still keeps his branded hand shut in a fist.",
-      },
-      "\"Waste not,\" the hag hisses, and her branded snake pours over the threshold again with the one raider who stayed. By then you are already moving.",
-    ],
-    onWin: {
-      to: "vargan-beaten",
-      text: [
-        "{vargan} fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.",
+        {
+          if: [{ kind: "flag", flag: "vargan-shaken" }],
+          text: "{vargan} fights with one eye on his own shut fist.",
+        },
+        "The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.",
+        {
+          if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
+          text: "By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.",
+        },
+        {
+          if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+          text: "Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.",
+        },
         ...[BOSS_HOARD].flat(),
       ],
       effects: [...[BOSS_WON].flat()],
@@ -2182,26 +2037,9 @@ export const SCENES: Record<string, Scene> = {
         label: "[Persuasion DC 10] \"She owns you too. Help us end her.\"",
         to: "vargan-turns",
         attempt: "turn",
-        check: { skill: "persuasion", dc: 10, failTo: "boss-shaken" },
+        check: { skill: "persuasion", dc: 10, failTo: "boss" },
       },
-      { id: "strike", label: "Strike while he stares", to: "boss-shaken" },
-    ],
-  },
-  "vargan-brand-alone": {
-    id: "vargan-brand-alone",
-    kind: "story",
-    noBack: true,
-    art: { imageId: "loc-throne", emoji: "✋" },
-    text: [...[VARGAN_BRAND].flat()],
-    next: [
-      {
-        id: "turn",
-        label: "[Persuasion DC 10] \"She owns you too. Help us end her.\"",
-        to: "vargan-turns-alone",
-        attempt: "turn",
-        check: { skill: "persuasion", dc: 10, failTo: "boss-unguarded-shaken" },
-      },
-      { id: "strike", label: "Strike while he stares", to: "boss-unguarded-shaken" },
+      { id: "strike", label: "Strike while he stares", to: "boss" },
     ],
   },
   "vargan-turns": {
@@ -2215,72 +2053,58 @@ export const SCENES: Record<string, Scene> = {
     ],
     next: [
       { id: "fight", label: "Face the {reedwife}", to: "reedwife-fight" },
-      ...[BIND_HAG_RITE_CHOICE('bind-hag-rite')].flat(),
+      ...[BIND_HAG_RITE_CHOICE].flat(),
     ],
   },
-  "vargan-turns-alone": {
-    id: "vargan-turns-alone",
-    kind: "story",
-    noBack: true,
-    art: { imageId: "loc-throne", emoji: "✋" },
-    text: [
-      ...[VARGAN_TURNS].flat(),
-      "The hag looks down at him a moment, and when she looks up she is smiling.",
-    ],
-    next: [
-      { id: "fight", label: "Face the {reedwife}", to: "reedwife-fight-alone" },
-      ...[BIND_HAG_RITE_CHOICE('bind-hag-rite-alone')].flat(),
-    ],
-  },
-  "bind-hag-rite": BIND_HAG_RITE('bind-hag-rite', 'hag-guarded', 'reedwife-fight', 'At the door she whistles for the chief\'s guard. He comes out of the smoke at her call with four raiders at his back. He watches her go, and then walks out into the smoke after her, and his raiders go with him.'),
-  "bind-hag-rite-alone": BIND_HAG_RITE('bind-hag-rite-alone', 'hag-whistled', 'reedwife-fight-alone', 'At the door she whistles for {hask}, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man\'s waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.'),
+  "bind-hag-rite": BIND_HAG_RITE,
   "reedwife-fight": {
     id: "reedwife-fight",
     kind: "battle",
     encounterId: "hag-guarded",
+    encounterWhen: [{ if: [{ kind: "npc", npc: "vex", fate: "turned" }], encounterId: "hag-whistled" }],
     mapId: "firepit",
     noFlee: true,
     loot: { bonusTier: "rare" },
-    parley: BIND_HAG('hag-guarded', 'The chief\'s guard watches her go, and then walks out into the smoke after her. His four raiders go with him.'),
+    parley: BIND_HAG,
     intro: [
-      "The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. \"Waste not,\" she says, and whistles for the chief's guard again. He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.",
+      "The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. \"Waste not,\" she says, and whistles for the chief's guard again.",
+      {
+        if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
+        text: "He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.",
+      },
+      {
+        if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+        text: "{hask} still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.",
+      },
     ],
     again: [
-      "The {reedwife} is still by the fire-pit. \"Up again, sweetlings?\" She whistles, and the chief's guard comes back out of the smoke with his four raiders.",
+      "The {reedwife} is still by the fire-pit. \"Up again, sweetlings?\"",
+      {
+        if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
+        text: "She whistles, and the chief's guard comes back out of the smoke with his four raiders.",
+      },
+      {
+        if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+        text: "She whistles for {hask} once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.",
+      },
     ],
     onWin: {
       to: "vargan-fate",
       text: [
-        "The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. The four raiders lie where they fell, and the chief's grey old guard is down among them.",
+        "The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.",
+        {
+          if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
+          text: "The four raiders lie where they fell, and the chief's grey old guard is down among them.",
+        },
+        {
+          if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+          text: "Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.",
+        },
         ...[REEDWIFE_HOARD].flat(),
       ],
       effects: [...[BOSS_WON].flat()],
     },
     onLoss: { to: "reedwife-lost" },
-  },
-  "reedwife-fight-alone": {
-    id: "reedwife-fight-alone",
-    kind: "battle",
-    encounterId: "hag-whistled",
-    mapId: "firepit",
-    noFlee: true,
-    loot: { bonusTier: "rare" },
-    parley: BIND_HAG('hag-whistled', 'Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.'),
-    intro: [
-      "The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. \"Waste not,\" she says, and whistles for the chief's guard again. {hask} still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.",
-    ],
-    again: [
-      "The {reedwife} is still by the fire-pit. She whistles for {hask} once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.",
-    ],
-    onWin: {
-      to: "vargan-fate",
-      text: [
-        "The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.",
-        ...[REEDWIFE_HOARD].flat(),
-      ],
-      effects: [...[BOSS_WON].flat()],
-    },
-    onLoss: { to: "reedwife-lost-alone" },
   },
   "reedwife-lost": {
     id: "reedwife-lost",
@@ -2288,14 +2112,6 @@ export const SCENES: Record<string, Scene> = {
     variant: "long",
     sameDay: true,
     next: "reedwife-fight",
-    intro: [...[REEDWIFE_LOST].flat()],
-  },
-  "reedwife-lost-alone": {
-    id: "reedwife-lost-alone",
-    kind: "rest",
-    variant: "long",
-    sameDay: true,
-    next: "reedwife-fight-alone",
     intro: [...[REEDWIFE_LOST].flat()],
   },
   "vargan-beaten": {
@@ -2723,19 +2539,11 @@ export const ACTS: Record<string, string> = {
   "vargan-unread": "den",
   "boss-approach": "den",
   "boss": "den",
-  "boss-shaken": "den",
-  "boss-unguarded": "den",
-  "boss-unguarded-shaken": "den",
   "vargan-brand": "den",
-  "vargan-brand-alone": "den",
   "vargan-turns": "den",
-  "vargan-turns-alone": "den",
   "bind-hag-rite": "den",
-  "bind-hag-rite-alone": "den",
   "reedwife-fight": "den",
-  "reedwife-fight-alone": "den",
   "reedwife-lost": "den",
-  "reedwife-lost-alone": "den",
   "vargan-beaten": "den",
   "vargan-fate": "den",
   "aftermath": "ending",

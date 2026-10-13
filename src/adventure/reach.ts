@@ -83,6 +83,9 @@ export interface XpGraph {
 export interface XpTrace {
   /** What winning a battle scene pays each hero before its win's effects. */
   battleXp: (scene: Extract<Scene, { kind: 'battle' }>) => number;
+  /** What one encounter pays each hero (a variant of a fight's). Without it,
+   *  a fight with variants pays its richest. */
+  encounterXp?: (encounterId: Id) => number;
   /** The XP a level starts at (`xpToLevel`). */
   levelXp: (level: number) => number;
   /** A side trip the scene belongs to: a set of scenes a run can pay out of
@@ -927,7 +930,19 @@ function searchModule(
       case 'battle':
         // A won fight pays once (`battleWonBefore`): its encounter XP, then
         // its win's rewards.
-        out(s.onWin, 'wins the fight', undefined, undefined, `battle:${id}`, xp?.battleXp(s) ?? 0);
+        // A fight with variants (`encounterWhen`) pays the one met there,
+        // where each variant turns on one flag the walk tracks (first match
+        // wins, so each later one also needs the earlier ones not to hold);
+        // else, at most, its richest.
+        if (xp?.encounterXp && s.encounterWhen?.length && s.loot !== false && s.encounterWhen.every((v) => v.if.length === 1 && (v.if[0]!.kind === 'flag' || v.if[0]!.kind === 'notFlag') && !untracked(v.if[0]!))) {
+          const not = (r: Requirement): Requirement => (r.kind === 'flag' ? { kind: 'notFlag', flag: r.flag } : { kind: 'flag', flag: (r as { flag: string }).flag });
+          const before: Requirement[] = [];
+          for (const v of s.encounterWhen) {
+            out(s.onWin, 'wins the fight', mask([...before, ...v.if]), [...before, ...v.if], `battle:${id}`, xp.encounterXp!(v.encounterId));
+            before.push(not(v.if[0]!));
+          }
+          out(s.onWin, 'wins the fight', mask(before), before, `battle:${id}`, xp.encounterXp!(s.encounterId));
+        } else out(s.onWin, 'wins the fight', undefined, undefined, `battle:${id}`, xp?.battleXp(s) ?? 0);
         if (s.onLoss) out(s.onLoss, 'loses the fight');
         else c.steps.push(step(module.defeatScene ?? id, 'loses the fight'));
         if (s.parley) {

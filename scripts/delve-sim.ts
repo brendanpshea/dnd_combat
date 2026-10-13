@@ -27,7 +27,7 @@ import { evenBudgetFor } from '../src/arena/run.js';
 import {
   startAdventure, enterScene, currentScene, legalChoices, choose, resolveBattle, battleWonBefore,
   dungeonExits, walkTo, forceDoor, canSearch, searchRoom, dungeonExitHere, leaveDungeon,
-  dungeonProgress, dungeonRoute, battleMap, battleSeed, restOptions, campRest, type AdventureState,
+  dungeonProgress, dungeonRoute, battleMap, battleSeed, restOptions, campRest, battleEncounter, type AdventureState,
 } from '../src/adventure/runtime.js';
 import { generateSpecDelve, SHARES, type DelveSpec } from '../src/adventure/delve-spec.js';
 import type { Module } from '../src/adventure/types.js';
@@ -60,7 +60,7 @@ function fight(state: AdventureState, module: Module): { won: boolean; rounds: n
   const heroes = buildCampaignParty(state.campaign);
   const combat = new Combat({
     seed: battleSeed(state, scene.id), map: board,
-    combatants: [...heroes, ...buildEncounter(scene.encounterId, 'team2', board.rows.length - 1)],
+    combatants: [...heroes, ...buildEncounter(battleEncounter(state, scene), 'team2', board.rows.length - 1)],
   });
   let n = 0;
   while (!combat.winner() && n++ < MAX_DECISIONS) combat.apply(chooseAction(combat.state, combat.activeId) ?? { kind: 'endTurn' });
@@ -69,7 +69,7 @@ function fight(state: AdventureState, module: Module): { won: boolean; rounds: n
   const survivors = Object.values(combat.state.combatants).filter((x) => x.team === 'team1');
   if (won) {
     if (scene.loot === false || battleWonBefore(state, scene.id)) readBackSurvivors(state.campaign, survivors);
-    else applyAdventureVictory(state.campaign, survivors, scene.encounterId, combat.state.rng, scene.loot?.bonusTier);
+    else applyAdventureVictory(state.campaign, survivors, battleEncounter(state, scene), combat.state.rng, scene.loot?.bonusTier);
   }
   resolveBattle(state, module, won);
   return { won, rounds: combat.state.round, stalled: !winner };

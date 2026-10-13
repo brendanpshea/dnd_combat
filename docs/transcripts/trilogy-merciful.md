@@ -919,7 +919,7 @@ The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sittin
 
 `[Persuasion DC 14 — Elaine the Holy rolls 20 — passed]`
 
-<sub>scene `vargan-turns-alone`</sub>
+<sub>scene `vargan-turns`</sub>
 
 Vargan looks at the hag without a word, and turns, and swings his axe at her two-handed. She catches the blade in a fist of river-weed. "My mother's house," he says through his teeth. The hag closes her fingers. Through the rag on his axe hand a brand burns white, a mark of reeds and a reaching hand, and he drops to the floor, screaming.
 
@@ -927,7 +927,7 @@ The hag looks down at him a moment, and when she looks up she is smiling.
 
 **» [Religion DC 15] Bind her to her old price as a rite: one lamb a winter, by their door — One try at binding her, whichever way the words are said.**
 
-<sub>scene `bind-hag-rite-alone`</sub>
+<sub>scene `bind-hag-rite`</sub>
 
 Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
 
@@ -935,7 +935,9 @@ Before she can whistle for anyone, you speak her price the way a priest speaks a
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
-She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. At the door she whistles for Hask, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.
+She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.
+
+Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.
 
 <sub>scene `vargan-fate`</sub>
 

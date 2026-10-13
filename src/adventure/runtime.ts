@@ -1493,7 +1493,8 @@ export function battleOptions(state: AdventureState, module: Module): BattleOpti
       dc: scene.parley.dc,
     };
   }
-  if (!scene.surprise && !state.consumedChoices.includes(doorKey(scene.id, 'sneak'))) {
+  const caughtUnready = !!scene.surpriseWhen?.length && scene.surpriseWhen.every((r) => requirementMet(state, r));
+  if (!scene.surprise && !caughtUnready && !state.consumedChoices.includes(doorKey(scene.id, 'sneak'))) {
     out.sneak = { dc: sneakDc(battleEncounter(state, scene)) };
   }
   const hub = state.hub;
@@ -1567,6 +1568,7 @@ export function battleSurpriseOf(state: AdventureState, module: Module): 'party'
   const scene = currentScene(state, module);
   if (scene.kind !== 'battle') return undefined;
   if (scene.surprise) return scene.surprise;
+  if (scene.surpriseWhen?.length && scene.surpriseWhen.every((r) => requirementMet(state, r))) return 'enemies';
   return state.battleSurprise?.sceneId === scene.id ? state.battleSurprise.side : undefined;
 }
 
