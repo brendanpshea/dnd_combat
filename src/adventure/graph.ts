@@ -82,6 +82,12 @@ export function requirementsOf(scene: Scene): Requirement[] {
   switch (scene.kind) {
     case 'story': case 'dialogue': scene.next.forEach(fromChoice); break;
     case 'challenge': scene.approaches.forEach((a) => out.push(...(a.requires ?? []))); break;
+    // Who a fight is against, and whether the party has the first round:
+    // both change the fight, so both are read on the way through it.
+    case 'battle':
+      for (const v of scene.encounterWhen ?? []) out.push(...v.if);
+      out.push(...(scene.surpriseWhen ?? []));
+      break;
     case 'explore': scene.map.nodes.forEach((n) => {
       out.push(...(n.requires ?? []));
       n.sceneWhen?.forEach((w) => out.push(...w.if));

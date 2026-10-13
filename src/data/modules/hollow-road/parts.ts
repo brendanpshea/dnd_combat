@@ -74,15 +74,11 @@ export const VARGAN_TURNS: Para[] = [
 /** The talk, before or after the read. One try (`attempt: 'turn'`). */
 export const TURN_UNREAD_LABEL = '[Persuasion DC 14] "She drowned your mother\'s house. Help us end her."';
 export const TURN_READ_LABEL = '[Persuasion DC 10] "She owns you too. Help us end her."';
-/** The harder talk, split on Vex's bargain; `also` narrows it further. */
-export const turnUnread = (also: Requirement[]): Choice[] => [
-  { id: 'turn', label: TURN_UNREAD_LABEL, to: 'vargan-turns', attempt: 'turn',
-    requires: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }, ...also], hideWhenBlocked: true,
-    check: { skill: 'persuasion', dc: 14, failTo: 'boss' } },
-  { id: 'turn-alone', label: TURN_UNREAD_LABEL, to: 'vargan-turns-alone', attempt: 'turn',
-    requires: [{ kind: 'npc', npc: 'vex', fate: 'turned' }, ...also], hideWhenBlocked: true,
-    check: { skill: 'persuasion', dc: 14, failTo: 'boss-unguarded' } },
-];
+/** The harder talk, before the brand is read (one try, `attempt: 'turn'`). */
+export const TURN_UNREAD: Choice = { id: 'turn', label: TURN_UNREAD_LABEL, to: 'vargan-turns', attempt: 'turn',
+  check: { skill: 'persuasion', dc: 14, failTo: 'boss' } };
+/** …offered in the hall only while the brand is still unread. */
+export const TURN_UNREAD_FRESH: Choice = { ...TURN_UNREAD, requires: [{ kind: 'notFlag', flag: 'vargan-shaken' }], hideWhenBlocked: true };
 export const BIND_VARGAN: Choice[] = [
   { id: 'reeve', label: 'Bind him and march him down to the reeve', to: 'aftermath',
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
@@ -106,30 +102,37 @@ export const REEDWIFE_HOARD = 'A sodden purse hangs at her belt on a cord of riv
 export const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'captives-taken' }];
 export const BIND_HAG_WON = (encounter: string): Effect[] =>
   [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'captives-taken' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
-export const BIND_HAG_HELD = (after: string): Para[] => [
+/** Who watches her go: the chief's guard, or (Vex's bargain kept) her own
+ *  whistled help. */
+export const BIND_HAG_HELD: Para[] = [
   'The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One {door-price}," she says at last, as if it tastes of mud. "See that they pay it."',
-  `She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. ${after}`,
+  'She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked.',
+  { if: [{ kind: 'npc', npc: 'vex', notFate: ['turned'] }], text: 'The chief\'s guard watches her go, and then walks out into the smoke after her. His four raiders go with him.' },
+  { if: [{ kind: 'npc', npc: 'vex', fate: 'turned' }], text: 'Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.' },
 ];
-export const BIND_HAG = (encounter: string, after: string): NonNullable<Extract<Scene, { kind: 'battle' }>['parley']> => ({
+/** Bound, she leaves the hall with the fight unfought: pays the smaller of
+ *  the hall's two fights (guarded, or with Vex's bargain kept). */
+const BOUND_FROM = 'hag-whistled';
+export const BIND_HAG: NonNullable<Extract<Scene, { kind: 'battle' }>['parley']> = {
   skill: 'arcana', dc: 15, attempt: 'bind-hag',
   label: 'Hold her to her old price: one {door-price} a winter, by their door',
   refused: ['You start the words, and she hears the place where your voice catches. "Oh, sweetling," she says. "That bargain is long spent." She laughs, and comes for you.'],
   success: { to: 'vargan-fate',
-    effects: BIND_HAG_WON(encounter),
+    effects: BIND_HAG_WON(BOUND_FROM),
     text: [
       'You say her price back to her, in her own words. One {door-price} each {door-midwinter}, for sitting by their door in the dark. Nothing more: no shallows, no pens, no chief.',
-      ...BIND_HAG_HELD(after),
+      ...BIND_HAG_HELD,
     ] },
-});
-export const BIND_HAG_RITE_CHOICE = (to: string): Choice => ({
+};
+export const BIND_HAG_RITE_CHOICE: Choice = {
   id: 'rite', label: '[Religion DC 15] Bind her to her old price as a rite: one {door-price} a winter, by their door',
-  hint: 'One try at binding her, whichever way the words are said.', to, attempt: 'bind-hag' });
-export const BIND_HAG_RITE = (id: string, encounter: string, fight: string, after: string): Scene => ({
-  id, kind: 'check', skill: 'religion', dc: 15,
+  hint: 'One try at binding her, whichever way the words are said.', to: 'bind-hag-rite', attempt: 'bind-hag' };
+export const BIND_HAG_RITE: Scene = {
+  id: 'bind-hag-rite', kind: 'check', skill: 'religion', dc: 15,
   intro: ['Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one {door-price} each {door-midwinter}, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.'],
-  success: { to: 'vargan-fate', effects: BIND_HAG_WON(encounter), text: BIND_HAG_HELD(after) },
-  failure: { to: fight, text: ['One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.'] },
-});
+  success: { to: 'vargan-fate', effects: BIND_HAG_WON(BOUND_FROM), text: BIND_HAG_HELD },
+  failure: { to: 'reedwife-fight', text: ['One word comes out wrong, and the rite falls apart in your mouth. "Oh, sweetling," she says. "That bargain is long spent." She laughs.'] },
+};
 export const REEDWIFE_LOST = [
   'The hag\'s cold fingers close over your eyes, and the hall goes dark.',
   'You wake behind the throne, where somebody dragged you. {vargan} sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."',

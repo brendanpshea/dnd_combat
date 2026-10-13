@@ -172,13 +172,8 @@ noBack: true
 art: loc-throne 👑
 assumes: not vargan-shaken
 His axe hand stays wrapped in its rag, and his face gives you nothing at all. Behind the throne the hag watches you look, and smiles.
-> @turnUnread([])
+> @TURN_UNREAD
 > End them both → boss  #fight
-  hide
-  ? npc vex not fate turned
-> End them both → boss-unguarded  #fight-alone
-  hide
-  ? npc vex fate turned
 
 # boss-approach
 art: loc-throne 👑
@@ -193,125 +188,51 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 **{vargan}** is back on his throne of spears, and the **{reedwife}** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." {vargan} only rolls the great axe off his shoulder.
 ? vargan-shaken | He keeps his branded hand shut in a fist. His eyes keep going back to it.
 > [Insight DC 14] Look at his hands → vargan-brand  #insight
-  hide
   attempt: brand
-  ? npc vex not fate turned
-  do +vargan-shaken
-  check insight 14 → vargan-unread
-  fail do -vargan-shaken
-> [Insight DC 14] Look at his hands → vargan-brand-alone  #insight-alone
-  hide
-  attempt: brand
-  ? npc vex fate turned
   do +vargan-shaken
   check insight 14 → vargan-unread
   fail do -vargan-shaken
 > [Warlock · Arcana DC 11] Name the bargain burned into his hand → vargan-brand  #pact
   hide
   attempt: brand
-  ? class warlock; npc vex not fate turned
+  ? class warlock
   do +vargan-shaken
   check arcana 11 → vargan-unread
   fail do -vargan-shaken
-> [Warlock · Arcana DC 11] Name the bargain burned into his hand → vargan-brand-alone  #pact-alone
-  hide
-  attempt: brand
-  ? class warlock; npc vex fate turned
-  do +vargan-shaken
-  check arcana 11 → vargan-unread
-  fail do -vargan-shaken
-> @turnUnread([{ kind: 'notFlag', flag: 'vargan-shaken' }])
+> @TURN_UNREAD_FRESH
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns  #turn-carter
   hide
   attempt: turn
-  ? captives-freed; npc vex not fate turned
+  ? captives-freed
   check persuasion 10 → boss
-> [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns-alone  #turn-carter-alone
-  hide
-  attempt: turn
-  ? captives-freed; npc vex fate turned
-  check persuasion 10 → boss-unguarded
 > [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns  #turn-shaken
   hide
   attempt: turn
-  ? npc vex not fate turned; vargan-shaken
-  check persuasion 10 → boss-shaken
-> [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns-alone  #turn-shaken-alone
-  hide
-  attempt: turn
-  ? npc vex fate turned; vargan-shaken
-  check persuasion 10 → boss-unguarded-shaken
-> End them both → boss-unguarded  #fight-alone
-  hide
-  ? npc vex fate turned; not vargan-shaken
-> End them both → boss-unguarded-shaken  #fight-alone-shaken
-  hide
-  ? npc vex fate turned; vargan-shaken
+  ? vargan-shaken
+  check persuasion 10 → boss
 > End them both → boss  #fight
-  hide
-  ? npc vex not fate turned; not vargan-shaken
-> End them both → boss-shaken  #fight-shaken
-  hide
-  ? npc vex not fate turned; vargan-shaken
 
 # boss
 kind: battle
 encounterId: ashfang-hall
+@encounterWhen: [{"if":[{"kind":"npc","npc":"vex","fate":"turned"}],"encounterId":"ashfang-warlord-alone"}]
+@surpriseWhen: [{"kind":"flag","flag":"vargan-shaken"}]
 mapId: firepit
 @loot: {"bonusTier":"rare"}
+? vargan-shaken | {vargan} closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
-The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.
+? npc vex not fate turned | The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.
+? npc vex fate turned | The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.
+? npc vex fate turned | The hag whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 again:
-The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
+The chief's hall still reeks of smoke, and {vargan} rolls the great axe off his shoulder again.
+? npc vex not fate turned | The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
+? npc vex fate turned | {hask} is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 won → vargan-beaten
-  The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
-  @BOSS_HOARD
-  do @BOSS_WON
-
-# boss-shaken
-kind: battle
-encounterId: ashfang-hall
-mapId: firepit
-surprise: enemies
-@loot: {"bonusTier":"rare"}
-?! vargan-shaken | {vargan} closes his fist over the brand and looks at it a moment too long, and the hag does not tell him to stop. By then you are already moving.
-By the door, the chief's guard is still reaching for his weapon. He is a grey and scarred old soldier. The raider beside him is still fumbling for his knife.
-again:
-?! vargan-shaken | {vargan}'s eyes go to his shut fist again, and the hag lets them. By then you are already moving.
-won → vargan-beaten
-  {vargan} fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
-  @BOSS_HOARD
-  do @BOSS_WON
-
-# boss-unguarded
-kind: battle
-encounterId: ashfang-warlord-alone
-mapId: firepit
-@loot: {"bonusTier":"rare"}
-?! npc vex fate turned | The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.
-"You've cost me a good season," {vargan} says anyway, almost mild, and rolls the great axe off his shoulder. The hag goes quiet. Her eyes flick to the doorway, counting the blades that didn't come.
-She whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
-again:
-?! npc vex fate turned | {hask} is nowhere in the hall. {vex}'s word still holds.
-{vargan} rolls the great axe off his shoulder again. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
-won → vargan-beaten
-  The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
-  @BOSS_HOARD
-  do @BOSS_WON
-
-# boss-unguarded-shaken
-kind: battle
-encounterId: ashfang-warlord-alone
-mapId: firepit
-surprise: enemies
-@loot: {"bonusTier":"rare"}
-?! npc vex fate turned; vargan-shaken | {vargan} closes his fist over the brand and bellows for {hask}. By the door, {hask} grounds his spear, steps aside to let you pass, and walks out into the smoke.
-"Waste not," the hag hisses, and whistles. One raider comes in from the yard. Behind him a marsh snake as thick as a man's waist pours over the threshold, with reeds and a reaching hand branded into its scales. By then you are already moving.
-again:
-?! npc vex fate turned; vargan-shaken | {hask} is still gone, and {vargan} still keeps his branded hand shut in a fist.
-"Waste not," the hag hisses, and her branded snake pours over the threshold again with the one raider who stayed. By then you are already moving.
-won → vargan-beaten
-  {vargan} fights with one eye on his own shut fist. The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging. Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
+  ? vargan-shaken | {vargan} fights with one eye on his own shut fist.
+  The chief's axe goes spinning out of his hand, and the **{reedwife}** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+  ? npc vex not fate turned | By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
+  ? npc vex fate turned | Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
   @BOSS_HOARD
   do @BOSS_WON
 
@@ -321,17 +242,8 @@ art: loc-throne ✋
 @VARGAN_BRAND
 > [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns  #turn
   attempt: turn
-  check persuasion 10 → boss-shaken
-> Strike while he stares → boss-shaken  #strike
-
-# vargan-brand-alone
-noBack: true
-art: loc-throne ✋
-@VARGAN_BRAND
-> [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns-alone  #turn
-  attempt: turn
-  check persuasion 10 → boss-unguarded-shaken
-> Strike while he stares → boss-unguarded-shaken  #strike
+  check persuasion 10 → boss
+> Strike while he stares → boss  #strike
 
 # vargan-turns
 noBack: true
@@ -339,64 +251,38 @@ art: loc-throne ✋
 @VARGAN_TURNS
 The hag looks down at him a moment, and when she looks up she is smiling.
 > Face the {reedwife} → reedwife-fight  #fight
-> @BIND_HAG_RITE_CHOICE('bind-hag-rite')
+> @BIND_HAG_RITE_CHOICE
 
-# vargan-turns-alone
-noBack: true
-art: loc-throne ✋
-@VARGAN_TURNS
-The hag looks down at him a moment, and when she looks up she is smiling.
-> Face the {reedwife} → reedwife-fight-alone  #fight
-> @BIND_HAG_RITE_CHOICE('bind-hag-rite-alone')
-
-# bind-hag-rite = @BIND_HAG_RITE('bind-hag-rite', 'hag-guarded', 'reedwife-fight', 'At the door she whistles for the chief\'s guard. He comes out of the smoke at her call with four raiders at his back. He watches her go, and then walks out into the smoke after her, and his raiders go with him.')
-
-# bind-hag-rite-alone = @BIND_HAG_RITE('bind-hag-rite-alone', 'hag-whistled', 'reedwife-fight-alone', 'At the door she whistles for {hask}, and he does not come. Two raiders stumble in from the yard. Behind them something long and heavy slides over the threshold. It is a marsh snake as thick as a man\'s waist, with reeds and a reaching hand branded into its scales. The raiders watch her go, and then run too. The snake pours out after her into the dark.')
+# bind-hag-rite = @BIND_HAG_RITE
 
 # reedwife-fight
 kind: battle
 encounterId: hag-guarded
+@encounterWhen: [{"if":[{"kind":"npc","npc":"vex","fate":"turned"}],"encounterId":"hag-whistled"}]
 mapId: firepit
 noFlee: true
 @loot: {"bonusTier":"rare"}
-parley: @BIND_HAG('hag-guarded', 'The chief\'s guard watches her go, and then walks out into the smoke after her. His four raiders go with him.')
-The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.
+parley: @BIND_HAG
+The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again.
+? npc vex not fate turned | He comes out of the smoke at last, with four raiders at his back: three orcs and an archer.
+? npc vex fate turned | {hask} still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 again:
-The {reedwife} is still by the fire-pit. "Up again, sweetlings?" She whistles, and the chief's guard comes back out of the smoke with his four raiders.
+The {reedwife} is still by the fire-pit. "Up again, sweetlings?"
+? npc vex not fate turned | She whistles, and the chief's guard comes back out of the smoke with his four raiders.
+? npc vex fate turned | She whistles for {hask} once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.
 won → vargan-fate
-  The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. The four raiders lie where they fell, and the chief's grey old guard is down among them.
+  The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.
+  ? npc vex not fate turned | The four raiders lie where they fell, and the chief's grey old guard is down among them.
+  ? npc vex fate turned | Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
   @REEDWIFE_HOARD
   do @BOSS_WON
 lost → reedwife-lost
-
-# reedwife-fight-alone
-kind: battle
-encounterId: hag-whistled
-mapId: firepit
-noFlee: true
-@loot: {"bonusTier":"rare"}
-parley: @BIND_HAG('hag-whistled', 'Her two raiders watch her go, and then they run too. The snake pours out after her into the dark.')
-The **{reedwife}** stands by the fire-pit with marsh water dripping from her fingers. "Waste not," she says, and whistles for the chief's guard again. {hask} still does not come. Two raiders come in from the yard instead, an orc and an archer. Behind them something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
-again:
-The {reedwife} is still by the fire-pit. She whistles for {hask} once more, and he still does not come. Her two raiders come in from the yard again, and her branded snake pours over the threshold behind them.
-won → vargan-fate
-  The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time. Across the threshold her branded snake lies dead in its own coils, and her two raiders lie beside it.
-  @REEDWIFE_HOARD
-  do @BOSS_WON
-lost → reedwife-lost-alone
 
 # reedwife-lost
 kind: rest
 variant: long
 sameDay: true
 next: reedwife-fight
-@REEDWIFE_LOST
-
-# reedwife-lost-alone
-kind: rest
-variant: long
-sameDay: true
-next: reedwife-fight-alone
 @REEDWIFE_LOST
 
 # vargan-beaten

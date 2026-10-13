@@ -48,7 +48,7 @@ import {
   rollSceneCheck, nightsLeft, battleWonBefore, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
   resolveShopOrRest, dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere,
   leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, restOptions, dungeonProgress,
-  endingText, dayOf, battleSurpriseOf, battleMap,
+  endingText, dayOf, battleSurpriseOf, battleMap, battleEncounter,
 } from '../src/adventure/runtime.js';
 import { ROOM_MAP_REF } from '../src/adventure/types.js';
 import type { MapData } from '../src/data/maps.js';
@@ -660,7 +660,7 @@ function playChapter(
           const named = snap ? undefined : battleMap(state, module);
           meeting = {
             routeId: route.id, chapterId: module.id, chapterTitle: module.title,
-            sceneId: scene.id, encounterId: scene.encounterId, mapId: scene.mapId,
+            sceneId: scene.id, encounterId: battleEncounter(state, scene), mapId: scene.mapId,
             board: (seed) => {
               if (!snap) return named!;
               snap.campaign.rng = seed;
@@ -696,7 +696,7 @@ function playChapter(
             // Show the level a won fight brings, where it comes: levels come
             // from fights, and the curve should be readable here.
             const before = levelForXp(state.campaign.xp);
-            state.campaign.xp += xpAward(scene.encounterId, Math.max(1, state.campaign.characters.length));
+            state.campaign.xp += xpAward(battleEncounter(state, scene), Math.max(1, state.campaign.characters.length));
             const after = levelForXp(state.campaign.xp);
             if (after > before) t.line(`_Level up: ${before} → ${after}_`);
           }

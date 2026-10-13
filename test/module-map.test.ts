@@ -43,8 +43,8 @@ describe('module map', () => {
       const keys = m.edges.map((e) => `${e.from}>${e.to}>${e.kind}>${e.needs ?? ''}`);
       expect(new Set(keys).size).toBe(keys.length);
     }
-    const unguarded = moduleMap(hollow).edges.find((e) => e.to === 'boss-unguarded')!;
-    expect(unguarded.needs).toBe(npcFateFlag('vex', 'turned'));
+    const carter = moduleMap(hollow).edges.find((e) => e.to === 'vargan-turns' && e.needs?.includes('captives-freed'))!;
+    expect(carter.needs).toBe('captives-freed');
     expect(needsOf([{ kind: 'notFlag', flag: 'x' }, { kind: 'companion', companion: 'wren' }])).toBe('!x, +wren');
   });
 });

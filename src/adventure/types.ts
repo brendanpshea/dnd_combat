@@ -573,6 +573,9 @@ export type Scene =
       /** Ambush: `enemies` surprised (a won perception check) or `party` caught
        *  out (a failed one). The surprised side loses its first round. */
       surprise?: 'party' | 'enemies';
+      /** The party has the first round (`surprise: 'enemies'`) when these
+       *  hold: one fight, met unready or not, instead of a twin of it. */
+      surpriseWhen?: Requirement[];
       /** Encounter rewards. Default (omitted) = full XP + treasure from the
        *  encounter. `false` = none (a scripted or trivial fight — gear is still
        *  read back). `{ bonusTier }` = full rewards plus a guaranteed extra drop

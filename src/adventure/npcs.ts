@@ -51,7 +51,7 @@ function mapStrings<T>(value: T, f: (s: string) => string): T {
 }
 
 /** Arrays holding requirements, and arrays holding effects, by their key. */
-const REQUIREMENT_LISTS = new Set(['requires', 'if', 'assumes', 'until', 'locked', 'takenWhen']);
+const REQUIREMENT_LISTS = new Set(['requires', 'if', 'assumes', 'until', 'locked', 'takenWhen', 'surpriseWhen']);
 const EFFECT_LISTS = new Set(['effects', 'failEffects', 'onFreed']);
 
 /**
