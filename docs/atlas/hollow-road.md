@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-115 scenes · 180 versions · 1,236,722 states searched (with text conditions tracked).
+115 scenes · 183 versions · 1,199,426 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -430,7 +430,7 @@ The second cockatrice flops still. The miller pays up gladly, prods the stone do
 
 ## `mill-smoke` · story
 
-You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
+You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure. On his step lies a single grey feather, and he will not pick it up.
 
 - » **Back to the square**
 
@@ -867,7 +867,7 @@ The cold shape shreds into mist, and the dead thing in mail folds down among the
 
 ## `barrow-settle` · story
 
-You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. A bronze ring rolls out of the crack and stops against your boot. You put it back, and leave the gold where it lies.
 
 - » **Back to the trail**
 
@@ -919,7 +919,7 @@ The final spider curls in on itself like a burnt glove. The cocoons hold two dis
 
 ## `thicket-burn` · story
 
-You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
+You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash, a few blackened cocoons, and one good boot, still laced.
 
 - » **Back to the trail**
 
@@ -1332,11 +1332,11 @@ His axe hand stays wrapped in its rag, and his face gives you nothing at all. Be
 
 ## `boss-approach` · story
 
-<sub>reads: flag:vargan-shaken, class:warlock?, flag:captives-freed, return?</sub>
+<sub>reads: flag:price-heard, flag:npc.vex.fate.turned, flag:vargan-shaken, class:warlock?, flag:captives-freed, return?</sub>
 
-**3 versions**
+**6 versions**
 
-### 1. when the first visit?
+### 1. when not `price-heard` · Vex not turned · the first visit?
 
 The chief's hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters: a miller's ledger, a carter's whip, and a child's left shoe, small and still muddy.
 
@@ -1346,7 +1346,9 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 "I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. Thornwick watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
 
-The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark."
+
+She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
 
 ### 2. when not `vargan-shaken` · a return visit?
 
@@ -1362,10 +1364,56 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 
 He keeps his branded hand shut in a fist. His eyes keep going back to it.
 
+### 4. when not `price-heard` · Vex turned · the first visit?
+
+The chief's hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters: a miller's ledger, a carter's whip, and a child's left shoe, small and still muddy.
+
+The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **Reedwife**, come up out of her water to see what her coin has bought.
+
+"Up, **Vargan**, my sweet," the hag says. "Guests." The chief rises.
+
+"I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. Thornwick watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
+
+The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark."
+
+She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+
+By the door, Hask grounds his spear and does not move to help. If Vargan is ever going to listen to anyone, it is now.
+
+### 5. when `price-heard` · Vex not turned · the first visit?
+
+The chief's hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters: a miller's ledger, a carter's whip, and a child's left shoe, small and still muddy.
+
+The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **Reedwife**, come up out of her water to see what her coin has bought.
+
+"Up, **Vargan**, my sweet," the hag says. "Guests." The chief rises.
+
+"I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. Thornwick watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
+
+The hag laughs. "Little thief. I told you my price at the water-gate, and you came anyway."
+
+She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+
+### 6. when `price-heard` · Vex turned · the first visit?
+
+The chief's hall reeks of smoke and old blood. Trophies of a hundred raids hang from the rafters: a miller's ledger, a carter's whip, and a child's left shoe, small and still muddy.
+
+The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **Reedwife**, come up out of her water to see what her coin has bought.
+
+"Up, **Vargan**, my sweet," the hag says. "Guests." The chief rises.
+
+"I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. Thornwick watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
+
+The hag laughs. "Little thief. I told you my price at the water-gate, and you came anyway."
+
+She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+
+By the door, Hask grounds his spear and does not move to help. If Vargan is ever going to listen to anyone, it is now.
+
 - » **[Insight DC 14] Look at his hands** [Insight DC 14]
 - » **[Warlock · Arcana DC 11] Name the bargain burned into his hand** [Arcana DC 11] <sub>open when a warlock in the party?; otherwise hidden</sub>
 - » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken`; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when `captives-freed`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "The carter's granddaughter is on the road home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when `captives-freed`; otherwise hidden</sub>
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken`; otherwise hidden</sub>
 - » **End them both**
 
@@ -1393,7 +1441,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 ### 2. when Vex not turned · not `vargan-shaken` · a return visit?
 
-The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
+Vargan rolls the great axe off his shoulder again.
 
 The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 
@@ -1429,7 +1477,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 ### 4. when Vex not turned · `vargan-shaken` · a return visit?
 
-The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
+Vargan rolls the great axe off his shoulder again.
 
 The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 
@@ -1465,7 +1513,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 ### 6. when Vex turned · not `vargan-shaken` · a return visit?
 
-The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
+Vargan rolls the great axe off his shoulder again.
 
 Hask is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 
@@ -1503,7 +1551,7 @@ Behind the throne stands the chief's strongbox, its lid forced long ago and neve
 
 ### 8. when Vex turned · `vargan-shaken` · a return visit?
 
-The chief's hall still reeks of smoke, and Vargan rolls the great axe off his shoulder again.
+Vargan rolls the great axe off his shoulder again.
 
 Hask is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 
@@ -2115,8 +2163,6 @@ By morning the carters are already complaining about the state of the road. Mira
 
 The other scout lost her horse in the fen and walked home the long way round. She leads the reeve's men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den's wall scratched into the mud.
 
-> **[when Vargan dead]** Mira pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.
-
 > **[when `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
 > **[when `captives-taken`]** Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
@@ -2163,7 +2209,8 @@ In.
 
 - **Fresh Tracks** → `tracks` <sub>open when not `trail-read`; otherwise greyed</sub>
   - goes to `tracks-mapped` instead when `trail-known`
-- **Sunken Ravine** → `ravine` <sub>open when not `crossed-ravine`; otherwise greyed</sub>
+- **Sunken Ravine** → `ravine`
+  - goes to `trail/delve-done` instead when `crossed-ravine`
 - **A Cry for Help** → `wounded`
   - goes to `wounded-along` instead when Wren in the party
   - goes to `wounded-sent` instead when Wren saved
@@ -2172,9 +2219,9 @@ In.
   - goes to `wounded-passed` instead when `scout-walked-past`
 - **A Sunken Barrow** → `barrow`
   - goes to `trail/delve-done` instead when `barrow-cleared`
-- **Webbed Thicket** → `thicket` <sub>open when `trail-read` · `crossed-ravine`; otherwise greyed</sub>
+- **Webbed Thicket** → `thicket` <sub>open when `trail-read`; otherwise greyed</sub>
   - goes to `trail/delve-done` instead when `thicket-cleared`
-- **The Hollow** → `ambush` <sub>open when `trail-read` · `crossed-ravine` · not `know-hag`; otherwise greyed</sub>
+- **The Hollow** → `ambush` <sub>open when `trail-read` · not `know-hag`; otherwise greyed</sub>
   - goes to `ambush-wren` instead when Wren in the party
   - goes to `ambush-wet` instead when `trail-wet`
 - **The Hollow** → `hollow-quiet` <sub>open when `know-hag`; otherwise greyed</sub>

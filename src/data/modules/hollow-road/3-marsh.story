@@ -78,27 +78,27 @@ The ravine still cuts the trail. You look the loose stone over again for a way a
 approach climb athletics 13 > Climb the sheer face
   success → @hub
     You haul each other up and over, hand over hand.
-    do +crossed-ravine; xp 30
+    do +crossed-ravine; +trail-read; xp 30
   failure → ravine
     A hold crumbles and you slide back down in a clatter of stone. That way will not work.
 approach scramble acrobatics 12 > Pick across the rubble where it lies shallowest
   success → @hub
     Light on your feet, you thread the shifting stones and reach the far lip.
-    do +crossed-ravine; xp 30
+    do +crossed-ravine; +trail-read; xp 30
   failure → ravine
     The loose stone gives all at once and you scramble back before it takes an ankle with it.
 approach detour survival 11 > Look for a gentler way round
   hint: It will cost you time.
   success → @hub
     You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.
-    do +crossed-ravine; xp 15
+    do +crossed-ravine; +trail-read; xp 15
   failure → ravine
     You follow the lip of the ravine downstream for an hour, and it only gets deeper. You trudge back to where you started.
 success → @hub
-  do +crossed-ravine
+  do +crossed-ravine; +trail-read
 failure → @hub
   Every way across fights you. In the end you take the long, muddy detour downstream, miles out of your way. By the time you climb back onto the trail past the ravine, the light is gone. You have lost the whole day.
-  do +crossed-ravine; day
+  do +crossed-ravine; +trail-read; day
 
 # wounded
 kind: rescue
@@ -183,7 +183,7 @@ The cold answers you. Two figures rise out of the grave-earth. One wears the for
 again:
 The two cold dead are waiting this time, down among the grave-goods. One is nothing but winter air, and one wears rotten mail and carries a sword. They come for you again.
 answer religion 13 > Say the old words over the capstone, and close it  #settle
-You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. A bronze ring rolls out of the crack and stops against your boot. You put it back, and leave the gold where it lies.
 won:
 The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
 do gold 45
@@ -204,7 +204,7 @@ The silk trembles over your heads. Four giant spiders drop from the high webbing
 again:
 The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.
 answer survival 12 > Fire the dry reeds upwind, and let the webs burn  #burn
-You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
+You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash, a few blackened cocoons, and one good boot, still laced.
 won:
 The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
 do gold 60; item potion-healing x1

@@ -219,7 +219,7 @@ const LANDMARKS: [string, string, string][] = [
   ['Old Gallows', 'tok-danger', 'Two posts and a beam, the rope long gone. Children dare each other to touch it.'],
   ['Horse Fair', 'tok-market', 'A muddy yard of pens and shouting, where a horse changes hands for twice what it is worth.'],
   ['Bell Tower', 'tok-lookout', 'A tower with no bell in it. The story of where it went changes with whoever is telling it.'],
-  ['Stone Fountain', 'tok-well', 'A fountain whose water comes out cold in summer and warm in winter, and nobody knows why.'],
+  ['Stone Fountain', 'tok-well', 'A fountain whose water comes out cold in summer and warm in winter. Everyone in town has a theory about why, and no two of them agree.'],
   ['Burnt House', 'tok-ruin', 'A black shell of a house nobody has rebuilt. The neighbours do not say what happened.'],
   ['Old Bridge', 'tok-bridge', 'A hump-backed bridge over a ditch that was a river once. Coins glint in the mud below.'],
   ['Herb Garden', 'tok-tree', 'A walled garden of herbs, kept by someone you never quite see. It smells of mint and smoke.'],

@@ -70,7 +70,9 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // conditional lines instead. 82 to 93.
   // +3 for the way out of the den (Oct 2026): a party that wins the hall with
   // the captives still penned breaks them out (freed, taken, or neither).
-  'hollow-road': { flags: 34, conditional: 98, states: 300_000 },
+  // +1 flag (Oct 2026): `price-heard`, a line's only (the hag does not repeat
+  // her price to a rogue who heard it at the water-gate).
+  'hollow-road': { flags: 35, conditional: 100, states: 300_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },

@@ -145,10 +145,6 @@ art: 🏆
       "thread": "mira",
       "cases": [
         {
-          "if": [{"kind":"npc","npc":"vargan","fate":"dead"}],
-          "text": "{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in."
-        },
-        {
           "if": [{"kind":"flag","flag":"captives-freed"}],
           "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
         },

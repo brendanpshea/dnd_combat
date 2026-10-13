@@ -94,6 +94,8 @@ export interface AdventureState {
   /** Each dungeon's alarm, by scene id (Dungeon.alarm): kept apart from its
    *  progress so the story can raise it before the party is ever inside. */
   alarms?: Record<Id, number>;
+  /** Where the party comes in next time it enters a dungeon (`enterAt`). */
+  enterAt?: { dungeon: Id; room: string };
   /** Shops that caught the party stealing, by scene id: they will not serve
    *  it again. */
   barredShops?: Id[];
@@ -376,6 +378,7 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       if (eff.flag === NIGHT && state.hour !== undefined) state.hour = MORNING;
       events.push({ type: 'flag', flag: eff.flag, value: false });
       break;
+    case 'enterAt': state.enterAt = { dungeon: eff.dungeon, room: eff.room }; break;
     case 'alarm': {
       raiseAlarm(state, module, eff.dungeon, eff.amount, events);
       break;
@@ -1066,6 +1069,13 @@ function enterDungeon(
     p.pending = true;
     if (d.torch) p.torch = d.torch.length;
   }
+  // Brought in some other way (`enterAt`: a water-gate, over the wall): at
+  // that room instead, first time in or not.
+  if (state.enterAt?.dungeon === scene.id) {
+    const by = d.rooms.find((r) => r.name === state.enterAt!.room);
+    delete state.enterAt;
+    if (by) { p.at = by.id; delete p.from; p.pending = true; }
+  }
   return p.pending ? arrive(state, module, scene.id, d, p) : [];
 }
 
@@ -1413,7 +1423,8 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
     if (d) {
       const p = dungeonProgress(state, d.id, d.dungeon);
       if (roomOf(d.dungeon, p.at)?.fight === scene.id && !p.cleared.includes(p.at)) p.cleared.push(p.at);
-      if (!battleWonBefore(state, scene.id)) raiseAlarm(state, module, d.id, 1, alarmEvents);
+      // (Not its goal's: once whoever holds it falls, nobody is left to raise one.)
+      if (!battleWonBefore(state, scene.id) && !roomOf(d.dungeon, p.at)?.goal) raiseAlarm(state, module, d.id, 1, alarmEvents);
     }
     // A fight won again (however the party got back to it) tells its story
     // again but pays nothing: no farming a won fight through a way back.

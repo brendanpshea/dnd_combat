@@ -304,11 +304,20 @@ taken:
     quest: { title: 'Bring the Captives Home', body: '…' } } },
 ```
 
+`many: true` makes the plain lines plural. `movedAt: false` keeps the
+alarm from moving them (only `takenWhen`, your deadline, takes them). `lines`
+gives your own words for the choice labels, the watch, its fall, a loss to it,
+and their being moved.
+
+A way in that comes out somewhere other than the entry (a water-gate, over the
+wall) is an effect: `{ kind: 'enterAt', dungeon: 'inner/delve', room: 'The Pens' }`.
+The next time the party walks in, it lands in the room with that name.
+
 A held place's generated rooms come from who holds it (`src/data/archetypes.ts`):
 a camp has its watch, bunks, stores and trophies; a lieutenant at a gate every
 way to the boss runs through; and, past the boss, a vault. Give the place
 `lore` (lines of its past) and they turn up in its rooms' searches, on the way
-to the goal first.
+to the goal first. The first line lies nearest the goal.
 
 **`proveApart: true`** (do this for every place):
 

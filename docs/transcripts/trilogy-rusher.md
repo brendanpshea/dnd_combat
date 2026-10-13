@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=0`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -117,7 +117,7 @@ _The shop: Burrowby's Stores (the route buys nothing)._
 
 _The shop: The Smithy (the route buys nothing)._
 
-The forge roars. "Steel or leather? I make both, and I make them to last."
+"Steel or leather?" **Hobb** the smith wipes his hands on an apron gone stiff with soot. "Either way, you pay up front. I made the reeve new hinges for that gate a month back, and I am still waiting on the coin. A gate that holds out raiders, and he haggles over the hinges."
 
 **↳ Thornwick** <sub>(map `square/city`)</sub>
 
@@ -357,9 +357,21 @@ The reeds open, and the road back to Thornwick runs dry under your boots.
 
 **→ Trailhead** <sub>(room `m0`)</sub>
 
+→ Fresh Tracks
+
+**→ Fresh Tracks** <sub>(room `m1`)</sub>
+
+<sub>scene `tracks-mapped`</sub>
+
+The old trapper's ale-sketch was a good one. The reeds, the pools and the hollow in the hills all line up with the mud. The patrols' dry line runs just where his finger traced it.
+
+**» Follow the trapper's line**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
 → Sunken Ravine
 
-**→ Sunken Ravine** <sub>(room `m1`)</sub>
+**→ Sunken Ravine** <sub>(room `m2`)</sub>
 
 <sub>scene `ravine`</sub>
 
@@ -379,73 +391,17 @@ Light on your feet, you thread the shifting stones and reach the far lip.
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-→ A Cry for Help
+→ Black Pool
 
-**→ A Cry for Help** <sub>(room `m2`)</sub>
+**→ Black Pool** <sub>(room `m3`)</sub>
 
-<sub>scene `wounded`</sub>
-
-**Wounded Scout**
-
-> A young scout in the reeve's colours lies pinned under a dead horse, an arrow through her leg, her jaw set hard against the pain. "I'm fine," she says — a lie you can see from here. "Get the horse off me and I'll tell you everything. How they're set, where they watch. I counted. That's the job."
-
-> The mud under the arrow is dark and wet. She will not last many more nights out here.
-
-**» Give her a healing potion**
-
-_Lost: Potion of Healing_
-
-<sub>scene `wounded-saved`</sub>
-
-The horse comes off and the bleeding stops, and the scout lets out a breath she has been holding for hours. "**Wren**," she offers, as if admitting to a name costs her something. She scratches the den's watch-posts into the mud, quick and exact.
-
-"You got the horse off me. Let me pay some of that back." She catches your wrist. "There's a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."
-
-**» Send Wren back to Thornwick**
-
-_Journal (npc): Wren, the Scout_
-
-_Journal (lead): Vex, the Lieutenant_
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
-→ Search the room
-
-<sub>scene `trail/f1-read-m2`</sub>
-
-Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.
-
-**» Go on**
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
-→ Fresh Tracks
-
-**→ Fresh Tracks** <sub>(room `s2`)</sub>
-
-<sub>scene `tracks-mapped`</sub>
-
-The old trapper's ale-sketch was a good one. The reeds, the pools and the hollow in the hills all line up with the mud. The patrols' dry line runs just where his finger traced it.
-
-**» Follow the trapper's line**
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
-→ A Cry for Help
-
-**→ A Cry for Help** <sub>(room `m2`)</sub>
+Water drips into a pool. Tracks of every size come down to drink.
 
 → Wallow
 
-**→ Wallow** <sub>(room `m3`)</sub>
+**→ Wallow** <sub>(room `m4`)</sub>
 
 A nest of bones and hair. Whatever sleeps here is out.
-
-→ Black Pool
-
-**→ Black Pool** <sub>(room `m4`)</sub>
-
-The water is clear and very cold. Something lost a pack at the edge.
 
 → Webbed Thicket
 
@@ -539,6 +495,8 @@ Tents and cook-smoke inside a wall of stakes. Somewhere a dog, or something like
 
 A stolen cart stands just inside, its sides hacked with the raiders' mark.
 
+_A hidden door: Gate ↔ Hidden Cache._
+
 → Back outside
 
 <sub>scene `inner/outside`</sub>
@@ -551,67 +509,15 @@ You slip back out through the gate, into the quiet of the hollow.
 
 **→ Gate** <sub>(room `m0`)</sub>
 
-→ Kennels
+→ Watch Platform
 
-**→ Kennels** <sub>(room `m1`)</sub>
+**→ Watch Platform** <sub>(room `m1`)</sub>
 
-<sub>scene `den-hyenas`</sub>
-
-Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.
-
-**Battle:** The Kennels <sub>(`kennel-hyenas` on `ruins`)</sub>
-
-**» [Animal Handling DC 12] Throw them the meat off the cook fire**
-
-`[Animal Handling DC 12 — Elaine the Holy rolls 11 — failed]`
-
-The pack goes for the meat and then for you, in that order, and not for long in the first.
-
-**» Fight — won**
-
-The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
-
-_+30 gold (251)_
-
-_Gained: Potion of Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `m2`)</sub>
-
-_A hidden door: A Lone Fire ↔ Hidden Cache._
-
-<sub>scene `vex-parley`</sub>
-
-**Vex, the Lieutenant**
-
-> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
-
-**» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
-
-`[Persuasion DC 9 — Elaine the Holy rolls 10 — passed]`
-
-<sub>scene `vex-turned`</sub>
-
-Vex weighs it, then slides the blade home. "A road out of this valley, then. I'll take it before the reeve's men take it from me."
-
-"Hask guards the chief, and Hask answers to me. He'll find somewhere else to be — this once." He steps back into the smoke, unhurried. "Do it properly. I'm tired of soldiering for a man who burns barns and calls it strategy."
-
-**» Go and face the chief**
-
-_Journal (npc): Vex, Turned_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+An empty platform and a cold brazier. Whoever kept watch here has gone.
 
 → The Pit
 
-**→ The Pit** <sub>(room `m3`)</sub>
+**→ The Pit** <sub>(room `m2`)</sub>
 
 <sub>scene `den-muster`</sub>
 
@@ -629,15 +535,65 @@ The ogre crashes down across its own broken chains. The goaders and their champi
 
 Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
 
-_+40 gold (291)_
+_+40 gold (261)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-→ Branding Post
+→ A Lone Fire
 
-**→ Branding Post** <sub>(room `m4`)</sub>
+**→ A Lone Fire** <sub>(room `m3`)</sub>
 
-A rough map is scratched on a hide, with every farm on it marked.
+<sub>scene `vex-parley`</sub>
+
+**Vex, the Lieutenant**
+
+> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
+
+> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
+
+**» [Persuasion DC 13] Offer him the reeve's pardon and a road out**
+
+`[Persuasion DC 13 — Elaine the Holy rolls 10 — failed]`
+
+<sub>scene `vex-refuses`</sub>
+
+Vex studies you a long moment, then shakes his head, almost sorry about it. "No. You'd hang me the morning after, and we both know it."
+
+"Pity. I'd have liked to see the far end of this valley." He melts back into the dark, toward the ridge above the den.
+
+**» Leave him to the dark**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ The Pens
+
+**→ The Pens** <sub>(room `m4`)</sub>
+
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in.
+
+<sub>scene `inner/f1-m4-held`</sub>
+
+There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
+
+The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "The old folk paid her a little, once a year, and she kept to her water. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
+
+A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
+
+**» [Sleight of Hand DC 13] Work the padlock open quietly**
+
+_Journal (quest): Bring the Captives Home_
+
+`[Sleight of Hand DC 13 — Ash the Sneaky rolls 13 — passed]`
+
+<sub>scene `inner/f1-m4-out`</sub>
+
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
+
+**» Go on**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → The Chief's Hall
 
@@ -653,7 +609,9 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 "I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. Thornwick watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
 
-The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark."
+
+She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
 
 **» End them both**
 
@@ -661,23 +619,19 @@ The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sittin
 
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
-The chief bellows for Hask, his guard. Hask stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. Vex has kept his word.
+The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.
 
-The hag whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
-
-**Battle:** The Ashfang Chief, Unguarded <sub>(`ashfang-warlord-alone` on `firepit`)</sub>
+**Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
 
 **» Fight — won**
 
-A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.
-
 The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
-Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
+By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
 Behind the throne stands the chief's strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.
 
-_+100 gold (391)_
+_+100 gold (361)_
 
 <sub>scene `vargan-beaten`</sub>
 
@@ -693,9 +647,9 @@ The rag has burned off his axe hand. Under it is a brand of reeds and a reaching
 
 The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
 
-Behind the kennels the pen still stands, and the carter is on his feet in the straw, gripping the stakes. No guard stands over it now.
+Somewhere ahead on the marsh road, the carter and the girl are already on their way home.
 
-**» Break the pen open, and take them home**
+**» Walk out of the den**
 
 <sub>scene `aftermath`</sub>
 
@@ -709,7 +663,7 @@ Behind him, Mira catches your eye and very nearly smiles.
 
 **» Let the reeve settle the rest of the bounty**
 
-_+95 gold (486)_
+_+95 gold (456)_
 
 <sub>scene `claim-balance`</sub>
 
@@ -733,9 +687,9 @@ By morning the carters are already complaining about the state of the road. Mira
 
 The reeve does not hang Vargan. He sends him out to cut reeds on the common land until the drowned houses stand again. Vargan has not missed a day.
 
-At the edge of the crowd, a lean, grey-templed man with no rope on his wrists touches two fingers to his brow and is gone.
+Vex watched the end of it from the ridge above the den. At dawn he walks down into Thornwick alone and gives himself up at the reeve's hall. He asks for a cell with a window.
 
-At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.
+The other scout lost her horse in the fen and walked home the long way round. She leads the reeve's men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den's wall scratched into the mud.
 
 Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
@@ -839,7 +793,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 **» Take the reeve's commission**
 
-_+60 gold (546)_
+_+60 gold (516)_
 
 _Journal (npc): Reeve Aldous_
 
@@ -849,19 +803,21 @@ _Journal (lead): Into the Deep Fen_
 
 → The Fen Road
 
-<sub>scene `fen-reunion`</sub>
+<sub>scene `fen-out`</sub>
 
 **Wren, the Reeve's Scout**
 
-> The cart-road ends where the old raised road begins. **Wren** sits on a milestone there, putting an edge on a boot-knife, upright this time and with no dead horse on top of her. Someone has mended the reeve's colours at her shoulder.
+> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
 
-> "Heard the bells. Figured you'd be along." She stands, and only barely favours the leg. "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+> She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
+
+> "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
 
 **» Follow her onto the raised road**
 
 _Wren joins the party._
 
-_Journal (npc): Wren, Again_
+_Journal (npc): Wren, the Reeve's Scout_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
@@ -1013,7 +969,7 @@ She looks at the purses, then at you. "Those belonged to somebody's husband, som
 
 **» Keep the purses. The dead won't spend them**
 
-_+55 gold (601)_
+_+55 gold (571)_
 
 _Gained: Potion of Healing ×2_
 
@@ -1061,9 +1017,7 @@ Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowl
 
 Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 
-"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
-
-She ties a strip of the reeve's colours round your arm, quick and tight, and does not explain it.
+She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
 **» Leave Wren the gate, and go down**
 
@@ -1199,7 +1153,7 @@ The wight comes apart at the joints and lies down in its own armour. The cold li
 
 Under its slab lies a guardsman's pay that no one ever came to collect, old coins gone green in a rotted pouch.
 
-_+40 gold (641)_
+_+40 gold (611)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1225,7 +1179,7 @@ You pick his gold rings out of the dust where his hands fell.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
-_+60 gold (701)_
+_+60 gold (671)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1273,7 +1227,7 @@ Marrow dies reaching for the door. The two bronze soldiers lie broken at its foo
 
 Coins lie thick on the bottom step, where the faithful threw them at the door. You sweep them into a sack before you open the book.
 
-_+120 gold (821)_
+_+120 gold (791)_
 
 <sub>scene `seal-door`</sub>
 
@@ -1313,11 +1267,9 @@ Wren sees the chain glint in the folds of your cloak, and she knows it. She take
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
-At the edge of town Wren says "Thank you," fast, to the road, and walks on before anyone can ask what for.
-
 **» Go up to the reeve's hall**
 
-_+150 gold (971)_
+_+150 gold (941)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -1336,8 +1288,6 @@ Every night of the reburials the Wander-Inn fills with mourners, and the innkeep
 <sub>scene `sb-epilogue`</sub>
 
 In Thornwick's churchyard the turf is back over every grave, and the bell-rope hangs still.
-
-Vex hears the news in a hill inn. He sits up late by the fire, looking back toward the valley.
 
 Out in the reed-beds, Vargan stops cutting when a burial goes by on the lane. He takes off his cap until it has passed.
 
@@ -1399,17 +1349,17 @@ The command tent stands open. Inside, maps cover a table, and a grey-haired capt
 
 **» Hear him out**
 
-<sub>scene `vex-brief-turned`</sub>
+<sub>scene `vex-brief`</sub>
 
-You know this man. It is **Vex**, with a captain's sash across the same coat he wore at the lone fire.
+He gives his name as **Vex**, once the Ashfang's lieutenant. "The chief's guard answered to me," he says. "I could have stood him down in the hall, and I didn't. I've thought about that."
 
-"I got as far as a hill inn," he says. "Then word came that the dead were walking, and then fires in the passes. I found I couldn't sit and drink while this valley went through it all again. So I walked back and offered the reeve my sword. He took it, which surprised us both. No more burned barns. I like this side better."
+The morning after the den fell, he walked into the reeve's hall and gave himself up, and the reeve gave him a cell with a window. When the fires started, the reeve took him out of the cell and handed him the war. "Hold the valley till the first snow, and I walk free," Vex says. "Lose it, and he has a rope ready. I've made worse bargains. Most of them with the chief."
 
 "Here's the problem." He taps the map, where fires mark the high passes. "Every day the stone sings, more of the hills come down to listen. Wyrm dens here, here and here. An ogre-mage holding the middle pass. An ettin in a hall above the tree-line. Giant footprints in the orchards, and streams running uphill."
 
 "Nettle and her sister are holding the peak back, and I think they're saving it for you. The night you come over the last ridge, they'll let the Calling peak. All of it comes down this slope at once, unless it's dead first."
 
-"So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. Apparently I'm respectable now, and respectable men don't go up first."
+"So every den you burn out is one monster fewer on the day. Clear what you can reach before you climb that ridge, and my scouts will pin it on the map." A thin smile comes and goes. "I'll bring the column up behind you once the passes are open. The reeve likes his prisoners where he can count them, and that isn't out in front."
 
 **» Step out into the camp**
 
@@ -1513,7 +1463,7 @@ The wyrmling drops in the middle of a hiss, and its poison breath thins to a har
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
-_+75 gold (1046)_
+_+75 gold (1016)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1539,7 +1489,7 @@ The water-giant falls apart all at once. A hundred gallons of plain water run aw
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
-_+50 gold (1096)_
+_+50 gold (1066)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1557,7 +1507,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (1191)_
+_+95 gold (1161)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1573,7 +1523,7 @@ Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and 
 
 **» Buy the pass (600 gold)**
 
-_-600 gold (591)_
+_-600 gold (561)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -1601,7 +1551,7 @@ The wyrmling's fire goes out from the inside, and it is finally, simply small. I
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
-_+120 gold (711)_
+_+120 gold (681)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1671,11 +1621,9 @@ Vex has not slept, and there is a bandage round one hand. "We held," he says. "I
 
 **Wren**, the Chief of Scouts, is first up the last slope, bow on her back and map under her arm.
 
-While the pikes dig in, she drops over the lip of the bowl and is gone. She comes back up with chalk on her fingers, and finds your end of the rim before she reports to Vex. "There's a seam in that stone," she says quietly. "I chalked it. Take me down, and I'll show you where."
+Vex holds this column on the reeve's terms. Two of the reeve's pikemen walk behind him, close enough to count his steps.
 
-Hask walks at Vex's shoulder: the chief's old guard, grey and scarred, the one you never had to fight. He gives you one short nod and looks down at the bowl.
-
-"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren or Hask down with you, or both. A big party's a loud one."
+"We hold the ridge. You go down," Vex says. "That was the whole plan, until people started following you up mountains." He jerks a thumb along the rim. "Take Wren down with you, if she'll go. A big party's a loud one, so no one else."
 
 **» Let them hold the rim while you go down**
 
@@ -1755,7 +1703,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (911)_
+_+200 gold (881)_
 
 <sub>scene `calling-won`</sub>
 
@@ -1793,10 +1741,10 @@ Vargan still cuts reeds in the shallows he sold. During the Calling's last week,
 
 A fen-boy dares his friends to knock on the barrow stair. None of them do.
 
-Vex keeps the reeve's pardon folded in his coat. He has opened it so often that the creases have gone soft.
+In the autumn the reeve sends Vex his pardon, sealed in red wax, as the bargain said. Vex has never opened it. It hangs on a nail by his cot, where he can see it from his pillow.
 
 Thornwick's watch stood at the thin end of the east line on the Calling's last night. Reeve Aldous has every man's name cut into a plaque for the square, and he has the wording changed twice.
 
-Wren keeps a short list folded in her bracer. It is the people she would follow anywhere. Your names are at the top, in her best hand.
+Wren tells every new scout how she walked the fen with you as far as the barrows, and how you walked back out.
 
 ### Ending: victory

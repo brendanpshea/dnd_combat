@@ -180,8 +180,12 @@ describe('campaign bugs found by the fourth read-through', () => {
     expect(node(mod, map, id).requires ?? [], `${mod}:${id}`).toContainEqual({ kind: 'flag', flag });
 
   it('an obstacle cannot be stepped into and back out of to open the way past it', () => {
-    // The marsh's ravine is its delve's lock: everything past it waits on the crossing.
-    expect(byId('hollow-road').delves!.trail!.spec.lock!.requires).toContainEqual({ kind: 'flag', flag: 'crossed-ravine' });
+    // The marsh's lock waits on the way being found: the tracks read, or the
+    // ravine crossed (only a crossing finds it, not stepping in and out).
+    expect(byId('hollow-road').delves!.trail!.spec.lock!.requires).toEqual([{ kind: 'flag', flag: 'trail-read' }]);
+    const ravine = byId('hollow-road').scenes.ravine;
+    const sets = JSON.stringify(ravine);
+    expect(sets.match(/"flag":"trail-read"/g)?.length).toBe(sets.match(/"flag":"crossed-ravine"/g)?.length);
     for (const id of ['blueden', 'onihold']) needs('wyrmcalling', 'hills', id, 'seam-cleared');
     for (const id of ['redden', 'gorgonvale', 'steading']) needs('wyrmcalling', 'hills', id, 'oni-cleared');
   });

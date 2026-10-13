@@ -146,8 +146,9 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   {
     id: 'raiders', archetype: 'camp', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
     themes: ['stockade'],
-    members: ['bandit', 'scout', 'orc', 'gnoll', 'giant-hyena', 'worg', 'bugbear', 'berserker', 'ogre'],
-    leaders: ['bandit-captain', 'berserker', 'bugbear', 'ogre'],
+    // People, mostly: raiders with names and cook rotas, and a few dogs.
+    members: ['bandit', 'scout', 'guard', 'orc', 'berserker', 'worg', 'giant-hyena'],
+    leaders: ['bandit-captain', 'berserker', 'veteran'],
     parley: { skill: 'intimidation', dc: 13, label: 'Tell them the chief is finished', success: 'They look at each other, then at the gate. Nobody here was paid enough for this.' },
     rooms: ['Kennel Run', 'Plunder Tent', 'Bone Fire'],
     sign: ['A stolen cart stands just inside, its sides hacked with the raiders\' mark.'],
@@ -162,7 +163,8 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   {
     id: 'marsh-things', archetype: 'lair', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
     themes: ['marsh'],
-    members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'ghoul', 'ghast', 'giant-crocodile'],
+    // The Reedwife's creatures, and the drowned she keeps: no graveyard ghouls.
+    members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'giant-crocodile'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],
     rooms: ['Brand Stake', 'Cold Pool'],
     roused: ['Every frog in the marsh stops at once. In the silence, something big turns over in the water, and starts toward you.'],

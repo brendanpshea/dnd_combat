@@ -204,7 +204,7 @@ export interface DelveSpec extends Omit<DelveOptions, 'theme'> {
    * Lines of the place's past, for the rooms whose role keeps it (a held
    * floor's `find: 'lore'` rooms: a ledger, an oath stone). A story's own
    * lore goes here, so the place tells its chapter's story; each line is
-   * used once.
+   * used once, in order: the first lies nearest the goal.
    */
   lore?: string[];
   require?: RequiredRoom[];
@@ -602,7 +602,8 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
   }
   let level = spec.level;
   /** The story's lore, each line once, in a drawn order (DelveSpec.lore). */
-  const lore = spec.lore ? dice.shuffle([...spec.lore]) : [];
+  // In the author's order: the first line lies nearest the goal.
+  const lore = spec.lore ? [...spec.lore] : [];
   // The torch is set once the module exists, so its proof sees every scene.
   const goals: [Dungeon, Id, Id][] = [];
 
@@ -1059,15 +1060,22 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
         if (line) room.search = read(id, line);
       } else if (finds === 'coin') {
         room.search = find(id, said('coin'), [{ kind: 'gold', amount: 15 + 10 * level }]);
+      } else if (finds === 'potion' && dress) {
+        // A place a story dresses hands out what its story does: no stray
+        // potions on every shelf.
       } else if (finds === 'potion') {
         room.search = find(id, said('potion'), [{ kind: 'addItem', itemId: 'potion-healing' }]);
       } else if (req?.loot) {
         room.search = find(id, req.loot === 'gold' ? 'A purse, heavier than it looks.' : `Tucked away here: ${ITEMS[req.loot]!.name}.`,
           req.loot === 'gold' ? [{ kind: 'gold', amount: 30 + 10 * level }] : [{ kind: 'addItem', itemId: req.loot }]);
+      } else if (id === 'cache' && dress) {
+        // (A story's place: somebody's own stash, and no potion.)
+        room.search = find(id, `Somebody's stash, wrapped in oilcloth: ${holders.length ? `the savings of ${dice.pick(holders[0]!.names.length ? [holders[0]!.one] : ['someone'])} who meant to run` : 'a purse nobody came back for'}.`,
+          [{ kind: 'gold', amount: 20 + 10 * level }]);
       } else if (id === 'cache') {
         room.search = find(id, 'Someone hid their best here: coin, and a flask of something red.',
           [{ kind: 'gold', amount: 40 + 15 * level }, { kind: 'addItem', itemId: 'potion-greater-healing' }]);
-      } else if (!req && !room.fight && !isGoal) {
+      } else if (!req && !room.fight && !isGoal && !dress) {
         room.search = find(id, said('potion'), [{ kind: 'addItem', itemId: 'potion-healing' }]);
       } else if (!req && !isGoal && dice.chance(0.3)) {
         room.search = find(id, said('coin'), [{ kind: 'gold', amount: 10 + 5 * level }]);
@@ -1093,9 +1101,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     rooms.push(...pieceRooms);
     // The story's lore not yet told: in rooms with nothing else to search,
     // those on the way to the goal first (a party in a hurry walks past the
-    // rest), in the order it meets them.
-    const onPath = (id: Id) => { const i = g.main.indexOf(id); return i < 0 ? Infinity : i; };
-    for (const r of lore.length ? rooms.filter((x) => !x.search && !x.goal && x.id !== g.main[0]).sort((a, b) => onPath(a.id) - onPath(b.id)) : []) {
+    // rest), nearest the goal first: its last line is the one read last.
+    const onPath = (id: Id) => { const i = g.main.indexOf(id); return i < 0 ? -1 : i; };
+    for (const r of lore.length ? rooms.filter((x) => !x.search && !x.goal && x.id !== g.main[0]).sort((a, b) => onPath(b.id) - onPath(a.id)) : []) {
       const line = lore.shift();
       if (!line) break;
       r.search = read(r.id, line);

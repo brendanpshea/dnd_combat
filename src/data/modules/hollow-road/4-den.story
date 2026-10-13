@@ -21,7 +21,7 @@ answer sleight-of-hand 10 > Pick the lock on the little water-gate  #lock
 ? class rogue; not den-entered
 tag: Rogue
 go: Slip inside  #in
-do @GATE_QUIET
+do @GATE_QUIET; @IN_BY_WATER; +price-heard
 Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.
 As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. "Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One {door-price} a winter, for sitting by their door in the dark." Then the water moves again, and she is gone.
 failed:
@@ -32,7 +32,7 @@ answer stealth 13 > Slip over the wall together  #sneak
 retry
 roller: group
 go: Keep low and move in among the tents  #in
-do @GATE_QUIET
+do @GATE_QUIET; @IN_OVER_WALL
 You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
 failed → gate-caught
 fight > Storm the gate  #fight
@@ -164,8 +164,11 @@ The chief's hall reeks of smoke and old blood. Trophies of a hundred raids hang 
 The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **{reedwife}**, come up out of her water to see what her coin has bought.
 "Up, **{vargan}**, my sweet," the hag says. "Guests." The chief rises.
 "I was born down in {thornwick}," {vargan} says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. {thornwick} watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
-The hag laughs. "Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+? not price-heard | The hag laughs. "Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark."
+? price-heard | The hag laughs. "Little thief. I told you my price at the water-gate, and you came anyway."
+She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
 ? alarm inner/delve >= 3 | The hall is full of raiders who heard you coming, and none of them is sitting down.
+? npc vex fate turned | By the door, {hask} grounds his spear and does not move to help. If {vargan} is ever going to listen to anyone, it is now.
 again:
 The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
 **{vargan}** is back on his throne of spears, and the **{reedwife}** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." {vargan} only rolls the great axe off his shoulder.
@@ -183,7 +186,7 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
   check arcana 11 → vargan-unread
   fail do -vargan-shaken
 > @TURN_UNREAD_FRESH
-> [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns  #turn-carter
+> [Persuasion DC 10] "The carter's granddaughter is on the road home. Your mother's house is still under the water." → vargan-turns  #turn-carter
   hide
   attempt: turn
   ? captives-freed
@@ -208,7 +211,7 @@ mapId: firepit
 ? npc vex fate turned | The chief bellows for {hask}, his guard. {hask} stands by the door with his spear grounded. He looks at the chief, then at you, and steps aside to let you pass before he walks out into the smoke. {vex} has kept his word.
 ? npc vex fate turned | The hag whistles, low and wet. One raider comes in from the yard, white-faced. Behind him something long and heavy pours over the threshold out of the night. It is a marsh snake as thick as a man's waist, with reeds and a reaching hand branded into its scales.
 again:
-The chief's hall still reeks of smoke, and {vargan} rolls the great axe off his shoulder again.
+{vargan} rolls the great axe off his shoulder again.
 ? npc vex not fate turned | The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 ? npc vex fate turned | {hask} is nowhere in the hall. The hag whistles, and her branded snake pours over the threshold once more, with the one raider who stayed.
 won → vargan-beaten
