@@ -1359,7 +1359,7 @@ Vargan walks in front of you with his hands tied, and the crowd goes quiet to le
 
 The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He sets the strongbox on the well and opens it. "Thornwick keeps its word," he says, as though daring you to make something of it.
 
-Behind him, Mira catches your eye and very nearly smiles.
+Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
 **» Let the reeve settle the rest of the bounty**
 

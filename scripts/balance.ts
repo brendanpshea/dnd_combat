@@ -63,7 +63,9 @@
  */
 import { spawn } from 'node:child_process';
 import { cpus } from 'node:os';
-import { writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { routeBattles, type BattleMeeting } from './transcripts.js';
@@ -175,7 +177,52 @@ function spawnShard(jobs: Job[], shard: number, of: number): Promise<Tally[]> {
   });
 }
 
+/*
+ * THE CACHE. A fight's rate depends only on the job (encounter, boards,
+ * level, surprise, wear) and the code and data a battle runs on. So each
+ * tally is kept, keyed by a hash of both, in docs/balance-cache.json
+ * (committed, so a fresh checkout starts warm): a story change fights only
+ * its new doors, and a change to the engine, the AI or the rules data
+ * misses every key and fights them all, as before. `--fresh` ignores it.
+ */
+const CACHE = fileURLToPath(new URL('../docs/balance-cache.json', import.meta.url));
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+/** What a battle runs on: the engine, the AI, the party, the arena boards and
+ *  the rules data (not the stories, which only choose the jobs), and this file. */
+function combatFingerprint(): string {
+  const h = createHash('sha256');
+  const walk = (rel: string): void => {
+    const abs = join(ROOT, rel);
+    if (statSync(abs).isDirectory()) { for (const f of readdirSync(abs).sort()) walk(join(rel, f)); return; }
+    if (rel.endsWith('.ts')) h.update(rel).update(readFileSync(abs));
+  };
+  for (const d of ['src/engine', 'src/ai', 'src/campaign', 'src/arena', 'scripts/balance.ts']) walk(d);
+  for (const f of readdirSync(join(ROOT, 'src/data')).sort()) if (f.endsWith('.ts') && f !== 'adventure-art.ts') walk(join('src/data', f));
+  return h.digest('hex');
+}
+const jobHash = (fp: string, job: Job): string => createHash('sha256').update(fp).update(JSON.stringify(job)).digest('hex').slice(0, 24);
+
 async function runJobs(jobs: Job[], serial: boolean): Promise<Map<string, Tally>> {
+  const fp = combatFingerprint();
+  const cache: Record<string, Omit<Tally, 'key'>> = !process.argv.includes('--fresh') && existsSync(CACHE) ? JSON.parse(readFileSync(CACHE, 'utf8')) : {};
+  const hashes = new Map(jobs.map((j) => [j.key, jobHash(fp, j)]));
+  const misses = jobs.filter((j) => !cache[hashes.get(j.key)!]);
+  console.log(`${jobs.length - misses.length} fights cached, ${misses.length} to fight`);
+  const fought = misses.length ? await fightJobs(misses, serial) : new Map<string, Tally>();
+  const total = new Map<string, Tally>();
+  const kept: Record<string, Omit<Tally, 'key'>> = {};
+  for (const j of jobs) {
+    const h = hashes.get(j.key)!;
+    const t = fought.get(j.key) ?? { key: j.key, ...cache[h]! };
+    total.set(j.key, t);
+    kept[h] = { wins: t.wins, stalls: t.stalls, fights: t.fights };
+  }
+  // One fight a line, sorted: a story change's diff is just its new doors.
+  writeFileSync(CACHE, `{\n${Object.keys(kept).sort().map((h) => `${JSON.stringify(h)}: ${JSON.stringify(kept[h])}`).join(',\n')}\n}\n`);
+  return total;
+}
+
+async function fightJobs(jobs: Job[], serial: boolean): Promise<Map<string, Tally>> {
   const of = serial ? 1 : Math.max(1, Math.min(cpus().length, SEEDS));
   const parts = of === 1 ? [runShard(jobs, 0, 1)] : await Promise.all(Array.from({ length: of }, (_, i) => spawnShard(jobs, i, of)));
   const total = new Map<string, Tally>();

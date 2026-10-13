@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import { MODULES } from '../src/data/modules/index.js';
 import { TRILOGY_NPCS } from '../src/data/modules/npcs.js';
-import { LEDGER_CARRIES, MAX_FATES, LEDGER_BANDS, LEDGER_BUDGET, spend } from '../src/data/modules/ledger.js';
+import { LEDGER_CARRIES, MAX_FATES, LEDGER_BANDS, LEDGER_BUDGET, spend, wideConditions, MAX_CONDITION_FLAGS } from '../src/data/modules/ledger.js';
 
 const trilogy = MODULES.filter((m) => m.id in LEDGER_CARRIES);
 
@@ -47,5 +47,11 @@ describe('the ledger', () => {
     const b = LEDGER_BUDGET[id]!;
     expect(s.flags, 'story flags').toBeLessThanOrEqual(b.flags);
     expect(s.conditional, 'conditional paragraphs').toBeLessThanOrEqual(b.conditional);
+  });
+
+  it.each(MODULES.map((m) => [m.id, m] as const))(`%s tests at most ${MAX_CONDITION_FLAGS} story flags in any one condition`, (id, m) => {
+    const wide = wideConditions(m);
+    const allowed = LEDGER_BUDGET[id]?.wide ?? 0;
+    expect(wide.length, wide.slice(0, 20).join('\n')).toBeLessThanOrEqual(allowed);
   });
 });

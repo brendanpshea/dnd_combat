@@ -8,11 +8,9 @@ You come back down the marsh road into a {thornwick} with every shutter in it th
 ? vargan-let-go | The reeve looks past you, up the marsh road, for the prisoner who isn't there. "You let him *walk*?" His face goes red, then white. "{thornwick} pays for a chief it can see. Not for one you turned loose in my marsh."
 ? vargan-let-go; bounty | He holds out his hand for the retainer you drew at the board. He does not lower it until the coin, or what is left of it, is back in the strongbox. "{thornwick} pays its debts," he says. "So will you."
 ? npc vargan not fate dead; captives-freed | Behind him, {mira} catches your eye and very nearly smiles.
-? npc vargan not fate dead; not captives-freed; npc wren fate saved | Behind him, {mira} catches your eye and very nearly smiles.
-? npc vargan not fate dead; not captives-freed; npc wren not fate saved; mill-saved | Behind him, {mira} catches your eye and very nearly smiles.
-? npc vargan not fate dead; @MIRA_COOL | Behind him, {mira} watches from the inn door, wiping her hands on her apron.
+? npc vargan not fate dead; not captives-freed | Behind him, {mira} watches from the inn door, wiping her hands on her apron.
 ? npc vargan fate dead | Someone asks how the chief died, and you tell them: on his knees in his own hall, with the fight already over. The square goes quiet. Behind the reeve, {mira} looks at you, says nothing, and turns away.
-> @AFTERMATH_CLAIMS
+> @AFTERMATH_PAY
 
 # aftermath-hub
 art: loc-village 🏘️
@@ -155,15 +153,11 @@ art: 🏆
           "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
         },
         {
-          "if": [{"kind":"notFlag","flag":"captives-freed"},{"kind":"npc","npc":"wren","fate":"saved"}],
+          "if": [{"kind":"npc","npc":"wren","fate":"saved"}],
           "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
         },
         {
-          "if": [
-            {"kind":"notFlag","flag":"captives-freed"},
-            {"kind":"npc","npc":"wren","notFate":["saved"]},
-            {"kind":"flag","flag":"mill-saved"}
-          ],
+          "if": [{"kind":"flag","flag":"mill-saved"}],
           "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
         },
         {

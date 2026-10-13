@@ -136,7 +136,7 @@ The mud under the arrow is dark and wet. She will not last many more nights out 
   attempt: scout-wound
   check medicine 12 → scout-fail
 > Leave her and press on → scout-left  #leave
-  do +scout-walked-past
+  do +scout-walked-past; npc wren attitude -2
 
 # scout-left
 art: loc-marsh 🐴
