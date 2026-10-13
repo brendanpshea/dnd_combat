@@ -25,31 +25,25 @@ parley intimidation 13 > Stare down the goblin boss
     do xp avoided goblin-outriders
 
 # tracks
+kind: obstacle
 art: 👣
+done: trail-read
+return: Follow the dry line
 Boot-prints and drag-marks cross the mud. Read them right, and they will lead you through the reeds.
-> [Ranger · Survival DC 9] Read the patrols' line at a glance → tracks-read  #ranger
-  hide
-  ? class ranger
-  attempt: tracks
-  check survival 9 → tracks-lost
-> [Survival DC 12] Follow the boot-prints → tracks-read  #read
-  attempt: tracks
-  check survival 12 → tracks-lost
-
-# tracks-read
-art: 👣
-noBack: true
+answer survival 12 > Follow the boot-prints  #read
+attempt: tracks
+do xp 20
 The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You've found the **safe path to the hollow**.
-> Follow the dry line → @hub  #ok
-  do +trail-read; xp 20
-
-# tracks-lost
-art: 👣
-noBack: true
+failed:
 The prints tangle and double back on themselves until your eyes water, but they point roughly toward the hills. That's enough to find the hollow by, if not the dry way there.
 The wet way is slow and loud. You will come at the hollow splashing from one tussock to the next. Anything waiting in the reeds will hear you long before you see it.
-> Head for the hills → @hub  #ok
-  do +trail-read; +trail-wet
+go: Head for the hills → @hub  #ok
+do +trail-read; +trail-wet
+answer survival 9 > Read the patrols' line at a glance  #ranger
+? class ranger
+tag: Ranger
+attempt: tracks
+like: read
 
 # tracks-mapped
 art: 🗺️

@@ -530,7 +530,8 @@ export function parseStory(text: string, file = 'story'): Record<Id, unknown> {
  *     (the approach: prose, its own again:, and any choices of its own)
  *     answer religion 13 > Say the old words over the capstone  #settle
  *     (what that answer does: prose, and do lines; and, as it needs them:)
- *       ? <requirements>   to: <scene>   go: <label>  #id   tag: Rogue
+ *       ? <requirements>   to: <scene>   go: <label>  #id   tag: Rogue   attempt: <shared try>
+ *       like: <another answer> (its outcomes, not its own)
  *       retry   roller: group   failed → <scene>   failed: (its own prose,
  *       do lines, and go: <label> → <scene>  #id)
  *     fight > Go down into the dark  #in   (and ? <requirements>)
@@ -586,7 +587,7 @@ function expandObstacle(id: Id, lines: Array<{ text: string; no: number }>, wher
   const art = field('art');
   const opt = (ls: L[], k: string) => ls.find((l) => l.text.startsWith(`${k}: `))?.text.slice(k.length + 2);
   const flag = (ls: L[], k: string) => ls.some((l) => l.text === k);
-  const OPTS = /^(\? [^|]+|to: .*|go: .*|tag: .*|retry|roller: .*|do .*)$/;
+  const OPTS = /^(\? [^|]+|to: .*|go: .*|tag: .*|attempt: .*|like: .*|retry|roller: .*|do .*)$/;
   const prose = (ls: L[]) => ls.filter((l) => !OPTS.test(l.text));
   const does = (ls: L[]) => ls.filter((l) => l.text.startsWith('do ')).map((l) => l.text.slice(3));
   const reqs = (ls: L[]) => ls.filter((l) => /^\? [^|]+$/.test(l.text)).map((l) => l.text.slice(2));
@@ -602,11 +603,19 @@ function expandObstacle(id: Id, lines: Array<{ text: string; no: number }>, wher
       continue;
     }
     const a = o.a, tag = opt(a.lines, 'tag'), roller = opt(a.lines, 'roller');
-    const failTo = a.failTo ?? (a.failed.length ? `${id}-${a.id}-failed` : fight ? `${id}-fight` : undefined);
+    // `like: <answer>`: the same outcomes as another answer (a class's own
+    // easier way to the same place).
+    const like = opt(a.lines, 'like');
+    const twin = like ? answers.find((x) => x.id === like) : undefined;
+    if (like && !twin) throw new Error(`${where}: answer '${a.id}' is like '${like}', and there is no such answer`);
+    const base = twin ?? a;
+    const failTo = base.failTo ?? (base.failed.length ? `${id}-${base.id}-failed` : fight ? `${id}-fight` : undefined);
     if (!failTo) throw new Error(`${where}: answer '${a.id}' fails into nothing: give it 'failed:' or the obstacle a fight`);
     const r = reqs(a.lines);
-    choices.push(`> [${tag ? `${tag} · ` : ''}${skillName(a.skill)} DC ${a.dc}] ${a.label} → ${id}-${a.id}  #${a.id}`,
-      flag(a.lines, 'retry') ? '  hide' : '  once hide', ...(r.length ? [`  ? ${r.join('; ')}`] : []),
+    choices.push(`> [${tag ? `${tag} · ` : ''}${skillName(a.skill)} DC ${a.dc}] ${a.label} → ${id}-${base.id}  #${a.id}`,
+      // A shared attempt is one try between them already: no `once` of its own.
+      opt(a.lines, 'attempt') || flag(a.lines, 'retry') ? '  hide' : '  once hide', ...(r.length ? [`  ? ${r.join('; ')}`] : []),
+      ...(opt(a.lines, 'attempt') ? [`  attempt: ${opt(a.lines, 'attempt')}`] : []),
       `  check ${a.skill} ${a.dc} → ${failTo}`, ...(roller ? [`  check roller: ${roller}`] : []));
   }
   if (leave) choices.push(`> ${leave.replace(/\s+#([\w-]+)$/, ` → ${after}  #$1`)}`);
@@ -623,6 +632,7 @@ function expandObstacle(id: Id, lines: Array<{ text: string; no: number }>, wher
       mk(`won → ${after}`), ...prose(won).map((l) => ({ ...l, text: `  ${l.text}` })), ...effects(does(won), false).map(mk)]]);
   }
   for (const a of answers) {
+    if (opt(a.lines, 'like')) continue;
     out.push([`${id}-${a.id}`, [mk('noBack: true'), ...(art ? [mk(`art: ${art}`)] : []), ...prose(a.lines),
       mk(goOf(a.lines, opt(a.lines, 'to') ?? after, ret)), ...effects(does(a.lines), true).map(mk)]]);
     if (a.failed.length) {

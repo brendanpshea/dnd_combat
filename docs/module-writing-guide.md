@@ -151,10 +151,14 @@ too. Under an answer, as it needs them:
 
 - `? <requirements>` (the rogue; the stolen signal), `tag: Rogue` for the label;
 - `to:` where its success leads, `go: <label>  #id` for its way on;
-- `retry` (not one try only), `roller: group` (everyone rolls);
+- `retry` (not one try only), `roller: group` (everyone rolls),
+  `attempt: <id>` (one try shared with other answers);
+- `like: <answer>`: the same outcomes as another answer (a class's own
+  easier way to the same place, as the ranger reads the tracks);
 - `do` lines for what its success does;
 - `failed → <scene>` (a fight where you are caught), or `failed:` with its
-  own prose, `do` lines and `go: <label> → <scene>  #id`.
+  own prose, `do` lines and `go: <label> → <scene>  #id` (a failure's way on
+  goes back to the approach unless it says where).
 
 Choices of the approach's own (a way back) go before the first section. A fight that differs only
 by who is there (a guard who has turned) is one battle with `encounterWhen`
