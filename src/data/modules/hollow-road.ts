@@ -74,7 +74,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       level: 1, theme: 'marsh', shape: 'spine', rooms: 10, fights: 'inhabitants', factions: ['marsh-things'], maxFights: 0,
       // What the marsh remembers of the lamb custom, and the hag's mark.
       lore: [
-        'A lamb\'s skull is tied to a stake here, old and green with moss. The reed-cutters left one every spring, once.',
+        'A lamb\'s skull is tied to a stake here, old and green with moss. The reed-cutters left one every midwinter, once.',
         'Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.',
       ],
       dressing: { name: 'The Marsh Road',
@@ -118,7 +118,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       lore: [
         'A tally stick hangs from a tent pole, with a notch for every cart taken. At the top someone has cut a reaching hand.',
         'A drowned house is scratched into a plank: a boy on the roof, and the water at the door. Under it, in a child\'s letters, is a name. {vargan}.',
-        'A list in the chief\'s hand of what is owed to the water: grain, a lamb each moon, and "the carter and the girl, at the dark of the moon."',
+        'A list in the chief\'s hand of what the water is owed. Someone has crossed out "one lamb a winter" and written "a lamb each moon" over it. At the bottom: "the carter and the girl, at the dark of the moon."',
       ],
       dressing: { name: 'The {ashfang} Den',
         door: 'Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp at its fires.',

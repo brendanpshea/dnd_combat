@@ -339,7 +339,7 @@ noBack: true
 art: loc-marsh 🐍
 You turn the nearest body with your boot. Branded into the scaled hide, still weeping, is a crude mark of reeds and a reaching hand.
 A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **{reedwife}**. Ask your chief what he sold me. Ask him what I paid."
-"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.
+"Come up to the fire, if you can find it. The chief will be waiting, and so, perhaps, will I." The reeds shiver, and go quiet.
 ? with wren | {wren} has gone white. "A green hag," she says. "Reed-cutters' children get told about them. I thought it was a story."
 > Go up and find her fire → gate  #ok
   hide

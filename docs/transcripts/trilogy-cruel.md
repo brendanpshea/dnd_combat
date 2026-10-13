@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.wren.fate.lost`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.wren.fate.lost`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.fate.lost`
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.fate.lost`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.dead`, `npc.vex.met`, `npc.wren.attitude=-1`, `npc.wren.fate.lost`, `npc.wren.met`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -221,7 +221,7 @@ A hump of firm ground, high enough above the water for a fire. You could camp he
 
 <sub>scene `trail/f1-find-m4`</sub>
 
-A pack left behind, with a potion still in it.
+A flask of something red, put by for a bad day.
 
 **» Take it**
 
@@ -245,7 +245,7 @@ _Gained: Potion of Healing_
 
 <sub>scene `trail/f1-find-m3`</sub>
 
-A flask of something red, put by for a bad day.
+A pack left behind, with a potion still in it.
 
 **» Take it**
 
@@ -264,6 +264,16 @@ _Gained: Potion of Healing_
 → A Cry for Help
 
 **→ A Cry for Help** <sub>(room `m2`)</sub>
+
+→ Search the room
+
+<sub>scene `trail/f1-read-m2`</sub>
+
+Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.
+
+**» Go on**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
 → Fresh Tracks
 
@@ -297,7 +307,7 @@ The tracks tell their whole story: a heavy patrol out at dusk, a lighter one bac
 
 <sub>scene `trail/f1-read-m1`</sub>
 
-Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.
+A lamb's skull is tied to a stake here, old and green with moss. The reed-cutters left one every midwinter, once.
 
 **» Go on**
 
@@ -613,16 +623,6 @@ _+45 gold (206)_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-→ Search the room
-
-<sub>scene `trail/f1-read-s2`</sub>
-
-A lamb's skull is tied to a stake here, old and green with moss. The reed-cutters left one every spring, once.
-
-**» Go on**
-
-**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
-
 → Sunken Ravine
 
 **→ Sunken Ravine** <sub>(room `m1`)</sub>
@@ -745,7 +745,7 @@ You turn the nearest body with your boot. Branded into the scaled hide, still we
 
 A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **Reedwife**. Ask your chief what he sold me. Ask him what I paid."
 
-"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.
+"Come up to the fire, if you can find it. The chief will be waiting, and so, perhaps, will I." The reeds shiver, and go quiet.
 
 **» Go up and find her fire**
 
@@ -795,7 +795,7 @@ You slip back out through the gate, into the quiet of the hollow.
 
 **→ Gate** <sub>(room `m0`)</sub>
 
-→ The Pit
+→ A Lone Fire
 
 <sub>scene `inner/f1-patrol`</sub>
 
@@ -807,11 +807,67 @@ They were throwing dice for a carter's boots. They stop.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-**→ The Pit** <sub>(room `m1`)</sub>
+**→ A Lone Fire** <sub>(room `m1`)</sub>
 
-_A hidden door: The Pit ↔ Kennels._
+<sub>scene `vex-parley`</sub>
 
-A gap in the stakes behind the midden, just wide enough to squeeze through.
+**Vex, the Lieutenant**
+
+> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
+
+> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
+
+> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
+
+**» Refuse to deal with a raider**
+
+_Journal (quest): Bring the Captives Home_
+
+<sub>scene `vex-dismissed`</sub>
+
+"Suit yourself." Vex turns back to his fire. "I won't help you. I won't get in your way, either."
+
+**» Leave him to his fire**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Kennels
+
+<sub>scene `inner/f1-patrol` (again)</sub>
+
+_(a paragraph shown before: “They were throwing dice for a carter's…”)_
+
+**Battle:** gen:giant-hyena+bugbear+bandit <sub>(`gen:giant-hyena+bugbear+bandit` on `@room`)</sub>
+
+**» Fight — won**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+**→ Kennels** <sub>(room `m2`)</sub>
+
+<sub>scene `den-hyenas`</sub>
+
+Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.
+
+**Battle:** The Kennels <sub>(`kennel-hyenas` on `ruins`)</sub>
+
+**» Fight — won**
+
+The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
+
+_+30 gold (351)_
+
+_Gained: Potion of Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ The Pit
+
+**→ The Pit** <sub>(room `m3`)</sub>
+
+_A hidden door: The Pit ↔ Hidden Cache._
 
 <sub>scene `den-muster`</sub>
 
@@ -829,45 +885,13 @@ The ogre crashes down across its own broken chains. The goaders and their champi
 
 Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
 
-_+40 gold (361)_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Kennels
-
-<sub>scene `inner/f1-patrol` (again)</sub>
-
-_(a paragraph shown before: “They were throwing dice for a carter's…”)_
-
-**Battle:** gen:giant-hyena+bugbear+bandit <sub>(`gen:giant-hyena+bugbear+bandit` on `@room`)</sub>
-
-**» Fight — won**
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-**→ Kennels** <sub>(room `m3`)</sub>
-
-<sub>scene `den-hyenas`</sub>
-
-Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.
-
-**Battle:** The Kennels <sub>(`kennel-hyenas` on `ruins`)</sub>
-
-**» Fight — won**
-
-The kennel falls quiet. In the straw you find a raider's stashed purse and a satchel worth the trouble. By the gate lies the key ring their keeper dropped as he ran. One key fits the plunder tent.
-
-_+30 gold (391)_
-
-_Gained: Potion of Healing_
+_+40 gold (391)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → The Pens
 
 **→ The Pens** <sub>(room `m4`)</sub>
-
-_A hidden door: The Pens ↔ Hidden Cache._
 
 <sub>scene `den-pens-door`</sub>
 
@@ -887,11 +911,11 @@ A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes b
 
 **» [Sleight of Hand DC 13] Work the padlock open quietly**
 
-`[Sleight of Hand DC 13 — Ash the Sneaky rolls 19 — passed]`
+`[Sleight of Hand DC 13 — Ash the Sneaky rolls 16 — passed]`
 
 <sub>scene `den-pens-freed`</sub>
 
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
 
 **» Back to the den**
 
@@ -976,6 +1000,8 @@ Bonfires burn in the square tonight. Out past the reeds the marsh has gone still
 By morning the carters are already complaining about the state of the road. Mira lets them.
 
 The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
+
+Vex sat out the end of it at his own fire, the bare blade across his knees. At dawn he walks down into Thornwick alone and lays it on the reeve's table. He asks for a cell with a window.
 
 The reeve's men find a scout in the reeds off the marsh road, a hundred yards from a dead horse. She had been crawling toward Thornwick.
 
@@ -1191,17 +1217,7 @@ Wren watches you fill your pockets with the drowned folk's coin and their two po
 
 **» Make camp (long rest)** <sub>(day 1)</sub>
 
-<sub>scene `fen-night`</sub>
-
-You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
-
-**Battle:** The Fen Dead <sub>(`fen-dead` on `bog`)</sub>
-
-**» Fight — won**
-
-The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
-
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**Dawn — day 2.**
 
 → The Drowned Chapel
 
@@ -1249,10 +1265,6 @@ _Journal (clue): The Rites of Sealing_
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
-**» Make camp (long rest)** <sub>(day 1)</sub>
-
-**Dawn — day 2.**
-
 → The Serpent Pool
 
 <sub>scene `pool`</sub>
@@ -1276,6 +1288,20 @@ The serpents lie in loops like dropped rope. Your boots turn up everything the f
 _+85 gold (786)_
 
 _Gained: Potion of Greater Healing_
+
+**↳ The Deep Fen** <sub>(map `fen`)</sub>
+
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+<sub>scene `fen-night`</sub>
+
+You wake to a hand on your shoulder and a blade already drawn beside you. Six shapes are crawling out of the black water toward the fire, grave-mud to the elbows and teeth bared. Two of them stink worse than the fen. They do not hurry. They have done this before.
+
+**Battle:** The Fen Dead <sub>(`fen-dead` on `bog`)</sub>
+
+**» Fight — won**
+
+The dead lie still, properly still this time, and the fire is out. By torchlight you find their tracks, leading back down into the water. It is a long while before anyone lies down again.
 
 **↳ The Deep Fen** <sub>(map `fen`)</sub>
 
@@ -1435,21 +1461,9 @@ The cut is just wide enough for them. To get past, you will have to get through 
 
 **» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
-`[Group Stealth DC 12 — 1/4 pass — failed]`
+`[Group Stealth DC 12 — 2/4 pass — passed]`
 
-A loose stone skitters across the floor, and every pick in the cut stops. After a long moment they start again, and you remember to breathe.
-
-**» Say the burial words over them — Halden said these over every grave in Thornwick.**
-
-`[Religion DC 13 — Morgan Le Fey rolls 9 — failed]`
-
-The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
-
-**» Pick up a tool and fall into step**
-
-`[Deception DC 13 — Ash the Sneaky rolls 15 — passed]`
-
-You take a pick from the pile and shuffle in among them. Swing, step, swing. Not one of them looks twice at one more digger. You walk out the far end, still swinging.
+You edge along the wall between swings. Not one head turns. At the far end, the digger with the chain lowers its pick, and does not lift it again.
 
 <sub>scene `diggers-chain`</sub>
 
@@ -1468,20 +1482,6 @@ _Gained: Silvered Spear_
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → The Barrow-Guard
-
-<sub>scene `crypt-ambush`</sub>
-
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
-
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
-
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
-
-**» Fight — won**
-
-The man in the robe dies still holding his candle. It smells of the fen.
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
@@ -1505,9 +1505,17 @@ _+40 gold (866)_
 
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
-**Dawn — day 3.**
+<sub>scene `crypt-night` (again)</sub>
 
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
+_(a paragraph shown before: “You bank a fire in a dry…”)_
+
+**Battle:** The Painted Dead <sub>(`painted-dead` on `corridor`)</sub>
+
+**» Fight — won**
+
+_(a paragraph shown before: “The painted dead fall flat to the…”)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 → The King's Chamber
 
@@ -1536,6 +1544,12 @@ _+60 gold (926)_
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
 **→ The King's Chamber** <sub>(room `king`)</sub>
+
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+**Dawn — day 3.**
+
+The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
 
 → Drop down the burial shaft
 

@@ -1478,7 +1478,7 @@ export const SCENES: Record<string, Scene> = {
     text: [
       "You turn the nearest body with your boot. Branded into the scaled hide, still weeping, is a crude mark of reeds and a reaching hand.",
       "A voice drifts across the water, old and wet and amused. \"My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **{reedwife}**. Ask your chief what he sold me. Ask him what I paid.\"",
-      "\"Come up to the fire, if you can find it. The chief and I will be waiting.\" The reeds shiver, and go quiet.",
+      "\"Come up to the fire, if you can find it. The chief will be waiting, and so, perhaps, will I.\" The reeds shiver, and go quiet.",
       {
         if: [{ kind: "companion", companion: "wren" }],
         text: "{wren} has gone white. \"A green hag,\" she says. \"Reed-cutters' children get told about them. I thought it was a story.\"",
@@ -1809,7 +1809,7 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-camp", emoji: "⛓️" },
     noBack: true,
     text: [
-      "The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. \"We'll make the gate,\" the carter says. \"Find us in {thornwick}, after.\" They slip off toward the dark of the marsh road, not making a sound.",
+      "The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. \"We'll make the gate,\" the carter says. He stops at the pen door. \"That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it.\" He hitches the girl higher. \"Find us in {thornwick}, after.\" They slip off toward the dark of the marsh road, not making a sound.",
     ],
     next: [
       {
@@ -2690,12 +2690,8 @@ export const SCENES: Record<string, Scene> = {
             text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",
           },
           {
-            if: [{ kind: "npc", npc: "wren", fate: "saved" }],
-            text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",
-          },
-          {
-            if: [{ kind: "flag", flag: "mill-saved" }],
-            text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",
+            if: [{ kind: "flag", flag: "captives-taken" }],
+            text: "{mira} pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.",
           },
           {
             text: "{mira} pours your round and takes your coin for it. \"Town's still standing,\" she allows, and moves off down the bar.",

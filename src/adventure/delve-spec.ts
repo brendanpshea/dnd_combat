@@ -286,7 +286,9 @@ interface Graph {
   pieceRooms: Set<Id>;
 }
 
-function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: string, story?: DelveSpec['lock']): Graph {
+/** `open`: no lock of the generator's own (a place a story dresses keeps only
+ *  the story's locks; it has no gate key for a keeper to carry). */
+function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: string, story?: DelveSpec['lock'], open = false): Graph {
   const flag = (k: number) => `delve-key-${floor}${k ? `-${k + 1}` : ''}`;
   const locked = (k: number): NonNullable<DungeonLink['door']> => (story && k === 0 ? { locked: story.requires, note: story.note } : {
     locked: [{ kind: 'flag', flag: flag(k) }], note: door,
@@ -329,6 +331,7 @@ function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: str
       lockAt = [dice.int(2, len - 1)];
     }
   }
+  if (open && !story) lockAt = [];
   chain(main, lockAt);
   main.forEach((id, i) => { if (i >= lockAt[0]!) afterLock.add(id); });
   const before = (k: number) => main.slice(0, lockAt[k]!).filter((_, i) => k === 0 || i >= lockAt[k - 1]!);
@@ -343,14 +346,14 @@ function wire(shape: DelveShape, n: number, dice: Dice, floor: number, door: str
   });
 
   // Shape-specific connections.
-  if (shape === 'classic' && lockAt[0]! <= main.length - 2 && dice.chance(0.7)) {
+  if (shape === 'classic' && lockAt.length && lockAt[0]! <= main.length - 2 && dice.chance(0.7)) {
     const from = main[dice.int(lockAt[0]!, main.length - 2)]!;
     const to = main[dice.int(0, Math.max(0, lockAt[0]! - 2))]!;
     if (from !== to) links.push({ a: from, b: to, length: 2, door: { oneWay: true } });
   }
   if (shape === 'ring') {
     // A second way round, from just inside the door to the room before the lock.
-    links.push({ a: 'm0', b: 'r1' }, { a: 'r1', b: 'r2' }, { a: 'r2', b: main[lockAt[0]! - 1]! });
+    links.push({ a: 'm0', b: 'r1' }, { a: 'r1', b: 'r2' }, { a: 'r2', b: main[(lockAt[0] ?? main.length - 1) - 1]! });
     side.push('r1', 'r2');
   }
 
@@ -399,6 +402,13 @@ function levelAfter(start: number, fightsXp: number): number {
 class Reroll extends Error {}
 
 type Win = Extract<Scene, { kind: 'battle' }>['onWin'];
+
+const FIND_WORDS = {
+  coin: ['A few coins, dropped and forgotten.', 'Coin, hidden where they thought nobody would look.',
+    'A purse, pushed down where nobody would reach.', 'Coins, scattered as if someone left in a hurry.'],
+  potion: ['A pack left behind, with a potion still in it.', 'A flask of something red, put by for a bad day.',
+    'A healing draught, wrapped in a rag and tucked out of sight.', 'A stoppered bottle, its wax seal unbroken.'],
+};
 
 /** A held room's part in the place: its role (archetypes.ts), and its name. */
 interface Cast { role?: RoomRole; faction: Faction; name?: string }
@@ -550,7 +560,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const n = spec.rooms || dice.int(...SIZE_ROOMS[spec.size ?? 'medium']);
     // A held floor's lock is its holders' own (a gate of lashed timber, a grave-gate).
     const kind = holders[0] ? ARCHETYPES[holders[0].archetype] : undefined;
-    const g = wire(spec.shape, n, dice, f, kind ? kind.lock[T.outdoor ? 'out' : 'in'] : T.door, f === 1 ? spec.lock : undefined);
+    const g = wire(spec.shape, n, dice, f, kind ? kind.lock[T.outdoor ? 'out' : 'in'] : T.door, f === 1 ? spec.lock : undefined, !!dress);
     let goal = g.main[g.main.length - 1]!;
     /** A goal piece's floor keeps the generated goal in its graph (so every
      *  "the last main room" reading stays right) but never builds it. */
@@ -581,6 +591,11 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       floorXp += encounterXP(enc);
       return id;
     };
+    /** What a search finds, in words not yet used on this floor (one road
+     *  should not turn up the same potion three times). */
+    const told = { coin: 0, potion: 0 };
+    // (A floor nobody holds says what it always said: its seeds build as before.)
+    const said = (k: keyof typeof FIND_WORDS) => FIND_WORDS[k][held ? told[k]++ % FIND_WORDS[k].length : 0]!;
     const read = (roomId: Id, text: string): Id => {
       const id = `${pre}read-${roomId}`;
       scenes[id] = { id, kind: 'story', text: [text], next: [{ id: 'on', label: 'Go on', to: '@hub' }] };
@@ -746,7 +761,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
           for (const [x, y] of [[l.a, l.b], [l.b, l.a]] as const) if (reach.has(x) && !reach.has(y) && g.afterLock.has(y)) { reach.add(y); grew = true; }
         }
       }
-      const to = [...reach].filter((id) => degree(id) < 4);
+      // Never into a room the story keeps (its goal above all): the story
+      // decides who may walk in on its hall.
+      const to = [...reach].filter((id) => degree(id) < 4 && !placed.has(id) && !(id === goal && spec.require.some((r) => r.where === 'goal')));
       const from = g.main.filter((id) => !g.afterLock.has(id) && degree(id) < 4);
       if (from.length && to.length) {
         g.links.push({ a: dice.pick(from), b: dice.pick(to), length: 2, door: { secret: { dc: dice.int(12, 15) }, note: kind.backWay[T.outdoor ? 'out' : 'in'] } });
@@ -755,7 +772,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
 
     const safe = new Set<Id>();
     const beforeLock = g.main.slice(1, -1).filter((id) => !g.afterLock.has(id) && !placed.has(id));
-    if (beforeLock.length && !pieceGivesRest) {
+    // No safe bed inside a camp of people who know you are there: a place a
+    // story dresses, held by people (not beasts), keeps its rest to the story.
+    const hostile = !!dress && holders.some((h) => !h.beastly);
+    if (beforeLock.length && !pieceGivesRest && !hostile) {
       /*
        * Never next to the goal. Resting is refused beside a room whose fight
        * is still to be had, and the goal's is had last — so a safe room on
@@ -808,7 +828,8 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       }
       // A role's line, once its fight is settled: who is here, or how they left it.
       if (!req?.text && cast?.role) {
-        const lines = cast.role.fight && !room.fight ? cast.role.quiet ?? [] : cast.role.text;
+        const own = T.outdoor && cast.role.out ? { text: cast.role.out.text, quiet: cast.role.out.quiet ?? cast.role.quiet } : cast.role;
+        const lines = cast.role.fight && !room.fight ? own.quiet ?? [] : own.text;
         if (lines.length) room.firstVisit = [voice(dice.pick(lines), cast.faction, dice)];
       }
       if (isGoal) {
@@ -835,9 +856,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
         const line = lore.shift() ?? (history ? dice.pick(history.traces) : undefined);
         if (line) room.search = read(id, line);
       } else if (finds === 'coin') {
-        room.search = find(id, 'Coin, hidden where they thought nobody would look.', [{ kind: 'gold', amount: 15 + 10 * level }]);
+        room.search = find(id, said('coin'), [{ kind: 'gold', amount: 15 + 10 * level }]);
       } else if (finds === 'potion') {
-        room.search = find(id, 'A flask of something red, put by for a bad day.', [{ kind: 'addItem', itemId: 'potion-healing' }]);
+        room.search = find(id, said('potion'), [{ kind: 'addItem', itemId: 'potion-healing' }]);
       } else if (req?.loot) {
         room.search = find(id, req.loot === 'gold' ? 'A purse, heavier than it looks.' : `Tucked away here: ${ITEMS[req.loot]!.name}.`,
           req.loot === 'gold' ? [{ kind: 'gold', amount: 30 + 10 * level }] : [{ kind: 'addItem', itemId: req.loot }]);
@@ -845,9 +866,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
         room.search = find(id, 'Someone hid their best here: coin, and a flask of something red.',
           [{ kind: 'gold', amount: 40 + 15 * level }, { kind: 'addItem', itemId: 'potion-greater-healing' }]);
       } else if (!req && !room.fight && !isGoal) {
-        room.search = find(id, 'A pack left behind, with a potion still in it.', [{ kind: 'addItem', itemId: 'potion-healing' }]);
+        room.search = find(id, said('potion'), [{ kind: 'addItem', itemId: 'potion-healing' }]);
       } else if (!req && !isGoal && dice.chance(0.3)) {
-        room.search = find(id, 'A few coins, dropped and forgotten.', [{ kind: 'gold', amount: 10 + 5 * level }]);
+        room.search = find(id, said('coin'), [{ kind: 'gold', amount: 10 + 5 * level }]);
       }
       return room;
     };
@@ -867,8 +888,11 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       for (const r of rooms) if (!r.firstVisit && r.id !== g.main[0] && dice.chance(0.35)) r.firstVisit = [dice.pick(history.traces)];
     }
     rooms.push(...pieceRooms);
-    // The story's lore not yet told: in rooms with nothing else to search.
-    for (const r of lore.length ? dice.shuffle(rooms.filter((x) => !x.search && !x.goal && x.id !== g.main[0])) : []) {
+    // The story's lore not yet told: in rooms with nothing else to search,
+    // those on the way to the goal first (a party in a hurry walks past the
+    // rest), in the order it meets them.
+    const onPath = (id: Id) => { const i = g.main.indexOf(id); return i < 0 ? Infinity : i; };
+    for (const r of lore.length ? rooms.filter((x) => !x.search && !x.goal && x.id !== g.main[0]).sort((a, b) => onPath(a.id) - onPath(b.id)) : []) {
       const line = lore.shift();
       if (!line) break;
       r.search = read(r.id, line);

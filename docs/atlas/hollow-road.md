@@ -1041,7 +1041,7 @@ You turn the nearest body with your boot. Branded into the scaled hide, still we
 
 A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **Reedwife**. Ask your chief what he sold me. Ask him what I paid."
 
-"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.
+"Come up to the fire, if you can find it. The chief will be waiting, and so, perhaps, will I." The reeds shiver, and go quiet.
 
 ### 2. when Wren in the party
 
@@ -1049,7 +1049,7 @@ You turn the nearest body with your boot. Branded into the scaled hide, still we
 
 A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **Reedwife**. Ask your chief what he sold me. Ask him what I paid."
 
-"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.
+"Come up to the fire, if you can find it. The chief will be waiting, and so, perhaps, will I." The reeds shiver, and go quiet.
 
 Wren has gone white. "A green hag," she says. "Reed-cutters' children get told about them. I thought it was a story."
 
@@ -1224,7 +1224,7 @@ You go down in the mud in front of the pen, and come to in the straw of the pen 
 
 ## `den-pens-freed` · story
 
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
 
 - » **Back to the den**
 
@@ -2139,7 +2139,7 @@ The reeve's men carried you in, she tells you, and then stood about in her tapro
 
 ## `epilogue` · ending
 
-<sub>reads: flag:npc.vargan.fate.dead, flag:vargan-shaken, flag:vargan-let-go, flag:npc.vargan.fate.spared, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-covered, flag:scout-walked-past, flag:captives-freed, flag:mill-saved, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:captives-taken</sub>
+<sub>reads: flag:npc.vargan.fate.dead, flag:vargan-shaken, flag:vargan-let-go, flag:npc.vargan.fate.spared, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-covered, flag:scout-walked-past, flag:captives-freed, flag:captives-taken, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:mill-saved</sub>
 
 **2304 versions** — printed once, each conditional line marked with when it shows.
 
@@ -2181,9 +2181,7 @@ The other scout lost her horse in the fen and walked home the long way round. Sh
 
 > **[when `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
-> **[when Wren saved]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
-
-> **[when `mill-saved`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+> **[on every route here]** Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
 
 Mira pours your round and takes your coin for it. "Town's still standing," she allows, and moves off down the bar.
 

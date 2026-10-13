@@ -148,7 +148,7 @@ lost → @hub
 # den-pens-freed
 art: loc-camp ⛓️
 noBack: true
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in {thornwick}, after." They slip off toward the dark of the marsh road, not making a sound.
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in {thornwick}, after." They slip off toward the dark of the marsh road, not making a sound.
 > Back to the den → @hub  #ok
   do +captives-freed; +pens-settled; npc wren attitude 1
 

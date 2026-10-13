@@ -153,12 +153,8 @@ art: 🏆
           "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
         },
         {
-          "if": [{"kind":"npc","npc":"wren","fate":"saved"}],
-          "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
-        },
-        {
-          "if": [{"kind":"flag","flag":"mill-saved"}],
-          "text": "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it."
+          "if": [{"kind":"flag","flag":"captives-taken"}],
+          "text": "{mira} pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it."
         },
         {
           "text": "{mira} pours your round and takes your coin for it. \"Town's still standing,\" she allows, and moves off down the bar."
