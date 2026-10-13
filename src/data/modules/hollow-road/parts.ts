@@ -24,10 +24,14 @@ export const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-
 /** Past the gate by any road: the gate-signal lead is done with, used or not. */
 export const SIGNAL_SPENT: Effect = { kind: 'setFlag', flag: 'signal-spent' };
 
-export const PENS_LEAD: Effect = { kind: 'journal', entry: { id: 'lead-pens', kind: 'quest', resolvedBy: 'pens-settled',
-  stages: [{ text: 'Find out what became of the captives', done: [{ kind: 'flag', flag: 'pens-settled' }] }],
-  title: 'The Pens Behind the Kennels',
-  body: 'Behind the kennels in the {ashfang} den is a pen where the chief keeps captives for the {reedwife}. She comes for them when the moon goes dark. Look in it.' } };
+export const PENS_LEAD: Effect = { kind: 'journal', entry: { id: 'lead-pens', kind: 'quest',
+  resolvedBy: 'pens-settled', failedBy: 'captives-taken',
+  stages: [
+    { text: 'Find the pen behind the kennels', done: [{ kind: 'flag', flag: 'pens-found' }] },
+    { text: 'Get them out before the moon goes dark', done: [{ kind: 'flag', flag: 'pens-settled' }] },
+  ],
+  title: 'Bring the Captives Home',
+  body: 'Behind the kennels in the {ashfang} den is a pen where the chief keeps captives for the {reedwife}: a carter, his granddaughter and two reed-cutters. She comes for them when the moon goes dark. Get them out before she does.' } };
 
 /** Past the hollow: the reveal, and the wet way in (`trail-wet`) no longer
  *  matters, so the den is not searched twice over for it. */
@@ -58,7 +62,7 @@ export const SNAKE_ENDS = 'Across the threshold her branded snake lies dead in i
 /** What the hall pays, beside its loot: the chief's strongbox. */
 export const BOSS_HOARD = 'Behind the throne stands the chief\'s strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.';
 export const BOSS_WON: Effect[] = [
-  { kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' },
+  { kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'captives-taken' },
 ];
 
 /** Naming Vargan's brand: the moment before he chooses a side. */
@@ -106,9 +110,9 @@ export const FREE_VARGAN = (label: string): Choice[] => [
 export const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.';
 /** And hers: the purse at her belt. */
 export const REEDWIFE_HOARD = 'A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.';
-export const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'pens-settled' }];
+export const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'captives-taken' }];
 export const BIND_HAG_WON = (encounter: string): Effect[] =>
-  [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'pens-settled' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
+  [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'captives-taken' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
 export const BIND_HAG_HELD = (after: string): Para[] => [
   'The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One {door-price}," she says at last, as if it tastes of mud. "See that they pay it."',
   `She goes out of the hall into the night, toward the marsh, and the earth floor stays wet where she walked. ${after}`,
@@ -154,9 +158,8 @@ export const AFTERMATH_CLAIMS: Choice[] = [
     requires: [{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'notFlag', flag: 'got-scout' }],
     effects: [{ kind: 'gold', amount: factValue('scout-reward') }, { kind: 'setFlag', flag: 'got-scout' }] },
   ...([
-    [[{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'notFlag', flag: 'captives-taken' }],
-      [{ kind: 'setFlag', flag: 'captives-freed' }]],
-    [[{ kind: 'npc', npc: 'wren', fate: 'saved' }, { kind: 'flag', flag: 'captives-taken' }], []],
+    // (The captives are the company's to bring home: nobody does it for them.)
+    [[{ kind: 'npc', npc: 'wren', fate: 'saved' }], []],
     // Never found: the reeve's men find her, alive, and the company's quest
     // for the scouts is someone else's doing (`scouts-unfound`).
     [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }, { kind: 'notFlag', flag: 'scout-walked-past' }],
@@ -166,7 +169,7 @@ export const AFTERMATH_CLAIMS: Choice[] = [
     [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'flag', flag: 'scout-bled-out' }],
       [{ kind: 'npc', npc: 'wren', fate: 'lost' }]],
   ] as Array<[Requirement[], Effect[]]>).map(([when, also], i): Choice => ({
-    id: ['done', 'done-late', 'done-unsaved', 'done-passed', 'done-lost'][i]!, label: 'Let the crowd carry you to the {wander-inn}', to: 'epilogue',
+    id: ['done', 'done-unsaved', 'done-passed', 'done-lost'][i]!, label: 'Let the crowd carry you to the {wander-inn}', to: 'epilogue',
     requires: [{ kind: 'flag', flag: 'got-bounty' }, ...when], hideWhenBlocked: true,
     effects: [{ kind: 'setFlag', flag: 'won' }, ...also] })),
 ];
@@ -181,15 +184,15 @@ export const VEX_OFFERS = (lead: boolean): Choice[] => {
   return [
     // Wren's tip (`know-vex`): the party knows what he wants before he says it.
     { id: id('wren'), label: '[Persuasion DC 9] "{wren} says you want out. The reeve\'s pardon, and a road."', to: 'vex-turned',
-      attempt: 'vex-pardon', requires: [{ kind: 'flag', flag: 'know-vex' }, pens, { kind: 'notFlag', flag: 'den-alarm' }], hideWhenBlocked: true,
+      attempt: 'vex-pardon', requires: [{ kind: 'flag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], hideWhenBlocked: true,
       effects: told, check: { skill: 'persuasion', dc: 9, failTo: 'vex-refuses' } },
     { id: id('persuade'), label: '[Persuasion DC 13] Offer him the reeve\'s pardon and a road out', to: 'vex-turned',
-      attempt: 'vex-pardon', requires: [{ kind: 'notFlag', flag: 'know-vex' }, pens, { kind: 'notFlag', flag: 'den-alarm' }], hideWhenBlocked: true,
+      attempt: 'vex-pardon', requires: [{ kind: 'notFlag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], hideWhenBlocked: true,
       effects: told, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
     // Cowed, not bought (`vex-threatened`, this chapter's own): no pardon
     // was offered. Bought or cowed, he is `turned`.
     { id: id('intimidate'), label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
-      attempt: 'vex-threat', requires: [pens, { kind: 'notFlag', flag: 'den-alarm' }], hideWhenBlocked: true,
+      attempt: 'vex-threat', requires: [pens, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], hideWhenBlocked: true,
       effects: [...told, { kind: 'setFlag', flag: 'vex-threatened' }],
       check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses', failEffects: [{ kind: 'clearFlag', flag: 'vex-threatened' }] } },
     { id: id('refuse'), label: 'Refuse to deal with a raider', to: 'vex-dismissed',

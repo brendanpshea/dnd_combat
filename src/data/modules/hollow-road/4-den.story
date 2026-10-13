@@ -57,7 +57,7 @@ again:
 The watch-post saw you coming this time. The big one already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls and their hyena slavers.
 won → inner
   The big one goes down last, folding across the gateway.
-  do +den-entered; +signal-spent; +den-alarm
+  do +den-entered; +signal-spent; alarm inner/delve +2
 parley deception 15 > Pass yourselves off as new blood
   refused: The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
   success → inner
@@ -70,7 +70,7 @@ art: loc-camp 📯
 The watch-post goes quiet, and a voice calls down a countersign you never learned. Somebody up there knows that someone sold the gate-signal.
 A horn brays, and torches run along the wall. You fall back into the reeds and lie in the mud while the watch hunts the hollow. It takes all night and most of the next day before the den settles. By then the watch has a new signal, and you do not know it.
 > Crawl back up to the gate → gate  #back
-  do day; -know-signal; +den-alarm
+  do day; -know-signal; alarm inner/delve +2
   journal clue c-signal-burned: The Gate-Signal Is Burned
     The den's watch knew someone sold the gate-signal, and they changed it. You will need another way past the gate: over the wall, or through it.
 
@@ -82,7 +82,7 @@ surprise: party
 Halfway over the wall, a stake shifts under a boot and cracks. A horn brays right above your heads. When you drop down inside, something hairy and twice a man's size is already waiting at the foot of the wall. A pack of spotted, dog-faced things yammers behind it.
 won → inner
   The big one goes down last, face-first in the mud at the foot of the wall.
-  do +den-entered; +signal-spent; +den-alarm
+  do +den-entered; +signal-spent; alarm inner/delve +2
 
 # den-muster
 kind: battle
@@ -101,15 +101,15 @@ won → @hub
 # den-pens-door
 noBack: true
 art: loc-camp ⛓️
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your torch comes near.
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
 > Look in the pen → den-pens  #look
   hide
   ? not captives-taken
-  do +pens-found; +pens-settled
+  do +pens-found; @PENS_LEAD
 > Look in the pen → den-pens-empty  #look-late
   hide
   ? captives-taken
-  do +pens-found; +pens-settled
+  do +pens-found
 
 # den-pens-empty
 noBack: true
@@ -122,16 +122,14 @@ Something has come for them out of the water, and gone again. In the corner lies
 # den-pens
 art: loc-camp ⛓️
 assumes: not captives-taken
-noBack: true
-There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.
+back: true
+There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
 The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
 A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
 > [Sleight of Hand DC 13] Work the padlock open quietly → den-pens-freed  #pick
   once
   check sleight-of-hand 13 → pens-alarm
 > Hack through the stakes, and never mind the noise → pens-alarm  #hack
-> Leave them for the reeve's men → den-pens-left  #leave
-  do +captives-left; +captives-taken; npc wren attitude -1
 
 # pens-alarm
 kind: battle
@@ -141,24 +139,18 @@ loot: false
 noFlee: true
 The noise carries. The raider by the fire jumps up and yells, and the den's watch comes running with him. Two hulking raiders with greataxes, four archers and an orc spread out in front of the pen. The carter pulls the girl down into the straw.
 won → den-pens-freed
-  do +den-alarm
-  The last raider falls against the stakes, and no one else comes. Across the yard someone laughs at the noise and goes back to his dice.
+  do alarm inner/delve +2
+  The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.
 lost → @hub
   You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.
-  do +captives-taken; +den-alarm
+  do +captives-taken; alarm inner/delve +2
 
 # den-pens-freed
 art: loc-camp ⛓️
 noBack: true
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in {thornwick}, after." They slip off toward the dark of the marsh road, not making a sound.
 > Back to the den → @hub  #ok
-  do +captives-freed; npc wren attitude 1
-
-# den-pens-left
-art: loc-camp ⛓️
-noBack: true
-"The reeve's men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, one bare foot tucked up in the straw.
-> Back to the den → @hub  #ok
+  do +captives-freed; +pens-settled; npc wren attitude 1
 
 # den-hyenas
 kind: battle
@@ -198,7 +190,7 @@ At the lone fire a lean, grey-templed raider watches you come. A bare blade lies
 "**{vex}**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
 ? not pens-found; not captives-taken | Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
 ? not pens-found; captives-taken | Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
-? den-alarm | "Not tonight, though." He doesn't take his eyes off the fire. "The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them."
+? alarm inner/delve >= 2 | "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
 > @VEX_OFFERS(true)
 > @VEX_OFFERS(false)
 
@@ -248,11 +240,11 @@ The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his
 "Up, **{vargan}**, my sweet," the hag says. "Guests." The chief rises.
 "I was born down in {thornwick}," {vargan} says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. {thornwick} watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
 The hag laughs. "Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+? alarm inner/delve >= 2 | The hall is full of raiders who heard you coming, and none of them is sitting down.
 again:
 The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
 **{vargan}** is back on his throne of spears, and the **{reedwife}** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." {vargan} only rolls the great axe off his shoulder.
 ? vargan-shaken | He keeps his branded hand shut in a fist. His eyes keep going back to it.
-? den-alarm | The hall is full of raiders who heard you coming, and none of them is sitting down.
 > [Insight DC 14] Look at his hands → vargan-brand  #insight
   hide
   attempt: brand
@@ -285,12 +277,12 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns  #turn-carter
   hide
   attempt: turn
-  ? pens-settled; not captives-taken; npc vex not fate turned; not vargan-shaken
+  ? pens-settled; npc vex not fate turned; not vargan-shaken
   check persuasion 10 → boss
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns-alone  #turn-carter-alone
   hide
   attempt: turn
-  ? pens-settled; not captives-taken; npc vex fate turned; not vargan-shaken
+  ? pens-settled; npc vex fate turned; not vargan-shaken
   check persuasion 10 → boss-unguarded
 > [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns  #turn-shaken
   hide

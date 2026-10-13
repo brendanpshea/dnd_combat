@@ -225,7 +225,7 @@ The dead horse still lies across the trail.
 # barrow
 art: 🪦
 Half-swallowed by the reeds lies a barrow-mound, its stones worn smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.
-Something gold catches your light in the dark below. So does something that moves without touching the water.
+Something gold glints in the dark below. So does something that moves without touching the water.
 again:
 The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.
 > Go down into the dark → barrow-fight  #in

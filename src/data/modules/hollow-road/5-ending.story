@@ -196,40 +196,12 @@ art: 🏆
       "text": "Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck."
     },
     {
-      "if": [
-        {"kind":"npc","npc":"wren","fate":"saved"},
-        {"kind":"notFlag","flag":"captives-taken"},
-        {"kind":"flag","flag":"captives-left"}
-      ],
-      "text": "The reeve's men, sent up the marsh road on {wren}'s word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe."
-    },
-    {
-      "if": [
-        {"kind":"npc","npc":"wren","fate":"saved"},
-        {"kind":"notFlag","flag":"captives-taken"},
-        {"kind":"notFlag","flag":"pens-found"}
-      ],
-      "text": "The reeve's men, sent up the marsh road on {wren}'s word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe."
-    },
-    {
       "if": [{"kind":"flag","flag":"captives-freed"}],
       "text": "The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough."
     },
     {
-      "if": [
-        {"kind":"flag","flag":"captives-taken"},
-        {"kind":"notFlag","flag":"captives-freed"},
-        {"kind":"notFlag","flag":"captives-left"}
-      ],
-      "text": "Every evening, a widow walks the edge of the marsh and calls a name across the water."
-    },
-    {
-      "if": [{"kind":"flag","flag":"captives-left"},{"kind":"flag","flag":"captives-taken"}],
-      "text": "The reeve's men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child's shoe in the straw."
-    },
-    {
-      "if": [{"kind":"notFlag","flag":"captives-taken"},{"kind":"notFlag","flag":"captives-freed"}],
-      "text": "The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The {ashfang} who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found."
+      "if": [{"kind":"flag","flag":"captives-taken"},{"kind":"notFlag","flag":"captives-freed"}],
+      "text": "Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen."
     }
   ]
 Bonfires burn in the square tonight. Out past the reeds the marsh has gone still, and the cold has lifted off the water.

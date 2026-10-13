@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-124 scenes · 186 versions · 2,693,974 states searched (with text conditions tracked).
+123 scenes · 180 versions · 1,943,286 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -376,7 +376,7 @@ You find a low stretch of the wall, but the watch walks it more often than you b
 
 ## `gate-slipped` · story
 
-You are out, and Thornwick is behind you. Somewhere behind you, too, the peddler is still at his stall, and the Ashfang will hear of you before you ever see their smoke.
+You are out, and Thornwick is behind you. Somewhere behind you, too, the peddler is still at his stall. He saw you go, and the Ashfang will hear of you before you ever see their smoke.
 
 - » **Set out on the marsh road**
 
@@ -831,7 +831,7 @@ Wren is long gone to Thornwick for the reeve's men. The flies have the horse to 
 
 Half-swallowed by the reeds lies a barrow-mound, its stones worn smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.
 
-Something gold catches your light in the dark below. So does something that moves without touching the water.
+Something gold glints in the dark below. So does something that moves without touching the water.
 
 ### 2. when a return visit?
 
@@ -1184,7 +1184,7 @@ Under the champion's barrel is a fat purse: the takings from every fight he ever
 
 <sub>reads: flag:captives-taken</sub>
 
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your torch comes near.
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
 
 - » **Look in the pen** <sub>open when not `captives-taken`; otherwise hidden</sub>
 - » **Look in the pen** <sub>open when `captives-taken`; otherwise hidden</sub>
@@ -1199,7 +1199,7 @@ Something has come for them out of the water, and gone again. In the corner lies
 
 ## `den-pens` · story
 
-There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.
+There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
 
 The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a lamb every midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
 
@@ -1207,7 +1207,6 @@ A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes b
 
 - » **[Sleight of Hand DC 13] Work the padlock open quietly** [Sleight of Hand DC 13] <sub>(once)</sub>
 - » **Hack through the stakes, and never mind the noise**
-- » **Leave them for the reeve's men**
 
 ## `pens-alarm` · battle
 
@@ -1217,7 +1216,7 @@ The noise carries. The raider by the fire jumps up and yells, and the den's watc
 
 *Won:*
 
-The last raider falls against the stakes, and no one else comes. Across the yard someone laughs at the noise and goes back to his dice.
+The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.
 
 *Lost:*
 
@@ -1225,13 +1224,7 @@ You go down in the mud in front of the pen, and come to in the straw of the pen 
 
 ## `den-pens-freed` · story
 
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.
-
-- » **Back to the den**
-
-## `den-pens-left` · story
-
-"The reeve's men will come," you tell them. The carter nods slowly and says nothing. The girl watches you go, one bare foot tucked up in the straw.
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
 
 - » **Back to the den**
 
@@ -1293,21 +1286,11 @@ You grab what's in reach before the noise draws eyes.
 
 ## `vex-parley` · dialogue · Vex, the Lieutenant
 
-<sub>reads: flag:pens-found, flag:captives-taken, flag:den-alarm, flag:know-vex, flag:pens-settled</sub>
+<sub>reads: flag:pens-found, flag:captives-taken, flag:know-vex, flag:pens-settled</sub>
 
-**6 versions**
+**3 versions**
 
-### 1. when not `den-alarm` · not `pens-settled`
-
-**Vex, the Lieutenant:**
-
-At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-"**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
-
-### 2. when `den-alarm` · not `pens-settled`
+### 1. when not `pens-found` · not `captives-taken`
 
 **Vex, the Lieutenant:**
 
@@ -1317,9 +1300,7 @@ At the lone fire a lean, grey-templed raider watches you come. A bare blade lies
 
 Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
 
-"Not tonight, though." He doesn't take his eyes off the fire. "The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them."
-
-### 3. when not `pens-found` · not `den-alarm` · `pens-settled`
+### 2. when not `pens-found` · `captives-taken`
 
 **Vex, the Lieutenant:**
 
@@ -1329,7 +1310,7 @@ At the lone fire a lean, grey-templed raider watches you come. A bare blade lies
 
 Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
 
-### 4. when not `pens-found` · `den-alarm` · `pens-settled`
+### 3. when `pens-found`
 
 **Vex, the Lieutenant:**
 
@@ -1337,35 +1318,13 @@ At the lone fire a lean, grey-templed raider watches you come. A bare blade lies
 
 "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
 
-Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
-
-"Not tonight, though." He doesn't take his eyes off the fire. "The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them."
-
-### 5. when not `captives-taken` · not `den-alarm` · `pens-settled` — or — `pens-found` · not `den-alarm`
-
-**Vex, the Lieutenant:**
-
-At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-"**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-### 6. when not `captives-taken` · `den-alarm` · `pens-settled` — or — `pens-found` · `den-alarm`
-
-**Vex, the Lieutenant:**
-
-At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-"**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-"Not tonight, though." He doesn't take his eyes off the fire. "The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them."
-
-- » **[Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."** [Persuasion DC 9] <sub>open when not `den-alarm` · `know-vex` · not `pens-settled`; otherwise hidden</sub>
-- » **[Persuasion DC 13] Offer him the reeve's pardon and a road out** [Persuasion DC 13] <sub>open when not `den-alarm` · not `know-vex` · not `pens-settled`; otherwise hidden</sub>
-- » **[Intimidation DC 14] Point out his one other way out** [Intimidation DC 14] <sub>open when not `den-alarm` · not `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."** [Persuasion DC 9] <sub>open when `know-vex` · not `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 13] Offer him the reeve's pardon and a road out** [Persuasion DC 13] <sub>open when not `know-vex` · not `pens-settled`; otherwise hidden</sub>
+- » **[Intimidation DC 14] Point out his one other way out** [Intimidation DC 14] <sub>open when not `pens-settled`; otherwise hidden</sub>
 - » **Refuse to deal with a raider** <sub>open when not `pens-settled`; otherwise hidden</sub>
-- » **[Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."** [Persuasion DC 9] <sub>open when not `den-alarm` · `know-vex` · `pens-settled`; otherwise hidden</sub>
-- » **[Persuasion DC 13] Offer him the reeve's pardon and a road out** [Persuasion DC 13] <sub>open when not `den-alarm` · not `know-vex` · `pens-settled`; otherwise hidden</sub>
-- » **[Intimidation DC 14] Point out his one other way out** [Intimidation DC 14] <sub>open when not `den-alarm` · `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."** [Persuasion DC 9] <sub>open when `know-vex` · `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 13] Offer him the reeve's pardon and a road out** [Persuasion DC 13] <sub>open when not `know-vex` · `pens-settled`; otherwise hidden</sub>
+- » **[Intimidation DC 14] Point out his one other way out** [Intimidation DC 14] <sub>open when `pens-settled`; otherwise hidden</sub>
 - » **Refuse to deal with a raider** <sub>open when `pens-settled`; otherwise hidden</sub>
 
 ## `vex-turned` · story
@@ -1415,9 +1374,9 @@ His axe hand stays wrapped in its rag, and his face gives you nothing at all. Be
 
 ## `boss-approach` · story
 
-<sub>reads: flag:vargan-shaken, flag:den-alarm, flag:npc.vex.fate.turned, class:warlock?, flag:pens-settled, flag:captives-taken, return?</sub>
+<sub>reads: flag:vargan-shaken, flag:npc.vex.fate.turned, class:warlock?, flag:pens-settled, return?</sub>
 
-**5 versions**
+**3 versions**
 
 ### 1. when the first visit?
 
@@ -1431,37 +1390,19 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
 
-### 2. when not `vargan-shaken` · not `den-alarm` · a return visit?
+### 2. when not `vargan-shaken` · a return visit?
 
 The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
 
 **Vargan** is back on his throne of spears, and the **Reedwife** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." Vargan only rolls the great axe off his shoulder.
 
-### 3. when not `vargan-shaken` · `den-alarm` · a return visit?
-
-The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
-
-**Vargan** is back on his throne of spears, and the **Reedwife** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." Vargan only rolls the great axe off his shoulder.
-
-The hall is full of raiders who heard you coming, and none of them is sitting down.
-
-### 4. when `vargan-shaken` · not `den-alarm` · a return visit?
+### 3. when `vargan-shaken` · a return visit?
 
 The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
 
 **Vargan** is back on his throne of spears, and the **Reedwife** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." Vargan only rolls the great axe off his shoulder.
 
 He keeps his branded hand shut in a fist. His eyes keep going back to it.
-
-### 5. when `vargan-shaken` · `den-alarm` · a return visit?
-
-The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
-
-**Vargan** is back on his throne of spears, and the **Reedwife** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." Vargan only rolls the great axe off his shoulder.
-
-He keeps his branded hand shut in a fist. His eyes keep going back to it.
-
-The hall is full of raiders who heard you coming, and none of them is sitting down.
 
 - » **[Insight DC 14] Look at his hands** [Insight DC 14] <sub>open when Vex not turned; otherwise hidden</sub>
 - » **[Insight DC 14] Look at his hands** [Insight DC 14] <sub>open when Vex turned; otherwise hidden</sub>
@@ -1469,8 +1410,8 @@ The hall is full of raiders who heard you coming, and none of them is sitting do
 - » **[Warlock · Arcana DC 11] Name the bargain burned into his hand** [Arcana DC 11] <sub>open when Vex turned · a warlock in the party?; otherwise hidden</sub>
 - » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken` · Vex not turned; otherwise hidden</sub>
 - » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken` · Vex turned; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when not `vargan-shaken` · Vex not turned · `pens-settled` · not `captives-taken`; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when not `vargan-shaken` · Vex turned · `pens-settled` · not `captives-taken`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when not `vargan-shaken` · Vex not turned · `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when not `vargan-shaken` · Vex turned · `pens-settled`; otherwise hidden</sub>
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken` · Vex not turned; otherwise hidden</sub>
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken` · Vex turned; otherwise hidden</sub>
 - » **End them both** <sub>open when not `vargan-shaken` · Vex turned; otherwise hidden</sub>
@@ -1970,7 +1911,7 @@ Your cleric kneels beside him and studies the grey brand. There is no prayer for
 
 ## `aftermath` · story
 
-<sub>reads: flag:npc.vargan.fate.spared, flag:vargan-let-go, flag:bounty, flag:npc.vargan.fate.dead, flag:captives-freed, flag:npc.wren.fate.saved, flag:mill-saved, flag:got-bounty, flag:looted, flag:got-banner, flag:got-scout, flag:captives-taken, flag:scout-bled-out, flag:scout-walked-past</sub>
+<sub>reads: flag:npc.vargan.fate.spared, flag:vargan-let-go, flag:bounty, flag:npc.vargan.fate.dead, flag:captives-freed, flag:npc.wren.fate.saved, flag:mill-saved, flag:got-bounty, flag:looted, flag:got-banner, flag:got-scout, flag:scout-bled-out, flag:scout-walked-past</sub>
 
 **7 versions**
 
@@ -2050,15 +1991,14 @@ Behind him, Mira catches your eye and very nearly smiles.
 - » **Let the reeve settle the rest of the bounty** <sub>open when `bounty` · not `got-bounty`; otherwise hidden</sub>
 - » **Unroll the Ashfang banner on the well** <sub>open when `looted`; otherwise greyed</sub>
 - » **Look for Wren in the crowd** <sub>open when Wren saved; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren saved · `got-bounty` · not `captives-taken`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren saved · `got-bounty` · `captives-taken`; otherwise hidden</sub>
+- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren saved · `got-bounty`; otherwise hidden</sub>
 - » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren not saved · `got-bounty` · not `scout-bled-out` · not `scout-walked-past`; otherwise hidden</sub>
 - » **Let the crowd carry you to the Wander-Inn** <sub>open when `got-bounty` · not `scout-bled-out` · `scout-walked-past`; otherwise hidden</sub>
 - » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren not saved · `got-bounty` · `scout-bled-out`; otherwise hidden</sub>
 
 ## `aftermath-hub` · story
 
-<sub>reads: flag:got-bounty, flag:vargan-let-go, flag:got-banner, flag:got-scout, flag:bounty, flag:looted, flag:npc.wren.fate.saved, flag:captives-taken, flag:scout-bled-out, flag:scout-walked-past</sub>
+<sub>reads: flag:got-bounty, flag:vargan-let-go, flag:got-banner, flag:got-scout, flag:bounty, flag:looted, flag:npc.wren.fate.saved, flag:scout-bled-out, flag:scout-walked-past</sub>
 
 **7 versions**
 
@@ -2118,8 +2058,7 @@ Wren has found a barrel to sit on, her crutch propped beside her. She is pretend
 - » **Let the reeve settle the rest of the bounty** <sub>open when not `got-bounty` · `bounty`; otherwise hidden</sub>
 - » **Unroll the Ashfang banner on the well** <sub>open when not `got-banner` · `looted`; otherwise greyed</sub>
 - » **Look for Wren in the crowd** <sub>open when not `got-scout` · Wren saved; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `got-scout` · not `looted` · Wren saved · not `captives-taken` — or — not `got-banner` · not `got-scout` · Wren saved · not `captives-taken` — or — `got-bounty` · Wren saved · not `captives-taken`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `got-scout` · not `looted` · Wren saved · `captives-taken` — or — not `got-banner` · not `got-scout` · Wren saved · `captives-taken` — or — `got-bounty` · Wren saved · `captives-taken`; otherwise hidden</sub>
+- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `got-scout` · not `looted` · Wren saved — or — not `got-banner` · not `got-scout` · Wren saved — or — `got-bounty` · Wren saved; otherwise hidden</sub>
 - » **Let the crowd carry you to the Wander-Inn** <sub>open when not `looted` · Wren not saved · not `scout-bled-out` · not `scout-walked-past` — or — not `got-banner` · Wren not saved · not `scout-bled-out` · not `scout-walked-past` — or — `got-bounty` · Wren not saved · not `scout-bled-out` · not `scout-walked-past`; otherwise hidden</sub>
 - » **Let the crowd carry you to the Wander-Inn** <sub>open when not `looted` · not `scout-bled-out` · `scout-walked-past` — or — not `got-banner` · not `scout-bled-out` · `scout-walked-past` — or — `got-bounty` · not `scout-bled-out` · `scout-walked-past`; otherwise hidden</sub>
 - » **Let the crowd carry you to the Wander-Inn** <sub>open when not `looted` · Wren not saved · `scout-bled-out` — or — not `got-banner` · Wren not saved · `scout-bled-out` — or — `got-bounty` · Wren not saved · `scout-bled-out`; otherwise hidden</sub>
@@ -2204,9 +2143,9 @@ The reeve's men carried you in, she tells you, and then stood about in her tapro
 
 ## `epilogue` · ending
 
-<sub>reads: flag:npc.vargan.fate.dead, flag:vargan-shaken, flag:vargan-let-go, flag:npc.vargan.fate.spared, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-covered, flag:scout-walked-past, flag:captives-freed, flag:mill-saved, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:captives-taken, flag:captives-left, flag:pens-found</sub>
+<sub>reads: flag:npc.vargan.fate.dead, flag:vargan-shaken, flag:vargan-let-go, flag:npc.vargan.fate.spared, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-covered, flag:scout-walked-past, flag:captives-freed, flag:mill-saved, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:captives-taken</sub>
 
-**Too many combinations** — printed once, each conditional line marked with when it shows.
+**2304 versions** — printed once, each conditional line marked with when it shows.
 
 *text:*
 
@@ -2216,9 +2155,9 @@ By morning the carters are already complaining about the state of the road. Mira
 
 *slides:*
 
-> **[when Vargan dead · `vargan-shaken`]** Round the bonfire they tell it in low voices: the Ashfang chief wore the hag's brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.
+> **[when `vargan-shaken` · Vargan not spared]** Round the bonfire they tell it in low voices: the Ashfang chief wore the hag's brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.
 
-> **[when Vargan dead]** The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
+> **[when Vargan not spared]** The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
 
 > **[when `vargan-let-go`]** The reeve keeps his bounty, and says so loudly. Before the month is out, a man with a scarred hand is cutting reeds in the shallows below the water-meadows. The reeve watches him from his window, and does not send the watch.
 
@@ -2242,7 +2181,7 @@ By morning the carters are already complaining about the state of the road. Mira
 
 The other scout lost her horse in the fen and walked home the long way round. She leads the reeve's men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den's wall scratched into the mud.
 
-> **[when Vargan dead]** Mira pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.
+> **[when Vargan not spared]** Mira pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.
 
 > **[when `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
@@ -2264,21 +2203,9 @@ Up in the hollow, the reeve's men pull down the den's timber wall one post at a 
 
 > **[when `mill-saved`]** Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.
 
-> **[on no reachable route]** The reeve's men, sent up the marsh road on Wren's word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe.
-
-> **[when Wren saved · not `captives-taken` · not `pens-found`]** The reeve's men, sent up the marsh road on Wren's word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe.
-
 > **[when `captives-freed`]** The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.
 
-> **[when not `captives-freed` · `captives-taken` · not `captives-left`]** Every evening, a widow walks the edge of the marsh and calls a name across the water.
-
-> **[when `captives-left`]** The reeve's men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child's shoe in the straw.
-
-> **[when not `captives-freed` · not `captives-taken`]** The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The Ashfang who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.
-
-**Never shown on any reachable route:**
-
-- when Wren saved · not `captives-taken` · `captives-left`: the slide "The reeve's men, sent up the marsh road on Wren's word, are already in the reeds below the den when it falls. They have the pen open before…"
+> **[when not `captives-freed`]** Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
 
 ## `trail/fights` · story
 
@@ -2372,7 +2299,7 @@ In.
 
 ## `square/city` · explore
 
-<sub>reads: flag:mill-saved, flag:spy-caught, visited:spy-confront, flag:know-spy, flag:den-alarm, visited:trail</sub>
+<sub>reads: flag:mill-saved, flag:spy-caught, visited:spy-confront, flag:know-spy, visited:trail</sub>
 
 **Map:** Thornwick
 
@@ -2384,9 +2311,9 @@ In.
   - goes to `spy-confront` instead when been to `spy-confront`
   - goes to `spy-stalk` instead when `know-spy`
 - **The Marsh Road** → `trailhead`
-  - goes to `gate-blocked` instead when not been to `spy-confront` · not `know-spy` · not `den-alarm` — or — not `spy-caught` · not `den-alarm`
   - goes to `trailhead-clear` instead when been to `trail`
-  - goes to `gate-slipped` instead when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`
+  - goes to `gate-blocked` instead when not been to `spy-confront` · not `know-spy` — or — not `spy-caught`
+  - goes to `gate-slipped` instead **on no reachable route**
 
 ## `square/city-done` · story
 
@@ -2395,12 +2322,6 @@ In.
 <sub>(shared with: `trail/delve-done`, `inner/delve-done`)</sub>
 
 - » **Back**
-
-## Never shown
-
-Conditional lines whose condition no reachable state meets (every atom pinned): dead text, or a condition that is wrong.
-
-- `epilogue` — when Wren saved · not `captives-taken` · `captives-left`: the slide "The reeve's men, sent up the marsh road on Wren's word, are already in the reeds below the den when it falls. They have the pen open before…"
 
 ## Dawns
 

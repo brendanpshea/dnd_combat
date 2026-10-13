@@ -396,6 +396,16 @@ export function checkDungeon(module: Module, id: Id, d: Dungeon): string[] {
       if (sceneKind(door.ambush.battle) !== 'battle') err(`ambush on '${l.a}' — '${l.b}' is not a battle scene`);
     }
   }
+  if (d.alarm) {
+    if (!(d.alarm.rate > 0 && d.alarm.rate <= 0.5)) err(`alarm rate ${d.alarm.rate} is not in (0, 0.5]`);
+    if (!d.alarm.patrols.length) err('an alarm with no patrol to send');
+    for (const pt of d.alarm.patrols) {
+      const b = module.scenes[pt];
+      if (b?.kind !== 'battle') err(`patrol '${pt}' is not a battle scene`);
+      // A setback, not a payday: the alarm can be raised without end.
+      else if (b.loot !== false) err(`patrol '${pt}' pays: give it loot: false`);
+    }
+  }
   for (const r of d.rooms) {
     if (r.fight && sceneKind(r.fight) !== 'battle') err(`room '${r.id}' fight '${r.fight}' is not a battle scene`);
   }

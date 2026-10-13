@@ -36,7 +36,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   cover: 'loc-village',
   levelBand: { from: 1, to: 3 },
   places: {
-    'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'den-alarm', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
+    'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
   },
   towns: {
     square: {
@@ -56,10 +56,10 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
               { if: [{ kind: 'visited', scene: 'spy-confront' }], to: 'spy-confront' },
               { if: [{ kind: 'flag', flag: 'know-spy' }], to: 'spy-stalk' }] } },
           // Shut until the peddler is caught, or the party got out another
-          // way and the den knows it (`den-alarm`); the road out fought once.
+          // way, and the peddler has warned the den (its alarm); the road out fought once.
           { label: 'The Marsh Road', replaces: 'gate', icon: 'tok-gate', text: [], event: { scene: 'trailhead', when: [
-            { if: [{ kind: 'notFlag', flag: 'spy-caught' }, { kind: 'notFlag', flag: 'den-alarm' }], to: 'gate-blocked' },
             { if: [{ kind: 'visited', scene: 'trail' }], to: 'trailhead-clear' },
+            { if: [{ kind: 'notFlag', flag: 'spy-caught' }, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], to: 'gate-blocked' },
             { if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-slipped' }] } },
         ],
       },
@@ -110,7 +110,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       // proof would have to carry twice over.
       level: 2, theme: 'stockade', shape: 'spine', rooms: 9, fights: 'inhabitants', factions: ['raiders'], maxFights: 0,
       dressing: { name: 'The {ashfang} Den',
-        door: 'Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp that thinks it is safe.',
+        door: 'Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp at its fires.',
         outside: 'You slip back out through the gate, into the quiet of the hollow.',
         back: 'Back inside', leave: 'Leave the den for now' },
       require: [
@@ -160,7 +160,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       effects: [{ kind: 'setFlag', flag: 'scout-bled-out' }] },
     { day: 6, text: ['A rind of moon rose late over the marsh and set early. One more night of it, at most.'] },
     { day: 7, text: ['There was no moon at all last night. Far out on the marsh, something sang until dawn, and then stopped.'],
-      effects: [{ kind: 'setFlag', flag: 'captives-taken' }, { kind: 'setFlag', flag: 'pens-settled' }] },
+      effects: [{ kind: 'setFlag', flag: 'captives-taken' }] },
   ],
   carries: ['won', 'captives-freed'],
   // Saves from before that state moved onto the NPCs.

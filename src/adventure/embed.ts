@@ -30,7 +30,10 @@ import { outsideOf } from './outside.js';
 import { isNpcFlag } from './npcs.js';
 
 /** Keys whose string value names a scene. */
-const SCENE_REF_KEYS = new Set(['to', 'fight', 'search', 'scene', 'battle', 'battleScene', 'out', 'failTo', 'next']);
+const SCENE_REF_KEYS = new Set(['to', 'fight', 'search', 'scene', 'battle', 'battleScene', 'out', 'failTo', 'next', 'dungeon']);
+
+/** Keys whose value is a list of scenes (a dungeon alarm's patrols). */
+const SCENE_LIST_KEYS = new Set(['patrols']);
 
 /** Keys whose string value names a flag. `resolvedBy` too: a journal lead
  *  closes on a flag, and left un-renamed it waits forever on a name the
@@ -46,7 +49,8 @@ function rewrite(x: unknown, scene: (id: string) => string, flag: (f: string) =>
     if (typeof v === 'string') {
       if (FLAG_KEYS.has(k)) o[k] = flag(v);
       else if (SCENE_REF_KEYS.has(k)) o[k] = scene(v);
-    } else rewrite(v, scene, flag);
+    } else if (SCENE_LIST_KEYS.has(k) && Array.isArray(v)) o[k] = v.map((s) => (typeof s === 'string' ? scene(s) : s));
+    else rewrite(v, scene, flag);
   }
 }
 

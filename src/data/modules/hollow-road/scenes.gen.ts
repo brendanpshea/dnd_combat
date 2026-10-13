@@ -3,7 +3,7 @@
 import type { Scene } from '../../../adventure/types.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';
-import { AFTERMATH_CLAIMS, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, MIRA_COOL, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
+import { AFTERMATH_CLAIMS, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, MIRA_COOL, PENS_LEAD, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
 
 export const SCENES: Record<string, Scene> = {
   "road": {
@@ -229,7 +229,7 @@ export const SCENES: Record<string, Scene> = {
               stages: [{ text: "Catch the peddler, quietly if you can", done: [{ kind: "flag", flag: "spy-caught" }] }],
               takenBy: "know-spy",
               resolvedBy: "spy-caught",
-              failedBy: "den-alarm",
+              failedBy: "won",
             },
           },
         ],
@@ -581,12 +581,12 @@ export const SCENES: Record<string, Scene> = {
         to: "gate-slipped",
         once: true,
         hideWhenBlocked: true,
-        effects: [{ kind: "setFlag", flag: "den-alarm" }],
+        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 2 }],
         check: {
           skill: "deception",
           dc: 13,
           failTo: "gate-bluff-called",
-          failEffects: [{ kind: "clearFlag", flag: "den-alarm" }],
+          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -2 }],
         },
       },
       {
@@ -595,12 +595,12 @@ export const SCENES: Record<string, Scene> = {
         to: "gate-slipped",
         once: true,
         hideWhenBlocked: true,
-        effects: [{ kind: "setFlag", flag: "den-alarm" }, { kind: "passDay" }],
+        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 2 }, { kind: "passDay" }],
         check: {
           skill: "stealth",
           dc: 12,
           failTo: "gate-wall-caught",
-          failEffects: [{ kind: "clearFlag", flag: "den-alarm" }, { kind: "passDay" }],
+          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -2 }, { kind: "passDay" }],
         },
       },
       { id: "ok", label: "Back into the square", to: "square/city" },
@@ -632,7 +632,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-road", emoji: "🌙" },
     text: [
-      "You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddler is still at his stall, and the {ashfang} will hear of you before you ever see their smoke.",
+      "You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddler is still at his stall. He saw you go, and the {ashfang} will hear of you before you ever see their smoke.",
     ],
     next: [{ id: "go", label: "Set out on the marsh road", to: "road-out" }],
   },
@@ -1270,7 +1270,7 @@ export const SCENES: Record<string, Scene> = {
     art: { emoji: "🪦" },
     text: [
       "Half-swallowed by the reeds lies a barrow-mound, its stones worn smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.",
-      "Something gold catches your light in the dark below. So does something that moves without touching the water.",
+      "Something gold glints in the dark below. So does something that moves without touching the water.",
     ],
     again: [
       "The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.",
@@ -1635,7 +1635,7 @@ export const SCENES: Record<string, Scene> = {
       effects: [
         { kind: "setFlag", flag: "den-entered" },
         { kind: "setFlag", flag: "signal-spent" },
-        { kind: "setFlag", flag: "den-alarm" },
+        { kind: "alarm", dungeon: "inner/delve", amount: 2 },
       ],
     },
     parley: {
@@ -1671,7 +1671,7 @@ export const SCENES: Record<string, Scene> = {
         effects: [
           { kind: "passDay" },
           { kind: "clearFlag", flag: "know-signal" },
-          { kind: "setFlag", flag: "den-alarm" },
+          { kind: "alarm", dungeon: "inner/delve", amount: 2 },
           {
             kind: "journal",
             entry: {
@@ -1700,7 +1700,7 @@ export const SCENES: Record<string, Scene> = {
       effects: [
         { kind: "setFlag", flag: "den-entered" },
         { kind: "setFlag", flag: "signal-spent" },
-        { kind: "setFlag", flag: "den-alarm" },
+        { kind: "alarm", dungeon: "inner/delve", amount: 2 },
       ],
     },
   },
@@ -1732,7 +1732,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-camp", emoji: "⛓️" },
     text: [
-      "Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your torch comes near.",
+      "Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.",
     ],
     next: [
       {
@@ -1741,7 +1741,7 @@ export const SCENES: Record<string, Scene> = {
         to: "den-pens",
         hideWhenBlocked: true,
         requires: [{ kind: "notFlag", flag: "captives-taken" }],
-        effects: [{ kind: "setFlag", flag: "pens-found" }, { kind: "setFlag", flag: "pens-settled" }],
+        effects: [{ kind: "setFlag", flag: "pens-found" }, ...[PENS_LEAD].flat()],
       },
       {
         id: "look-late",
@@ -1749,7 +1749,7 @@ export const SCENES: Record<string, Scene> = {
         to: "den-pens-empty",
         hideWhenBlocked: true,
         requires: [{ kind: "flag", flag: "captives-taken" }],
-        effects: [{ kind: "setFlag", flag: "pens-found" }, { kind: "setFlag", flag: "pens-settled" }],
+        effects: [{ kind: "setFlag", flag: "pens-found" }],
       },
     ],
   },
@@ -1770,9 +1770,9 @@ export const SCENES: Record<string, Scene> = {
     kind: "story",
     art: { imageId: "loc-camp", emoji: "⛓️" },
     assumes: [{ kind: "notFlag", flag: "captives-taken" }],
-    noBack: true,
+    back: true,
     text: [
-      "There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at your torch.",
+      "There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.",
       "The girl has one shoe, on her right foot. \"They said the lady in the water comes for us when the moon goes dark,\" the carter whispers. \"My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people.\" He swallows. \"Are you the reeve's men?\"",
       "A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.",
     ],
@@ -1785,16 +1785,6 @@ export const SCENES: Record<string, Scene> = {
         check: { skill: "sleight-of-hand", dc: 13, failTo: "pens-alarm" },
       },
       { id: "hack", label: "Hack through the stakes, and never mind the noise", to: "pens-alarm" },
-      {
-        id: "leave",
-        label: "Leave them for the reeve's men",
-        to: "den-pens-left",
-        effects: [
-          { kind: "setFlag", flag: "captives-left" },
-          { kind: "setFlag", flag: "captives-taken" },
-          { kind: "npc", npc: "wren", attitude: -1 },
-        ],
-      },
     ],
   },
   "pens-alarm": {
@@ -1809,9 +1799,9 @@ export const SCENES: Record<string, Scene> = {
     ],
     onWin: {
       to: "den-pens-freed",
-      effects: [{ kind: "setFlag", flag: "den-alarm" }],
+      effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 2 }],
       text: [
-        "The last raider falls against the stakes, and no one else comes. Across the yard someone laughs at the noise and goes back to his dice.",
+        "The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.",
       ],
     },
     onLoss: {
@@ -1819,7 +1809,7 @@ export const SCENES: Record<string, Scene> = {
       text: [
         "You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.",
       ],
-      effects: [{ kind: "setFlag", flag: "captives-taken" }, { kind: "setFlag", flag: "den-alarm" }],
+      effects: [{ kind: "setFlag", flag: "captives-taken" }, { kind: "alarm", dungeon: "inner/delve", amount: 2 }],
     },
   },
   "den-pens-freed": {
@@ -1828,26 +1818,20 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-camp", emoji: "⛓️" },
     noBack: true,
     text: [
-      "The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. They slip off toward the gate and the dark of the marsh road, not making a sound.",
+      "The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. \"We'll make the gate,\" the carter says. \"Find us in {thornwick}, after.\" They slip off toward the dark of the marsh road, not making a sound.",
     ],
     next: [
       {
         id: "ok",
         label: "Back to the den",
         to: "@hub",
-        effects: [{ kind: "setFlag", flag: "captives-freed" }, { kind: "npc", npc: "wren", attitude: 1 }],
+        effects: [
+          { kind: "setFlag", flag: "captives-freed" },
+          { kind: "setFlag", flag: "pens-settled" },
+          { kind: "npc", npc: "wren", attitude: 1 },
+        ],
       },
     ],
-  },
-  "den-pens-left": {
-    id: "den-pens-left",
-    kind: "story",
-    art: { imageId: "loc-camp", emoji: "⛓️" },
-    noBack: true,
-    text: [
-      "\"The reeve's men will come,\" you tell them. The carter nods slowly and says nothing. The girl watches you go, one bare foot tucked up in the straw.",
-    ],
-    next: [{ id: "ok", label: "Back to the den", to: "@hub" }],
   },
   "den-hyenas": {
     id: "den-hyenas",
@@ -1930,8 +1914,8 @@ export const SCENES: Record<string, Scene> = {
         text: "Before you can answer, he tips his head back toward the kennels. \"There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark.\" He looks into his fire. \"Go and look, if you want to know what the chief sold.\"",
       },
       {
-        if: [{ kind: "flag", flag: "den-alarm" }],
-        text: "\"Not tonight, though.\" He doesn't take his eyes off the fire. \"The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them.\"",
+        if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 2 }],
+        text: "\"Not tonight, though.\" He doesn't take his eyes off the fire. \"The whole den is up and looking for you. I'm not turning my coat in front of all of them.\"",
       },
     ],
     next: [...[VEX_OFFERS(true)].flat(), ...[VEX_OFFERS(false)].flat()],
@@ -2045,6 +2029,10 @@ export const SCENES: Record<string, Scene> = {
       "\"Up, **{vargan}**, my sweet,\" the hag says. \"Guests.\" The chief rises.",
       "\"I was born down in {thornwick},\" {vargan} says. \"I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. {thornwick} watched from the bank.\" He looks up at his trophies the way a farmer looks at a full barn. \"The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price.\"",
       "The hag laughs. \"Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark.\" She turns to you, delighted. \"You've been *busy*.\" At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.",
+      {
+        if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 2 }],
+        text: "The hall is full of raiders who heard you coming, and none of them is sitting down.",
+      },
     ],
     again: [
       "The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.",
@@ -2052,10 +2040,6 @@ export const SCENES: Record<string, Scene> = {
       {
         if: [{ kind: "flag", flag: "vargan-shaken" }],
         text: "He keeps his branded hand shut in a fist. His eyes keep going back to it.",
-      },
-      {
-        if: [{ kind: "flag", flag: "den-alarm" }],
-        text: "The hall is full of raiders who heard you coming, and none of them is sitting down.",
       },
     ],
     next: [
@@ -2128,7 +2112,6 @@ export const SCENES: Record<string, Scene> = {
         attempt: "turn",
         requires: [
           { kind: "flag", flag: "pens-settled" },
-          { kind: "notFlag", flag: "captives-taken" },
           { kind: "npc", npc: "vex", notFate: ["turned"] },
           { kind: "notFlag", flag: "vargan-shaken" },
         ],
@@ -2142,7 +2125,6 @@ export const SCENES: Record<string, Scene> = {
         attempt: "turn",
         requires: [
           { kind: "flag", flag: "pens-settled" },
-          { kind: "notFlag", flag: "captives-taken" },
           { kind: "npc", npc: "vex", fate: "turned" },
           { kind: "notFlag", flag: "vargan-shaken" },
         ],
@@ -2783,40 +2765,12 @@ export const SCENES: Record<string, Scene> = {
         text: "Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.",
       },
       {
-        if: [
-          { kind: "npc", npc: "wren", fate: "saved" },
-          { kind: "notFlag", flag: "captives-taken" },
-          { kind: "flag", flag: "captives-left" },
-        ],
-        text: "The reeve's men, sent up the marsh road on {wren}'s word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe.",
-      },
-      {
-        if: [
-          { kind: "npc", npc: "wren", fate: "saved" },
-          { kind: "notFlag", flag: "captives-taken" },
-          { kind: "notFlag", flag: "pens-found" },
-        ],
-        text: "The reeve's men, sent up the marsh road on {wren}'s word, are already in the reeds below the den when it falls. They have the pen open before the fires are out. The carter carries the girl out himself, and she is still wearing her one shoe.",
-      },
-      {
         if: [{ kind: "flag", flag: "captives-freed" }],
         text: "The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.",
       },
       {
-        if: [
-          { kind: "flag", flag: "captives-taken" },
-          { kind: "notFlag", flag: "captives-freed" },
-          { kind: "notFlag", flag: "captives-left" },
-        ],
-        text: "Every evening, a widow walks the edge of the marsh and calls a name across the water.",
-      },
-      {
-        if: [{ kind: "flag", flag: "captives-left" }, { kind: "flag", flag: "captives-taken" }],
-        text: "The reeve's men reach the pens behind the kennels after the moon has gone dark. They find the chain hanging open, and a child's shoe in the straw.",
-      },
-      {
-        if: [{ kind: "notFlag", flag: "captives-taken" }, { kind: "notFlag", flag: "captives-freed" }],
-        text: "The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The {ashfang} who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.",
+        if: [{ kind: "flag", flag: "captives-taken" }, { kind: "notFlag", flag: "captives-freed" }],
+        text: "Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.",
       },
     ],
     text: [

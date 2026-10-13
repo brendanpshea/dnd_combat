@@ -40,7 +40,16 @@ export interface Faction {
   /** Lines to open one of their fights with, one drawn per fight. Without
    *  them a fight opens on nothing at all. */
   intros?: string[];
+  /** What the party hears when the place is roused (Dungeon.alarm). Default:
+   *  a horn for people, a howl for beasts. */
+  roused?: string[];
 }
+
+/** What a roused place sounds like, when its holders say nothing of their own. */
+export const ROUSED = {
+  people: ['Somewhere ahead a horn sounds, and then another. They know you are here.', 'Feet running, doors banging, someone shouting orders. The whole place is awake now.'],
+  beasts: ['A howl goes up somewhere ahead, and is answered, and answered again.', 'Everything in the place has gone quiet at once, and it is listening for you.'],
+};
 
 export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   {
@@ -139,6 +148,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     parley: { skill: 'intimidation', dc: 13, label: 'Tell them the chief is finished', success: 'They look at each other, then at the gate. Nobody here was paid enough for this.' },
     rooms: ['Kennel Run', 'Plunder Tent', 'Bone Fire'],
     sign: ['A stolen cart stands just inside, its sides hacked with the raiders\' mark.'],
+    roused: ['A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.'],
     intros: [
       'A raider looks up from the fire with his mouth full, and shouts with it.',
       'Two of them come out of a tent still buckling on stolen mail.',
@@ -152,6 +162,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'ghoul', 'ghast', 'giant-crocodile'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],
     rooms: ['Brand Stake', 'Cold Pool'],
+    roused: ['Every frog in the marsh stops at once. In the silence, something big turns over in the water, and starts toward you.'],
     sign: ['A reed stake by the path, and something tied to it that used to be a hare.'],
     intros: [
       'The water is colder here than it should be, and it moves when you stop.',
