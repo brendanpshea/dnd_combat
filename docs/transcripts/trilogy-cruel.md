@@ -99,11 +99,17 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 **» [Stealth DC 12] Go over the wall after dark**
 
+`[Stealth DC 12 — Ash the Sneaky rolls 24 — passed]`
+
+<sub>scene `gate-blocked-wall`</sub>
+
+You find a low stretch of the wall between two lanterns, and drop down on the far side into wet grass. Nobody shouts.
+
+**» Out onto the road**
+
 A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.
 
 **Dawn — day 2.**
-
-`[Stealth DC 12 — Ash the Sneaky rolls 24 — passed]`
 
 <sub>scene `gate-slipped`</sub>
 

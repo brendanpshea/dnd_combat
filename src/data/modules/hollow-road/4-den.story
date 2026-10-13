@@ -1,70 +1,53 @@
 # gate
+kind: obstacle
 back: true
 art: loc-camp 🏚️
+fight: den-gate on corridor
+done: den-entered
+after: inner
 A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.
 ? with wren; not captives-freed | {wren} crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. "That's where they keep them," she says. "The carter, and the girl. Whatever else you do in there, do that first."
 > Slip back in the way you left → inner  #back
   hide
   ? den-entered
-> [Deception DC 10] Call the stolen gate-signal up to the post → den-slipped  #signal
-  hide
-  ? know-signal; not den-entered
-  do +den-entered; +signal-spent
-  check deception 10 → gate-signal-blown
-  fail do -den-entered
-> [Rogue · Sleight of Hand DC 10] Pick the lock on the little water-gate → den-picked  #lock
-  once hide
-  ? class rogue; not den-entered
-  do +den-entered
-  check sleight-of-hand 10 → den-lock-jammed
-  fail do -den-entered
-> [Stealth DC 13] Slip over the wall together → den-slipped  #sneak
-  hide
-  ? not den-entered
-  do +den-entered
-  check stealth 13 → gate-caught
-  fail do -den-entered
-  check roller: group
-> Storm the gate → gate-fight  #fight
-  hide
-  ? not den-entered
-
-# den-lock-jammed
-noBack: true
-art: loc-camp 🗝️
-Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.
-> Back to the main gate → gate  #back
-
-# den-picked
-art: loc-camp 🗝️
-noBack: true
+answer deception 10 > Call the stolen gate-signal up to the post  #signal
+? know-signal; not den-entered
+retry
+go: Keep low and move in among the tents  #in
+do @GATE_QUIET
+You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
+failed → gate-signal-blown
+answer sleight-of-hand 10 > Pick the lock on the little water-gate  #lock
+? class rogue; not den-entered
+tag: Rogue
+go: Slip inside  #in
+do @GATE_QUIET
 Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.
 As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. "Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One {door-price} a winter, for sitting by their door in the dark." Then the water moves again, and she is gone.
-> Slip inside → inner  #in
-  do @GATE_PASSED
-
-# den-slipped
-noBack: true
-art: loc-camp 🤫
+failed:
+Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.
+go: Back to the main gate  #back
+answer stealth 13 > Slip over the wall together  #sneak
+? not den-entered
+retry
+roller: group
+go: Keep low and move in among the tents  #in
+do @GATE_QUIET
 You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
-> Keep low and move in among the tents → inner  #in
-  do @GATE_PASSED
-
-# gate-fight
-kind: battle
-encounterId: den-gate
-mapId: corridor
+failed → gate-caught
+fight > Storm the gate  #fight
+? not den-entered
 A horn brays from the watch-post, and the gate-runners answer. Something hairy and twice a man's size ducks through the gateway. Behind him three gnolls come yammering their high, laughing bark, and a fourth, hung with bone charms, howls them on. A spotted hyena as big as a pony lopes at their heels. The narrow timber run hems them all in.
 again:
 The watch-post saw you coming this time. The big one already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls and their hyena slavers.
-won → inner
-  The big one goes down last, folding across the gateway.
-  do +den-entered; +signal-spent; alarm inner/delve +3
 parley deception 15 > Pass yourselves off as new blood
   refused: The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
   success → inner
     "Chief sent for fighters," you growl, and shoulder past the horn like you own the place. The big one sniffs you, weighs you, and decides you are someone else's problem. The gnolls fall in laughing behind you, and the den stays asleep.
     do +den-entered; @GATE_PASSED
+won:
+The big one goes down last, folding across the gateway.
+do +signal-spent; alarm inner/delve +3
 
 # gate-signal-blown
 noBack: true

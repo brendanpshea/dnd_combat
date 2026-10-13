@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-111 scenes · 173 versions · 1,256,950 states searched (with text conditions tracked).
+114 scenes · 176 versions · 1,257,202 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -21,17 +21,19 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 - `scout-saved`, `scout-fail`:
   - **S2** “"You got the horse off me. Let me pay some of that back." She catches …”
   - **S3** “"You got the horse off me. Let me pay some of that back." She looks …”
+- `gate-signal`, `gate-sneak`:
+  - **S4** “You are inside the wall, and no horn has sounded. …”
 - `bind-hag-rite`, `reedwife-fight`:
-  - **S4** “The words catch in her like a hook. She hisses …”
-  - **S5** “She goes out of the hall into the night, toward …”
-  - **S6** “The chief's guard watches her go, and then walks out …”
-  - **S7** “Her two raiders watch her go, and then they run …”
+  - **S5** “The words catch in her like a hook. She hisses …”
+  - **S6** “She goes out of the hall into the night, toward …”
+  - **S7** “The chief's guard watches her go, and then walks out …”
+  - **S8** “Her two raiders watch her go, and then they run …”
 - `trail/fights`, `inner/fights`:
-  - **S8** “(The place's own fights.)”
+  - **S9** “(The place's own fights.)”
 - `trail`, `inner`:
-  - **S9** “In.”
+  - **S10** “In.”
 - `trail/delve-done`, `inner/delve-done`, `square/city-done`:
-  - **S10** “(Done.)”
+  - **S11** “(Done.)”
 
 ## `road` · story
 
@@ -342,17 +344,29 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 "And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road's yours."
 
+- » **Back into the square**
 - » **[Deception DC 13] "Reeve's business. Stand aside."** [Deception DC 13] <sub>(once)</sub>
 - » **[Stealth DC 12] Go over the wall after dark** [Stealth DC 12] <sub>(once)</sub>
-- » **Back into the square**
 
-## `gate-bluff-called` · story
+## `gate-blocked-bluff` · story
+
+The warden looks you up and down, hears the word *reeve*, and decides it is not worth his job to ask. The spear comes up.
+
+- » **Out onto the road**
+
+## `gate-blocked-bluff-failed` · story
 
 The warden looks at you for a long moment. "The reeve's business," he says. "The reeve was in my guardhouse an hour ago, and he never mentioned you." The spear stays where it is.
 
 - » **Back into the square**
 
-## `gate-wall-caught` · story
+## `gate-blocked-wall` · story
+
+You find a low stretch of the wall between two lanterns, and drop down on the far side into wet grass. Nobody shouts.
+
+- » **Out onto the road**
+
+## `gate-blocked-wall-failed` · story
 
 You find a low stretch of the wall, but the watch walks it more often than you bargained for. A lantern swings your way, and you spend the rest of the night in a barn, waiting for it to go away.
 
@@ -1056,26 +1070,6 @@ A wall of lashed timber rings the hollow, with a watch-post looming over its onl
 
 - when Wren in the party · not `captives-freed`: "Wren crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. "That's where they keep them…"
 
-## `den-lock-jammed` · story
-
-Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.
-
-- » **Back to the main gate**
-
-## `den-picked` · story
-
-Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.
-
-As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. "Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One lamb a winter, for sitting by their door in the dark." Then the water moves again, and she is gone.
-
-- » **Slip inside**
-
-## `den-slipped` · story
-
-You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
-
-- » **Keep low and move in among the tents**
-
 ## `gate-fight` · battle
 
 <sub>reads: return?</sub>
@@ -1117,6 +1111,36 @@ The big one goes down last, folding across the gateway.
 *Talk refused:*
 
 The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
+
+## `gate-signal` · story
+
+You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
+
+<sub>(shared with: `gate-sneak`)</sub>
+
+- » **Keep low and move in among the tents**
+
+## `gate-lock` · story
+
+Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.
+
+As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. "Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One lamb a winter, for sitting by their door in the dark." Then the water moves again, and she is gone.
+
+- » **Slip inside**
+
+## `gate-lock-failed` · story
+
+Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.
+
+- » **Back to the main gate**
+
+## `gate-sneak` · story
+
+You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
+
+<sub>(shared with: `gate-signal`)</sub>
+
+- » **Keep low and move in among the tents**
 
 ## `gate-signal-blown` · story
 
