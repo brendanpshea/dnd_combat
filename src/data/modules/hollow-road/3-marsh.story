@@ -223,64 +223,46 @@ The dead horse still lies across the trail.
 > Keep to the trail → @hub  #ok
 
 # barrow
+kind: obstacle
 art: 🪦
+fight: barrow-haunt on corridor
+done: barrow-cleared
+return: Back to the trail
+leave: Leave the dead their peace  #leave
 Half-swallowed by the reeds lies a barrow-mound, its stones worn smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.
 Something gold glints in the dark below. So does something that moves without touching the water.
 again:
 The barrow-mound still breathes cold air through its cracked capstone. Down in the dark, the grave-goods still glint, and something still waits beside them.
-> Go down into the dark → barrow-fight  #in
-> [Religion DC 13] Say the old words over the capstone, and close it → barrow-settled  #settle
-  once hide
-  check religion 13 → barrow-fight
-> Leave the dead their peace → @hub  #leave
-
-# barrow-settled
-noBack: true
-art: 🪦
-You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
-> Back to the trail → @hub  #ok
-  do +barrow-cleared; xp avoided barrow-haunt
-
-# barrow-fight
-kind: battle
-encounterId: barrow-haunt
-mapId: corridor
+fight > Go down into the dark  #in
 The cold answers you. Two figures rise out of the grave-earth. One wears the form of a man, but it is nothing now but spite and winter air. It passes *through* the barrow stones to reach you. The other climbs up out of the grave-goods in rotten mail. It holds a green-bronze sword in its grey hand, and a cold light burns where its eyes should be.
 again:
 The two cold dead are waiting this time, down among the grave-goods. One is nothing but winter air, and one wears rotten mail and carries a sword. They come for you again.
-won → @hub
-  The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
-  do +barrow-cleared; gold 45
+answer religion 13 > Say the old words over the capstone, and close it  #settle
+You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.
+won:
+The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
+do gold 45
 
 # thicket
+kind: obstacle
 art: 🕸️
+fight: spiders on marsh
+done: thicket-cleared
+return: Back to the trail
+leave: Give the webs a wide berth  #leave
 Pale silk sheets the reeds ahead, and the reeds under it have gone grey and still. Bundles hang in the webbing at the height a man's shoulders would be. Some of the bundles are man-shaped.
 Something spins here, and it has been eating well off the {ashfang}'s road. But those cocoons will have purses.
 again:
 The grey webs still sheet the reeds, and the man-shaped bundles still hang in them. The spinners have not gone anywhere.
-> Cut your way in → thicket-fight  #in
-> [Survival DC 12] Fire the dry reeds upwind, and let the webs burn → thicket-burned  #burn
-  once hide
-  check survival 12 → thicket-fight
-> Give the webs a wide berth → @hub  #leave
-
-# thicket-burned
-noBack: true
-art: 🔥
-You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
-> Back to the trail → @hub  #ok
-  do +thicket-cleared; xp avoided spiders
-
-# thicket-fight
-kind: battle
-encounterId: spiders
-mapId: marsh
+fight > Cut your way in  #in
 The silk trembles over your heads. Four giant spiders drop from the high webbing on every side.
 again:
 The spiders are waiting in the high webbing this time. They drop the moment your blade touches the silk.
-won → @hub
-  The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
-  do +thicket-cleared; gold 60; item potion-healing x1
+answer survival 12 > Fire the dry reeds upwind, and let the webs burn  #burn
+You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.
+won:
+The final spider curls in on itself like a burnt glove. The cocoons hold two dissolved raiders, their purses intact. There is also one caravan guard, still breathing. He presses his last healing potion into your hands, and he does not stop thanking you until the reeds swallow the sound.
+do gold 60; item potion-healing x1
 
 # ambush
 kind: check

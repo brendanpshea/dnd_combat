@@ -263,36 +263,29 @@ You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddl
 > Set out on the marsh road → road-out  #go
 
 # mill
-kind: dialogue
+kind: obstacle
+as: dialogue
 @npc: {"id":"npc-osk","name":"{osk} the Miller","portraitId":"npc-commoner","emoji":"🌾"}
 art: 🌾
+fight: cockatrice-flock on open
+done: mill-saved
+back: square/city
+return: Back to the square
+leave: Leave him to his hedgerows  #later
 The mill's sails hang still, and the miller meets you at a barred door with a boat-hook in both hands. "Not raiders, this one. Something's roosting in my hedgerows — turned my dog stiff as a fencepost. *Stone*, you understand. Won't nobody come near the mill now, and the grain's standing."
 "Clear them out and there's coin in it. Just — don't let the ugly things *touch* you."
 again:
 {osk} the miller still has his boat-hook in both hands. "Back, are you? The ugly things are still in my hedgerows, and my grain's still standing."
-> [Nature DC 13] Smoke them out of the hedge with green wood → mill-smoked  #smoke
-  once hide
-  check nature 13 → mill-fight
-> Beat the hedgerows → mill-fight  #help
-> Leave him to his hedgerows → square/city  #later
-
-# mill-smoked
-noBack: true
-art: 🌾
+answer nature 13 > Smoke them out of the hedge with green wood  #smoke
 You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
-> Back to the square → square/city  #ok
-  do +mill-saved; gold 35; xp avoided cockatrice-flock
-
-# mill-fight
-kind: battle
-encounterId: cockatrice-flock
-mapId: open
+do gold 35
+fight > Beat the hedgerows  #help
 Two bat-winged things burst out of the hedge in a fury of beak and scale, hissing like geese. "Cockatrices!" the miller shouts from his door. "Mind the beaks!"
 again:
 The cockatrices are still in the hedge, and this time they come out of it the moment you reach the gate. Mind the bite.
-won → square/city
-  The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.
-  do +mill-saved; gold 35
+won:
+The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.
+do gold 35
 
 # spy-bolts
 kind: battle
