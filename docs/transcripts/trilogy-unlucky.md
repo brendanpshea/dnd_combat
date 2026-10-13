@@ -1503,8 +1503,6 @@ Bedrolls in rows, all empty. Boots stand by some of them.
 
 **» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
 
-_Journal (quest): Bring the Captives Home_
-
 `[Persuasion DC 9 — Elaine the Holy rolls 6 — failed]`
 
 <sub>scene `vex-refuses`</sub>

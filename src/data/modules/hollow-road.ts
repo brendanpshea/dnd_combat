@@ -131,7 +131,22 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
         // The kennels, and the plunder their keeper guarded.
         { name: 'Kennels', event: { scene: 'den-hyenas', until: [{ kind: 'flag', flag: 'kennel-cleared' }] }, search: 'den-cache' },
         // What the hag is paid in: the captives, penned behind the kennels.
-        { name: 'The Pens', event: { scene: 'den-pens-door' } },
+        { name: 'The Pens', text: 'Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in.',
+          hostage: {
+            who: 'the captives', as: { freed: 'captives-freed', taken: 'captives-taken' },
+            found: [
+              'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.',
+              'The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',
+              'A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.',
+            ],
+            freed: ['The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We\'ll make the gate," the carter says. He stops at the pen door. "That chief of theirs. I knew him as a boy, cutting reeds. His mother\'s house was the first the water took. He has not forgotten it." He hitches the girl higher. "Find us in {thornwick}, after." They slip off toward the dark of the marsh road, not making a sound.'],
+            gone: ['There are no pigs in the pen, and no people. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.',
+              'Something has come for them out of the water, and gone again. In the corner lies one small shoe.'],
+            onFreed: [{ kind: 'npc', npc: 'wren', attitude: 1 }],
+            guard: { dc: 13, fight: 'pen-watch' },
+            quest: { title: 'Bring the Captives Home',
+              body: 'Behind the kennels in the {ashfang} den is a pen where the chief keeps captives for the {reedwife}: a carter, his granddaughter and two reed-cutters. She comes for them when the moon goes dark. Get them out before she does.' },
+          } },
         // The hall is settled once the {reedwife} is: dead or bound, both of
         // which mark her `met`.
         { name: 'The Chief\'s Hall', where: 'goal',
@@ -151,14 +166,14 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   dawns: [
     { day: 4, text: [
       'Last night\'s moon was a thin paring of light, and it was down long before dawn.',
-      { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: true }],
+      { if: [{ kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'vex', met: true }],
         text: '{vex} said the chief keeps people in the pen behind the kennels for the {reedwife}. The reed-cutters in town are counting the nights to the dark of the moon. Three more nights of this one, at most.' },
       // Woken on the marsh road or in town (`at` names no third map but the
       // den), or in the den itself, or on {mira}'s cot after falling there.
       ...(['square', 'trail'] as const).map((hub) => ({
-        if: [{ kind: 'notFlag' as const, flag: 'pens-settled' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub: hub === 'trail' ? 'trail/delve' : 'square/city' }],
+        if: [{ kind: 'notFlag' as const, flag: 'captives-freed' }, { kind: 'npc' as const, npc: 'vex', met: false }, { kind: 'at' as const, hub: hub === 'trail' ? 'trail/delve' : 'square/city' }],
         text: 'Somewhere out there the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' })),
-      { if: [{ kind: 'notFlag', flag: 'pens-settled' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner/delve' }],
+      { if: [{ kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'vex', met: false }, { kind: 'at', hub: 'inner/delve' }],
         text: 'Somewhere in the den the {ashfang} still have the carter they took off the marsh road, and his granddaughter. The reed-cutters were counting the nights toward something, and this moon will not last many more.' },
       // The scout's deadline (the next dawn's `scout-bled-out`), while she is
       // still out there unfound: neither met nor stepped round.

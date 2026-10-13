@@ -63,7 +63,9 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // And again for acts (Oct 2026): the proof walks each act with its own
   // flags and what the acts hand each other, and forgets a flag nothing
   // ahead can read. 1.74M states to 395k.
-  'hollow-road': { flags: 36, conditional: 82, states: 450_000 },
+  // And for the generic hostage (Oct 2026): the den's captives are a
+  // RequiredRoom.hostage, not five scenes and four flags. 395k to 277k.
+  'hollow-road': { flags: 34, conditional: 82, states: 300_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },

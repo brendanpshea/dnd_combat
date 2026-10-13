@@ -3,7 +3,7 @@
 import type { Scene } from '../../../adventure/types.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';
-import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, PENS_LEAD, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
+import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
 
 export const SCENES: Record<string, Scene> = {
   "road": {
@@ -1511,7 +1511,7 @@ export const SCENES: Record<string, Scene> = {
     text: [
       "A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.",
       {
-        if: [{ kind: "companion", companion: "wren" }, { kind: "notFlag", flag: "pens-settled" }],
+        if: [{ kind: "companion", companion: "wren" }, { kind: "notFlag", flag: "captives-freed" }],
         text: "{wren} crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. \"That's where they keep them,\" she says. \"The carter, and the girl. Whatever else you do in there, do that first.\"",
       },
     ],
@@ -1722,113 +1722,6 @@ export const SCENES: Record<string, Scene> = {
       effects: [{ kind: "gold", amount: 40 }, { kind: "setFlag", flag: "pit-won" }],
     },
   },
-  "den-pens-door": {
-    id: "den-pens-door",
-    kind: "story",
-    noBack: true,
-    art: { imageId: "loc-camp", emoji: "⛓️" },
-    text: [
-      "Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.",
-    ],
-    next: [
-      {
-        id: "look",
-        label: "Look in the pen",
-        to: "den-pens",
-        hideWhenBlocked: true,
-        requires: [{ kind: "notFlag", flag: "captives-taken" }],
-        effects: [{ kind: "setFlag", flag: "pens-found" }, ...[PENS_LEAD].flat()],
-      },
-      {
-        id: "look-late",
-        label: "Look in the pen",
-        to: "den-pens-empty",
-        hideWhenBlocked: true,
-        requires: [{ kind: "flag", flag: "captives-taken" }],
-        effects: [{ kind: "setFlag", flag: "pens-found" }],
-      },
-    ],
-  },
-  "den-pens-empty": {
-    id: "den-pens-empty",
-    kind: "story",
-    noBack: true,
-    art: { imageId: "loc-camp", emoji: "⛓️" },
-    assumes: [{ kind: "flag", flag: "captives-taken" }],
-    text: [
-      "There are no pigs in the pen, and no people. It was only a rat in the straw. The chain hangs open, and wet, webbed footprints lead from the gate toward the marsh. None lead back.",
-      "Something has come for them out of the water, and gone again. In the corner lies one small shoe.",
-    ],
-    next: [{ id: "ok", label: "Back to the den", to: "@hub" }],
-  },
-  "den-pens": {
-    id: "den-pens",
-    kind: "story",
-    art: { imageId: "loc-camp", emoji: "⛓️" },
-    assumes: [{ kind: "notFlag", flag: "captives-taken" }],
-    back: true,
-    text: [
-      "There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.",
-      "The girl has one shoe, on her right foot. \"They said the lady in the water comes for us when the moon goes dark,\" the carter whispers. \"My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people.\" He swallows. \"Are you the reeve's men?\"",
-      "A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.",
-    ],
-    next: [
-      {
-        id: "pick",
-        label: "[Sleight of Hand DC 13] Work the padlock open quietly",
-        to: "den-pens-freed",
-        once: true,
-        check: { skill: "sleight-of-hand", dc: 13, failTo: "pens-alarm" },
-      },
-      { id: "hack", label: "Hack through the stakes, and never mind the noise", to: "pens-alarm" },
-    ],
-  },
-  "pens-alarm": {
-    id: "pens-alarm",
-    kind: "battle",
-    encounterId: "pen-watch",
-    mapId: "ruins",
-    loot: false,
-    noFlee: true,
-    intro: [
-      "The noise carries. The raider by the fire jumps up and yells, and the den's watch comes running with him. Two hulking raiders with greataxes, four archers and an orc spread out in front of the pen. The carter pulls the girl down into the straw.",
-    ],
-    onWin: {
-      to: "den-pens-freed",
-      effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 3 }],
-      text: [
-        "The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.",
-      ],
-    },
-    onLoss: {
-      to: "@hub",
-      text: [
-        "You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.",
-      ],
-      effects: [{ kind: "setFlag", flag: "captives-taken" }, { kind: "alarm", dungeon: "inner/delve", amount: 3 }],
-    },
-  },
-  "den-pens-freed": {
-    id: "den-pens-freed",
-    kind: "story",
-    art: { imageId: "loc-camp", emoji: "⛓️" },
-    noBack: true,
-    text: [
-      "The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. \"We'll make the gate,\" the carter says. He stops at the pen door. \"That chief of theirs. I knew him as a boy, cutting reeds. His mother's house was the first the water took. He has not forgotten it.\" He hitches the girl higher. \"Find us in {thornwick}, after.\" They slip off toward the dark of the marsh road, not making a sound.",
-    ],
-    next: [
-      {
-        id: "ok",
-        label: "Back to the den",
-        to: "@hub",
-        effects: [
-          { kind: "setFlag", flag: "captives-freed" },
-          { kind: "setFlag", flag: "pens-settled" },
-          { kind: "npc", npc: "wren", attitude: 1 },
-        ],
-      },
-    ],
-  },
   "den-hyenas": {
     id: "den-hyenas",
     kind: "battle",
@@ -1902,11 +1795,11 @@ export const SCENES: Record<string, Scene> = {
       "At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.",
       "\"**{vex}**,\" he says. \"The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen.\" A thin smile, gone as fast. \"So what do you offer a man for stepping aside?\"",
       {
-        if: [{ kind: "notFlag", flag: "pens-found" }, { kind: "notFlag", flag: "captives-taken" }],
+        if: [{ kind: "notFlag", flag: "captives-freed" }, { kind: "notFlag", flag: "captives-taken" }],
         text: "Before you can answer, he tips his head back toward the kennels. \"One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water.\" He looks into his fire. \"I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels.\"",
       },
       {
-        if: [{ kind: "notFlag", flag: "pens-found" }, { kind: "flag", flag: "captives-taken" }],
+        if: [{ kind: "flag", flag: "captives-taken" }],
         text: "Before you can answer, he tips his head back toward the kennels. \"There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark.\" He looks into his fire. \"Go and look, if you want to know what the chief sold.\"",
       },
       {
@@ -1914,7 +1807,7 @@ export const SCENES: Record<string, Scene> = {
         text: "\"Not tonight, though.\" He doesn't take his eyes off the fire. \"The whole den is up and looking for you. I'm not turning my coat in front of all of them.\"",
       },
     ],
-    next: [...[VEX_OFFERS(true)].flat(), ...[VEX_OFFERS(false)].flat()],
+    next: [...[VEX_OFFERS].flat()],
   },
   "vex-turned": {
     id: "vex-turned",
@@ -2106,7 +1999,7 @@ export const SCENES: Record<string, Scene> = {
         to: "vargan-turns",
         hideWhenBlocked: true,
         attempt: "turn",
-        requires: [{ kind: "flag", flag: "pens-settled" }, { kind: "npc", npc: "vex", notFate: ["turned"] }],
+        requires: [{ kind: "flag", flag: "captives-freed" }, { kind: "npc", npc: "vex", notFate: ["turned"] }],
         check: { skill: "persuasion", dc: 10, failTo: "boss" },
       },
       {
@@ -2115,7 +2008,7 @@ export const SCENES: Record<string, Scene> = {
         to: "vargan-turns-alone",
         hideWhenBlocked: true,
         attempt: "turn",
-        requires: [{ kind: "flag", flag: "pens-settled" }, { kind: "npc", npc: "vex", fate: "turned" }],
+        requires: [{ kind: "flag", flag: "captives-freed" }, { kind: "npc", npc: "vex", fate: "turned" }],
         check: { skill: "persuasion", dc: 10, failTo: "boss-unguarded" },
       },
       {
@@ -2821,11 +2714,6 @@ export const ACTS: Record<string, string> = {
   "gate-signal-blown": "den",
   "gate-caught": "den",
   "den-muster": "den",
-  "den-pens-door": "den",
-  "den-pens-empty": "den",
-  "den-pens": "den",
-  "pens-alarm": "den",
-  "den-pens-freed": "den",
   "den-hyenas": "den",
   "den-cache": "den",
   "vex-parley": "den",

@@ -26,15 +26,6 @@ export const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-
 /** Past the gate by any road: the gate-signal lead is done with, used or not. */
 export const SIGNAL_SPENT: Effect = { kind: 'setFlag', flag: 'signal-spent' };
 
-export const PENS_LEAD: Effect = { kind: 'journal', entry: { id: 'lead-pens', kind: 'quest',
-  resolvedBy: 'pens-settled', failedBy: 'captives-taken',
-  stages: [
-    { text: 'Find the pen behind the kennels', done: [{ kind: 'flag', flag: 'pens-found' }] },
-    { text: 'Get them out before the moon goes dark', done: [{ kind: 'flag', flag: 'pens-settled' }] },
-  ],
-  title: 'Bring the Captives Home',
-  body: 'Behind the kennels in the {ashfang} den is a pen where the chief keeps captives for the {reedwife}: a carter, his granddaughter and two reed-cutters. She comes for them when the moon goes dark. Get them out before she does.' } };
-
 /** Past the hollow: the reveal, and the wet way in (`trail-wet`) no longer
  *  matters, so the den is not searched twice over for it. */
 export const HOLLOW_PASSED: Effect[] = [...HAG_LEARNED, { kind: 'clearFlag', flag: 'trail-wet' }];
@@ -185,29 +176,23 @@ export const AFTERMATH_CLAIMS: Choice[] = [
 
 export const SPY_LIST = 'Under a loose board at the back of his stall lies a list of every caravan that has left {thornwick} this month. Someone has ticked off each one. The ticks are his. The names are in another man\'s writing. "The chief sends the names," he babbles. "He knows every carter in this town. I only tick them off."';
 
-export const VEX_OFFERS = (lead: boolean): Choice[] => {
-  const pens: Requirement = lead ? { kind: 'notFlag', flag: 'pens-settled' } : { kind: 'flag', flag: 'pens-settled' };
-  const told: Effect[] = lead ? [PENS_LEAD] : [];
-  const id = (base: string) => (lead ? base : `${base}-settled`);
-  return [
-    // Wren's tip (`know-vex`): the party knows what he wants before he says it.
-    { id: id('wren'), label: '[Persuasion DC 9] "{wren} says you want out. The reeve\'s pardon, and a road."', to: 'vex-turned',
-      attempt: 'vex-pardon', requires: [{ kind: 'flag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
-      effects: told, check: { skill: 'persuasion', dc: 9, failTo: 'vex-refuses' } },
-    { id: id('persuade'), label: '[Persuasion DC 13] Offer him the reeve\'s pardon and a road out', to: 'vex-turned',
-      attempt: 'vex-pardon', requires: [{ kind: 'notFlag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
-      effects: told, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
+export const VEX_OFFERS: Choice[] = [
+  // Wren's tip (`know-vex`): the party knows what he wants before he says it.
+    { id: 'wren', label: '[Persuasion DC 9] "{wren} says you want out. The reeve\'s pardon, and a road."', to: 'vex-turned',
+      attempt: 'vex-pardon', requires: [{ kind: 'flag', flag: 'know-vex' }, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
+      check: { skill: 'persuasion', dc: 9, failTo: 'vex-refuses' } },
+    { id: 'persuade', label: '[Persuasion DC 13] Offer him the reeve\'s pardon and a road out', to: 'vex-turned',
+      attempt: 'vex-pardon', requires: [{ kind: 'notFlag', flag: 'know-vex' }, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
+      check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
     // Cowed, not bought (`vex-threatened`, this chapter's own): no pardon
     // was offered. Bought or cowed, he is `turned`.
-    { id: id('intimidate'), label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
-      attempt: 'vex-threat', requires: [pens, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
-      effects: [...told, { kind: 'setFlag', flag: 'vex-threatened' }],
+    { id: 'intimidate', label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
+      attempt: 'vex-threat', requires: [{ kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
+      effects: [{ kind: 'setFlag', flag: 'vex-threatened' }],
       check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses', failEffects: [{ kind: 'clearFlag', flag: 'vex-threatened' }] } },
-    { id: id('refuse'), label: 'Refuse to deal with a raider', to: 'vex-dismissed',
-      requires: [pens], hideWhenBlocked: true,
-      effects: [{ kind: 'npc', npc: 'vex', met: true }, ...told] },
-  ];
-};
+    { id: 'refuse', label: 'Refuse to deal with a raider', to: 'vex-dismissed',
+      effects: [{ kind: 'npc', npc: 'vex', met: true }] },
+];
 
 export const MIRA = speaker(NPCS.mira!, { label: '{mira} the Innkeeper' });
 export const SCOUT = speaker(NPCS.wren!, { label: 'Wounded Scout', portraitId: 'npc-wounded', emoji: '🤕' });
