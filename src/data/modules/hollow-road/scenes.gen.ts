@@ -3,7 +3,7 @@
 import type { Scene } from '../../../adventure/types.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';
-import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, TURN_UNREAD, TURN_UNREAD_FRESH, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED } from './parts.js';
+import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, GATE_QUIET, HOLLOW_PASSED, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, TURN_UNREAD, TURN_UNREAD_FRESH, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED } from './parts.js';
 
 export const SCENES: Record<string, Scene> = {
   "road": {
@@ -566,39 +566,44 @@ export const SCENES: Record<string, Scene> = {
       },
     ],
     next: [
+      { id: "ok", label: "Back into the square", to: "square/city" },
       {
         id: "bluff",
         label: "[Deception DC 13] \"Reeve's business. Stand aside.\"",
-        to: "gate-slipped",
+        to: "gate-blocked-bluff",
         once: true,
         hideWhenBlocked: true,
-        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 5 }],
-        check: {
-          skill: "deception",
-          dc: 13,
-          failTo: "gate-bluff-called",
-          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -5 }],
-        },
+        check: { skill: "deception", dc: 13, failTo: "gate-blocked-bluff-failed" },
       },
       {
         id: "wall",
         label: "[Stealth DC 12] Go over the wall after dark",
-        to: "gate-slipped",
+        to: "gate-blocked-wall",
         once: true,
         hideWhenBlocked: true,
-        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 5 }, { kind: "passDay" }],
-        check: {
-          skill: "stealth",
-          dc: 12,
-          failTo: "gate-wall-caught",
-          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -5 }, { kind: "passDay" }],
-        },
+        check: { skill: "stealth", dc: 12, failTo: "gate-blocked-wall-failed" },
       },
-      { id: "ok", label: "Back into the square", to: "square/city" },
     ],
   },
-  "gate-bluff-called": {
-    id: "gate-bluff-called",
+  "gate-blocked-bluff": {
+    id: "gate-blocked-bluff",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-village", emoji: "🚧" },
+    text: [
+      "The warden looks you up and down, hears the word *reeve*, and decides it is not worth his job to ask. The spear comes up.",
+    ],
+    next: [
+      {
+        id: "go",
+        label: "Out onto the road",
+        to: "gate-slipped",
+        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 5 }],
+      },
+    ],
+  },
+  "gate-blocked-bluff-failed": {
+    id: "gate-blocked-bluff-failed",
     kind: "story",
     noBack: true,
     art: { imageId: "loc-village", emoji: "🚧" },
@@ -607,15 +612,39 @@ export const SCENES: Record<string, Scene> = {
     ],
     next: [{ id: "ok", label: "Back into the square", to: "square/city" }],
   },
-  "gate-wall-caught": {
-    id: "gate-wall-caught",
+  "gate-blocked-wall": {
+    id: "gate-blocked-wall",
     kind: "story",
     noBack: true,
-    art: { imageId: "loc-village", emoji: "🌙" },
+    art: { imageId: "loc-village", emoji: "🚧" },
+    text: [
+      "You find a low stretch of the wall between two lanterns, and drop down on the far side into wet grass. Nobody shouts.",
+    ],
+    next: [
+      {
+        id: "go",
+        label: "Out onto the road",
+        to: "gate-slipped",
+        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 5 }, { kind: "passDay" }],
+      },
+    ],
+  },
+  "gate-blocked-wall-failed": {
+    id: "gate-blocked-wall-failed",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-village", emoji: "🚧" },
     text: [
       "You find a low stretch of the wall, but the watch walks it more often than you bargained for. A lantern swings your way, and you spend the rest of the night in a barn, waiting for it to go away.",
     ],
-    next: [{ id: "ok", label: "Back into the square at first light", to: "square/city" }],
+    next: [
+      {
+        id: "ok",
+        label: "Back into the square at first light",
+        to: "square/city",
+        effects: [{ kind: "passDay" }],
+      },
+    ],
   },
   "gate-slipped": {
     id: "gate-slipped",
@@ -1526,46 +1555,27 @@ export const SCENES: Record<string, Scene> = {
       {
         id: "signal",
         label: "[Deception DC 10] Call the stolen gate-signal up to the post",
-        to: "den-slipped",
+        to: "gate-signal",
         hideWhenBlocked: true,
         requires: [{ kind: "flag", flag: "know-signal" }, { kind: "notFlag", flag: "den-entered" }],
-        effects: [{ kind: "setFlag", flag: "den-entered" }, { kind: "setFlag", flag: "signal-spent" }],
-        check: {
-          skill: "deception",
-          dc: 10,
-          failTo: "gate-signal-blown",
-          failEffects: [{ kind: "clearFlag", flag: "den-entered" }],
-        },
+        check: { skill: "deception", dc: 10, failTo: "gate-signal-blown" },
       },
       {
         id: "lock",
         label: "[Rogue · Sleight of Hand DC 10] Pick the lock on the little water-gate",
-        to: "den-picked",
+        to: "gate-lock",
         once: true,
         hideWhenBlocked: true,
         requires: [{ kind: "classInParty", classId: "rogue" }, { kind: "notFlag", flag: "den-entered" }],
-        effects: [{ kind: "setFlag", flag: "den-entered" }],
-        check: {
-          skill: "sleight-of-hand",
-          dc: 10,
-          failTo: "den-lock-jammed",
-          failEffects: [{ kind: "clearFlag", flag: "den-entered" }],
-        },
+        check: { skill: "sleight-of-hand", dc: 10, failTo: "gate-lock-failed" },
       },
       {
         id: "sneak",
         label: "[Stealth DC 13] Slip over the wall together",
-        to: "den-slipped",
+        to: "gate-sneak",
         hideWhenBlocked: true,
         requires: [{ kind: "notFlag", flag: "den-entered" }],
-        effects: [{ kind: "setFlag", flag: "den-entered" }],
-        check: {
-          skill: "stealth",
-          dc: 13,
-          failTo: "gate-caught",
-          failEffects: [{ kind: "clearFlag", flag: "den-entered" }],
-          roller: "group",
-        },
+        check: { skill: "stealth", dc: 13, failTo: "gate-caught", roller: "group" },
       },
       {
         id: "fight",
@@ -1573,44 +1583,6 @@ export const SCENES: Record<string, Scene> = {
         to: "gate-fight",
         hideWhenBlocked: true,
         requires: [{ kind: "notFlag", flag: "den-entered" }],
-      },
-    ],
-  },
-  "den-lock-jammed": {
-    id: "den-lock-jammed",
-    kind: "story",
-    noBack: true,
-    art: { imageId: "loc-camp", emoji: "🗝️" },
-    text: [
-      "Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.",
-    ],
-    next: [{ id: "back", label: "Back to the main gate", to: "gate" }],
-  },
-  "den-picked": {
-    id: "den-picked",
-    kind: "story",
-    art: { imageId: "loc-camp", emoji: "🗝️" },
-    noBack: true,
-    text: [
-      "Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.",
-      "As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. \"Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One {door-price} a winter, for sitting by their door in the dark.\" Then the water moves again, and she is gone.",
-    ],
-    next: [{ id: "in", label: "Slip inside", to: "inner", effects: [...[GATE_PASSED].flat()] }],
-  },
-  "den-slipped": {
-    id: "den-slipped",
-    kind: "story",
-    noBack: true,
-    art: { imageId: "loc-camp", emoji: "🤫" },
-    text: [
-      "You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.",
-    ],
-    next: [
-      {
-        id: "in",
-        label: "Keep low and move in among the tents",
-        to: "inner",
-        effects: [...[GATE_PASSED].flat()],
       },
     ],
   },
@@ -1625,15 +1597,6 @@ export const SCENES: Record<string, Scene> = {
     again: [
       "The watch-post saw you coming this time. The big one already fills the gateway, and his gnolls yammer behind him while the bone-hung one howls and their hyena slavers.",
     ],
-    onWin: {
-      to: "inner",
-      text: ["The big one goes down last, folding across the gateway."],
-      effects: [
-        { kind: "setFlag", flag: "den-entered" },
-        { kind: "setFlag", flag: "signal-spent" },
-        { kind: "alarm", dungeon: "inner/delve", amount: 3 },
-      ],
-    },
     parley: {
       skill: "deception",
       dc: 15,
@@ -1649,6 +1612,89 @@ export const SCENES: Record<string, Scene> = {
         effects: [{ kind: "setFlag", flag: "den-entered" }, ...[GATE_PASSED].flat()],
       },
     },
+    onWin: {
+      to: "inner",
+      text: ["The big one goes down last, folding across the gateway."],
+      effects: [
+        { kind: "setFlag", flag: "den-entered" },
+        { kind: "setFlag", flag: "signal-spent" },
+        { kind: "alarm", dungeon: "inner/delve", amount: 3 },
+      ],
+    },
+  },
+  "gate-signal": {
+    id: "gate-signal",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-camp", emoji: "🏚️" },
+    text: [
+      "You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.",
+    ],
+    next: [
+      {
+        id: "in",
+        label: "Keep low and move in among the tents",
+        to: "inner",
+        effects: [
+          { kind: "setFlag", flag: "den-entered" },
+          { kind: "xp", amount: avoidedFightXP("den-gate") },
+          ...[GATE_QUIET].flat(),
+        ],
+      },
+    ],
+  },
+  "gate-lock": {
+    id: "gate-lock",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-camp", emoji: "🏚️" },
+    text: [
+      "Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.",
+      "As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. \"Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One {door-price} a winter, for sitting by their door in the dark.\" Then the water moves again, and she is gone.",
+    ],
+    next: [
+      {
+        id: "in",
+        label: "Slip inside",
+        to: "inner",
+        effects: [
+          { kind: "setFlag", flag: "den-entered" },
+          { kind: "xp", amount: avoidedFightXP("den-gate") },
+          ...[GATE_QUIET].flat(),
+        ],
+      },
+    ],
+  },
+  "gate-lock-failed": {
+    id: "gate-lock-failed",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-camp", emoji: "🏚️" },
+    text: [
+      "Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.",
+    ],
+    next: [{ id: "back", label: "Back to the main gate", to: "gate" }],
+  },
+  "gate-sneak": {
+    id: "gate-sneak",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-camp", emoji: "🏚️" },
+    text: [
+      "You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.",
+    ],
+    next: [
+      {
+        id: "in",
+        label: "Keep low and move in among the tents",
+        to: "inner",
+        effects: [
+          { kind: "setFlag", flag: "den-entered" },
+          { kind: "xp", amount: avoidedFightXP("den-gate") },
+          ...[GATE_QUIET].flat(),
+        ],
+      },
+    ],
   },
   "gate-signal-blown": {
     id: "gate-signal-blown",
@@ -2479,8 +2525,10 @@ export const ACTS: Record<string, string> = {
   "spy-stalk": "thornwick",
   "spy-grabbed": "thornwick",
   "gate-blocked": "thornwick",
-  "gate-bluff-called": "thornwick",
-  "gate-wall-caught": "thornwick",
+  "gate-blocked-bluff": "thornwick",
+  "gate-blocked-bluff-failed": "thornwick",
+  "gate-blocked-wall": "thornwick",
+  "gate-blocked-wall-failed": "thornwick",
   "gate-slipped": "thornwick",
   "mill": "thornwick",
   "mill-fight": "thornwick",
@@ -2523,10 +2571,11 @@ export const ACTS: Record<string, string> = {
   "ambush-sprung": "marsh",
   "hollow-won": "marsh",
   "gate": "den",
-  "den-lock-jammed": "den",
-  "den-picked": "den",
-  "den-slipped": "den",
   "gate-fight": "den",
+  "gate-signal": "den",
+  "gate-lock": "den",
+  "gate-lock-failed": "den",
+  "gate-sneak": "den",
   "gate-signal-blown": "den",
   "gate-caught": "den",
   "den-muster": "den",

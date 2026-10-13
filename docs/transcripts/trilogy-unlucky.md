@@ -99,16 +99,6 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 "Or ask Mira at the Wander-Inn. She hears everything."
 
-**» [Deception DC 13] "Reeve's business. Stand aside."**
-
-A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.
-
-`[Deception DC 13 — Ash the Sneaky rolls 11 — failed]`
-
-<sub>scene `gate-bluff-called`</sub>
-
-The warden looks at you for a long moment. "The reeve's business," he says. "The reeve was in my guardhouse an hour ago, and he never mentioned you." The spear stays where it is.
-
 **» Back into the square**
 
 **↳ Thornwick** <sub>(map `square/city`)</sub>
@@ -155,7 +145,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 **» [Insight DC 12] Read what she isn't saying**
 
-`[Insight DC 12 — Elaine the Holy rolls 11 — failed]`
+`[Insight DC 12 — Elaine the Holy rolls 9 — failed]`
 
 <sub>scene `tavern-blank`</sub>
 
@@ -173,7 +163,7 @@ _(a paragraph shown before: “Mira leans on the bar and waits…”)_
 
 _-3 gold (97)_
 
-`[Persuasion DC 12 — Elaine the Holy rolls 6 — failed]`
+`[Persuasion DC 12 — Elaine the Holy rolls 8 — failed]`
 
 <sub>scene `tavern-round-flat`</sub>
 
@@ -343,7 +333,7 @@ Barely a mile from the gate the reeds erupt. A pack of goblins spills onto the r
 
 **» [Intimidation DC 13] Stare down the goblin boss**
 
-`[Intimidation DC 13 — Arthur the Bold rolls 8 — failed]`
+`[Intimidation DC 13 — Arthur the Bold rolls 7 — failed]`
 
 The goblin boss counts your blades, then counts his pack, and likes his own sum better. "Chief pays for heads," he cackles in bad Common. "Yours."
 
@@ -393,13 +383,13 @@ A hold crumbles and you slide back down in a clatter of stone. That way will not
 
 **» Pick across the rubble where it lies shallowest**
 
-`[Acrobatics DC 12 — Morgan Le Fey rolls 7 — failed]`
+`[Acrobatics DC 12 — Morgan Le Fey rolls 9 — failed]`
 
 The loose stone gives all at once and you scramble back before it takes an ankle with it.
 
 **» Look for a gentler way round — It will cost you time.**
 
-`[Survival DC 11 — Elaine the Holy rolls 6 — failed]`
+`[Survival DC 11 — Elaine the Holy rolls 8 — failed]`
 
 You follow the lip of the ravine downstream for an hour, and it only gets deeper. You trudge back to where you started.
 
@@ -527,7 +517,7 @@ Boot-prints and drag-marks cross the mud. Read them right, and they will lead yo
 
 **» [Survival DC 12] Follow the boot-prints**
 
-`[Survival DC 12 — Elaine the Holy rolls 8 — failed]`
+`[Survival DC 12 — Elaine the Holy rolls 7 — failed]`
 
 <sub>scene `tracks-lost`</sub>
 
@@ -755,7 +745,7 @@ The reeve's bounty still hangs on the board, a little greyer at the edges than b
 
 **» [Nature DC 13] Smoke them out of the hedge with green wood**
 
-`[Nature DC 13 — Morgan Le Fey rolls 10 — failed]`
+`[Nature DC 13 — Morgan Le Fey rolls 12 — failed]`
 
 <sub>scene `mill-fight`</sub>
 
@@ -871,7 +861,7 @@ The grey webs still sheet the reeds, and the man-shaped bundles still hang in th
 
 **» [Survival DC 12] Fire the dry reeds upwind, and let the webs burn**
 
-`[Survival DC 12 — Elaine the Holy rolls 10 — failed]`
+`[Survival DC 12 — Elaine the Holy rolls 8 — failed]`
 
 <sub>scene `thicket-fight` (again)</sub>
 
@@ -931,9 +921,9 @@ A wall of lashed timber rings the hollow, with a watch-post looming over its onl
 
 **» [Rogue · Sleight of Hand DC 10] Pick the lock on the little water-gate**
 
-`[Sleight of Hand DC 10 — Ash the Sneaky rolls 7 — failed]`
+`[Sleight of Hand DC 10 — Ash the Sneaky rolls 9 — failed]`
 
-<sub>scene `den-lock-jammed`</sub>
+<sub>scene `gate-lock-failed`</sub>
 
 Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted, and your pick snaps off inside it. No one on the wall hears, but that gate will not open now, for anyone.
 
@@ -945,7 +935,7 @@ _(a paragraph shown before: “A wall of lashed timber rings the…”)_
 
 **» [Stealth DC 13] Slip over the wall together**
 
-`[Group Stealth DC 13 — 0/4 pass — failed]`
+`[Group Stealth DC 13 — 1/4 pass — failed]`
 
 <sub>scene `gate-caught`</sub>
 
@@ -1093,7 +1083,7 @@ A horn brays from the watch-post, and the gate-runners answer. Something hairy a
 
 **» [Deception DC 15] Pass yourselves off as new blood**
 
-`[Deception DC 15 — Ash the Sneaky rolls 14 — failed]`
+`[Deception DC 15 — Ash the Sneaky rolls 6 — failed]`
 
 The big one sniffs you, slow and thorough. "Chief sent for nobody," he rumbles. "Chief never sends for anybody." Behind him the gnolls laugh harder.
 
@@ -1103,7 +1093,7 @@ _Level up: 2 → 3_
 
 The big one goes down last, folding across the gateway.
 
-_(a paragraph shown before: “A horn brays from the watch platform,…”)_
+A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.
 
 <sub>scene `inner`</sub>
 
@@ -1156,6 +1146,12 @@ _+40 gold (290)_
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → Cook Fire
+
+**→ Cook Fire** <sub>(room `m2`)</sub>
+
+A pot on the fire, and bowls set out for more than you would like to meet.
+
+→ Tents
 
 <sub>scene `inner/f1-patrol`</sub>
 
@@ -1479,8 +1475,6 @@ _(a paragraph shown before: “Inside the wall the den is tents…”)_
 
 **→ Cook Fire** <sub>(room `m2`)</sub>
 
-A pot on the fire, and bowls set out for more than you would like to meet.
-
 → Tents
 
 **→ Tents** <sub>(room `m3`)</sub>
@@ -1503,7 +1497,7 @@ Bedrolls in rows, all empty. Boots stand by some of them.
 
 **» [Persuasion DC 9] "Wren says you want out. The reeve's pardon, and a road."**
 
-`[Persuasion DC 9 — Elaine the Holy rolls 6 — failed]`
+`[Persuasion DC 9 — Elaine the Holy rolls 7 — failed]`
 
 <sub>scene `vex-refuses`</sub>
 
@@ -1787,7 +1781,7 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 **» [Religion DC 14] Speak his own liturgy back to him**
 
-`[Religion DC 14 — Morgan Le Fey rolls 12 — failed]`
+`[Religion DC 14 — Morgan Le Fey rolls 9 — failed]`
 
 <sub>scene `chapel-unheard`</sub>
 
@@ -1839,7 +1833,7 @@ The corpse-lights still sway over the black water, warm as windows. Wren keeps a
 
 **» [Survival DC 13] Find the dry way round the pools**
 
-`[Survival DC 13 — Elaine the Holy rolls 8 — failed]`
+`[Survival DC 13 — Elaine the Holy rolls 11 — failed]`
 
 <sub>scene `lights-sunk`</sub>
 
@@ -1923,7 +1917,7 @@ The ground shivered once in the night, deep down under the fen, the way a door s
 
 The open graves are as the dead left them. In the bottom of the nearest, the clay still holds the shape of the body that lay there, pressed in like a boot-print. A healer's eye might read how it got up.
 
-`[Medicine DC 12 — Elaine the Holy rolls 9 — failed]`
+`[Medicine DC 12 — Elaine the Holy rolls 5 — failed]`
 
 You get mud, turf, and the underside of a churchyard. You trample the edges of three graves, and what they had to say is gone under your boots.
 
@@ -1951,7 +1945,7 @@ The old raised road runs out into the fog, the same as before. The fen waits at 
 
 **» [Insight DC 13] Read what is wearing him**
 
-`[Insight DC 13 — Elaine the Holy rolls 7 — failed]`
+`[Insight DC 13 — Elaine the Holy rolls 6 — failed]`
 
 <sub>scene `chapel-unread`</sub>
 
@@ -2007,7 +2001,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 10 — failed]`
+`[History DC 14 — Morgan Le Fey rolls 13 — failed]`
 
 You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
@@ -2107,13 +2101,13 @@ A loose stone skitters across the floor, and every pick in the cut stops. After 
 
 **» Say the burial words over them — Halden said these over every grave in Thornwick.**
 
-`[Religion DC 13 — Morgan Le Fey rolls 10 — failed]`
+`[Religion DC 13 — Morgan Le Fey rolls 12 — failed]`
 
 The words come out in the wrong order. A few of the dead pause, but the call from below drowns you out, and the picks start again.
 
 **» Pick up a tool and fall into step**
 
-`[Deception DC 13 — Ash the Sneaky rolls 3 — failed]`
+`[Deception DC 13 — Ash the Sneaky rolls 7 — failed]`
 
 You swing too fast. The living always do. The nearest digger stops and turns its empty face toward you, then slowly goes back to work.
 
@@ -2161,13 +2155,21 @@ The ground shook again before dawn, longer this time, and hard enough to wake th
 
 → The Barrow-Guard
 
-<sub>scene `crypt-ambush`</sub>
+**→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
+<sub>scene `wights`</sub>
 
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
 
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+
+**Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
+
+**» [History DC 15] Relieve him of his post, the old way**
+
+`[History DC 15 — Morgan Le Fey rolls 11 — failed]`
+
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — lost**
 
@@ -2187,19 +2189,11 @@ A pair of small, muddy boots is drying by the fire, with a bow propped in the co
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-<sub>scene `wights`</sub>
+<sub>scene `wights` (again)</sub>
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
-
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides, heads turned toward you.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
-
-**» [History DC 15] Relieve him of his post, the old way**
-
-`[History DC 15 — Morgan Le Fey rolls 9 — failed]`
-
-You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — won**
 
@@ -2226,6 +2220,22 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore.
 
 The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best. Beside the throne, a barrow-soldier in green bronze draws its sword.
+
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
+
+**» Fall back to The Undercrypt**
+
+_(a paragraph shown before: “You think better of it and fall…”)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+
+→ The King's Chamber
+
+**→ The King's Chamber** <sub>(room `king`)</sub>
+
+<sub>scene `king` (again)</sub>
+
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light. His two household dead lurch out of the corners again, and his soldier draws its sword beside the throne.
 
 **Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
@@ -2317,25 +2327,25 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 15 — Morgan Le Fey rolls 9 — failed]`
+`[Religion DC 15 — Morgan Le Fey rolls 8 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — They are cut deeper than any prayer needs, and the door has shifted in its frame since.**
 
-`[Arcana DC 16 — Morgan Le Fey rolls 10 — failed]`
+`[Arcana DC 16 — Morgan Le Fey rolls 6 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They felt the ground shake, and they think their door is opening.**
 
-`[Persuasion DC 16 — Elaine the Holy rolls 12 — failed]`
+`[Persuasion DC 16 — Elaine the Holy rolls 6 — failed]`
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
 
 **» Let your wizard pick the lock the old masons cut — A ward, half-broken, and the door has shifted in its frame since.**
 
-`[Arcana DC 13 — Morgan Le Fey rolls 6 — failed]`
+`[Arcana DC 13 — Morgan Le Fey rolls 7 — failed]`
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
 
@@ -2763,7 +2773,7 @@ The drumming starts up under your boots again. The herd is still running its gul
 
 **» [Survival DC 11] Time the stampede**
 
-`[Survival DC 11 — Elaine the Holy rolls 9 — failed]`
+`[Survival DC 11 — Elaine the Holy rolls 8 — failed]`
 
 _-30 gold (1149)_
 
@@ -3005,7 +3015,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 9 — failed]`
+`[Deception DC 11 — Ash the Sneaky rolls 7 — failed]`
 
 <sub>scene `steading-balked`</sub>
 
@@ -3155,13 +3165,13 @@ Sedge has not looked away from you since you spoke. Nettle sings louder, to drow
 
 **» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 7 — failed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 8 — failed]`
 
 "Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
 
 **» Name her sister a keeper, in the old words — The valley had words for the keepers of doors, once.**
 
-`[Religion DC 15 — Morgan Le Fey rolls 4 — failed]`
+`[Religion DC 15 — Morgan Le Fey rolls 12 — failed]`
 
 You stumble over the old words. "Even the words are forgotten," Sedge says, and turns back to the stone.
 
@@ -3183,31 +3193,31 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 **» Drag their hands out of the rock — Nettle has sunk her hands past the wrist now.**
 
-`[Athletics DC 17 — Arthur the Bold rolls 12 — failed]`
+`[Athletics DC 17 — Arthur the Bold rolls 13 — failed]`
 
 Nettle smiles at you the whole time you pull. You let go with burned palms.
 
 **» Sing a wrong note into the Calling**
 
-`[Arcana DC 15 — Morgan Le Fey rolls 9 — failed]`
+`[Arcana DC 15 — Morgan Le Fey rolls 13 — failed]`
 
 Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
 
 **» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 9 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 10 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
 **» Let your wizard read the old letters cut into the stone — One line of them runs unbroken all the way round the stone.**
 
-`[Arcana DC 12 — Morgan Le Fey rolls 11 — failed]`
+`[Arcana DC 12 — Morgan Le Fey rolls 9 — failed]`
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
 **» Find where the stone is weakest — The song is louder on one face of the stone than the others.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 13 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 12 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 

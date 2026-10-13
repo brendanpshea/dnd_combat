@@ -17,11 +17,14 @@ export const HAG_LEARNED: Effect[] = [
 
 /** Past the den's gate without a fight (the signal, the wall, the water-gate,
  *  or a bluff): what beating its enforcers would have earned. */
-export const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-gate') }, { kind: 'setFlag', flag: 'signal-spent' },
+/** Past the gate unseen (the gate obstacle's answers pay its avoided XP themselves). */
+export const GATE_QUIET: Effect[] = [{ kind: 'setFlag', flag: 'signal-spent' },
   // No horn: the yard has not looked round yet (its first visit reads this).
   // In by their own signal, the party is taken for their own: whatever the
   // peddler warned them of, they stop looking for it.
   { kind: 'setFlag', flag: 'den-quiet' }, { kind: 'alarm', dungeon: 'inner/delve', amount: -3 }];
+/** …and talked past it, at the gate's own fight. */
+export const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-gate') }, ...GATE_QUIET];
 
 /** Past the gate by any road: the gate-signal lead is done with, used or not. */
 export const SIGNAL_SPENT: Effect = { kind: 'setFlag', flag: 'signal-spent' };

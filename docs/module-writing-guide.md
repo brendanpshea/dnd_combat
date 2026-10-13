@@ -144,8 +144,19 @@ do gold 45
 ```
 
 That is `barrow`, `barrow-fight` and `barrow-settle`. A failed answer leads
-into the fight. `back:` sets where every way out goes (default `@hub`), and
-`as: dialogue` makes the approach a conversation. A fight that differs only
+into the fight. `after:` sets where a way past goes (default `@hub`), and
+`as: dialogue` makes the approach a conversation. The fight is optional: a
+barrier you get past by skill (the den's gate, the town's) is an obstacle
+too. Under an answer, as it needs them:
+
+- `? <requirements>` (the rogue; the stolen signal), `tag: Rogue` for the label;
+- `to:` where its success leads, `go: <label>  #id` for its way on;
+- `retry` (not one try only), `roller: group` (everyone rolls);
+- `do` lines for what its success does;
+- `failed → <scene>` (a fight where you are caught), or `failed:` with its
+  own prose, `do` lines and `go: <label> → <scene>  #id`.
+
+Choices of the approach's own (a way back) go before the first section. A fight that differs only
 by who is there (a guard who has turned) is one battle with `encounterWhen`
 and conditional lines, not a twin.
 

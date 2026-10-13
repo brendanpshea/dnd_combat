@@ -225,36 +225,31 @@ His crew sees the knife at his ribs. One by one, they find somewhere else to dri
   do xp avoided cutpurses
 
 # gate-blocked
+kind: obstacle
 art: loc-village 🚧
 assumes: not spy-caught
 noBack: true
+after: gate-slipped
 The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the {ashfang} word of every cart that leaves. Nobody goes out until he's in the cells."
 ? not spy-seen | "Don't look at me like that. If I knew his face, he'd be there already. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
 ? not spy-seen; not know-spy | "Or ask {mira} at the {wander-inn}. She hears everything."
 ? spy-seen | "And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road's yours."
-> [Deception DC 13] "Reeve's business. Stand aside." → gate-slipped  #bluff
-  once hide
-  do alarm inner/delve +5
-  check deception 13 → gate-bluff-called
-  fail do alarm inner/delve -5
-> [Stealth DC 12] Go over the wall after dark → gate-slipped  #wall
-  once hide
-  do alarm inner/delve +5; day
-  check stealth 12 → gate-wall-caught
-  fail do alarm inner/delve -5; day
 > Back into the square → square/city  #ok
-
-# gate-bluff-called
-noBack: true
-art: loc-village 🚧
+answer deception 13 > "Reeve's business. Stand aside."  #bluff
+go: Out onto the road  #go
+do alarm inner/delve +5
+The warden looks you up and down, hears the word *reeve*, and decides it is not worth his job to ask. The spear comes up.
+failed:
 The warden looks at you for a long moment. "The reeve's business," he says. "The reeve was in my guardhouse an hour ago, and he never mentioned you." The spear stays where it is.
-> Back into the square → square/city  #ok
-
-# gate-wall-caught
-noBack: true
-art: loc-village 🌙
+go: Back into the square → square/city  #ok
+answer stealth 12 > Go over the wall after dark  #wall
+go: Out onto the road  #go
+do alarm inner/delve +5; day
+You find a low stretch of the wall between two lanterns, and drop down on the far side into wet grass. Nobody shouts.
+failed:
 You find a low stretch of the wall, but the watch walks it more often than you bargained for. A lantern swings your way, and you spend the rest of the night in a barn, waiting for it to go away.
-> Back into the square at first light → square/city  #ok
+go: Back into the square at first light → square/city  #ok
+do day
 
 # gate-slipped
 noBack: true
@@ -269,7 +264,7 @@ as: dialogue
 art: 🌾
 fight: cockatrice-flock on open
 done: mill-saved
-back: square/city
+after: square/city
 return: Back to the square
 leave: Leave him to his hedgerows  #later
 The mill's sails hang still, and the miller meets you at a barred door with a boat-hook in both hands. "Not raiders, this one. Something's roosting in my hedgerows — turned my dog stiff as a fencepost. *Stone*, you understand. Won't nobody come near the mill now, and the grain's standing."
