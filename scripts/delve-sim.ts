@@ -163,7 +163,8 @@ export function simulateDelve(module: Module, seed: number, startLevel: number):
       if (next) { walkTo(state, module, next.id); continue; }
       const shut = dungeonExits(state, module).find((x) => x.blocked && x.force);
       if (shut) { forceDoor(state, module, shut.link); continue; }
-      if (exit && exit.label === 'Down the stairs') { leaveDungeon(state, module); continue; }
+      // On down, or out past the goal with what it came for (a vault's exit).
+      if (exit && (exit.label === 'Down the stairs' || module.scenes[exit.to]?.kind === 'ending')) { leaveDungeon(state, module); continue; }
       if (goal && p.at !== goal && dungeonRoute(state, module, goal)) { walkTo(state, module, goal); continue; }
       // Nowhere new to go: back along a known way to a room with a door not yet tried.
       const open = dungeonExits(state, module).filter((x) => !x.blocked);

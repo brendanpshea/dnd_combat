@@ -29,7 +29,7 @@ import {
   attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
 } from '../campaign/campaign.js';
 import {
-  HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, NIGHT,
+  HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, NIGHT, ALARM_ROUSED,
   type Module, type Dungeon, type DungeonLink, type Scene, type Choice, type Effect, type Requirement, type Outcome,
   type Roller, type ExploreNode, type JournalEntry, type CampRule, type Approach, type Para, type Paragraph, type Slide, type DungeonRoom,
 } from './types.js';
@@ -1013,12 +1013,9 @@ function hubDungeon(state: AdventureState, module: Module): { id: Id; dungeon: D
   return scene?.kind === 'dungeon' ? { id: scene.id, dungeon: scene.dungeon } : undefined;
 }
 
-/**
- * How loud a place must get to be roused (Dungeon.alarm): three fights in a
- * day, or fewer and a retreat. A night lowers every place's alarm by
- * `ALARM_NIGHT` (they settle down when nothing more happens).
- */
-export const ALARM_ROUSED = 3;
+/** A night lowers every place's alarm by this (they settle down when nothing
+ *  more happens). How loud is roused: ALARM_ROUSED (types.ts). */
+export { ALARM_ROUSED };
 export const ALARM_NIGHT = 2;
 
 /**

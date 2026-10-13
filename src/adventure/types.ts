@@ -48,6 +48,13 @@ export type SceneRef = Id;
 
 // --- Requirements & effects -------------------------------------------------
 
+/**
+ * How loud a place must get to be roused (Dungeon.alarm): three fights in a
+ * day, or fewer and a retreat. (Here, not in the runtime, so the generator
+ * can read it.)
+ */
+export const ALARM_ROUSED = 3;
+
 /** A gate on a choice or explore node. All listed requirements must hold. */
 export type Requirement =
   | { kind: 'flag'; flag: string; value?: boolean | number }   // flag set (or ≥ number)
