@@ -2203,6 +2203,51 @@ export const SCENES: Record<string, Scene> = {
       ...[END_VARGAN].flat(),
     ],
   },
+  "way-out": {
+    id: "way-out",
+    kind: "story",
+    noBack: true,
+    art: { imageId: "loc-camp", emoji: "🌅" },
+    text: [
+      "The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.",
+      {
+        if: [{ kind: "flag", flag: "captives-freed" }],
+        text: "Somewhere ahead on the marsh road, the carter and the girl are already on their way home.",
+      },
+      {
+        if: [{ kind: "flag", flag: "captives-taken" }],
+        text: "You pass the pen behind the kennels. It is empty, and the webbed prints in the mud are a night old.",
+      },
+      {
+        if: [{ kind: "notFlag", flag: "captives-freed" }, { kind: "notFlag", flag: "captives-taken" }],
+        text: "Behind the kennels the pen still stands, and the carter is on his feet in the straw, gripping the stakes. No guard stands over it now.",
+      },
+    ],
+    next: [
+      {
+        id: "pen",
+        label: "Break the pen open, and take them home",
+        to: "aftermath",
+        hideWhenBlocked: true,
+        requires: [{ kind: "notFlag", flag: "captives-freed" }, { kind: "notFlag", flag: "captives-taken" }],
+        effects: [{ kind: "setFlag", flag: "captives-freed" }, { kind: "npc", npc: "wren", attitude: 1 }],
+      },
+      {
+        id: "home",
+        label: "Walk out of the den",
+        to: "aftermath",
+        hideWhenBlocked: true,
+        requires: [{ kind: "flag", flag: "captives-freed" }],
+      },
+      {
+        id: "home-taken",
+        label: "Walk out of the den",
+        to: "aftermath",
+        hideWhenBlocked: true,
+        requires: [{ kind: "flag", flag: "captives-taken" }],
+      },
+    ],
+  },
   "aftermath": {
     id: "aftermath",
     kind: "story",
@@ -2596,6 +2641,7 @@ export const ACTS: Record<string, string> = {
   "reedwife-lost": "den",
   "vargan-beaten": "den",
   "vargan-fate": "den",
+  "way-out": "den",
   "aftermath": "ending",
   "aftermath-hub": "ending",
   "claim-bounty": "ending",

@@ -573,3 +573,104 @@ with story lore, and hidden back ways round locks.
   not just names.
 - **The marsh lock** (Jaquays, again). Make it `trail-read` OR
   `crossed-ravine`, each with its own way to the Hollow.
+
+---
+
+# Fourth pass: after the generic building blocks (#404–#412)
+
+The same four critics, after the alarm rework, the writing pass, gatekeepers
+and vaults, generic hostages, and the move to blocks (conditional fights,
+obstacles, gates, a rescue).
+
+## What now works
+
+- **The lamb's price is a refrain, not a contradiction.** It runs from the
+  regulars to the water-gate to the rite. The Reedwife naming her terms out of
+  the still water is the best new moment (Novik, Weis & Hickman).
+- **The carter's line sets up the turn.** "His mother's house was the first
+  the water took" is the chapter's best emotional setup (Weis & Hickman).
+- **The alarm is a consequence, not a clock** (Jaquays).
+  - Fights won raise it; quiet entries lower it; it settles each night.
+  - Gatekeepers sit on cut points, and the back way is the only way round.
+  - Story places keep their own locks.
+- **Thornwick sounds lived in** (Pratchett). The goose; the regulars' grief
+  instead of rules; Vargan's ledger with the lamb crossed out.
+- **The rescue block reads as well as hand-written prose.** "The stopper is
+  still in" (Novik).
+
+## Where they agree
+
+1. **The captives are lost to numbers, not choices** (Novik, Weis & Hickman,
+   Jaquays).
+   - Storming the gate adds exactly enough alarm (3) to rouse the den, so the
+     pens are empty before the party can reach them. Wren and Vex both said
+     "do that first".
+   - Every way of winning the hall (the hag dead, or bound) sets
+     `captives-taken`. Parties that never reached the pens all end on the
+     widow, even when nothing could have taken them.
+   - The empty-pen text blames the hag's webbed prints, even on day 2.
+   - Fix:
+     - A roused den should move the captives only where the story says so,
+       with its own text ("they heard the horn and moved them").
+     - Only the moon's deadline (day 7) should give them to the hag.
+     - A party that wins the hall with the captives still penned finds them
+       on the way out.
+2. **The generic hostage's lines leak into the den** (all three writers).
+   - "The noise carries, and the watch comes running."
+   - "Across the place, the alarm is up."
+   - "You come to in the dirt by the cage", in a pen of lashed stakes.
+   - Stitched-together labels: "Get the captives out quietly".
+   - Fix:
+     - Give `Hostage` slots for its watch, win, loss and labels.
+     - Make the defaults say "where they are held", never "cage" or "the
+       place".
+3. **A vault's hostage can almost never be saved** (Jaquays). The gatekeeper,
+   the key holder and the boss are three fights won, which is roused (3). The
+   vault therefore nearly always shows an empty cage. Fix:
+   - The goal's own fight shouldn't rouse the vault, or a hostage should move
+     at a higher threshold.
+   - Add a grid test that a best-case path frees them.
+4. **Repetition** (Novik, Weis & Hickman).
+   - The hag's price is said word for word up to five times.
+   - A rogue who heard it at the water-gate hears it again in the hall, as if
+     she never said it.
+   - The carter echoes the old reed-cutter's "My gran left her…".
+   - The hall's `again:` duplicates `boss-approach`'s.
+   - Fix: keep the exact words for the binding, paraphrase elsewhere, and give
+     a party that heard it at the gate "I told you my price, and you came
+     anyway".
+5. **The den doesn't use the new tools** (Weis & Hickman, Jaquays).
+   - It is a nine-room spine.
+   - Its three entrances (signal, water-gate, wall) all land in the same first
+     room.
+   - The pens are off the path, so Vex's warning is never a real choice.
+   - Fix: let the water-gate open by the pens and the wall come down by the
+     kennels, and put the pens between the kennels and the hall.
+
+## Also raised
+
+- **The hall.**
+  - "The carter's girl is home" is said while she is still on the road
+    (Novik).
+  - With Vex turned, nothing in the hall points to turning Vargan, so "End
+    them both" stays the default (Weis & Hickman).
+  - A generated "horn brays" line fires after the boss falls (Weis & Hickman).
+- **Lore order and wording** (Novik, Weis & Hickman).
+  - Lines appear before what they refer back to.
+  - "Search the room" in a marsh.
+  - The last room before the hall gets a generic line instead of the drowned
+    house.
+- **Too much loot** (Pratchett). About 600 gold and eight healing potions by
+  the den. Cut the generic potion finds, and pay in barter.
+- **Too many kinds of monster** (Pratchett). About a dozen in one valley thins
+  the Ashfang's menace. Keep the marsh to the Reedwife's creatures, and make
+  the den mostly people.
+- **The square reads like a catalogue** (Pratchett). Name the smith and give
+  him a grievance; give the fountain an argument.
+- **Obstacle outcomes are flat** (Pratchett). Each success line needs one
+  specific detail.
+- **Mira** (Weis & Hickman). Her mood is said to follow the captives, but a
+  dead Vargan also turns her cold. Pick one rule.
+- **The marsh lock is still an AND** (Jaquays, third time).
+- **The patrol** is still rated EASY in balance.md. The grid doesn't check
+  hostages, patrol strength or how fast the alarm rises (Jaquays).

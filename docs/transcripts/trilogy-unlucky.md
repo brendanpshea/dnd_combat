@@ -1555,6 +1555,14 @@ The rag has burned off his axe hand. Under it is a brand of reeds and a reaching
 
 **» Bind him and march him down to the reeve**
 
+<sub>scene `way-out`</sub>
+
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+
+You pass the pen behind the kennels. It is empty, and the webbed prints in the mud are a night old.
+
+**» Walk out of the den**
+
 <sub>scene `aftermath`</sub>
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.

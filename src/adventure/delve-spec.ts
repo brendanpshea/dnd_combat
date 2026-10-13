@@ -101,6 +101,8 @@ export interface RequiredRoom {
 export interface Hostage {
   /** Who: "the carter and his granddaughter". */
   who: string;
+  /** More than one of them (for the defaults' verbs). */
+  many?: true;
   /** The story's names for its two flags: set when they are got out, and
    *  when they are taken away for good. */
   as: { freed: string; taken: string };
@@ -118,6 +120,21 @@ export interface Hostage {
    * drawn for the holders) and rouses the place. Lost, they are taken.
    */
   guard?: { dc: number; fight?: Id };
+  /**
+   * The alarm level at which the holders move them for good (Dungeon.alarm):
+   * by default, when the place is roused. `false`: never; only the story's
+   * own `takenWhen` takes them.
+   */
+  movedAt?: number | false;
+  /** The story's own words for the rest of it (each has a plain default). */
+  lines?: {
+    /** Choice labels: freeing them quietly, by force, and leaving them for now. */
+    pick?: string; force?: string; later?: string;
+    /** The watch's coming, its fall, and the party beaten by it. */
+    watch?: string[]; won?: string[]; lost?: string[];
+    /** What the party finds once the alarm moved them (`gone` is for being taken). */
+    moved?: string[];
+  };
   /** The quest to get them out, added when they are found. */
   quest?: { title: string; body: string };
   /** Besides the place being roused: they are taken once these hold. */
@@ -706,7 +723,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       const rng = () => dice.float();
       const who = h?.who ?? personName(styleFor('delve', spec.theme, rng), dice.chance(0.5) ? 'female' : 'male', rng).first;
       const freed = h?.as.freed ?? `${pre}${roomId}-freed`, gone = h?.as.taken ?? `${pre}${roomId}-gone`;
-      const here = `${pre}${roomId}-held`, out = `${pre}${roomId}-out`, moved = `${pre}${roomId}-moved`;
+      const here = `${pre}${roomId}-held`, out = `${pre}${roomId}-out`, moved = `${pre}${roomId}-moved`, taken = `${pre}${roomId}-taken`;
+      const L = h?.lines ?? {};
+      const Who = capFirst(who);
+      const v = (one: string, more: string) => (h?.many ? more : one);
       // The quest is taken when they are found (not before: a party that never
       // finds them has nothing to finish).
       const found = `${pre}${roomId}-found`;
@@ -717,36 +737,46 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       const watch = `${pre}${roomId}-watch`;
       if (h?.guard) {
         scenes[watch] = { id: watch, kind: 'battle', encounterId: h.guard.fight ?? fightOf(level, false, undefined, holders[0]), mapId: EVENT_MAP[spec.theme] ?? 'ruins', loot: false, noFlee: true,
-          intro: ['The noise carries, and the watch comes running.'],
-          onWin: { to: out, text: ['The last of the watch goes down. Across the place, the alarm is up.'], effects: [{ kind: 'alarm', dungeon: sceneId, amount: ALARM_ROUSED }] },
-          onLoss: { to: '@hub', text: [`You come to in the dirt by the cage. It stands open, and ${who} are gone.`], effects: [{ kind: 'setFlag', flag: gone }, { kind: 'alarm', dungeon: sceneId, amount: ALARM_ROUSED }] } };
+          intro: L.watch ?? ['The noise carries, and their watch comes running.'],
+          onWin: { to: out, text: L.won ?? ['The last of the watch goes down, and behind it the alarm goes up.'], effects: [{ kind: 'alarm', dungeon: sceneId, amount: ALARM_ROUSED }] },
+          onLoss: { to: '@hub', text: L.lost ?? [`You come to on the ground where ${who} ${v('was', 'were')} held. ${Who} ${v('is', 'are')} gone.`], effects: [{ kind: 'setFlag', flag: gone }, { kind: 'alarm', dungeon: sceneId, amount: ALARM_ROUSED }] } };
       }
       scenes[here] = { id: here, kind: 'story', noBack: true,
-        text: h?.found ?? [`Behind a cage door, ${who} looks up as if you might be one more trick.`],
+        text: h?.found ?? [`${Who} ${v('looks', 'look')} up from where ${'they are'} held, as if you might be one more trick.`],
         next: h?.guard ? [
           // (A check's effects land pass or fail: the freeing is on the way out.)
-          { id: 'pick', label: `[Sleight of Hand DC ${h.guard.dc}] Get ${who} out quietly`, to: out, once: true, effects: quest,
+          { id: 'pick', label: `[Sleight of Hand DC ${h.guard.dc}] ${L.pick ?? `Get ${who} out quietly`}`, to: out, once: true, effects: quest,
             check: { skill: 'sleight-of-hand', dc: h.guard.dc, failTo: watch } },
-          { id: 'force', label: `Break ${who} out, and never mind the noise`, to: watch, effects: quest },
-          ...(h.quest ? [{ id: 'later', label: 'Not yet', to: '@hub', effects: quest }] : []),
+          { id: 'force', label: L.force ?? `Break ${who} out, and never mind the noise`, to: watch, effects: quest },
+          ...(h.quest ? [{ id: 'later', label: L.later ?? 'Not yet', to: '@hub', effects: quest }] : []),
         ] : [
           { id: 'free', label: `Get ${who} out`, to: out, effects: [...quest, ...free] },
-          ...(h?.quest ? [{ id: 'later', label: 'Not yet', to: '@hub', effects: quest }] : []),
+          ...(h?.quest ? [{ id: 'later', label: L.later ?? 'Not yet', to: '@hub', effects: quest }] : []),
         ] };
       scenes[out] = { id: out, kind: 'story', noBack: true,
-        text: h?.freed ?? [`The cage comes open. ${capFirst(who)} slips out past you toward the daylight, with a promise to repay it.`],
+        text: h?.freed ?? [`${Who} ${v('slips', 'slip')} out past you toward the daylight, with a promise to repay it.`],
         next: [{ id: 'on', label: 'Go on', to: '@hub', effects: h?.guard ? free : [] }] };
       // (Unguarded, getting them out sets it all; guarded, there are two ways
       // there, so it is set on the way out.)
-      scenes[moved] = { id: moved, kind: 'story', noBack: true,
-        text: h?.gone ?? [`The cage stands open, and the straw in it is still warm. They took ${who} away before you came.`],
+      // Taken (the story's deadline, or lost to the watch), and moved (the
+      // alarm): two ways to an empty room, each in its own words.
+      scenes[taken] = { id: taken, kind: 'story', noBack: true,
+        text: h?.gone ?? [`There is nobody here now. Whoever held ${who} has taken ${v('them', 'them all')} away.`],
         next: [{ id: 'on', label: 'Go on', to: '@hub', effects: [{ kind: 'setFlag', flag: gone }] }] };
+      // (A vault lies past the goal, three fights in: it is moved from only when
+      // the place is well past roused.)
+      const at = h ? h.movedAt ?? ALARM_ROUSED : ALARM_ROUSED + 2;
+      if (at !== false) {
+        scenes[moved] = { id: moved, kind: 'story', noBack: true,
+          text: L.moved ?? [`There is nobody here now. They heard you coming, and moved ${who} somewhere you will not find.`],
+          next: [{ id: 'on', label: 'Go on', to: '@hub', effects: [{ kind: 'setFlag', flag: gone }] }] };
+      }
       return { scene: here, until: [{ kind: 'flag', flag: freed }],
         when: [
-          // Gone is gone: the empty cage, every time.
-          { if: [{ kind: 'flag', flag: gone }], to: moved },
-          ...(h?.takenWhen?.length ? [{ if: h.takenWhen, to: moved }] : []),
-          { if: [{ kind: 'alarm', dungeon: sceneId, atLeast: ALARM_ROUSED }], to: moved },
+          // Gone is gone: the empty room, every time.
+          { if: [{ kind: 'flag', flag: gone }], to: taken },
+          ...(h?.takenWhen?.length ? [{ if: h.takenWhen, to: taken }] : []),
+          ...(at !== false ? [{ if: [{ kind: 'alarm' as const, dungeon: sceneId, atLeast: at }], to: moved }] : []),
         ] };
     };
     const read = (roomId: Id, text: string): Id => {

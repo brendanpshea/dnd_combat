@@ -58,7 +58,7 @@ export const SNAKE_ENDS = 'Across the threshold her branded snake lies dead in i
 /** What the hall pays, beside its loot: the chief's strongbox. */
 export const BOSS_HOARD = 'Behind the throne stands the chief\'s strongbox, its lid forced long ago and never mended. It is heavy with a season of stolen coin.';
 export const BOSS_WON: Effect[] = [
-  { kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'captives-taken' },
+  { kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 },
 ];
 
 /** Naming Vargan's brand: the moment before he chooses a side. */
@@ -83,28 +83,28 @@ export const TURN_UNREAD: Choice = { id: 'turn', label: TURN_UNREAD_LABEL, to: '
 /** …offered in the hall only while the brand is still unread. */
 export const TURN_UNREAD_FRESH: Choice = { ...TURN_UNREAD, requires: [{ kind: 'notFlag', flag: 'vargan-shaken' }], hideWhenBlocked: true };
 export const BIND_VARGAN: Choice[] = [
-  { id: 'reeve', label: 'Bind him and march him down to the reeve', to: 'aftermath',
+  { id: 'reeve', label: 'Bind him and march him down to the reeve', to: 'way-out',
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'npc', npc: 'wren', attitude: 1 }] },
 ];
 /** Finishing him on his knees (`dead`). {wren} thinks the worse of the
  *  company for it, as with binding him, if she knows it. */
 export const END_VARGAN: Choice[] = [
-  { id: 'end', label: 'End it here', to: 'aftermath',
+  { id: 'end', label: 'End it here', to: 'way-out',
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'dead' }, { kind: 'npc', npc: 'wren', attitude: -1 }] },
 ];
 export const FREE_VARGAN = (label: string): Choice[] => [
-  { id: 'free', label, hint: 'The reeve pays for a chief he can see.', to: 'aftermath', requires: [{ kind: 'notFlag', flag: 'bounty' }], hideWhenBlocked: true,
+  { id: 'free', label, hint: 'The reeve pays for a chief he can see.', to: 'way-out', requires: [{ kind: 'notFlag', flag: 'bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'setFlag', flag: 'vargan-let-go' }, { kind: 'setFlag', flag: 'got-bounty' }] },
-  { id: 'free-retainer', label, hint: 'The reeve pays for a chief he can see, and he will want his retainer back.', to: 'aftermath', requires: [{ kind: 'flag', flag: 'bounty' }], hideWhenBlocked: true,
+  { id: 'free-retainer', label, hint: 'The reeve pays for a chief he can see, and he will want his retainer back.', to: 'way-out', requires: [{ kind: 'flag', flag: 'bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'npc', npc: 'vargan', fate: 'spared' }, { kind: 'setFlag', flag: 'vargan-let-go' }, { kind: 'setFlag', flag: 'got-bounty' },
       { kind: 'gold', amount: -factValue('bounty-retainer') }] },
 ];
 export const REEDWIFE_FALLS = 'The **{reedwife}** staggers back into the fire-pit and goes down hissing among the coals. When the steam clears she is still lying there, and she does not get up. The smell of her, rotten water and burning weed, hangs in the hall for a long time.';
 /** And hers: the purse at her belt. */
 export const REEDWIFE_HOARD = 'A sodden purse hangs at her belt on a cord of river-weed. It is full of old coin, gone green with marsh-water.';
-export const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }, { kind: 'setFlag', flag: 'captives-taken' }];
+export const REEDWIFE_WON: Effect[] = [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'dead' }, { kind: 'gold', amount: 100 }];
 export const BIND_HAG_WON = (encounter: string): Effect[] =>
-  [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'setFlag', flag: 'captives-taken' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
+  [{ kind: 'npc', npc: 'reedwife', met: true, fate: 'bound' }, { kind: 'xp', amount: avoidedFightXP(encounter) }];
 /** Who watches her go: the chief's guard, or (Vex's bargain kept) her own
  *  whistled help. */
 export const BIND_HAG_HELD: Para[] = [

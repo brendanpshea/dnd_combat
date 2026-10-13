@@ -68,7 +68,9 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // Conditional raised for the merged hall (Oct 2026): eight twin scenes
   // (guarded or not, brand read or not) became one each, their differences
   // conditional lines instead. 82 to 93.
-  'hollow-road': { flags: 34, conditional: 95, states: 300_000 },
+  // +3 for the way out of the den (Oct 2026): a party that wins the hall with
+  // the captives still penned breaks them out (freed, taken, or neither).
+  'hollow-road': { flags: 34, conditional: 98, states: 300_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },
