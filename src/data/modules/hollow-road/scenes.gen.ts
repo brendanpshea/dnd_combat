@@ -93,8 +93,8 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-village", emoji: "🏘️" },
     noBack: true,
     text: [
-      "The road brings you into **{thornwick}** at last, through a scorched gate and past barred shutters. Faces watch you from the dark of doorways.",
-      "For a month the {ashfang} have bled this valley dry, and the whole country locks its doors by dark.",
+      "The road brings you into **{thornwick}** at last, through a scorched gate. Every shutter on the street is barred, one of them with a bread paddle. Somewhere behind a door, somebody is keeping a goose indoors, and the goose is telling everyone.",
+      "For a month the {ashfang} have bled this valley dry. Nobody here goes out after dark, and nobody means to let the goose out either.",
     ],
     next: [{ id: "go", label: "Enter the {wander-inn}", to: "tavern-meet" }],
   },
@@ -106,7 +106,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     lines: [
       "Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you'll do.",
-      "\"Sellswords. Good. You read my note, then.\" **{mira}** doesn't smile. She hasn't since the raids began. \"The reeve's too proud to beg, so I wrote it for him. Sit.\"",
+      "\"Sellswords. Good. You read my note, then.\" **{mira}** sets the cup down, dry. \"The reeve's too proud to beg, so I wrote it for him. Sit.\"",
       "\"The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon. Six, by my count, and none of them will say why.\"",
       "\"And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left.\"",
       "\"Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter's boy once. Years back, the spring the marsh rose, his mother's house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there's more, the kind no one says with the door open.\" She sets the cup down.",
@@ -322,8 +322,8 @@ export const SCENES: Record<string, Scene> = {
     back: true,
     art: { emoji: "🛡️" },
     text: [
-      "A grey-bearded man with a soldier's too-straight back taps the boards. \"Rule one, and it's the reason I've still got both legs: don't turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you as you go.\"",
-      "\"Want out of a scrap without the parting gift? Then do nothing else but get out of it. Eyes on his blade, back off slow, and don't try anything clever on the way. Especially you wand-wavers: get clear before you start your muttering, or you'll be eating steel halfway through the word.\"",
+      "A grey-bearded man with a soldier's too-straight back taps the boards. \"Lost my leg-man at the ford last week. Good lad. He turned his back on a raider with a blade still in reach, and the raider took the free cut he was given.\"",
+      "He drinks. \"Want out of a scrap? Then do nothing but get out of it. Back off slow, with your eyes on his blade. You wand-wavers most of all: get clear before you start your muttering, or you'll eat steel halfway through the word.\"",
     ],
     next: [{ id: "ok", label: "Nod your thanks", to: "regulars" }],
   },
@@ -333,8 +333,8 @@ export const SCENES: Record<string, Scene> = {
     back: true,
     art: { emoji: "🔮" },
     text: [
-      "A woman with river-stones knotted in her hair doesn't look up from her knitting. \"Magic's never free, whatever the college boys tell you. Every real working takes something out of you, and you've only so much to give before you sleep. Spend it like your last coppers, because in a long fight, that's what it is.\"",
-      "\"The strong workings, a held foe or a ward of blades, burn only as long as you hold them in your head. Take a hard knock and you'd best keep your focus, or the whole thing slips through your fingers. Can't hold two at once, either. So pick the one that'll matter.\"",
+      "A woman with river-stones knotted in her hair doesn't look up from her knitting. \"My sister went down to the reeds a month back, to put a ward round the reed-beds. She held it two nights. Then an arrow took her in the shoulder, and the ward went out like a candle.\"",
+      "The needles click. \"A working you hold in your head lasts only while you hold it. Take a hard knock and you can lose it, and you can't hold two at once. Every spell costs you, too, till you sleep. Spend them like your last coppers.\"",
     ],
     next: [{ id: "ok", label: "Nod your thanks", to: "regulars" }],
   },
@@ -344,8 +344,8 @@ export const SCENES: Record<string, Scene> = {
     back: true,
     art: { emoji: "⚔️" },
     text: [
-      "A scarred caravan guard rolls her axe over on the table. \"Every weapon's got a trick in it, if you know how to ask. A heavy blade bites one man and the swing carries on into the next. A mace'll rattle a foe, so his next swing at you goes wide.\"",
-      "\"Learn what the thing in your hand actually *does*. That's how you put down men twice your size.\"",
+      "A scarred caravan guard rolls her axe over on the table. \"I took three carts down the marsh road this spring. I brought one back.\" She taps the blade. \"A heavy blade bites one man, and the swing carries on into the next. A mace rattles a man, so his next swing at you goes wide.\"",
+      "\"Learn what yours does. The raiders who met me on that road didn't, and I'm still here.\"",
     ],
     next: [{ id: "ok", label: "Nod your thanks", to: "regulars" }],
   },
@@ -572,12 +572,12 @@ export const SCENES: Record<string, Scene> = {
         to: "gate-slipped",
         once: true,
         hideWhenBlocked: true,
-        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 2 }],
+        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 5 }],
         check: {
           skill: "deception",
           dc: 13,
           failTo: "gate-bluff-called",
-          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -2 }],
+          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -5 }],
         },
       },
       {
@@ -586,12 +586,12 @@ export const SCENES: Record<string, Scene> = {
         to: "gate-slipped",
         once: true,
         hideWhenBlocked: true,
-        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 2 }, { kind: "passDay" }],
+        effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 5 }, { kind: "passDay" }],
         check: {
           skill: "stealth",
           dc: 12,
           failTo: "gate-wall-caught",
-          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -2 }, { kind: "passDay" }],
+          failEffects: [{ kind: "alarm", dungeon: "inner/delve", amount: -5 }, { kind: "passDay" }],
         },
       },
       { id: "ok", label: "Back into the square", to: "square/city" },
@@ -1510,6 +1510,10 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-camp", emoji: "🏚️" },
     text: [
       "A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.",
+      {
+        if: [{ kind: "companion", companion: "wren" }, { kind: "notFlag", flag: "pens-settled" }],
+        text: "{wren} crouches beside you and points with two fingers: the watch-post, the water-gate, the dark gap by the pens. \"That's where they keep them,\" she says. \"The carter, and the girl. Whatever else you do in there, do that first.\"",
+      },
     ],
     next: [
       {
@@ -1589,6 +1593,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     text: [
       "Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.",
+      "As the lock gives, the water at your feet goes still. A woman's voice comes up out of it, close and pleased. \"Clever hands. You'll want to know my price, little thief, before you come to my fire. It was always small. One {door-price} a winter, for sitting by their door in the dark.\" Then the water moves again, and she is gone.",
     ],
     next: [{ id: "in", label: "Slip inside", to: "inner", effects: [...[GATE_PASSED].flat()] }],
   },
@@ -1626,7 +1631,7 @@ export const SCENES: Record<string, Scene> = {
       effects: [
         { kind: "setFlag", flag: "den-entered" },
         { kind: "setFlag", flag: "signal-spent" },
-        { kind: "alarm", dungeon: "inner/delve", amount: 2 },
+        { kind: "alarm", dungeon: "inner/delve", amount: 3 },
       ],
     },
     parley: {
@@ -1662,7 +1667,7 @@ export const SCENES: Record<string, Scene> = {
         effects: [
           { kind: "passDay" },
           { kind: "clearFlag", flag: "know-signal" },
-          { kind: "alarm", dungeon: "inner/delve", amount: 2 },
+          { kind: "alarm", dungeon: "inner/delve", amount: 3 },
           {
             kind: "journal",
             entry: {
@@ -1691,7 +1696,7 @@ export const SCENES: Record<string, Scene> = {
       effects: [
         { kind: "setFlag", flag: "den-entered" },
         { kind: "setFlag", flag: "signal-spent" },
-        { kind: "alarm", dungeon: "inner/delve", amount: 2 },
+        { kind: "alarm", dungeon: "inner/delve", amount: 3 },
       ],
     },
   },
@@ -1790,7 +1795,7 @@ export const SCENES: Record<string, Scene> = {
     ],
     onWin: {
       to: "den-pens-freed",
-      effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 2 }],
+      effects: [{ kind: "alarm", dungeon: "inner/delve", amount: 3 }],
       text: [
         "The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.",
       ],
@@ -1800,7 +1805,7 @@ export const SCENES: Record<string, Scene> = {
       text: [
         "You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.",
       ],
-      effects: [{ kind: "setFlag", flag: "captives-taken" }, { kind: "alarm", dungeon: "inner/delve", amount: 2 }],
+      effects: [{ kind: "setFlag", flag: "captives-taken" }, { kind: "alarm", dungeon: "inner/delve", amount: 3 }],
     },
   },
   "den-pens-freed": {
@@ -1905,7 +1910,7 @@ export const SCENES: Record<string, Scene> = {
         text: "Before you can answer, he tips his head back toward the kennels. \"There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark.\" He looks into his fire. \"Go and look, if you want to know what the chief sold.\"",
       },
       {
-        if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 2 }],
+        if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 3 }],
         text: "\"Not tonight, though.\" He doesn't take his eyes off the fire. \"The whole den is up and looking for you. I'm not turning my coat in front of all of them.\"",
       },
     ],
@@ -2021,7 +2026,7 @@ export const SCENES: Record<string, Scene> = {
       "\"I was born down in {thornwick},\" {vargan} says. \"I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. {thornwick} watched from the bank.\" He looks up at his trophies the way a farmer looks at a full barn. \"The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price.\"",
       "The hag laughs. \"Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark.\" She turns to you, delighted. \"You've been *busy*.\" At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.",
       {
-        if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 2 }],
+        if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 3 }],
         text: "The hall is full of raiders who heard you coming, and none of them is sitting down.",
       },
     ],

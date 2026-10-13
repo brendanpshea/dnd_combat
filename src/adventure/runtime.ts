@@ -1014,8 +1014,16 @@ function hubDungeon(state: AdventureState, module: Module): { id: Id; dungeon: D
 }
 
 /**
+ * How loud a place must get to be roused (Dungeon.alarm): three fights in a
+ * day, or fewer and a retreat. A night lowers every place's alarm by
+ * `ALARM_NIGHT` (they settle down when nothing more happens).
+ */
+export const ALARM_ROUSED = 3;
+export const ALARM_NIGHT = 2;
+
+/**
  * Raise a dungeon's alarm (Dungeon.alarm), and say so the first time it is
- * roused (2). Any scene id will hold a level, so a story can raise a place's
+ * roused (ALARM_ROUSED). Any scene id will hold a level, so a story can raise a place's
  * alarm before the party has seen it; only a dungeon with `alarm` acts on it.
  */
 export function raiseAlarm(state: AdventureState, module: Module | undefined, sceneId: Id, amount: number, events: AdventureEvent[]): void {
@@ -1023,7 +1031,7 @@ export function raiseAlarm(state: AdventureState, module: Module | undefined, sc
   const after = Math.max(0, before + amount);
   (state.alarms ??= {})[sceneId] = after;
   const d = module?.scenes[sceneId];
-  if (before < 2 && after >= 2 && d?.kind === 'dungeon' && d.dungeon.alarm?.roused.length) {
+  if (before < ALARM_ROUSED && after >= ALARM_ROUSED && d?.kind === 'dungeon' && d.dungeon.alarm?.roused.length) {
     const lines = d.dungeon.alarm.roused;
     let h = 0;
     for (const ch of sceneId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
@@ -1100,7 +1108,6 @@ function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, 
 
   if (room.fight && !p.cleared.includes(room.id)) {
     p.pending = true;
-    raiseAlarm(state, module, sceneId, 1, events);
     events.push(...enterScene(state, module, room.fight));
     return events;
   }
@@ -1237,13 +1244,12 @@ function step(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, to
     const r = rollDie(c.rng, 1000); c.rng = r.state;
     if ((r.value - 1) / 1000 < ambush.chance) return enterScene(state, module, ambush.battle);
   }
-  // A roused place (alarm 2 or more) sends someone to look; a fight or two
-  // alone only puts it on edge.
+  // A roused place sends someone to look; a fight or two only puts it on edge.
   const alarm = state.alarms?.[sceneId] ?? 0;
-  if (d.alarm?.patrols.length && alarm >= 2) {
+  if (d.alarm?.patrols.length && alarm >= ALARM_ROUSED) {
     const c = state.campaign;
     const r = rollDie(c.rng, 1000); c.rng = r.state;
-    if ((r.value - 1) / 1000 < Math.min(0.3, d.alarm.rate * (alarm - 1))) {
+    if ((r.value - 1) / 1000 < Math.min(0.3, d.alarm.rate * (alarm - ALARM_ROUSED + 1))) {
       const pick = rollDie(c.rng, d.alarm.patrols.length); c.rng = pick.state;
       return enterScene(state, module, d.alarm.patrols[pick.value - 1]!);
     }
@@ -1404,9 +1410,13 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
   if (won) {
     // A room's own fight, won: the room is cleared for good.
     const d = hubDungeon(state, module);
+    // A fight is noise: won, it still told the place someone is here.
+    // (Talked down, or slipped past, it told nobody.)
+    const alarmEvents: AdventureEvent[] = [];
     if (d) {
       const p = dungeonProgress(state, d.id, d.dungeon);
       if (roomOf(d.dungeon, p.at)?.fight === scene.id && !p.cleared.includes(p.at)) p.cleared.push(p.at);
+      if (!battleWonBefore(state, scene.id)) raiseAlarm(state, module, d.id, 1, alarmEvents);
     }
     // A fight won again (however the party got back to it) tells its story
     // again but pays nothing: no farming a won fight through a way back.
@@ -1415,7 +1425,7 @@ export function resolveBattle(state: AdventureState, module: Module, won: boolea
       return applyOutcome(state, module, { ...scene.onWin, ...(effects ? { effects } : {}) });
     }
     (state.wonBattles ??= []).push(scene.id);
-    return applyOutcome(state, module, scene.onWin);
+    return [...alarmEvents, ...applyOutcome(state, module, scene.onWin)];
   }
   // Loss: an authored per-battle branch wins; else the module's defeat scene
   // (the party is dragged back, revived at half HP); else just retry the fight.
@@ -1592,7 +1602,7 @@ export function fleeBattle(state: AdventureState, module: Module, retreated: boo
     ? 'You break off and get clear. They let you go — this time.'
     : 'You think better of it and fall back the way you came.'] }];
   // Running from a fight leaves someone alive to raise the cry.
-  if (d && retreated) raiseAlarm(state, module, d.id, 1, events);
+  if (d && retreated) raiseAlarm(state, module, d.id, 2, events);
   return [...events, ...enterScene(state, module, HUB_REF)];
 }
 
@@ -1843,6 +1853,8 @@ export function endDay(state: AdventureState, module: Module): AdventureEvent[] 
   delete state.flags[NIGHT];
   if (state.hour !== undefined) state.hour = MORNING;
   const events: AdventureEvent[] = [{ type: 'dawn', day }];
+  // A night with nothing more to hear: every roused place settles a little.
+  for (const k of Object.keys(state.alarms ?? {})) state.alarms![k] = Math.max(0, state.alarms![k]! - ALARM_NIGHT);
   for (const d of module.dawns ?? []) {
     if (d.day !== day) continue;
     events.push({ type: 'text', paragraphs: paragraphsFor(state, d.text) });

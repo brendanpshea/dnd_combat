@@ -906,7 +906,8 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     if (holder) {
       const pid = `${pre}patrol`;
       const opens = holder.intros ?? T.outdoor?.fights;
-      scenes[pid] = { id: pid, kind: 'battle', encounterId: fightOf(level, false, undefined, holder), mapId: '@room', loot: false,
+      // A patrol is who they send when they mean it: an elite fight.
+      scenes[pid] = { id: pid, kind: 'battle', encounterId: fightOf(level, 'elite', undefined, holder), mapId: '@room', loot: false,
         intro: [opens ? dice.pick(opens) : 'Someone has come looking for you.'], onWin: { to: '@hub' } };
       alarm = { patrols: [pid], rate: holder.beastly ? 0.05 : 0.1, roused: holder.roused ?? (holder.beastly ? ROUSED.beasts : ROUSED.people) };
     }

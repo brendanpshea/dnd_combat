@@ -19,7 +19,9 @@ export const HAG_LEARNED: Effect[] = [
  *  or a bluff): what beating its enforcers would have earned. */
 export const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-gate') }, { kind: 'setFlag', flag: 'signal-spent' },
   // No horn: the yard has not looked round yet (its first visit reads this).
-  { kind: 'setFlag', flag: 'den-quiet' }];
+  // In by their own signal, the party is taken for their own: whatever the
+  // peddler warned them of, they stop looking for it.
+  { kind: 'setFlag', flag: 'den-quiet' }, { kind: 'alarm', dungeon: 'inner/delve', amount: -3 }];
 
 /** Past the gate by any road: the gate-signal lead is done with, used or not. */
 export const SIGNAL_SPENT: Effect = { kind: 'setFlag', flag: 'signal-spent' };
@@ -190,15 +192,15 @@ export const VEX_OFFERS = (lead: boolean): Choice[] => {
   return [
     // Wren's tip (`know-vex`): the party knows what he wants before he says it.
     { id: id('wren'), label: '[Persuasion DC 9] "{wren} says you want out. The reeve\'s pardon, and a road."', to: 'vex-turned',
-      attempt: 'vex-pardon', requires: [{ kind: 'flag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], hideWhenBlocked: true,
+      attempt: 'vex-pardon', requires: [{ kind: 'flag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
       effects: told, check: { skill: 'persuasion', dc: 9, failTo: 'vex-refuses' } },
     { id: id('persuade'), label: '[Persuasion DC 13] Offer him the reeve\'s pardon and a road out', to: 'vex-turned',
-      attempt: 'vex-pardon', requires: [{ kind: 'notFlag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], hideWhenBlocked: true,
+      attempt: 'vex-pardon', requires: [{ kind: 'notFlag', flag: 'know-vex' }, pens, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
       effects: told, check: { skill: 'persuasion', dc: 13, failTo: 'vex-refuses' } },
     // Cowed, not bought (`vex-threatened`, this chapter's own): no pardon
     // was offered. Bought or cowed, he is `turned`.
     { id: id('intimidate'), label: '[Intimidation DC 14] Point out his one other way out', to: 'vex-turned',
-      attempt: 'vex-threat', requires: [pens, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], hideWhenBlocked: true,
+      attempt: 'vex-threat', requires: [pens, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], hideWhenBlocked: true,
       effects: [...told, { kind: 'setFlag', flag: 'vex-threatened' }],
       check: { skill: 'intimidation', dc: 14, failTo: 'vex-refuses', failEffects: [{ kind: 'clearFlag', flag: 'vex-threatened' }] } },
     { id: id('refuse'), label: 'Refuse to deal with a raider', to: 'vex-dismissed',

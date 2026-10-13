@@ -59,7 +59,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
           // way, and the peddler has warned the den (its alarm); the road out fought once.
           { label: 'The Marsh Road', replaces: 'gate', icon: 'tok-gate', text: [], event: { scene: 'trailhead', when: [
             { if: [{ kind: 'visited', scene: 'trail' }], to: 'trailhead-clear' },
-            { if: [{ kind: 'notFlag', flag: 'spy-caught' }, { kind: 'alarm', dungeon: 'inner/delve', below: 2 }], to: 'gate-blocked' },
+            { if: [{ kind: 'notFlag', flag: 'spy-caught' }, { kind: 'alarm', dungeon: 'inner/delve', below: 3 }], to: 'gate-blocked' },
             { if: [{ kind: 'notFlag', flag: 'spy-caught' }], to: 'gate-slipped' }] } },
         ],
       },

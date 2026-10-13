@@ -1,8 +1,8 @@
 # thornwick
 art: loc-village 🏘️
 noBack: true
-The road brings you into **{thornwick}** at last, through a scorched gate and past barred shutters. Faces watch you from the dark of doorways.
-For a month the {ashfang} have bled this valley dry, and the whole country locks its doors by dark.
+The road brings you into **{thornwick}** at last, through a scorched gate. Every shutter on the street is barred, one of them with a bread paddle. Somewhere behind a door, somebody is keeping a goose indoors, and the goose is telling everyone.
+For a month the {ashfang} have bled this valley dry. Nobody here goes out after dark, and nobody means to let the goose out either.
 > Enter the {wander-inn} → tavern-meet  #go
 
 # tavern-meet
@@ -11,7 +11,7 @@ npc: @MIRA
 art: loc-tavern 🍺
 noBack: true
 Inside the **{wander-inn}** the fire is low and the talk lower. A broad woman with flour to the elbow picks up a cup and wipes it, looks you over once, and evidently decides you'll do.
-"Sellswords. Good. You read my note, then." **{mira}** doesn't smile. She hasn't since the raids began. "The reeve's too proud to beg, so I wrote it for him. Sit."
+"Sellswords. Good. You read my note, then." **{mira}** sets the cup down, dry. "The reeve's too proud to beg, so I wrote it for him. Sit."
 "The {ashfang} came down the **marsh road**, out past the reeds. Everyone knows that much. Knowing it never once filled a burned cart back up. Last week they took a carter off that same road, and his granddaughter with him. She's seven. The old reed-cutters are counting the nights to the dark of the moon. Six, by my count, and none of them will say why."
 "And the reeve sent his two scouts down the marsh road a few days back, a pair of girls on grey horses. Neither one has come back. If one of them's lying hurt out there, she hasn't many nights left."
 "Some of the reed-cutters say the {ashfang} chief knows the marsh like he was born on it. There was a reed-cutter's boy once. Years back, the spring the marsh rose, his mother's house went under the water. He walked out of {thornwick} that week and never came back. Not till the raids started this spring, some say. People talk. And there's more, the kind no one says with the door open." She sets the cup down.
@@ -122,22 +122,22 @@ At the end of the bench an old reed-cutter sits with his hands round his cup, th
 # rumor-tactics
 back: true
 art: 🛡️
-A grey-bearded man with a soldier's too-straight back taps the boards. "Rule one, and it's the reason I've still got both legs: don't turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you as you go."
-"Want out of a scrap without the parting gift? Then do nothing else but get out of it. Eyes on his blade, back off slow, and don't try anything clever on the way. Especially you wand-wavers: get clear before you start your muttering, or you'll be eating steel halfway through the word."
+A grey-bearded man with a soldier's too-straight back taps the boards. "Lost my leg-man at the ford last week. Good lad. He turned his back on a raider with a blade still in reach, and the raider took the free cut he was given."
+He drinks. "Want out of a scrap? Then do nothing but get out of it. Back off slow, with your eyes on his blade. You wand-wavers most of all: get clear before you start your muttering, or you'll eat steel halfway through the word."
 > Nod your thanks → regulars  #ok
 
 # rumor-magic
 back: true
 art: 🔮
-A woman with river-stones knotted in her hair doesn't look up from her knitting. "Magic's never free, whatever the college boys tell you. Every real working takes something out of you, and you've only so much to give before you sleep. Spend it like your last coppers, because in a long fight, that's what it is."
-"The strong workings, a held foe or a ward of blades, burn only as long as you hold them in your head. Take a hard knock and you'd best keep your focus, or the whole thing slips through your fingers. Can't hold two at once, either. So pick the one that'll matter."
+A woman with river-stones knotted in her hair doesn't look up from her knitting. "My sister went down to the reeds a month back, to put a ward round the reed-beds. She held it two nights. Then an arrow took her in the shoulder, and the ward went out like a candle."
+The needles click. "A working you hold in your head lasts only while you hold it. Take a hard knock and you can lose it, and you can't hold two at once. Every spell costs you, too, till you sleep. Spend them like your last coppers."
 > Nod your thanks → regulars  #ok
 
 # rumor-weapons
 back: true
 art: ⚔️
-A scarred caravan guard rolls her axe over on the table. "Every weapon's got a trick in it, if you know how to ask. A heavy blade bites one man and the swing carries on into the next. A mace'll rattle a foe, so his next swing at you goes wide."
-"Learn what the thing in your hand actually *does*. That's how you put down men twice your size."
+A scarred caravan guard rolls her axe over on the table. "I took three carts down the marsh road this spring. I brought one back." She taps the blade. "A heavy blade bites one man, and the swing carries on into the next. A mace rattles a man, so his next swing at you goes wide."
+"Learn what yours does. The raiders who met me on that road didn't, and I'm still here."
 > Nod your thanks → regulars  #ok
 
 # board
@@ -234,14 +234,14 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 ? spy-seen | "And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road's yours."
 > [Deception DC 13] "Reeve's business. Stand aside." → gate-slipped  #bluff
   once hide
-  do alarm inner/delve +2
+  do alarm inner/delve +5
   check deception 13 → gate-bluff-called
-  fail do alarm inner/delve -2
+  fail do alarm inner/delve -5
 > [Stealth DC 12] Go over the wall after dark → gate-slipped  #wall
   once hide
-  do alarm inner/delve +2; day
+  do alarm inner/delve +5; day
   check stealth 12 → gate-wall-caught
-  fail do alarm inner/delve -2; day
+  fail do alarm inner/delve -5; day
 > Back into the square → square/city  #ok
 
 # gate-bluff-called
