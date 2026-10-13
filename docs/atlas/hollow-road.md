@@ -1433,7 +1433,7 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
@@ -1449,7 +1449,7 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
@@ -1469,7 +1469,7 @@ The chief's guard answers her call from the door. He is a grey, scarred soldier,
 
 Vargan fights with one eye on his own shut fist.
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
@@ -1487,7 +1487,7 @@ The hag's fingers are already weaving something cold out of the smoke. "Don't ki
 
 Vargan fights with one eye on his own shut fist.
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 By the door the chief's grey old guard is down, and the raider who stood with him lies across the threshold.
 
@@ -1505,7 +1505,7 @@ The hag whistles, low and wet. One raider comes in from the yard, white-faced. B
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
@@ -1521,7 +1521,7 @@ Hask is nowhere in the hall. The hag whistles, and her branded snake pours over 
 
 *Won:*
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
@@ -1543,7 +1543,7 @@ The hag whistles, low and wet. One raider comes in from the yard, white-faced. B
 
 Vargan fights with one eye on his own shut fist.
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 
@@ -1561,7 +1561,7 @@ Hask is nowhere in the hall. The hag whistles, and her branded snake pours over 
 
 Vargan fights with one eye on his own shut fist.
 
-The chief's axe goes spinning out of his hand, and the **Reedwife** screams. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
+The chief's axe goes spinning out of his hand. When the **Reedwife** falls, she falls screaming. She goes down full length on the earth floor, and the scream stops. She lies there long and green and still, and the river-weed in her hair begins to dry and crack. Up in the rafters, the trophies of a hundred raids stop swinging.
 
 Across the threshold her branded snake lies dead in its own coils, and the one raider who stayed lies beside it.
 

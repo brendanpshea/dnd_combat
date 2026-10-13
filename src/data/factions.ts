@@ -43,6 +43,8 @@ export interface Faction {
   /** Lines to open one of their fights with, one drawn per fight. Without
    *  them a fight opens on nothing at all. */
   intros?: string[];
+  /** How its patrol finds the party, once it is out looking (Dungeon.alarm). */
+  patrol?: string[];
   /** What the party hears when the place is roused (Dungeon.alarm). Default:
    *  a horn for people, a howl for beasts. */
   roused?: string[];
@@ -159,6 +161,10 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
       'Something laughs behind the wood pile, high and wrong, and the raiders by it get up.',
       'They were throwing dice for a carter\'s boots. They stop.',
     ],
+    patrol: [
+      'Torches come round the tents, and a voice shouts that it has found you.',
+      'A horn sounds close by, and the raiders who were hunting you stop hunting.',
+    ],
   },
   {
     id: 'marsh-things', archetype: 'lair', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
@@ -175,6 +181,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
       'Something heavy slides off a tussock into the water, and then the water comes for you.',
       'Every frog in the reeds goes quiet at once.',
     ],
+    patrol: ['Something has followed your trail through the water, and it has caught up.'],
   },
 ] satisfies Faction[]).map((f) => [f.id, f]));
 
