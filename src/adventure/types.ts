@@ -54,6 +54,9 @@ export type Requirement =
   | { kind: 'notFlag'; flag: string }
   | { kind: 'item'; itemId: Id }                               // any party member holds it
   | { kind: 'gold'; atLeast: number }
+  /** How roused a dungeon is (Dungeon.alarm), by its scene id. The proofs
+   *  do not track it: taken as possible either way, like gold. */
+  | { kind: 'alarm'; dungeon: SceneRef; atLeast?: number; below?: number }
   | { kind: 'classInParty'; classId: Id }
   | { kind: 'speciesInParty'; speciesId: Id }
   | { kind: 'visited'; scene: SceneRef }
@@ -86,6 +89,9 @@ export type Effect =
   | { kind: 'setFlag'; flag: string; value?: boolean | number } // default true / +1 if number omitted
   | { kind: 'clearFlag'; flag: string }
   | { kind: 'gold'; amount: number }                            // signed
+  /** Raise a dungeon's alarm (Dungeon.alarm), from inside it or from anywhere
+   *  in the story: word got out, a horn was blown. */
+  | { kind: 'alarm'; dungeon: SceneRef; amount: number }
   | { kind: 'addItem'; itemId: Id; qty?: number }               // to the shared stash
   | { kind: 'removeItem'; itemId: Id; qty?: number }            // from the party (first holder)
   | { kind: 'xp'; amount: number }                              // party XP (levelForXp math)
@@ -397,6 +403,15 @@ export interface Dungeon {
   /** What a room searched for nothing says, in this place's own words (one
    *  is picked per room). Absent: the engine's plain few. */
   emptySearches?: string[];
+  /**
+   * How the place wakes up. Its alarm starts at 0 and rises as the party
+   * makes noise: each room fight started, each fight fled, each door that
+   * would not force, and the story's own `alarm` effects. Every step through
+   * the place may then meet one of its `patrols`, at `rate` a level of alarm
+   * (at most one step in two), and the first time it reaches 2 the party
+   * hears it (`roused`). Patrols are setbacks: no loot, no XP.
+   */
+  alarm?: { patrols: SceneRef[]; rate: number; roused: string[] };
   /** Search only where something is to be found: a room with a `search`, or
    *  one beside a secret door. (A story's place, where the story matters more
    *  than combing every corner.) */

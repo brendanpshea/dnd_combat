@@ -101,6 +101,8 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 **» [Deception DC 13] "Reeve's business. Stand aside."**
 
+A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.
+
 `[Deception DC 13 — Ash the Sneaky rolls 11 — failed]`
 
 <sub>scene `gate-bluff-called`</sub>
@@ -1089,9 +1091,11 @@ _Level up: 2 → 3_
 
 The big one goes down last, face-first in the mud at the foot of the wall.
 
+_(a paragraph shown before: “A horn brays from the watch platform,…”)_
+
 <sub>scene `inner`</sub>
 
-Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp that thinks it is safe.
+Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp at its fires.
 
 **» Go in**
 
@@ -1129,9 +1133,11 @@ You slip back out through the gate, into the quiet of the hollow.
 
 > Before you can answer, he tips his head back toward the kennels. "There was a pen behind the dogs, with people in it. The lady in the water came for them when the moon went dark." He looks into his fire. "Go and look, if you want to know what the chief sold."
 
-> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them."
+> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
 
 **» Refuse to deal with a raider**
+
+_Journal (quest): Bring the Captives Home_
 
 <sub>scene `vex-dismissed`</sub>
 
@@ -1167,37 +1173,11 @@ _+40 gold (259)_
 
 → Empty Tent
 
-**→ Empty Tent** <sub>(room `m3`)</sub>
+<sub>scene `inner/f1-ambush-m2-m3`</sub>
 
-A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.
+Two of them come out of a tent still buckling on stolen mail.
 
-→ Search the room
-
-<sub>scene `inner/f1-find-m3`</sub>
-
-A pack left behind, with a potion still in it.
-
-**» Take it**
-
-_Gained: Potion of Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Armourer's Tent
-
-**→ Armourer's Tent** <sub>(room `key`)</sub>
-
-<sub>scene `inner/f1-fight-key`</sub>
-
-Something laughs behind the wood pile, high and wrong, and the raiders by it get up.
-
-**Battle:** gen:gnoll+scout+giant-hyena+bandit <sub>(`gen:gnoll+scout+giant-hyena+bandit` on `@room`)</sub>
-
-**» [Intimidation DC 13] Tell them the chief is finished**
-
-`[Intimidation DC 13 — Arthur the Bold rolls 11 — failed]`
-
-They aren't interested in talking.
+**Battle:** gen:gnoll+scout+scout+worg <sub>(`gen:gnoll+scout+scout+worg` on `@room`)</sub>
 
 **» Fight — lost**
 
@@ -1233,6 +1213,54 @@ _(a paragraph shown before: “Inside the wall the den is tents…”)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
+**→ Empty Tent** <sub>(room `m3`)</sub>
+
+A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.
+
+→ Search the room
+
+<sub>scene `inner/f1-find-m3`</sub>
+
+A pack left behind, with a potion still in it.
+
+**» Take it**
+
+_Gained: Potion of Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Armourer's Tent
+
+**→ Armourer's Tent** <sub>(room `key`)</sub>
+
+<sub>scene `inner/f1-fight-key`</sub>
+
+Something laughs behind the wood pile, high and wrong, and the raiders by it get up.
+
+**Battle:** gen:gnoll+scout+giant-hyena+bandit <sub>(`gen:gnoll+scout+giant-hyena+bandit` on `@room`)</sub>
+
+**» [Intimidation DC 13] Tell them the chief is finished**
+
+`[Intimidation DC 13 — Arthur the Bold rolls 11 — failed]`
+
+They aren't interested in talking.
+
+**» Fight — lost**
+
+<sub>scene `inner/fallen` (again)</sub>
+
+_(a paragraph shown before: “You come to outside, dragged clear by…”)_
+
+**» Get up**
+
+<sub>scene `inner/outside` (again)</sub>
+
+_(a paragraph shown before: “You slip back out through the gate,…”)_
+
+**» Back inside**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
 **→ Armourer's Tent** <sub>(room `key`)</sub>
 
 <sub>scene `inner/f1-fight-key` (again)</sub>
@@ -1263,7 +1291,7 @@ One of them carried a heavy key.
 
 <sub>scene `den-pens-door`</sub>
 
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your torch comes near.
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
 
 **» Look in the pen**
 
@@ -1293,6 +1321,8 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 
 The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
 
+The hall is full of raiders who heard you coming, and none of them is sitting down.
+
 **» End them both**
 
 <sub>scene `boss`</sub>
@@ -1300,40 +1330,6 @@ The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sittin
 "You've cost me a good season," the chief says, almost mild, and rolls the great axe off his shoulder. Beside him the hag only laughs, low and pleased, her fingers already weaving something cold out of the smoke. "Oh, don't kill them quickly," she tells him. "Waste not."
 
 The chief's guard answers her call from the door. He is a grey, scarred soldier, and the only one in the hall who looks as if he has done this before. He comes for you without a word, and a raider with a knife comes in at his back.
-
-**Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
-
-**» Fall back to The Ashfang Den**
-
-_(a paragraph shown before: “You think better of it and fall…”)_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ The Chief's Hall
-
-**→ The Chief's Hall** <sub>(room `m5`)</sub>
-
-<sub>scene `boss-approach` (again)</sub>
-
-The chief's hall still reeks of smoke and old blood, and the child's shoe still hangs from the rafters.
-
-**Vargan** is back on his throne of spears, and the **Reedwife** waits in the shadows behind it. "Back for more," the hag says, delighted. "Waste not." Vargan only rolls the great axe off his shoulder.
-
-The hall is full of raiders who heard you coming, and none of them is sitting down.
-
-**» [Insight DC 14] Look at his hands**
-
-`[Insight DC 14 — Elaine the Holy rolls 12 — failed]`
-
-<sub>scene `vargan-unread`</sub>
-
-His axe hand stays wrapped in its rag, and his face gives you nothing at all. Behind the throne the hag watches you look, and smiles.
-
-**» End them both**
-
-<sub>scene `boss` (again)</sub>
-
-The hag's fingers are already weaving something cold out of the smoke. "Don't kill them quickly this time," she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.
 
 **Battle:** The Ashfang Chief and His Guard <sub>(`ashfang-hall` on `firepit`)</sub>
 
@@ -1403,7 +1399,7 @@ The bounty notice comes down off the board in the square. Someone tears off the 
 
 Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.
 
-Every evening, a widow walks the edge of the marsh and calls a name across the water.
+Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
 
 ### Ending: victory
 
@@ -1719,7 +1715,7 @@ The ground shivered once in the night, deep down under the fen, the way a door s
 
 The open graves are as the dead left them. In the bottom of the nearest, the clay still holds the shape of the body that lay there, pressed in like a boot-print. A healer's eye might read how it got up.
 
-`[Medicine DC 12 — Elaine the Holy rolls 6 — failed]`
+`[Medicine DC 12 — Elaine the Holy rolls 11 — failed]`
 
 You get mud, turf, and the underside of a churchyard. You trample the edges of three graves, and what they had to say is gone under your boots.
 
@@ -1747,7 +1743,7 @@ The old raised road runs out into the fog, the same as before. The fen waits at 
 
 **» [Insight DC 13] Read what is wearing him**
 
-`[Insight DC 13 — Elaine the Holy rolls 7 — failed]`
+`[Insight DC 13 — Elaine the Holy rolls 6 — failed]`
 
 <sub>scene `chapel-unread`</sub>
 
@@ -1803,7 +1799,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 13 — failed]`
+`[History DC 14 — Morgan Le Fey rolls 10 — failed]`
 
 You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
@@ -1915,7 +1911,7 @@ You swing too fast. The living always do. The nearest digger stops and turns its
 
 **» Let your cleric raise a holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Elaine the Holy rolls 2 — failed]`
+`[Religion DC 10 — Elaine the Holy rolls 9 — failed]`
 
 The light flickers and fails. Something deeper in the barrow is pushing back, and it is stronger down here.
 
@@ -1957,13 +1953,21 @@ The ground shook again before dawn, longer this time, and hard enough to wake th
 
 → The Barrow-Guard
 
-<sub>scene `crypt-ambush`</sub>
+**→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
+<sub>scene `wights`</sub>
 
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
 
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+
+**Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
+
+**» [History DC 15] Relieve him of his post, the old way**
+
+`[History DC 15 — Morgan Le Fey rolls 11 — failed]`
+
+You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — lost**
 
@@ -1983,19 +1987,11 @@ A pair of small, muddy boots is drying by the fire, with a bow propped in the co
 
 **→ The Barrow-Guard** <sub>(room `guard`)</sub>
 
-<sub>scene `wights`</sub>
+<sub>scene `wights` (again)</sub>
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
-
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+The old guardsman stands before its slab again, sword drawn, cold light in its eyes. Its two skeletons stand at its sides, heads turned toward you.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
-
-**» [History DC 15] Relieve him of his post, the old way**
-
-`[History DC 15 — Morgan Le Fey rolls 12 — failed]`
-
-You give the salute, but not quite the way the painted soldiers gave it. The wight's sword stays up. "Not relieved," it rasps. "Not by you."
 
 **» Fight — won**
 
@@ -2022,6 +2018,22 @@ Old masons sealed the king's chamber in lead. Something has peeled the lead back
 They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore.
 
 The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best. Beside the throne, a barrow-soldier in green bronze draws its sword.
+
+**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
+
+**» Fall back to The Undercrypt**
+
+_(a paragraph shown before: “You think better of it and fall…”)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+
+→ The King's Chamber
+
+**→ The King's Chamber** <sub>(room `king`)</sub>
+
+<sub>scene `king` (again)</sub>
+
+The embalmed king still stands before his wall of crossed-out villages. His eyes burn with that slow, pleased light. His two household dead lurch out of the corners again, and his soldier draws its sword beside the throne.
 
 **Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
 
@@ -2113,25 +2125,25 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 15 — Morgan Le Fey rolls 13 — failed]`
+`[Religion DC 15 — Morgan Le Fey rolls 7 — failed]`
 
 Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
 **» Read the lead letters as a spell — They are cut deeper than any prayer needs, and the door has shifted in its frame since.**
 
-`[Arcana DC 16 — Morgan Le Fey rolls 7 — failed]`
+`[Arcana DC 16 — Morgan Le Fey rolls 14 — failed]`
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark. The old masons' work will not take orders from you.
 
 **» Turn the kneeling cultists to the words — They felt the ground shake, and they think their door is opening.**
 
-`[Persuasion DC 16 — Elaine the Holy rolls 4 — failed]`
+`[Persuasion DC 16 — Elaine the Holy rolls 12 — failed]`
 
 The kneelers look at the book, then at the door. They bow their heads and go back to their own chant, louder than before.
 
 **» Let your wizard pick the lock the old masons cut — A ward, half-broken, and the door has shifted in its frame since.**
 
-`[Arcana DC 13 — Morgan Le Fey rolls 7 — failed]`
+`[Arcana DC 13 — Morgan Le Fey rolls 11 — failed]`
 
 No book your wizard has read goes back as far as this ward. Halfway through, the thread is lost, and a letter spits hot lead across the step.
 
@@ -2533,7 +2545,7 @@ The manticore still lies along its ledge under the overhang. It opens one eye. "
 
 **» [Persuasion DC 11] "Have the hags paid you yet?"**
 
-`[Persuasion DC 11 — Elaine the Holy rolls 9 — failed]`
+`[Persuasion DC 11 — Elaine the Holy rolls 10 — failed]`
 
 <sub>scene `tollcliff-stung`</sub>
 
@@ -2557,7 +2569,7 @@ The drumming starts up under your boots again. The herd is still running its gul
 
 **» [Survival DC 11] Time the stampede**
 
-`[Survival DC 11 — Elaine the Holy rolls 7 — failed]`
+`[Survival DC 11 — Elaine the Holy rolls 10 — failed]`
 
 _-30 gold (1094)_
 
@@ -2799,7 +2811,7 @@ In the margin of Wren's map, beside the hall, she has written: *Two heads. Never
 
 **» [Deception DC 11] Agree with both heads at once**
 
-`[Deception DC 11 — Ash the Sneaky rolls 8 — failed]`
+`[Deception DC 11 — Ash the Sneaky rolls 9 — failed]`
 
 <sub>scene `steading-balked`</sub>
 
@@ -2947,7 +2959,7 @@ Sedge has not looked away from you since you spoke. Nettle sings louder, to drow
 
 **» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 11 — failed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 14 — failed]`
 
 "Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
 
@@ -2975,7 +2987,7 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 **» Drag their hands out of the rock — Nettle has sunk her hands past the wrist now.**
 
-`[Athletics DC 17 — Arthur the Bold rolls 15 — failed]`
+`[Athletics DC 17 — Arthur the Bold rolls 10 — failed]`
 
 Nettle smiles at you the whole time you pull. You let go with burned palms.
 
@@ -2987,19 +2999,19 @@ Your wrong note goes into the song and vanishes. The Calling swallows it and sin
 
 **» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
 
-`[Religion DC 11 — Morgan Le Fey rolls 4 — failed]`
+`[Religion DC 11 — Morgan Le Fey rolls 7 — failed]`
 
 You lose the words halfway through. The book says to say them whole, and you did not.
 
 **» Let your wizard read the old letters cut into the stone — One line of them runs unbroken all the way round the stone.**
 
-`[Arcana DC 12 — Morgan Le Fey rolls 10 — failed]`
+`[Arcana DC 12 — Morgan Le Fey rolls 11 — failed]`
 
 The letters crawl and shift under your wizard's eyes. They will not hold still long enough to read.
 
 **» Find where the stone is weakest — The song is louder on one face of the stone than the others.**
 
-`[Investigation DC 14 — Morgan Le Fey rolls 10 — failed]`
+`[Investigation DC 14 — Morgan Le Fey rolls 7 — failed]`
 
 Every face of the stone looks the same to you, smooth and black and singing.
 

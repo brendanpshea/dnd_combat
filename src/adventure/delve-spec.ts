@@ -37,7 +37,7 @@ import { validateModule } from './validate.js';
 import { Dice, ROOMS, SIZE_ROOMS, encounterPools, type DelveOptions } from './dungeon-gen.js';
 import { PIECES, type FightRole, type PieceWhere } from './delve-pieces.js';
 import { beastName, bossName, styleFor } from './names.js';
-import { FACTIONS, canHold, factionsFor, type Faction } from '../data/factions.js';
+import { FACTIONS, ROUSED, canHold, factionsFor, type Faction } from '../data/factions.js';
 import { drawHistory, type History } from './delve-history.js';
 import { adjustedXp } from '../arena/encounter.js';
 import { MONSTER_XP } from '../data/monsters.js';
@@ -742,6 +742,19 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     }
     rooms.push(...pieceRooms);
 
+    // Held by someone: the place can be roused (Dungeon.alarm), and sends a
+    // patrol of its own. Drawn after everything else, so a floor's rooms are
+    // what they were before it had one.
+    const holder = holders[0];
+    let alarm: Dungeon['alarm'];
+    if (holder) {
+      const pid = `${pre}patrol`;
+      const opens = holder.intros ?? T.outdoor?.fights;
+      scenes[pid] = { id: pid, kind: 'battle', encounterId: fightOf(level, false, undefined, holder), mapId: '@room', loot: false,
+        intro: [opens ? dice.pick(opens) : 'Someone has come looking for you.'], onWin: { to: '@hub' } };
+      alarm = { patrols: [pid], rate: holder.beastly ? 0.05 : 0.1, roused: holder.roused ?? (holder.beastly ? ROUSED.beasts : ROUSED.people) };
+    }
+
     const campId = `${pre}camp-fight`;
     scenes[campId] = {
       id: campId, kind: 'battle', encounterId: fightOf(level, false, undefined, holders[0]), mapId: '@room', loot: false,
@@ -760,6 +773,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       camp: { risky: { chance: 0.5, battleScene: campId } }, rest: spec.rest, rooms, links: g.links,
       ...(dress ? { searchWhereFound: true as const } : {}),
       ...(T.outdoor ? { emptySearches: T.outdoor.empty } : {}),
+      ...(alarm ? { alarm } : {}),
     };
     scenes[sceneId] = { id: sceneId, kind: 'dungeon', dungeon };
     goals.push([dungeon, goal, out]);

@@ -46,6 +46,7 @@ export function refsOf(scene: Scene): Id[] {
       for (const l of d.links) if (l.door?.ambush) refs.push(l.door.ambush.battle);
       if (d.torch) refs.push(d.torch.out);
       if (d.camp?.risky) refs.push(d.camp.risky.battleScene);
+      refs.push(...(d.alarm?.patrols ?? []));
       break;
     }
     case 'ending': break;

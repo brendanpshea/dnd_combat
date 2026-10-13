@@ -827,6 +827,7 @@ function searchModule(
           if (r.exit) c.steps.push(step(r.exit.to, `leaves by ${r.name}`));
         }
         for (const l of d.links) if (l.door?.ambush) c.steps.push(step(l.door.ambush.battle, 'is ambushed in a corridor'));
+        for (const pt of d.alarm?.patrols ?? []) c.steps.push(step(pt, 'meets a patrol'));
         if (d.torch) c.steps.push(step(d.torch.out, 'runs out of light'));
         if (d.camp?.risky) c.steps.push(step(d.camp.risky.battleScene, 'is attacked in camp'));
         c.travel = d.rooms.some((r) => r.exit);

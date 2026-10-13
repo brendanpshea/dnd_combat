@@ -99,11 +99,13 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 **» [Deception DC 13] "Reeve's business. Stand aside."**
 
+A horn brays from the watch platform, and the whole camp comes awake: shouting, running, torches along the tent lines.
+
 `[Deception DC 13 — Ash the Sneaky rolls 19 — passed]`
 
 <sub>scene `gate-slipped`</sub>
 
-You are out, and Thornwick is behind you. Somewhere behind you, too, the peddler is still at his stall, and the Ashfang will hear of you before you ever see their smoke.
+You are out, and Thornwick is behind you. Somewhere behind you, too, the peddler is still at his stall. He saw you go, and the Ashfang will hear of you before you ever see their smoke.
 
 **» Set out on the marsh road**
 
@@ -279,7 +281,7 @@ _Level up: 2 → 3_
 
 <sub>scene `inner`</sub>
 
-Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp that thinks it is safe.
+Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp at its fires.
 
 **» Go in**
 
@@ -317,7 +319,7 @@ Three giant hyenas and three grey wolves the size of ponies lunge to the ends of
 
 **» [Animal Handling DC 12] Throw them the meat off the cook fire**
 
-`[Animal Handling DC 12 — Elaine the Holy rolls 12 — passed]`
+`[Animal Handling DC 12 — Elaine the Holy rolls 18 — passed]`
 
 The pack falls on the meat, snarling at each other instead of you, and you step round them to the gate. Their keeper dropped his key ring as he ran. One key fits the plunder tent.
 
@@ -325,7 +327,7 @@ The pack falls on the meat, snarling at each other instead of you, and you step 
 
 → Force the door to A Lone Fire [Athletics DC 15]
 
-`[Athletics DC 15 — Arthur the Bold rolls 23 — passed]`
+`[Athletics DC 15 — Arthur the Bold rolls 26 — passed]`
 
 It gives.
 
@@ -343,11 +345,11 @@ It gives.
 
 > Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
 
-> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den knows you're here. Every one of them is up and looking for you, and I'm not turning my coat in front of all of them."
+> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
 
 **» Refuse to deal with a raider**
 
-_Journal (quest): The Pens Behind the Kennels_
+_Journal (quest): Bring the Captives Home_
 
 <sub>scene `vex-dismissed`</sub>
 
@@ -410,6 +412,8 @@ The **Ashfang chief** sits on a throne of lashed spears, a rag wound round his a
 "I was born down in Thornwick," Vargan says. "I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. Thornwick watched from the bank." He looks up at his trophies the way a farmer looks at a full barn. "The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price."
 
 The hag laughs. "Fairer than the fen ever paid me. One lamb a winter, for sitting by their door in the dark." She turns to you, delighted. "You've been *busy*." At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.
+
+The hall is full of raiders who heard you coming, and none of them is sitting down.
 
 **» End them both**
 
@@ -483,7 +487,7 @@ Mira pours your round and takes your coin for it. "Town's still standing," she a
 
 Up in the hollow, the reeve's men pull down the den's timber wall one post at a time. They leave the posts for the marsh to take.
 
-The reeve's men reach the pen behind the kennels two days after the den falls. It is empty, and its chain has been cut. The Ashfang who fled took the carter, the girl and the reed-cutters with them, to sell wherever they could. They are never found.
+Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
 
 ### Ending: victory
 
@@ -727,7 +731,7 @@ The corpse-lights still sway over the black water, warm as windows. Wren keeps a
 
 **» [Survival DC 13] Find the dry way round the pools**
 
-`[Survival DC 13 — Elaine the Holy rolls 11 — failed]`
+`[Survival DC 13 — Elaine the Holy rolls 12 — failed]`
 
 <sub>scene `lights-sunk`</sub>
 
@@ -787,7 +791,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 13 — failed]`
+`[History DC 14 — Morgan Le Fey rolls 10 — failed]`
 
 You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
@@ -891,7 +895,7 @@ The cut is just wide enough for them. To get past, you will have to get through 
 
 **» Slip past along the wall — The picks ring loud enough to cover a footstep.**
 
-`[Group Stealth DC 12 — 2/4 pass — passed]`
+`[Group Stealth DC 12 — 3/4 pass — passed]`
 
 You edge along the wall between swings. Not one head turns. At the far end, the digger with the chain lowers its pick, and does not lift it again.
 
@@ -931,7 +935,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 **» [History DC 15] Relieve him of his post, the old way**
 
-`[History DC 15 — Morgan Le Fey rolls 27 — passed]`
+`[History DC 15 — Morgan Le Fey rolls 25 — passed]`
 
 The painted hall showed how the old kings' soldiers saluted. You give that salute now, fist to chest, and tell him his watch is over.
 
@@ -1025,9 +1029,15 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 15 — passed]`
+`[Religion DC 13 — Morgan Le Fey rolls 10 — failed]`
 
-You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
+Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
+
+**» Read the lead letters as a spell — They are cut deeper than any prayer needs.**
+
+`[Arcana DC 14 — Morgan Le Fey rolls 25 — passed]`
+
+The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter with a finger and speak its line from the book. One by one, the lead letters glow and set hard.
 
 <sub>scene `seal-clean`</sub>
 
@@ -1365,7 +1375,7 @@ At the first scrape of your boots, one huge body ducks out of the door with two 
 
 **» [Deception DC 14] Agree with both heads at once**
 
-`[Deception DC 14 — Ash the Sneaky rolls 23 — passed]`
+`[Deception DC 14 — Ash the Sneaky rolls 21 — passed]`
 
 <sub>scene `steading-talked`</sub>
 
@@ -1439,15 +1449,9 @@ Sedge has not looked away from you since you spoke. Nettle sings louder, to drow
 
 **» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 10 — failed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 23 — passed]`
 
-"Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
-
-**» Name her sister a keeper, in the old words — The valley had words for the keepers of doors, once.**
-
-`[Religion DC 15 — Morgan Le Fey rolls 23 — passed]`
-
-You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "No one has called her that in a long time," she says. "Someone kept the words, at least."
+"The reeve owes us," you tell her. "He will write her price into Thornwick's ledger, and her name beside it, and every reeve after him will read it." Sedge turns the words over. "Her name," she says. "In a ledger."
 
 <sub>scene `vigil-kept`</sub>
 

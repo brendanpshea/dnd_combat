@@ -67,6 +67,14 @@ describe('the story format', () => {
     }
   });
 
+  it('reads a dungeon alarm, raised and asked after', () => {
+    const s = parseStory('# a\n? alarm inner/delve >= 2 | Roused.\n> Go → b  #go\n  ? alarm inner/delve < 2\n  do alarm inner/delve +2; alarm inner/delve -1');
+    expect(s.a).toEqual({ id: 'a', kind: 'story',
+      text: [{ if: [{ kind: 'alarm', dungeon: 'inner/delve', atLeast: 2 }], text: 'Roused.' }],
+      next: [{ id: 'go', label: 'Go', to: 'b', requires: [{ kind: 'alarm', dungeon: 'inner/delve', below: 2 }],
+        effects: [{ kind: 'alarm', dungeon: 'inner/delve', amount: 2 }, { kind: 'alarm', dungeon: 'inner/delve', amount: -1 }] }] });
+  });
+
   it('says where it could not read', () => {
     expect(() => parseStory('# a\n> no arrow here', 'x.story')).toThrow(/x\.story:2/);
   });

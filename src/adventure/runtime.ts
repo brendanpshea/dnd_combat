@@ -91,6 +91,9 @@ export interface AdventureState {
   /** Where the party stands in each dungeon it has entered, and what it has
    *  done there, by the dungeon scene's id. */
   dungeons?: Record<Id, DungeonProgress>;
+  /** Each dungeon's alarm, by scene id (Dungeon.alarm): kept apart from its
+   *  progress so the story can raise it before the party is ever inside. */
+  alarms?: Record<Id, number>;
   /** Shops that caught the party stealing, by scene id: they will not serve
    *  it again. */
   barredShops?: Id[];
@@ -270,6 +273,10 @@ export function requirementMet(state: AdventureState, req: Requirement): boolean
     }
     case 'item': return partyHasItem(c, req.itemId);
     case 'gold': return c.gold >= req.atLeast;
+    case 'alarm': {
+      const a = state.alarms?.[req.dungeon] ?? 0;
+      return (req.atLeast === undefined || a >= req.atLeast) && (req.below === undefined || a < req.below);
+    }
     case 'classInParty': return c.characters.some((ch) => ch.classId === req.classId);
     case 'speciesInParty': return c.characters.some((ch) => ch.speciesId === req.speciesId);
     case 'visited': return state.visited.includes(req.scene);
@@ -334,6 +341,7 @@ export function blockedReason(state: AdventureState, requires?: Requirement[]): 
     case 'notFlag': return 'No longer available';
     case 'item': return `Requires ${unmet.itemId.replace(/-/g, ' ')}`;
     case 'gold': return `Requires ${unmet.atLeast} gold`;
+    case 'alarm': return 'Not with the place roused like this';
     case 'classInParty': return `Requires a ${unmet.classId} in the party`;
     case 'speciesInParty': return `Requires a ${unmet.speciesId} in the party`;
     case 'visited': return 'Requires exploring elsewhere first';
@@ -368,6 +376,10 @@ function applyEffect(state: AdventureState, eff: Effect, events: AdventureEvent[
       if (eff.flag === NIGHT && state.hour !== undefined) state.hour = MORNING;
       events.push({ type: 'flag', flag: eff.flag, value: false });
       break;
+    case 'alarm': {
+      raiseAlarm(state, module, eff.dungeon, eff.amount, events);
+      break;
+    }
     case 'gold': {
       // A loss takes what there is: the event says what changed hands.
       const before = c.gold;
@@ -1001,6 +1013,24 @@ function hubDungeon(state: AdventureState, module: Module): { id: Id; dungeon: D
   return scene?.kind === 'dungeon' ? { id: scene.id, dungeon: scene.dungeon } : undefined;
 }
 
+/**
+ * Raise a dungeon's alarm (Dungeon.alarm), and say so the first time it is
+ * roused (2). Any scene id will hold a level, so a story can raise a place's
+ * alarm before the party has seen it; only a dungeon with `alarm` acts on it.
+ */
+export function raiseAlarm(state: AdventureState, module: Module | undefined, sceneId: Id, amount: number, events: AdventureEvent[]): void {
+  const before = state.alarms?.[sceneId] ?? 0;
+  const after = Math.max(0, before + amount);
+  (state.alarms ??= {})[sceneId] = after;
+  const d = module?.scenes[sceneId];
+  if (before < 2 && after >= 2 && d?.kind === 'dungeon' && d.dungeon.alarm?.roused.length) {
+    const lines = d.dungeon.alarm.roused;
+    let h = 0;
+    for (const ch of sceneId) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    events.push({ type: 'text', paragraphs: [lines[h % lines.length]!] });
+  }
+}
+
 /** The party's progress through a dungeon, made on first use. A save from
  *  before a room was renamed puts the party back at the entry. */
 export function dungeonProgress(state: AdventureState, sceneId: Id, d: Dungeon): DungeonProgress {
@@ -1069,6 +1099,7 @@ function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, 
 
   if (room.fight && !p.cleared.includes(room.id)) {
     p.pending = true;
+    raiseAlarm(state, module, sceneId, 1, events);
     events.push(...enterScene(state, module, room.fight));
     return events;
   }
@@ -1205,6 +1236,17 @@ function step(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, to
     const r = rollDie(c.rng, 1000); c.rng = r.state;
     if ((r.value - 1) / 1000 < ambush.chance) return enterScene(state, module, ambush.battle);
   }
+  // A roused place (alarm 2 or more) sends someone to look; a fight or two
+  // alone only puts it on edge.
+  const alarm = state.alarms?.[sceneId] ?? 0;
+  if (d.alarm?.patrols.length && alarm >= 2) {
+    const c = state.campaign;
+    const r = rollDie(c.rng, 1000); c.rng = r.state;
+    if ((r.value - 1) / 1000 < Math.min(0.3, d.alarm.rate * (alarm - 1))) {
+      const pick = rollDie(c.rng, d.alarm.patrols.length); c.rng = pick.state;
+      return enterScene(state, module, d.alarm.patrols[pick.value - 1]!);
+    }
+  }
   return arrive(state, module, sceneId, d, p);
 }
 
@@ -1285,6 +1327,7 @@ export function forceDoor(state: AdventureState, module: Module, link: string): 
   const ok = rollFor(state, exit.force.skill as Parameters<typeof partySkillCheck>[1], exit.force.dc, 'best', events);
   if (ok) p.opened.push(link);
   events.push({ type: 'text', paragraphs: [ok ? 'It gives.' : 'It holds.'] });
+  if (!ok) raiseAlarm(state, module, scene.id, 1, events);
   return events;
 }
 
@@ -1542,12 +1585,12 @@ export function fleeBattle(state: AdventureState, module: Module, retreated: boo
       delete p.pending;
     }
   }
-  return [
-    { type: 'text', paragraphs: [retreated
-      ? 'You break off and get clear. They let you go — this time.'
-      : 'You think better of it and fall back the way you came.'] },
-    ...enterScene(state, module, HUB_REF),
-  ];
+  const events: AdventureEvent[] = [{ type: 'text', paragraphs: [retreated
+    ? 'You break off and get clear. They let you go — this time.'
+    : 'You think better of it and fall back the way you came.'] }];
+  // Running from a fight leaves someone alive to raise the cry.
+  if (d && retreated) raiseAlarm(state, module, d.id, 1, events);
+  return [...events, ...enterScene(state, module, HUB_REF)];
 }
 
 /** After the driver's shop / rest interaction, advance to the scene's `next`. */

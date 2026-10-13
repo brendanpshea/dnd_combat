@@ -229,3 +229,271 @@ I read all of the chapter's own files: the chapter definition, every scene file,
 5. **Give side obstacles a third answer, and fix the XP curve.** Give each of `mill`, `barrow`, `thicket`, `den-hyenas` and `ambush` one non-combat answer that pays `xp avoided`. For example: Nature on the cockatrices (move the flock with smoke), Religion to settle the barrow, fire to burn the webs, meat from `den-cache` to quiet the hyenas, turning the cold water on the thralls. Then fix the XP. Cut the marsh filler XP, or raise the level cap to 4 for over-delivering companies, so the den's fights still advance you. Rebalance `kennel-hyenas`, `pen-watch` and `den-watch` (about 25%) against `den-pit` and `den-gate` (90%+), so the optional rooms aren't the deadliest ones and the Pit is a climax rather than a speed bump.
 
 **Bottom line:** the authored layer (the gate, Vex, Vargan and the hag, the clock) is a good, Jaquays-friendly module. The generated layer around it is generic. It names itself wrong, backtracks constantly, and fills the gaps with badgers. Fix the generators and the den's reactions, and this chapter rewards clever play rather than patience.
+
+
+---
+
+# Recheck, after #395–#398
+
+All four critics read the chapter again after the fixes, with their first review and a list of the changes in hand.
+
+## Where they agree
+
+### Fixed
+
+- **The generated places are the chapter's own.** All four say the marsh road and the stockade now read as this story.
+- **The clock is said plainly:** six nights to the dark moon.
+- **The reed-cutter's lore** (`rumor-reeds`): each critic named it the best new scene.
+- **The non-combat answers:** at the mill, the barrow, the webs and the kennels.
+- **The carter's line turns Vargan through mercy.**
+- **The marsh walk is shorter:** a straighter road, and no empty searches.
+
+### Broken by the fixes (all four)
+
+1. **`den-alarm` contradicts the scenes around it.**
+   - A quiet entry (`den-slipped`, `den-picked`) still says "a camp that thinks it is safe" after a town-set alarm, and then Vex says "the whole den knows you're here".
+   - The `pens-alarm` win text says nobody comes.
+   - The hall's alarm line sits under `again:`, so it shows only on a return visit.
+   - The alarm changes no encounter, and it quietly costs Vex with no warning.
+2. **The captive rules are incoherent.**
+   - Leaving the pen sets `captives-taken` at once, so the moon clock is broken. `den-pens-empty` says the lady came, with the moon still up and even with the hag dead.
+   - A party that never looks is rewarded over one that looks and leaves.
+   - Two epilogue slides can both fire.
+3. **Generated fights were not all removed.** Corridor ambushes and the den's key guard (with its forced door) remain. The key guard still pays XP and levels a party.
+4. **Leftover torch lines.** These remain in `den-pens-door`, `den-pens` and `barrow`.
+
+### Still open
+
+- **The XP curve** peaks on the marsh, and the den's fights then pay nothing; the den's balance is inverted (the Pit easy, the optional rooms deadly).
+- **The den is one corridor**: one entry, no loop, no back way into the hall.
+- **The climax** usually closes on "End them both". The lore (`rumor-reeds`) doesn't lower the binding rite.
+- **Leaving a place mid-quest** can drop the party back in town.
+- **Wren** goes home early, and there is no companion on the road.
+- **Smaller points:** the hollow ambush has no non-combat answer, and the burning webs never mention the living guard in the cocoons.
+
+### Margaret Weis & Tracy Hickman
+
+I made no edits. I read my earlier section and "Where they agree", `4-den.story` (the pens and the hall), `parts.ts` (the rite), and the chapter one portion of both trilogy transcripts. I only skimmed the other stories and skipped the atlas.
+
+**Verdict:** The bones of a fine chapter are now visible: the lamb, the dark moon, the shoe and the pen all point the same way. But the generated layer still undercuts it in the places players feel most, the long walk and the moment of return.
+
+#### 1. My earlier complaints
+
+**Fixed**
+- **The marsh and the den now belong to this story.** `trail` reads "the road runs out into reeds and black water, and goes on as a line of planks and tussocks", and the trailhead has "a reed stake… something tied to it that used to be a hare." `inner` reads "tents and cook-smoke and stolen carts." The abbey, the dwarven smiths and the Bloodmaw are gone. This was my top complaint, and it is answered.
+- **The moon clock.** Mira's "Six, by my count, and none of them will say why" is just right: a number, and a mystery. The inn rest's "the old moon is a little thinner than it was" teaches that resting costs moon without a rule being stated.
+- **The regulars carry real lore.** `rumor-reeds` is the best new writing in the chapter: "One a winter, for sitting by our door in the dark… say her own price back to her, the old way, and ask for nothing more." It sets up the binding rite properly.
+- **The captives matter.** The cruel epilogue's "They find the chain hanging open, and a child's shoe in the straw" closes the shoe image with a gut-punch. The carter line ("The carter's girl is home") is a turn for Vargan earned by mercy, not by a die roll. That is exactly what I asked for.
+- **Side obstacles have non-combat answers.** `thicket-burned` reads well.
+
+**Not fixed**
+- **Leaving a place mid-quest still drops you in town.** In the cruel run, `trail/outside` offers "Walk back to Thornwick", and the party goes shopping at Proudford's Stores and catches the spy after they had already gone over the wall. `inner/outside` → `hollow-quiet` → "Take the marsh road back" sends the party back through the whole marsh mid-assault.
+- **Filler fights survived.** `gen:ghoul+lizardfolk`, `gen:lizardfolk+ghoul`, `gen:bugbear+bugbear+bandit` and `gen:giant-hyena+bugbear+bandit` still appear, each with one staging line ("Every frog in the reeds goes quiet at once"). The lines are better, but this is not "removed".
+- **Empty searches remain.** "A boot, with nobody's foot in it." "Fleas, and a blanket you would not wish on an enemy." "Someone's stash, already found by someone else." They are wittier now, but they are still searches that find nothing.
+- **The marsh still makes you backtrack.** In the completionist run, the order is Trailhead → Barrow → Trailhead → Ravine → Tracks → Ravine. The cruel run goes Fowler's Blind ↔ Hidden Cache ↔ Dry Hummock three times.
+- **Wren is still sent home in both runs.** There is still no companion on the road.
+- **The climax still closes on "End them both" in both runs.** The binding rite (`BIND_HAG_RITE_CHOICE`) is still reachable only after Vargan turns, and still needs Religion DC 15. So the reed-cutter's lore teaches a cure the player can't reach directly.
+
+**New problems introduced by the fixes**
+- **The den alarm contradicts the scene text.**
+  - In the cruel run, the party passes `den-slipped` ("no horn has sounded"), and `inner` still says "a camp that thinks it is safe." Then Vex says "The whole den knows you're here," because the spy was left loose. Neither the player nor the prose knows why.
+  - After `pens-alarm`, `den-alarm` is set, yet the won text reads "no one else comes… someone laughs at the noise and goes back to his dice."
+  - In `boss-approach`, the line `? den-alarm | The hall is full of raiders…` sits after `again:`. It seems to show only on a revisit: the completionist stormed the gate and got no such line on first entry.
+- **Torches are still mentioned.** `den-pens-door` ("as your torch comes near") and `den-pens` ("blink up at your torch") still refer to a torch that was removed.
+- **Repeated wording.** The carter in `den-pens` repeats the reed-cutter almost word for word: "My gran left her a lamb every midwinter." The echo should be on purpose and sound different, not be a copy.
+- **`gate-slipped` warns of a cost it never shows.** It promises "the Ashfang will hear of you before you ever see their smoke," but nothing on the marsh reacts to that.
+
+#### 2. The most important remaining problems
+
+1. **The journey has no arc of distance.** The exits, the round trips between rooms and the walks back to town break the sense of a road travelled once toward a doom. The chapter's title is "The Hollow Road", and the road still does not behave like a road.
+2. **The alarm has no story behind it.** A good system (Vex holds back, the hall is ready) is undercut by text that says the opposite. Players will read the alarm as a bug, not as a consequence.
+3. **The climax is still mostly a fight.** The new lore and the new mercy both lead to turning Vargan. Nothing lets a party that has heard the old price speak it directly.
+4. **There is no companionship.** Wren is the heart of the chapter, and she leaves on day 3.
+
+#### 3. Top 5 recommendations, by impact
+
+1. **Remove the outbound exits once the quest starts.** Once you are past `trailhead`, `trail/outside` should lead only back into the reeds, or let you fall back to camp. `inner/outside` should stop at `hollow-quiet`, with no "Take the marsh road back" while `den-entered` is set. Make the marsh rooms a single line with no branches, so it plays as a march.
+2. **Make the alarm visible and consistent.**
+   - Give `inner` and `den-slipped` alternate text that checks `den-alarm` ("torches along the tent lines; someone has heard of you").
+   - Make `gate-slipped` set a flag that shows up in the marsh (a watcher in the reeds, a tripped line of bells).
+   - Rewrite the `pens-alarm` won text: "Across the yard, a horn."
+   - Move `? den-alarm` in `boss-approach` above `again:` so it shows on first entry.
+3. **Open the rite to people who learned the lore.** Add a `boss-approach` option, gated on having heard `rumor-reeds`, that speaks her price directly, and lower the DC there, perhaps Religion or Persuasion DC 12. The reed-cutter's lore should pay off in the hall, not only in the epilogue.
+4. **Give Wren a reason to stay on the road.** In `scout-saved`, make "walk with us" the warm default: it costs a night, and she adds a line at the barrow, the hollow and the gate. Otherwise, let her come back at `gate` with the reeve's other scout. Her arc needs at least one more beat before `claim-scout`.
+5. **Clean up what is left of the generated layer.** Cut the remaining `gen:*` fights or turn them into named encounters (lizardfolk bearing the Reedwife's brand, "the chief's dice-throwers"). Delete empty searches outright. Remove the torch references, and rewrite the carter's lamb line so it answers the reed-cutter's ("same as the old man at the inn says, I'll wager") instead of repeating it.
+
+The heart is there now. Make the road run one way, and the chapter will feel like an epic.
+
+---
+
+### Naomi Novik
+
+I re-read my earlier section and the agreement summary, then all five `.story` files, `hollow-road.ts`, `parts.ts`, and the chapter one portion of the merciful and cruel transcripts. I edited nothing.
+
+#### (1) Earlier complaints: what changed
+
+**Fixed, and well:**
+- **Theming of the generated places.** "Past the last fence-post the road runs out into reeds and black water, and goes on as a line of planks and tussocks" is the right door. "A reed stake by the path, and something tied to it that used to be a hare" is exactly the folk detail I asked for. The den's "stolen cart… hacked with the raiders' mark" is good too. The abbey, the fire-priests and the "Daylight" exit are gone.
+- **Moon clock.** In `tavern-meet`, Mira now says "Six, by my count, and none of them will say why." The journal repeats it, and `inn-rest` ("the old moon is a little thinner than it was") makes resting feel like spending something. Fixed.
+- **Lore at the regulars' table.** `rumor-reeds` is the best new scene: "say her own price back to her, the old way, and ask for nothing more." But `rumor-magic` and `rumor-tactics` are still rules lessons dressed as folk.
+- **Non-combat answers.** `mill-smoked`, `barrow-settled` and the kennel meat all read well. `barrow-settled` ("You leave the gold where it lies") is a choice with a price, which is how it should work.
+- **Turning Vargan through the captives.** "The carter's girl is home. Your mother's house is still under the water." This is the mercy-buys-cleverness link I asked for.
+
+**Not fixed, or fixed in a way that causes new problems:**
+- **The captives are still hollow, and now the incentive runs backwards.** In the merciful run, Vex explicitly points to the pen ("do it before you go through to the chief"). The party walks straight to the hall and never looks. The epilogue still gives them "The carter carries the girl out himself, and she is still wearing her one shoe," and the run carries out `captives-freed`. Meanwhile `den-pens-left` sets `+captives-taken` at once. So looking and walking away is punished, but never looking is rewarded. Ignorance should not be the safest moral choice.
+- **The leave-them fix contradicts itself in three ways:**
+  - You described the fix as "the raiders move them when the den falls." That line (epilogue: "The {ashfang} who fled took the carter…") needs `not captives-taken`, so a party that left them never sees it.
+  - What leavers see instead is "The reeve's men reach the pens… after the moon has gone dark… a child's shoe in the straw." In the cruel run that fires when the den fell on day 5, two nights before the dark of the moon, and **the hag was already dead**.
+  - If you go back to `den-pens-empty` right after leaving, you find "wet, webbed footprints… Something has come for them out of the water" within the same hour, with the moon still up. The rule ("she comes when the moon goes dark") is broken by the code meant to enforce it.
+- **The alarm is mostly invisible.** In `boss-approach`, "? den-alarm | The hall is full of raiders who heard you coming" sits under `again:`. It only shows on a return visit. The fight itself is unchanged. Only Vex reacts.
+- **Vex can be lost to a choice made days earlier.** The merciful party bluffed the warden in town, so Vex said "Not tonight… I'm not turning my coat in front of all of them." That is a fair consequence, and `gate-slipped` hints at it ("the {ashfang} will hear of you"). But nothing tells the player the cost lands on the lieutenant. Also, `gate-signal-blown` costs Vex on a failed DC 10 roll, which is a heavy, invisible penalty for bad luck.
+- **Burning the webs.** `thicket` tells us "Some of the bundles are man-shaped." The fight branch then shows one of them is a living caravan guard. `thicket-burned` sets him alight and says only "nothing… but ash and a few blackened cocoons." That is a moral act the text never names. Either the burn should cost you the guard on the page, or the guard should never be there to burn.
+- **Generated fights still appear in both transcripts** (`gen:lizardfolk+zombie+zombie`, `gen:giant-hyena+bugbear+bandit`, `gen:lizardfolk+ghoul`), despite `maxFights: 0`. The transcripts may be stale, so this needs checking. Each now has a line ("A raider looks up from the fire with his mouth full, and shouts with it") and a parley, which helps. Searches like "A few coins, dropped and forgotten" also still appear. And the den still has a shuttle: Gate↔Empty Tent and outside↔back inside.
+- **XP still peaks before the den.** Both runs reach 3rd level before the pit.
+
+#### (2) The most important remaining problems
+
+1. **The captive outcomes are logically incoherent.** As above.
+2. **The lore does nothing in play.** `rumor-reeds` hands the player the binding, but `bind-hag-rite` is still a flat Religion DC 15. Hearing the reed-cutter, freeing the carter (who says the same lamb line), or reading the hag's own words in `boss-approach` changes nothing. The best idea in the chapter is still a single die roll.
+3. **Killing the hag costs nothing lasting.** The cruel epilogue's fen is as healed as the bound one ("the cold has lifted off the water"). The sequel picks this up (the Warden, opened from the inside), but chapter one says nothing about it.
+4. **Law and mercy never meet before the ending.** There is still no scene where the reeve and Mira want different things before `vargan-fate`.
+
+#### (3) Top five recommendations, by impact
+
+1. **Rebuild the captive ledger** (`den-pens-left`, `den-pens-empty`, epilogue lines ~199–233, the `parts.ts` rule at ~393):
+   - Leaving them sets `captives-left` only, not `captives-taken`.
+   - When the den falls, a party that left them gets the "raiders took them to sell" ending. Only Wren's men can soften that, and only if Wren was saved *and* the pen was never found.
+   - Once Vex has named the pen (`PENS_LEAD`), never looking counts the same as leaving.
+   - `den-pens-empty` should only fire after day 7. The "moon has gone dark" line needs both `day ≥ 7` and a living or bound hag.
+2. **Let lore lower the rite** (`rumor-reeds`, `den-pens`, `BIND_HAG_RITE`):
+   - Set `+know-price` from the reed-cutter, and again from the carter's line.
+   - With it, drop the DC to 11, or let any class attempt it with Persuasion or Wisdom. With the carter freed and present in spirit ("your gran's price"), let it pass without a roll.
+3. **Make the alarm real and readable:**
+   - Move "? den-alarm" in `boss-approach` out of `again:`, and swap the boss encounter for a harder variant or add raiders when it is set.
+   - Have `gate-slipped` and the bluff branch of `gate-blocked` say plainly that a known face in the den will not risk itself for you.
+   - Make a blown signal cost a day and Vex's *price* (a higher Persuasion DC), not Vex outright.
+4. **Name what burning the thicket does** (`thicket-burned`). Show the scorched caravan guard, or let a Perception or Medicine check spot the breathing cocoon first and cut him down before the fire. Fire, like the barrow gold, should carry a visible price.
+5. **Stage reeve against Mira, and finish the regulars:**
+   - Add a short Thornwick scene after `spy-caught` or `spy-caught-loud` where the reeve wants the peddler hanged and Mira argues for him. It teaches the two axes before `vargan-fate`.
+   - Rewrite `rumor-magic` and `rumor-tactics` as fen lore: the spring the water rose, why lambs, the barrow under the fen. That also seeds the Sunken Barrows.
+   - Give the hag's death a line in the cruel epilogue, such as the shallows staying sour or a midwinter stake left with no one to take the lamb.
+
+---
+
+### Terry Pratchett
+
+I've finished the re-review. I read my earlier section and the summary, all five story files, `hollow-road.ts` and the chapter-one part of both transcripts, and I edited nothing. In short, the prose has been fixed far more completely than the systems: the old wrapper text is gone, but the generated layer still drops in its own fights, and the new alarm and captives flags are set without the rest of the chapter checking them.
+
+#### 1. My earlier complaints
+
+**Fixed:**
+- **The generated wrapper (my #1).** The dressing now belongs to the chapter. "Past the last fence-post the road runs out into reeds and black water, and goes on as a line of planks and tussocks" is a road. The den is "tents and cook-smoke and stolen carts". There are no abbeys, Bloodmaw gnolls or hymn numbers left.
+- **Backtracking (my #2).** The marsh now runs in a straight line in the rusher run (Trailhead → Tracks → Ravine → Frog Shallows → Mist Hollow → Thicket → Hollow), and the searches that turned up nothing are gone.
+- **The regulars as a tutorial (my #6).** `rumor-reeds` is the best addition: "Folk say a lot of things." It seeds the binding without saying it is a solution. The brief called the speaker a woman; in the text he is a man ("his cup"), which is fine either way.
+- **The moon clock.** The six nights are now concrete. Mira's "Six, by my count" matches the day-4 line "Three more nights… at most".
+- **The Vex continuity bugs.** `vex-turned` now has its own epilogue line, separate from the "ridge" line, so that bug is fixed.
+
+**Not fixed:**
+- **Hag contradiction.** In `hollow-won` she still says "The chief and I will be waiting", yet `boss-approach` has her "come up out of her water to see".
+- **The town.** The smithy and temple are still menus with no person behind them.
+- **The second scout.** She is still only an epilogue line.
+- **Generated fights.** These were supposedly removed, but both transcripts, regenerated in the same commit (#398), still contain them:
+  - `trail/f1-ambush-m0-m1` (`gen:giant-toad+lizardfolk`)
+  - `inner/f1-ambush-m4-m5` (`gen:giant-hyena+orc+orc+bandit`)
+  - `inner/f1-fight-key` (`gen:gnoll+scout+giant-hyena+bandit`)
+
+  They are themed now and get one line each ("Something laughs behind the wood pile, high and wrong"). But the den also still rolls an "Armourer's Tent" with "a heavy key", and a tent with a door you "Force… [Athletics DC 15]". The comment in `hollow-road.ts` says the den has "no lock and key of its own", which these runs contradict.
+- **Leftover torch.** "your torch" is still in `den-pens-door` and `den-pens`, and "your light" in `barrow`.
+
+**New problems introduced by the fixes:**
+- **The alarm contradicts the scene it is in.**
+  - The rusher bluffs the warden, so `gate-slipped` sets `den-alarm`. They then pick the water-gate silently, and the den's door line still reads "a camp that thinks it is safe". Two scenes later, Vex says "Every one of them is up and looking for you." Nothing has happened in between to justify it.
+  - `den-slipped` has the gate gnolls snoring while the whole den is supposedly on watch.
+  - `pens-alarm` (won) sets `+den-alarm` and then says "someone laughs at the noise and goes back to his dice."
+- **The alarm changes nothing but Vex's dialogue.** It blocks Vex's offers and adds one prose line in the hall, and that line ("none of them is sitting down") sits under `boss-approach`'s `again:` block. So you only see it after losing the fight once. Nothing in `parts.ts` or `hollow-road.ts` changes an encounter, so the hall is not actually ready.
+- **Leaving the captives now costs them on the spot, faster than the clock.** `den-pens-left` sets `+captives-taken` at once. Come straight back and `den-pens-empty` shows webbed footprints, with "the lady in the water came for them" on night two. The carter told you she comes at the dark moon. The penalty is right, but the clock is now wrong. It also makes the epilogue slide "reeve's men… on Wren's word… captives-left, not captives-taken" impossible to reach.
+- **Two epilogue slides contradict each other.** If Wren is saved and you never find the pens, both of these fire:
+  - "They have the pen open… she is still wearing her one shoe"
+  - "It is empty… They are never found"
+
+  The last slide has no check on Wren's fate.
+- **Inconsistent alarm triggers.** Going over the wall alarms the den even if the peddler never saw you. Meanwhile the unlucky party camps in an "Empty Tent" inside a raider den, takes a long rest, and nobody minds.
+
+#### 2. Most important remaining problems
+
+1. **Half-built consequence flags.** `den-alarm` and `captives-taken` are set, but the scenes and the epilogue don't read them consistently. The world doesn't hold together when a player pokes at it, which is exactly where it now gets poked.
+2. **The generated layer still sets the pace inside the den.** Keys, forced doors, rest stops and filler fights belong to a dungeon, not a stockade.
+3. **The climax still collapses to "End them both".** Both transcripts take it. Turning Vargan through the captives requires `pens-settled; not captives-taken`. That is good design, but Vex never steers you there when you meet him after the pens, and an alarmed den takes Vex off the table.
+4. **Losing fights.** "You come to outside, dragged clear by whoever was still standing" is generic. Being thrown out of the den and walking back in the same way, with no change, makes the alarm meaningless.
+
+#### 3. Top 5 recommendations, by impact
+
+1. **Make `den-alarm` real everywhere it is set.**
+   - Give `inner`'s door line, `den-slipped` and `pens-alarm` (won) versions gated on `den-alarm`.
+   - Move the hall line in `boss-approach` out of `again:` so it shows on the first visit.
+   - Give `boss` a stronger encounter variant when the alarm is up.
+   - Forbid "Make camp" in the den once the alarm is up.
+2. **Fix the captives logic.**
+   - `den-pens-left` should set `captives-left` only. Let the day-7 dawn take them, or the reeve's men if Wren is saved, so the moon clock stays true.
+   - Gate the epilogue's final "never found" slide on `npc wren not fate saved`. As written, it fires alongside the one-shoe rescue slide.
+3. **Actually turn off generated fights and lock-and-key rooms** in `trail` and `inner`, and check by regenerating the transcripts. If the engine can't, say so in the spec comment instead of claiming it.
+4. **Make the gate-alarm cause visible.**
+   - In `gate-slipped`, say the peddler saw you go.
+   - For the wall route, add a line where someone on the road sees you.
+   - Let catching the peddler afterwards clear `den-alarm`, since he can't report a party that has him in a cell.
+5. **Small continuity fixes.**
+   - Change `hollow-won`'s "will be waiting" so it suggests she might come up from the water to the fire.
+   - Remove the leftover torch lines.
+   - Give the smithy keeper one line and a name, as Bram has.
+   - Let Wren mention the second scout once in `scout-saved`.
+
+---
+
+### Jennell Jaquays
+
+I re-reviewed chapter one as Jaquays. I edited nothing. All four route transcripts and `docs/balance.md` were regenerated in #398, the same commit as the fixes, so the play evidence below is current.
+
+#### 1. Earlier complaints: fixed, not fixed, and new problems
+
+**Fixed:**
+- **The generated places now belong to the chapter.** The transcripts show "The Marsh Road" with rooms like Frog Shallows and Mist Hollow. The den has The Pit, Kennels and A Lone Fire. The leave texts are outdoor ones and the abbey and fire-priest histories are gone. My #1 is done.
+- **Every side obstacle now has a non-combat answer that pays XP.** These are `barrow-settled` (Religion 13), `thicket-burned` (Survival 12), the mill smoke (Nature 13) and the `den-hyenas` parley (Animal Handling 12). The rusher took the meat at the kennels. My #5 is half done: the hollow `ambush` is still only a Perception roll to decide who is surprised.
+- **The spy is no longer the only way out of town.** `gate-blocked` now offers a bluff (Deception 13, one try) and the wall (Stealth 12, one try, costs a day). Both set `den-alarm`. If both fail you are back to catching the spy, which is fine.
+- **The clock and the lore.** "Six, by my count" now comes in `tavern-meet`, and the reed-cutter's lamb at the regulars' table (`rumor-reeds`) seeds the hag's price.
+
+**Not fixed:**
+- **The marsh lock still needs both flags.** `trail.lock` requires `trail-read` AND `crossed-ravine`. On a spine that means less backtracking, but there is still no choice of route.
+- **The den is still one corridor.** It has one entry room (m0 Gate) whichever way you got in, no loop, and no back way into the hall.
+- **Factions still don't change the map.**
+- **The XP curve still peaks before the den.** The completionist reaches 3rd at `thicket-fight`, still on the marsh. The rusher reaches it at `den-picked` and the unlucky route at `gate-caught`. Every den fight after that pays nothing. The balance numbers are still upside down: `den-pit` is 100%/100% (EASY), while `kennel-hyenas` is 80% fresh and 20% worn, `pen-watch` is 47% worn, and `ashfang-hall` is 13% worn.
+
+**Fixes that introduced new problems:**
+- **Filler fights were not actually removed.** `maxFights: 0` left two kinds of generated fight in place:
+  - Corridor ambushes: `trail/f1-ambush-m0-m1` (gen:lizardfolk+zombie+zombie) and `inner/f1-ambush-m4-m5` (gen:giant-hyena+orc+orc+bandit, right outside the hall).
+  - A key guard: `inner/f1-fight-key`, which ends "One of them carried a heavy key", in a den whose spec says it has no lock and key.
+  
+  Corridor ambushes pay no XP, but the key fight still does. The merciful route went from 2nd to 3rd by parleying it, so a generated fight levelled the party, not the story.
+- **`den-alarm` contradicts itself.** In the rusher route, the party bluffs out of Thornwick (`den-alarm` set) and then picks the water-gate silently. `GATE_PASSED` sets `den-quiet`, and the yard reads "a camp that thinks it is safe". Then at A Lone Fire, Vex says "The whole den knows you're here." A flag set in town overrides a perfect infiltration. The town escape should make the gate harder. It should not cancel a quiet entry after the fact.
+- **The alarm costs a hidden price and gives no warning.** `VEX_OFFERS` hides every turn option under `den-alarm`, which also drops the XP for skipping `ashfang-hall` and `ashfang-warlord-alone`. So the bluff out of town quietly costs you Vex, Hask and a big XP award. Meanwhile the gate's DCs don't read the alarm at all: the water-gate is still DC 10.
+- **The hall's alarm line is almost never seen.** `? den-alarm | The hall is full of raiders…` sits under `again:` in `boss-approach`, so it shows only on a return visit. It also changes nothing mechanically: it is the same `ashfang-hall` encounter either way.
+- **A locked door appears on a spine with no keys.** The rusher had to "Force the door to A Lone Fire [Athletics DC 15]". That was generated filler with no fiction behind it.
+
+#### 2. The biggest problems that remain
+
+- **The den is a hallway with set pieces along it.** Every entry lands at m0. The Pit, the Kennels and Vex are visited in generator order. The way you came in (`den-picked`, `den-slipped`, `gate-fight`) makes no difference to where you are.
+- **Alarm is one flag that only removes things.** It costs you Vex and adds nothing new: no extra guards at the gate, no changed hall roster, no hag on watch.
+- **The level cap of 3 wipes out the den's rewards.** Clever play on the marsh (the new XP-paying answers) gets you to 3rd sooner, so the den's answers pay nothing. The fixes made this worse.
+- **The Pit is a pushover and the optional rooms are the killers.** The pacing runs backwards.
+- **The hollow is still one roll.** It is the marsh's climax, and its only branches are who gets surprised.
+
+#### 3. Top 5 recommendations, by impact
+
+1. **Make `den-alarm` consistent and give it teeth.** Split it in two:
+   - `den-warned` (from the spy loose, the bluff or the wall) raises the gate DCs (water-gate 13, wall 15, signal gone) and adds a second watch to `gate-fight`. A quiet entry clears it: `GATE_PASSED` should cancel the warning, not leave it in force.
+   - `den-roused` (from `gate-fight`, `gate-caught`, `pens-alarm`, `gate-signal-blown`) shuts Vex out and swaps `boss` for a heavier encounter.
+   
+   Also move the "hall is full of raiders" line out of `again:`.
+2. **Finish removing the filler.** Strip `f1-fight-key` and the corridor ambushes from `inner` and `trail`, or drop `maxFights: 0` and stop pretending. Also delete the generated locked door. Re-run balance afterwards.
+3. **Give the den alternate entries and a back way.** Land `den-picked` at the Pens or Kennels, `den-slipped` at A Lone Fire, and `gate-fight` at The Pit. Open a drain or back passage into The Chief's Hall, from `vex-turned` or `den-pens-freed` (the carter knows it). Using it should skip `inner/f1-ambush-m4-m5` and The Pit.
+4. **Fix the XP curve.** Either cut the marsh payouts (the 30 XP at `ravine` and the 20 at `tracks`, and pay the side answers' avoided XP at half), or raise `levelBand.to` to 4 with the hall tuned for it. Make `den-pit` the real climax and soften `kennel-hyenas` and `pen-watch` from about 20% worn up to about 60%.
+5. **Give the marsh a real choice.** Replace the two-flag lock with one lock and two keys, `trail-read` OR `crossed-ravine`, each opening its own approach to The Hollow (dry line or sinkholes). Give `ambush` a non-combat answer, such as Wren's route, a cold-water/brand trick on the thralls, or a Nature or Arcana read of the brand that turns them back.

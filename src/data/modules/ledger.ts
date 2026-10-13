@@ -35,11 +35,11 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // shared lists, near-duplicate lines merged, text-only flags dropped), from
   // 41 / 100 / 1.25M, 25 / 95 / 150k and 35 / 215 / 650k, to just above the
   // new spend: 36 / 89 / 1.19M, 23 / 84 / 97k and 34 / 203 / 559k.
-  // Raised for the design review's den alarm (Oct 2026): one flag, `den-alarm`
-  // (the den knows the company is coming: a stormed or blown gate, a fight at
-  // the pens, or slipping out of {thornwick} with the spy loose), which roughly
-  // doubles the states, from 0.65M to 1.54M.
-  'hollow-road': { flags: 39, conditional: 88, states: 1_650_000 },
+  // Raised for the design review's fixes (Oct 2026): the den's alarm moved into
+  // the dungeon itself (no story flag), and the captives became one fetch quest
+  // (freed or taken, by the clock or the boss's fall). No new facts, but the
+  // captives' two now change in more places: 0.65M states to 1.83M.
+  'hollow-road': { flags: 38, conditional: 88, states: 1_950_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },

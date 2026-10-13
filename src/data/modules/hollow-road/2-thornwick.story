@@ -68,7 +68,7 @@ art: 👁️
     stage Catch the peddler, quietly if you can | spy-caught
     taken: know-spy
     resolved: spy-caught
-    failed: den-alarm
+    failed: won
 
 # tavern-trail
 noBack: true
@@ -235,14 +235,14 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 ? spy-seen | "And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road's yours."
 > [Deception DC 13] "Reeve's business. Stand aside." → gate-slipped  #bluff
   once hide
-  do +den-alarm
+  do alarm inner/delve +2
   check deception 13 → gate-bluff-called
-  fail do -den-alarm
+  fail do alarm inner/delve -2
 > [Stealth DC 12] Go over the wall after dark → gate-slipped  #wall
   once hide
-  do +den-alarm; day
+  do alarm inner/delve +2; day
   check stealth 12 → gate-wall-caught
-  fail do -den-alarm; day
+  fail do alarm inner/delve -2; day
 > Back into the square → square/city  #ok
 
 # gate-bluff-called
@@ -260,7 +260,7 @@ You find a low stretch of the wall, but the watch walks it more often than you b
 # gate-slipped
 noBack: true
 art: loc-road 🌙
-You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddler is still at his stall, and the {ashfang} will hear of you before you ever see their smoke.
+You are out, and {thornwick} is behind you. Somewhere behind you, too, the peddler is still at his stall. He saw you go, and the {ashfang} will hear of you before you ever see their smoke.
 > Set out on the marsh road → road-out  #go
 
 # mill

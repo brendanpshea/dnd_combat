@@ -69,7 +69,7 @@ export function resolve(x: unknown, env: StoryEnv): unknown {
 // --- Shorthands ------------------------------------------------------------
 
 const WORD = /^[\w.:/'-]+$/;
-const KEYWORDS = new Set(['not', 'gold', 'class', 'with', 'without', 'item', 'visited', 'at', 'npc', 'xp', 'drop', 'day', 'join', 'leave']);
+const KEYWORDS = new Set(['alarm', 'not', 'gold', 'class', 'with', 'without', 'item', 'visited', 'at', 'npc', 'xp', 'drop', 'day', 'join', 'leave']);
 
 /** Split a `;` list at the top level (not inside JSON, quotes or calls). */
 function splitList(s: string): string[] {
@@ -110,6 +110,7 @@ function parseReq(t: string, where: string): unknown {
   if (ref) return { $spread: ref };
   let m: RegExpExecArray | null;
   if ((m = /^not ([\w.:/'-]+)$/.exec(t))) return { kind: 'notFlag', flag: m[1] };
+  if ((m = /^alarm (\S+) (>=|<) (\d+)$/.exec(t))) return { kind: 'alarm', dungeon: m[1], ...(m[2] === '>=' ? { atLeast: Number(m[3]) } : { below: Number(m[3]) }) };
   if ((m = /^gold (.+)$/.exec(t))) return { kind: 'gold', atLeast: parseNum(m[1]!, where) };
   if ((m = /^class (\S+)$/.exec(t))) return { kind: 'classInParty', classId: m[1] };
   if ((m = /^with (\S+)$/.exec(t))) return { kind: 'companion', companion: m[1] };
@@ -137,6 +138,10 @@ function printReq(r: Record<string, unknown>): string {
     case 'item': if (keys === 'itemId,kind' && w(r.itemId)) return `item ${r.itemId}`; break;
     case 'visited': if (keys === 'kind,scene' && w(r.scene)) return `visited ${r.scene}`; break;
     case 'at': if (keys === 'hub,kind' && w(r.hub)) return `at ${r.hub}`; break;
+    case 'alarm':
+      if (keys === 'atLeast,dungeon,kind' && w(r.dungeon)) return `alarm ${r.dungeon} >= ${r.atLeast}`;
+      if (keys === 'below,dungeon,kind' && w(r.dungeon)) return `alarm ${r.dungeon} < ${r.below}`;
+      break;
     case 'npc':
       if (keys === 'kind,met,npc' && w(r.npc) && typeof r.met === 'boolean') return `npc ${r.npc} ${r.met ? '' : 'not '}met`;
       if (keys === 'fate,kind,npc' && w(r.npc) && w(r.fate)) return `npc ${r.npc} fate ${r.fate}`;
@@ -158,6 +163,7 @@ function parseEff(t: string, where: string): unknown {
   if ((m = /^item (\S+)(?: x(\d+))?$/.exec(t))) return { kind: 'addItem', itemId: m[1], ...(m[2] ? { qty: Number(m[2]) } : {}) };
   if ((m = /^drop (\S+)(?: x(\d+))?$/.exec(t))) return { kind: 'removeItem', itemId: m[1], ...(m[2] ? { qty: Number(m[2]) } : {}) };
   if (t === 'day') return { kind: 'passDay' };
+  if ((m = /^alarm (\S+) ([+-]\d+)$/.exec(t))) return { kind: 'alarm', dungeon: m[1], amount: Number(m[2]) };
   if ((m = /^join (\S+)$/.exec(t))) return { kind: 'joinParty', companion: m[1] };
   if ((m = /^leave (\S+)$/.exec(t))) return { kind: 'leaveParty', companion: m[1] };
   if ((m = /^npc (\S+)((?: met| fate \S+| attitude -?\d+)+)$/.exec(t))) {
@@ -185,6 +191,7 @@ function printEff(e: Record<string, unknown>): string {
     case 'addItem': if ((keys === 'itemId,kind' || keys === 'itemId,kind,qty') && w(e.itemId)) return `item ${e.itemId}${q}`; break;
     case 'removeItem': if ((keys === 'itemId,kind' || keys === 'itemId,kind,qty') && w(e.itemId)) return `drop ${e.itemId}${q}`; break;
     case 'passDay': if (keys === 'kind') return 'day'; break;
+    case 'alarm': if (keys === 'amount,dungeon,kind' && w(e.dungeon) && Number.isInteger(e.amount)) return `alarm ${e.dungeon} ${(e.amount as number) >= 0 ? '+' : ''}${e.amount}`; break;
     case 'joinParty': if (keys === 'companion,kind' && w(e.companion)) return `join ${e.companion}`; break;
     case 'leaveParty': if (keys === 'companion,kind' && w(e.companion)) return `leave ${e.companion}`; break;
     case 'npc': {

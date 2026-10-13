@@ -121,6 +121,7 @@ export function validateModule(whole: Module): string[] {
     if (scene.kind !== 'dungeon') continue;
     for (const r of scene.dungeon.rooms) if (r.fight) roomFights.add(r.fight);
     for (const l of scene.dungeon.links) if (l.door?.ambush) roomFights.add(l.door.ambush.battle);
+    for (const pt of scene.dungeon.alarm?.patrols ?? []) roomFights.add(pt);
     if (scene.dungeon.camp?.risky) roomFights.add(scene.dungeon.camp.risky.battleScene);
   }
 
