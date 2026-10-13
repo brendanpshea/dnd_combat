@@ -859,7 +859,7 @@ A tally stick hangs from a tent pole, with a notch for every cart taken. At the 
 
 A raider looks up from the fire with his mouth full, and shouts with it.
 
-**Battle:** gen:giant-hyena+giant-hyena+giant-hyena+guard <sub>(`gen:giant-hyena+giant-hyena+giant-hyena+guard` on `@room`)</sub>
+**Battle:** gen:berserker+berserker+berserker+guard <sub>(`gen:berserker+berserker+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -903,7 +903,7 @@ A drowned house is scratched into a plank: a boy on the roof, and the water at t
 
 _(a paragraph shown before: “A raider looks up from the fire…”)_
 
-**Battle:** gen:giant-hyena+giant-hyena+giant-hyena+guard <sub>(`gen:giant-hyena+giant-hyena+giant-hyena+guard` on `@room`)</sub>
+**Battle:** gen:berserker+berserker+berserker+guard <sub>(`gen:berserker+berserker+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 

@@ -43,7 +43,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | wyrmcalling | `clutch-r` | The Brood on the Rim `den-clutch-r` | `open` | 5 (4) | 100% | 100% | 70–90% |
 | wyrmcalling | `clutch-br` | The Brood on the Rim `den-clutch-br` | `open` | 5 (4) | 100% | 100% | 70–90% |
 | hollow-road | `mill-fight` | Cockatrice Flock `cockatrice-flock` | `open` | 1 (1) | 100% | 100% | 70–90% |
-| hollow-road | `inner/f1-patrol` | gen:giant-hyena+giant-hyena+giant-hyena+guard `gen:giant-hyena+giant-hyena+giant-hyena+guard` | room (The Ashfang Den, in a corridor) | 3 (?) | 100% | 100% | 70–90% |
+| hollow-road | `inner/f1-patrol` | gen:berserker+berserker+berserker+guard `gen:berserker+berserker+berserker+guard` | room (The Ashfang Den, in a corridor) | 3 (?) | 100% | 100% | 70–90% |
 | sunken-barrows | `lights-fight` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 100% | 70–90% |
 | wyrmcalling | `boarruns-fight` | The Boar-Runs `boar-runs` | `pass` | 4 (4) | 100% | 100% | 70–90% |
 | sunken-barrows | `lights-lured` | The Corpse-Lights `corpse-lights` | `bog` | 3 (3) | 100% | 97% | 70–90% |
@@ -72,7 +72,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 - `goblin-outriders` on `open` at level 2: 100% fresh, 73% worn **EASY**
 - `den-gate` on `corridor` at level 3: 100% fresh, 87% worn **EASY**
 - `den-pit` on `ruins` at level 3: 100% fresh, 100% worn **EASY**
-- `gen:giant-hyena+giant-hyena+giant-hyena+guard` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 100% worn **EASY**
+- `gen:berserker+berserker+berserker+guard` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 100% worn **EASY**
 - `drowned-chapel` on `ruins` at level 4: 98% fresh, 57% worn **EASY**
 - `corpse-lights` on `bog` at level 4: 100% fresh, 100% worn **EASY**
 - `serpent-pool` on `marsh` at level 4, foes surprised: 100% fresh, 87% worn **EASY**
@@ -90,11 +90,11 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 - `boar-runs` on `pass` at level 5: 100% fresh, 100% worn **EASY**
 - `corpse-lights` on `bog` at level 4, party surprised: 100% fresh, 100% worn **EASY**
 - `green-dragon-den` on `marsh` at level 4: 98% fresh, 33% worn **EASY**
-- `gen:orc+scout+giant-hyena+giant-hyena` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 100% worn **EASY**
+- `gen:berserker+giant-hyena+giant-hyena+berserker+guard` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 87% worn **EASY**
 - `corpse-lights` on `bog` at level 3: 100% fresh, 100% worn **EASY**
 - `serpent-pool` on `marsh` at level 4: 100% fresh, 70% worn **EASY**
 - `den-clutch-r` on `open` at level 5: 100% fresh, 100% worn **EASY**
-- `gen:berserker+guard+orc+worg` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 100% worn **EASY**
+- `gen:berserker+giant-hyena+berserker+giant-hyena+guard` on room (The Ashfang Den, in a corridor) at level 3: 100% fresh, 90% worn **EASY**
 - `corpse-lights` on `bog` at level 3, party surprised: 100% fresh, 97% worn **EASY**
 - `diggers` on `corridor` at level 4: 100% fresh, 100% worn **EASY**
 - `boar-runs` on `pass` at level 4: 100% fresh, 100% worn **EASY**
@@ -121,7 +121,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | trilogy-completionist | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1394 XP) | 2 | 100% | 100% (3) | 100% | fought | **EASY** |
 | trilogy-completionist | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (1669 XP) | 3 | 80% | 20% (4) | 20% | fought |  |
 | trilogy-completionist | `inner/f1-m3-watch` | The Watch at the Pen `pen-watch` | `village` | — | 3 (1894 XP) | 3 | 94% | 37% (5) | 37% | fought |  |
-| trilogy-completionist | `inner/f1-patrol` | gen:giant-hyena+giant-hyena+giant-hyena+guard `gen:giant-hyena+giant-hyena+giant-hyena+guard` | room (The Ashfang Den, in a corridor) | — | 3 (1994 XP) | ? | 100% | 100% (6) | 100% | fought | **EASY** |
+| trilogy-completionist | `inner/f1-patrol` | gen:berserker+berserker+berserker+guard `gen:berserker+berserker+berserker+guard` | room (The Ashfang Den, in a corridor) | — | 3 (1994 XP) | ? | 100% | 100% (6) | 100% | fought | **EASY** |
 | trilogy-completionist | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1994 XP) | 3 | 70% | 13% (8) | 13% | fought |  |
 | trilogy-rusher | `road-ambush` | Ashfang Outriders `raiders-forward` | `open` | — | 1 (0 XP) | 1 | 92% | 92% (0) | 60% | fought |  |
 | trilogy-rusher | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (251 XP) | 1 | 84% | 84% (0) | 40% | fought |  |
@@ -133,7 +133,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | trilogy-cruel | `road-out` | Goblin Outriders `goblin-outriders` | `open` | — | 1 (113 XP) | 1 | 84% | 47% (1) | 40% | fought |  |
 | trilogy-cruel | `ambush-sprung` | The Hag's Thralls `hag-thralls` | `bog` | party surprised | 2 (438 XP) | 2 | 86% | 86% (0) | 23% | fought |  |
 | trilogy-cruel | `gate-caught` | Gate Enforcers `den-gate` | `corridor` | party surprised | 2 (663 XP) | 2 | 82% | 53% (1) | 17% | fought |  |
-| trilogy-cruel | `inner/f1-patrol` | gen:orc+scout+giant-hyena+giant-hyena `gen:orc+scout+giant-hyena+giant-hyena` | room (The Ashfang Den, in a corridor) | — | 3 (951 XP) | ? | 100% | 100% (2) | 100% | fought | **EASY** |
+| trilogy-cruel | `inner/f1-patrol` | gen:berserker+giant-hyena+giant-hyena+berserker+guard `gen:berserker+giant-hyena+giant-hyena+berserker+guard` | room (The Ashfang Den, in a corridor) | — | 3 (951 XP) | ? | 100% | 87% (2) | 87% | fought | **EASY** |
 | trilogy-cruel | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (951 XP) | 2 | 100% | 100% (3) | 100% | fought | **EASY** |
 | trilogy-cruel | `inner/f1-m3-watch` | The Watch at the Pen `pen-watch` | `village` | — | 3 (1226 XP) | 3 | 94% | 37% (4) | 37% | fought |  |
 | trilogy-cruel | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1326 XP) | 3 | 70% | 13% (6) | 13% | fought |  |
@@ -152,7 +152,7 @@ Main-path fights whose fresh rate clears the top of their band, easiest first (t
 | trilogy-unlucky | `gate-caught` | Gate Enforcers `den-gate` | `corridor` | party surprised | 2 (688 XP) | 2 | 82% | 17% (5) | 17% | fought |  |
 | trilogy-unlucky | `den-hyenas` | The Kennels `kennel-hyenas` | `ruins` | — | 3 (976 XP) | 3 | 80% | 20% (6) | 20% | fought (lost 1 first) |  |
 | trilogy-unlucky | `den-muster` | The Pit-Brute and Its Champion `den-pit` | `ruins` | — | 3 (1201 XP) | 2 | 100% | 100% (8) | 100% | fought | **EASY** |
-| trilogy-unlucky | `inner/f1-patrol` | gen:berserker+guard+orc+worg `gen:berserker+guard+orc+worg` | room (The Ashfang Den, in a corridor) | — | 3 (1476 XP) | ? | 100% | 100% (9) | 100% | fought (lost 1 first) | **EASY** |
+| trilogy-unlucky | `inner/f1-patrol` | gen:berserker+giant-hyena+berserker+giant-hyena+guard `gen:berserker+giant-hyena+berserker+giant-hyena+guard` | room (The Ashfang Den, in a corridor) | — | 3 (1476 XP) | ? | 100% | 90% (9) | 90% | fought (lost 1 first) | **EASY** |
 | trilogy-unlucky | `inner/f1-m4-watch` | The Watch at the Pen `pen-watch` | `village` | — | 3 (1476 XP) | 3 | 94% | 37% (10) | 37% | fought (lost 1 first) |  |
 | trilogy-unlucky | `boss` ★ | The Ashfang Chief and His Guard `ashfang-hall` | `firepit` | — | 3 (1476 XP) | 3 | 70% | 13% (12) | 13% | fought |  |
 
