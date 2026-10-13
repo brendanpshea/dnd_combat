@@ -272,7 +272,7 @@ The mill's sails hang still, and the miller meets you at a barred door with a bo
 again:
 {osk} the miller still has his boat-hook in both hands. "Back, are you? The ugly things are still in my hedgerows, and my grain's still standing."
 answer nature 13 > Smoke them out of the hedge with green wood  #smoke
-You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.
+You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure. On his step lies a single grey feather, and he will not pick it up.
 do gold 35
 fight > Beat the hedgerows  #help
 Two bat-winged things burst out of the hedge in a fury of beak and scale, hissing like geese. "Cockatrices!" the miller shouts from his door. "Mind the beaks!"

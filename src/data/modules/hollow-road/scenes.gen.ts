@@ -3,7 +3,7 @@
 import type { Scene } from '../../../adventure/types.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';
-import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, GATE_QUIET, HOLLOW_PASSED, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, TURN_UNREAD, TURN_UNREAD_FRESH, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED } from './parts.js';
+import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, GATE_QUIET, HOLLOW_PASSED, IN_BY_WATER, IN_OVER_WALL, LIEUTENANT, MIRA, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, TURN_UNREAD, TURN_UNREAD_FRESH, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED } from './parts.js';
 
 export const SCENES: Record<string, Scene> = {
   "road": {
@@ -706,7 +706,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { emoji: "🌾" },
     text: [
-      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure.",
+      "You stack green ash on the windward side of the hedge and light it. The smoke rolls in thick and white. The cockatrices come out of the far side hissing and blind, and keep going, away up the valley. The miller pays up gladly, and spends a long while poking the hedge with his boat-hook to make sure. On his step lies a single grey feather, and he will not pick it up.",
     ],
     next: [
       {
@@ -997,7 +997,11 @@ export const SCENES: Record<string, Scene> = {
         success: {
           to: "@hub",
           text: ["You haul each other up and over, hand over hand."],
-          effects: [{ kind: "setFlag", flag: "crossed-ravine" }, { kind: "xp", amount: 30 }],
+          effects: [
+            { kind: "setFlag", flag: "crossed-ravine" },
+            { kind: "setFlag", flag: "trail-read" },
+            { kind: "xp", amount: 30 },
+          ],
         },
         failure: {
           to: "ravine",
@@ -1012,7 +1016,11 @@ export const SCENES: Record<string, Scene> = {
         success: {
           to: "@hub",
           text: ["Light on your feet, you thread the shifting stones and reach the far lip."],
-          effects: [{ kind: "setFlag", flag: "crossed-ravine" }, { kind: "xp", amount: 30 }],
+          effects: [
+            { kind: "setFlag", flag: "crossed-ravine" },
+            { kind: "setFlag", flag: "trail-read" },
+            { kind: "xp", amount: 30 },
+          ],
         },
         failure: {
           to: "ravine",
@@ -1030,7 +1038,11 @@ export const SCENES: Record<string, Scene> = {
           text: [
             "You trace a gentler slope downstream and lead the party around dry-shod. It costs time, but nothing else.",
           ],
-          effects: [{ kind: "setFlag", flag: "crossed-ravine" }, { kind: "xp", amount: 15 }],
+          effects: [
+            { kind: "setFlag", flag: "crossed-ravine" },
+            { kind: "setFlag", flag: "trail-read" },
+            { kind: "xp", amount: 15 },
+          ],
         },
         failure: {
           to: "ravine",
@@ -1040,13 +1052,20 @@ export const SCENES: Record<string, Scene> = {
         },
       },
     ],
-    success: { to: "@hub", effects: [{ kind: "setFlag", flag: "crossed-ravine" }] },
+    success: {
+      to: "@hub",
+      effects: [{ kind: "setFlag", flag: "crossed-ravine" }, { kind: "setFlag", flag: "trail-read" }],
+    },
     failure: {
       to: "@hub",
       text: [
         "Every way across fights you. In the end you take the long, muddy detour downstream, miles out of your way. By the time you climb back onto the trail past the ravine, the light is gone. You have lost the whole day.",
       ],
-      effects: [{ kind: "setFlag", flag: "crossed-ravine" }, { kind: "passDay" }],
+      effects: [
+        { kind: "setFlag", flag: "crossed-ravine" },
+        { kind: "setFlag", flag: "trail-read" },
+        { kind: "passDay" },
+      ],
     },
   },
   "wounded": {
@@ -1334,7 +1353,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { emoji: "🪦" },
     text: [
-      "You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. You leave the gold where it lies.",
+      "You kneel at the cracked capstone and say the words for the dead, slowly, the way the old priests said them when the barrow was new. The cold air stops breathing out of the crack. Below, something settles back down among the grave-goods, and is still. A bronze ring rolls out of the crack and stops against your boot. You put it back, and leave the gold where it lies.",
     ],
     next: [
       {
@@ -1399,7 +1418,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { emoji: "🕸️" },
     text: [
-      "You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash and a few blackened cocoons.",
+      "You wait for the wind, then put a spark to the dead reeds on the near side. The fire goes through the thicket in a rush and a crackle, and the webs go up like paper. Whatever spun them does not come out. By the time the smoke clears there is nothing in the thicket but ash, a few blackened cocoons, and one good boot, still laced.",
     ],
     next: [
       {
@@ -1662,6 +1681,8 @@ export const SCENES: Record<string, Scene> = {
           { kind: "setFlag", flag: "den-entered" },
           { kind: "xp", amount: avoidedFightXP("den-gate") },
           ...[GATE_QUIET].flat(),
+          ...[IN_BY_WATER].flat(),
+          { kind: "setFlag", flag: "price-heard" },
         ],
       },
     ],
@@ -1693,6 +1714,7 @@ export const SCENES: Record<string, Scene> = {
           { kind: "setFlag", flag: "den-entered" },
           { kind: "xp", amount: avoidedFightXP("den-gate") },
           ...[GATE_QUIET].flat(),
+          ...[IN_OVER_WALL].flat(),
         ],
       },
     ],
@@ -1948,10 +1970,22 @@ export const SCENES: Record<string, Scene> = {
       "The **{ashfang} chief** sits on a throne of lashed spears, a rag wound round his axe hand. In the shadows behind the throne something else unfolds — long and green and grinning, river-weed in its hair, fingers too many and too long. The **{reedwife}**, come up out of her water to see what her coin has bought.",
       "\"Up, **{vargan}**, my sweet,\" the hag says. \"Guests.\" The chief rises.",
       "\"I was born down in {thornwick},\" {vargan} says. \"I cut reeds on that marsh for a copper a bundle, same as my father. The spring I was a boy, she raised the water, and my mother's house went under first. {thornwick} watched from the bank.\" He looks up at his trophies the way a farmer looks at a full barn. \"The shallows were still common water. So this spring I came home and sold them to her. She paid me in monsters, and a valley to run. Fair price.\"",
-      "The hag laughs. \"Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark.\" She turns to you, delighted. \"You've been *busy*.\" At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.",
+      {
+        if: [{ kind: "notFlag", flag: "price-heard" }],
+        text: "The hag laughs. \"Fairer than the fen ever paid me. One {door-price} a winter, for sitting by their door in the dark.\"",
+      },
+      {
+        if: [{ kind: "flag", flag: "price-heard" }],
+        text: "The hag laughs. \"Little thief. I told you my price at the water-gate, and you came anyway.\"",
+      },
+      "She turns to you, delighted. \"You've been *busy*.\" At a flick of her hand, she calls for the chief's guard. The whole hall waits to see what you'll do.",
       {
         if: [{ kind: "alarm", dungeon: "inner/delve", atLeast: 3 }],
         text: "The hall is full of raiders who heard you coming, and none of them is sitting down.",
+      },
+      {
+        if: [{ kind: "npc", npc: "vex", fate: "turned" }],
+        text: "By the door, {hask} grounds his spear and does not move to help. If {vargan} is ever going to listen to anyone, it is now.",
       },
     ],
     again: [
@@ -1994,7 +2028,7 @@ export const SCENES: Record<string, Scene> = {
       ...[TURN_UNREAD_FRESH].flat(),
       {
         id: "turn-carter",
-        label: "[Persuasion DC 10] \"The carter's girl is home. Your mother's house is still under the water.\"",
+        label: "[Persuasion DC 10] \"The carter's granddaughter is on the road home. Your mother's house is still under the water.\"",
         to: "vargan-turns",
         hideWhenBlocked: true,
         attempt: "turn",
@@ -2041,7 +2075,7 @@ export const SCENES: Record<string, Scene> = {
       },
     ],
     again: [
-      "The chief's hall still reeks of smoke, and {vargan} rolls the great axe off his shoulder again.",
+      "{vargan} rolls the great axe off his shoulder again.",
       {
         if: [{ kind: "npc", npc: "vex", notFate: ["turned"] }],
         text: "The hag's fingers are already weaving something cold out of the smoke. \"Don't kill them quickly this time,\" she tells the chief. His grey old guard is back at his shoulder, and the raider with the knife behind him.",
@@ -2487,10 +2521,6 @@ export const SCENES: Record<string, Scene> = {
       {
         thread: "mira",
         cases: [
-          {
-            if: [{ kind: "npc", npc: "vargan", fate: "dead" }],
-            text: "{mira} pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.",
-          },
           {
             if: [{ kind: "flag", flag: "captives-freed" }],
             text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",

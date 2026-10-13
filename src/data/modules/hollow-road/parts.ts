@@ -23,6 +23,10 @@ export const GATE_QUIET: Effect[] = [{ kind: 'setFlag', flag: 'signal-spent' },
   // In by their own signal, the party is taken for their own: whatever the
   // peddler warned them of, they stop looking for it.
   { kind: 'setFlag', flag: 'den-quiet' }, { kind: 'alarm', dungeon: 'inner/delve', amount: -3 }];
+/** In by the water-gate: the party comes up beside the pens. */
+export const IN_BY_WATER: Effect = { kind: 'enterAt', dungeon: 'inner/delve', room: 'The Pens' };
+/** Over the wall: down behind the kennels. */
+export const IN_OVER_WALL: Effect = { kind: 'enterAt', dungeon: 'inner/delve', room: 'Kennels' };
 /** …and talked past it, at the gate's own fight. */
 export const GATE_PASSED: Effect[] = [{ kind: 'xp', amount: avoidedFightXP('den-gate') }, ...GATE_QUIET];
 

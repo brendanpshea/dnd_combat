@@ -99,6 +99,9 @@ export type Effect =
   /** Raise a dungeon's alarm (Dungeon.alarm), from inside it or from anywhere
    *  in the story: word got out, a horn was blown. */
   | { kind: 'alarm'; dungeon: SceneRef; amount: number }
+  /** The next time the party walks into this dungeon, it comes in at the
+   *  room of this name (a back way, a water-gate), not at the entry. */
+  | { kind: 'enterAt'; dungeon: SceneRef; room: string }
   | { kind: 'addItem'; itemId: Id; qty?: number }               // to the shared stash
   | { kind: 'removeItem'; itemId: Id; qty?: number }            // from the party (first holder)
   | { kind: 'xp'; amount: number }                              // party XP (levelForXp math)
