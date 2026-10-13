@@ -25,6 +25,8 @@ export interface RoomRole {
   /** …when its fight is not had here (a story's place keeps its own
    *  fights): the room as its people left it. Needed by a role that fights. */
   quiet?: string[];
+  /** Out of doors, where its lines speak of walls and doors: its own. */
+  out?: { text: string[]; quiet?: string[] };
   /** Who is in it: a fight to the room budget, a harder one, or nobody. */
   fight?: 'room' | 'elite';
   /** What a search turns up. `lore`: a line from the place's past (the
@@ -62,7 +64,7 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     backWay: { in: 'A gap behind the stores, where the wall has rotted. Someone has been using it.', out: 'A gap in the stakes behind the midden, just wide enough to squeeze through.' },
     roles: [
       role({ id: 'watch', where: 'near', fight: 'room', names: { in: ['Guardroom', 'Gatehouse'], out: ['Watch Platform', 'Sentry Gap'] },
-        text: ['A stool, a dice cup, and a view of the way you came in.', 'Someone was meant to be watching this door.'], quiet: ['An empty stool and a cold brazier. Whoever kept watch here has gone.'] }),
+        text: ['A stool, a dice cup, and a view of the way you came in.', 'Someone was meant to be watching this door.'], quiet: ['An empty stool and a cold brazier. Whoever kept watch here has gone.'] , out: { text: ['A plank on two barrels, a dice cup, and a view of the way you came in.', 'Someone was meant to be watching the gap in the stakes.'], quiet: ['An empty platform and a cold brazier. Whoever kept watch here has gone.'] } }),
       role({ id: 'bunks', where: 'mid', fight: 'room', names: { in: ['Barracks', 'Bunkroom'], out: ['Tents', 'Bedrolls'] },
         text: ['Bedrolls in rows, still warm. Not everyone here was asleep.', 'It smells of sweat and wet wool. Boots stand by every bed.'], quiet: ['Bedrolls in rows, all empty. Boots stand by some of them.'] }),
       role({ id: 'mess', where: 'mid', find: 'coin', names: { in: ['Mess Hall', 'Kitchens'], out: ['Cook Fire', 'Butcher\'s Block'] },
@@ -70,9 +72,9 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
       role({ id: 'stores', where: 'side', fight: 'elite', keeps: true, find: 'potion', names: { in: ['Armory', 'Quartermaster\'s Store'], out: ['Plunder Heap', 'Stolen Carts'] },
         text: ['Everything they took is piled here, and someone big sits on top of it.', 'Racks of blades, sacks of grain, and a keeper who does not want to share.'], quiet: ['Everything they took is piled here, sorted by someone careful.'] }),
       role({ id: 'pens', where: 'side', names: { in: ['Cells', 'Kennels'], out: ['Horse Lines', 'Dog Pens'] },
-        text: ['Chains on the wall, and straw that needs changing.', 'Something on a chain growls at you, then lies down again.'] }),
+        text: ['Chains on the wall, and straw that needs changing.', 'Something on a chain growls at you, then lies down again.'] , out: { text: ['Stakes and rope, and straw that needs changing.', 'Something on a tether growls at you, then lies down again.'] } }),
       role({ id: 'trophies', where: 'deep', find: 'lore', names: { in: ['Trophy Hall', 'Map Room'], out: ['Branding Post', 'Trophy Pole'] },
-        text: ['Things taken from people who said no, hung up where everyone can see.', 'A rough map is pinned to the wall, with every farm on it marked.'] }),
+        text: ['Things taken from people who said no, hung up where everyone can see.', 'A rough map is pinned to the wall, with every farm on it marked.'] , out: { text: ['Things taken from people who said no, hung on a pole where everyone can see.', 'A rough map is scratched on a hide, with every farm on it marked.'] } }),
     ],
   },
   {
@@ -83,7 +85,7 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     backWay: { in: 'A crawlway, scraped smooth by something that uses it often.', out: 'A tunnel under the roots, scraped smooth by something that uses it often.' },
     roles: [
       role({ id: 'trail', where: 'near', names: { in: ['Scratched Passage', 'Claw Run'], out: ['Game Trail', 'Trampled Reeds'] },
-        text: ['The walls are scored with claw marks, low down.', 'Something big comes this way often. The ground is worn smooth.'] }),
+        text: ['The walls are scored with claw marks, low down.', 'Something big comes this way often. The ground is worn smooth.'] , out: { text: ['The reeds are snapped flat in a wide path, low down.', 'Something big comes this way often. The ground is worn smooth.'] } }),
       role({ id: 'den', where: 'mid', fight: 'room', names: { in: ['Den', 'Sleeping Hollow'], out: ['Wallow', 'Flattened Nest'] },
         text: ['A nest of bones and hair, and the things that made it.', 'It is warm in here, and it is not empty.'], quiet: ['A nest of bones and hair. Whatever sleeps here is out.'] }),
       role({ id: 'larder', where: 'side', find: 'coin', names: { in: ['Larder', 'Bone Pit'], out: ['Gnawed Bones', 'Carcass Heap'] },
@@ -104,13 +106,13 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     backWay: { in: 'A wall where the old graves have fallen in. There is a way through the bones.', out: 'A grave fallen in on itself, opening into the vault beyond.' },
     roles: [
       role({ id: 'antechamber', where: 'near', names: { in: ['Antechamber', 'Mourners\' Hall'], out: ['Lych Gate', 'Grave Row'] },
-        text: ['Names cut in the wall, most of them worn away.', 'Dust lies thick on everything except the floor.'] }),
+        text: ['Names cut in the wall, most of them worn away.', 'Dust lies thick on everything except the floor.'] , out: { text: ['Names cut in the headstones, most of them worn away.', 'The grass grows thick on everything except the path.'] } }),
       role({ id: 'ossuary', where: 'mid', fight: 'room', names: { in: ['Ossuary', 'Bone Gallery'], out: ['Charnel Pit', 'Open Graves'] },
-        text: ['Skulls stacked to the ceiling. Some of them turn to watch you.', 'Bones in neat piles, and one pile that is not neat at all.'], quiet: ['Skulls stacked to the ceiling, every one of them still.'] }),
+        text: ['Skulls stacked to the ceiling. Some of them turn to watch you.', 'Bones in neat piles, and one pile that is not neat at all.'], quiet: ['Skulls stacked to the ceiling, every one of them still.'] , out: { text: ['Bones heaped in an open pit. Some of the skulls turn to watch you.', 'Bones in neat piles, and one pile that is not neat at all.'], quiet: ['Bones heaped in an open pit, every one of them still.'] } }),
       role({ id: 'niches', where: 'mid', fight: 'room', names: { in: ['Niche Walk', 'Catacomb'], out: ['Grave Rows', 'Sunken Plots'] },
-        text: ['A hand comes out of a niche as you pass.', 'The shelves of the dead run on into the dark. Not all of them are full.'], quiet: ['The shelves of the dead run on into the dark, full and quiet.'] }),
+        text: ['A hand comes out of a niche as you pass.', 'The shelves of the dead run on into the dark. Not all of them are full.'], quiet: ['The shelves of the dead run on into the dark, full and quiet.'] , out: { text: ['A hand comes up out of the earth as you pass.', 'The graves run on in rows into the mist. Not all of them are full.'], quiet: ['The graves run on in rows into the mist, all of them quiet.'] } }),
       role({ id: 'chapel', where: 'side', find: 'potion', names: { in: ['Chapel', 'Shrine'], out: ['Chapel', 'Wayside Shrine'] },
-        text: ['A small altar, its candles long out. Someone left an offering.', 'Faded saints look down from the walls. One has had its eyes scratched out.'] }),
+        text: ['A small altar, its candles long out. Someone left an offering.', 'Faded saints look down from the walls. One has had its eyes scratched out.'] , out: { text: ['A small altar under a roof of slates, its candles long out. Someone left an offering.', 'A wooden saint stands by the path. Someone has scratched out its eyes.'] } }),
       role({ id: 'grave-goods', where: 'side', fight: 'elite', keeps: true, find: 'coin', names: { in: ['Reliquary', 'Treasury of the Dead'], out: ['Rich Man\'s Tomb', 'Family Vault'] },
         text: ['The rich were buried here with their money, and one of them stayed to guard it.', 'Gold glints in a stone box, and the lid is already open.'], quiet: ['The rich were buried here with their money. The lids are all shut.'] }),
       role({ id: 'epitaph', where: 'deep', find: 'lore', names: { in: ['Embalming Room', 'Record Hall'], out: ['Sexton\'s Hut', 'Bell Tower'] },
@@ -125,13 +127,13 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
     backWay: { in: 'A priest\'s hole behind a hanging, for leaving in a hurry.', out: 'A path behind the woodshed that the faithful are told not to use.' },
     roles: [
       role({ id: 'front', where: 'near', fight: 'room', names: { in: ['Robing Room', 'Doorkeeper\'s Cell'], out: ['Woodshed', 'Lantern Post'] },
-        text: ['Robes on hooks, one hook empty. Whoever wore it is close.', 'A bell on a string over the door. You have already rung it.'], quiet: ['Robes on hooks, and a bell on a string over the door.'] }),
+        text: ['Robes on hooks, one hook empty. Whoever wore it is close.', 'A bell on a string over the door. You have already rung it.'], quiet: ['Robes on hooks, and a bell on a string over the door.'] , out: { text: ['Robes hung on a branch, one branch bare. Whoever wore it is close.', 'A bell on a string across the path. You have already rung it.'], quiet: ['Robes hung on a branch, and a bell on a string across the path.'] } }),
       role({ id: 'dorm', where: 'mid', fight: 'room', names: { in: ['Dormitory', 'Cells'], out: ['Huts', 'Pilgrims\' Tents'] },
         text: ['Hard beds, and a holy sign scratched over each one.', 'They sleep in rows here, and pray before they do. They are not sleeping now.'], quiet: ['Hard beds, and a holy sign scratched over each one.'] }),
       role({ id: 'scriptorium', where: 'side', find: 'lore', names: { in: ['Scriptorium', 'Library'], out: ['Reading Tent', 'Copyist\'s Shed'] },
         text: ['Books copied by hand, the same few pages over and over.', 'Ink, quills, and a sermon half written. The last line is underlined twice.'] }),
       role({ id: 'offerings', where: 'side', find: 'coin', names: { in: ['Offering Room', 'Tithe Store'], out: ['Offering Pile', 'Tithe Cart'] },
-        text: ['What the faithful gave. Some of them gave everything.', 'Coins, rings, and a child\'s toy, all heaped before a shut door.'] }),
+        text: ['What the faithful gave. Some of them gave everything.', 'Coins, rings, and a child\'s toy, all heaped before a shut door.'] , out: { text: ['What the faithful gave. Some of them gave everything.', 'Coins, rings, and a child\'s toy, heaped at the foot of a stake.'] } }),
       role({ id: 'circle', where: 'deep', fight: 'elite', keeps: true, find: 'potion', names: { in: ['Ritual Circle', 'Inner Sanctum'], out: ['Standing Stones', 'Ash Ring'] },
         text: ['A circle on the floor, still smoking. The one who drew it is still here.', 'Chanting stops as you come in. Everyone turns.'], quiet: ['A circle on the floor, cold now, and ash in the middle.'] }),
     ],
@@ -152,7 +154,7 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
       role({ id: 'vault', where: 'side', fight: 'elite', keeps: true, find: 'coin', names: { in: ['Vault', 'Treasure Room'], out: ['Gilded Bower', 'Tribute Pile'] },
         text: ['Gifts from everyone who ever begged a favour here, and a guard who counts them.', 'Treasure, and something that sleeps on treasure.'], quiet: ['Gifts from everyone who ever begged a favour here, piled high.'] }),
       role({ id: 'archive', where: 'deep', find: 'lore', names: { in: ['Hall of Oaths', 'Archive'], out: ['Oath Stone', 'Bargain Tree'] },
-        text: ['Promises carved in the wall, each with a name and a price.', 'A list of bargains struck, and what each one cost.'] }),
+        text: ['Promises carved in the wall, each with a name and a price.', 'A list of bargains struck, and what each one cost.'] , out: { text: ['Promises cut into a standing stone, each with a name and a price.', 'A list of bargains struck, and what each one cost.'] } }),
     ],
   },
   {
@@ -165,13 +167,13 @@ export const ARCHETYPES: Record<Id, Archetype> = Object.fromEntries(([
       role({ id: 'traps', where: 'near', names: { in: ['Trap Workshop', 'Snare Run'], out: ['Snare Line', 'Pit Field'] },
         text: ['Tripwires, deadfalls, and a pile of springs. Mind your feet.', 'Little traps everywhere, most of them already sprung.'] }),
       role({ id: 'warren', where: 'mid', fight: 'room', names: { in: ['Warren', 'Burrows'], out: ['Mud Huts', 'Reed Huts'] },
-        text: ['Tunnels too small for you, and far too many of them.', 'Dozens of eyes in the dark, and then all of them at once.'], quiet: ['Tunnels too small for you, and far too many of them.'] }),
+        text: ['Tunnels too small for you, and far too many of them.', 'Dozens of eyes in the dark, and then all of them at once.'], quiet: ['Tunnels too small for you, and far too many of them.'] , out: { text: ['Huts too small for you, and far too many of them.', 'Dozens of eyes in the reeds, and then all of them at once.'], quiet: ['Huts too small for you, and far too many of them.'] } }),
       role({ id: 'eggs', where: 'side', fight: 'room', names: { in: ['Egg Chamber', 'Hatchery'], out: ['Hatchery', 'Nest Mound'] },
         text: ['Eggs, warm and carefully turned. The ones who turn them are close.', 'A nursery, fiercely kept.'], quiet: ['Eggshells, broken from the inside, and nothing else.'] }),
       role({ id: 'midden', where: 'side', find: 'coin', names: { in: ['Midden', 'Dump'], out: ['Midden', 'Refuse Heap'] },
         text: ['Everything they threw away. Some of it is worth having.', 'It stinks, but something shines in the heap.'] }),
       role({ id: 'shrine', where: 'deep', fight: 'elite', keeps: true, find: 'lore', names: { in: ['Shrine', 'Totem Hall'], out: ['Totem Ring', 'Shaman\'s Pool'] },
-        text: ['A crude shrine to something much bigger than they are.', 'Their god is painted on the wall, and their priest is in front of it.'], quiet: ['A crude shrine to something much bigger than they are.'] }),
+        text: ['A crude shrine to something much bigger than they are.', 'Their god is painted on the wall, and their priest is in front of it.'], quiet: ['A crude shrine to something much bigger than they are.'] , out: { text: ['A crude totem to something much bigger than they are.', 'Their god is painted on a pole, and their priest is in front of it.'], quiet: ['A crude totem to something much bigger than they are.'] } }),
     ],
   },
 ] satisfies Archetype[]).map((a) => [a.id, a]));

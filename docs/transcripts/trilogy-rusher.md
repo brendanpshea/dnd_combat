@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue-vigil` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=1`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -199,6 +199,16 @@ _Journal (lead): Vex, the Lieutenant_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
+→ Search the room
+
+<sub>scene `trail/f1-read-m2`</sub>
+
+Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.
+
+**» Go on**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
 → Fresh Tracks
 
 **→ Fresh Tracks** <sub>(room `s2`)</sub>
@@ -295,7 +305,7 @@ You turn the nearest body with your boot. Branded into the scaled hide, still we
 
 A voice drifts across the water, old and wet and amused. "My little dogs, off their leash. No matter, sweetlings. The reed-cutters call me the **Reedwife**. Ask your chief what he sold me. Ask him what I paid."
 
-"Come up to the fire, if you can find it. The chief and I will be waiting." The reeds shiver, and go quiet.
+"Come up to the fire, if you can find it. The chief will be waiting, and so, perhaps, will I." The reeds shiver, and go quiet.
 
 **» Go up and find her fire**
 
@@ -343,9 +353,57 @@ You slip back out through the gate, into the quiet of the hollow.
 
 **→ Gate** <sub>(room `m0`)</sub>
 
+→ Kennels
+
+**→ Kennels** <sub>(room `m1`)</sub>
+
+<sub>scene `den-hyenas`</sub>
+
+Three giant hyenas and three grey wolves the size of ponies lunge to the ends of their chains at the sight of you. The Ashfang raider who keeps them yanks the pins and runs. The pack comes loose in a scrabble of claws and yelping.
+
+**Battle:** The Kennels <sub>(`kennel-hyenas` on `ruins`)</sub>
+
+**» [Animal Handling DC 12] Throw them the meat off the cook fire**
+
+`[Animal Handling DC 12 — Elaine the Holy rolls 19 — passed]`
+
+The pack falls on the meat, snarling at each other instead of you, and you step round them to the gate. Their keeper dropped his key ring as he ran. One key fits the plunder tent.
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m2`)</sub>
+
+_A hidden door: A Lone Fire ↔ Hidden Cache._
+
+<sub>scene `vex-parley`</sub>
+
+**Vex, the Lieutenant**
+
+> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
+
+> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
+
+> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
+
+**» Refuse to deal with a raider**
+
+_Journal (quest): Bring the Captives Home_
+
+<sub>scene `vex-dismissed`</sub>
+
+"Suit yourself." Vex turns back to his fire. "I won't help you. I won't get in your way, either."
+
+**» Leave him to his fire**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
 → The Pit
 
-**→ The Pit** <sub>(room `m1`)</sub>
+**→ The Pit** <sub>(room `m3`)</sub>
 
 <sub>scene `den-muster`</sub>
 
@@ -367,75 +425,11 @@ _+40 gold (200)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-→ The Pens
+→ Branding Post
 
-**→ The Pens** <sub>(room `m2`)</sub>
+**→ Branding Post** <sub>(room `m4`)</sub>
 
-<sub>scene `den-pens-door`</sub>
-
-Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
-
-**» Look in the pen**
-
-_Journal (quest): Bring the Captives Home_
-
-<sub>scene `den-pens`</sub>
-
-There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
-
-The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a lamb every midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
-
-A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
-
-**» [Sleight of Hand DC 13] Work the padlock open quietly**
-
-`[Sleight of Hand DC 13 — Ash the Sneaky rolls 14 — passed]`
-
-<sub>scene `den-pens-freed`</sub>
-
-The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
-
-**» Back to the den**
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Force the door to A Lone Fire [Athletics DC 15]
-
-`[Athletics DC 15 — Arthur the Bold rolls 23 — passed]`
-
-It gives.
-
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `m3`)</sub>
-
-_A hidden door: A Lone Fire ↔ Hidden Cache._
-
-<sub>scene `vex-parley`</sub>
-
-**Vex, the Lieutenant**
-
-> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
-
-**» Refuse to deal with a raider**
-
-<sub>scene `vex-dismissed`</sub>
-
-"Suit yourself." Vex turns back to his fire. "I won't help you. I won't get in your way, either."
-
-**» Leave him to his fire**
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Trophy Pole
-
-**→ Trophy Pole** <sub>(room `m4`)</sub>
-
-Things taken from people who said no, hung up where everyone can see.
+A rough map is scratched on a hide, with every farm on it marked.
 
 → The Chief's Hall
 
@@ -491,7 +485,7 @@ Vargan walks in front of you with his hands tied, and the crowd goes quiet to le
 
 The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. He does not thank you. He sets the strongbox on the well and opens it. "Thornwick keeps its word," he says, as though daring you to make something of it.
 
-Behind him, Mira catches your eye and very nearly smiles.
+Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
 **» Let the reeve count out the bounty**
 
@@ -523,11 +517,11 @@ Vex sat out the end of it at his own fire, the bare blade across his knees. At d
 
 At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.
 
-Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
 
 Up in the hollow, the reeve's men pull down the den's timber wall one post at a time. They leave the posts for the marsh to take.
 
-The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.
+Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
 
 ### Ending: victory
 
@@ -715,6 +709,8 @@ Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning
 
 **» Fight — won**
 
+_Level up: 3 → 4_
+
 Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
 
 <sub>scene `chapel-won`</sub>
@@ -783,8 +779,6 @@ Four wisps flare white-hot in front of your faces. Two cold things rise out of t
 
 **» Fight — won**
 
-_Level up: 3 → 4_
-
 You drag each other out onto the mud, soaked and shaking. Behind you the last wisp is out, and the water lies dark and still.
 
 <sub>scene `lights-won`</sub>
@@ -829,11 +823,13 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 14 — passed]`
+`[History DC 14 — Morgan Le Fey rolls 13 — failed]`
 
-You hold up Halden's book, open at the reed-woman's mark on the flyleaf. The old builders cut that same mark into the gate. You find it on the nearest stone and lay your hand flat on it.
+You hold up Halden's book, but you cannot find the builders' mark on the gate in time. The watchers see only strangers at the vigil's door, and they keep coming.
 
-The watchers stop at the edge of the lintel. They look at the book for a long, grinding moment, then fold their wings and turn back into plain grey stone. Below them, the armour grounds its spear and stands aside.
+**» Fight — won**
+
+The second gargoyle shatters mid-dive and rains down as plain gravel, over the green-bronze plates scattered across the road. The Barrow Gate stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.
 
 <sub>scene `lychgate-won`</sub>
 
@@ -845,9 +841,7 @@ Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowl
 
 Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 
-"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on.
-
-She ties a strip of the reeve's colours round your arm, quick and tight, and does not explain it.
+"Shout if it goes bad. I'll hear you from up here."
 
 **» Leave Wren the gate, and go down**
 
@@ -879,7 +873,7 @@ The newest offering on the rim is already green with fen-damp. The water ripples
 
 <sub>scene `lychgate-open`</sub>
 
-The Barrow Gate's two watchers crouch on the lintel as plain grey stone, wings folded, and the armour stands aside in the gateway. None of them stirs as you pass.
+The Barrow Gate stands unwatched, its broken guardians spread across the old road as gravel and green bronze.
 
 Beyond, the great barrow's doorway breathes out cold.
 
@@ -973,7 +967,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 **» [History DC 15] Relieve him of his post, the old way**
 
-`[History DC 15 — Morgan Le Fey rolls 17 — passed]`
+`[History DC 15 — Morgan Le Fey rolls 27 — passed]`
 
 The painted hall showed how the old kings' soldiers saluted. You give that salute now, fist to chest, and tell him his watch is over.
 
@@ -1067,7 +1061,7 @@ Halden's book lies open in your hands. The rites fill three pages, and the oldes
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 23 — passed]`
+`[Religion DC 13 — Morgan Le Fey rolls 15 — passed]`
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
 
@@ -1283,6 +1277,8 @@ The kobolds scatter for their spears. Down the briar on grey threads come two sp
 
 **» Fight — won**
 
+_Level up: 4 → 5_
+
 The wyrmling drops in the middle of a hiss, and its poison breath thins to a harmless stink. Its small hoard lies under the bones, and you dig it out.
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
@@ -1308,8 +1304,6 @@ The pool stands up into twelve feet of mountain water, in the rough shape of a g
 **Battle:** The Flooded Pass <sub>(`flooded-seam` on `bog`)</sub>
 
 **» Fight — won**
-
-_Level up: 4 → 5_
 
 The water-giant falls apart all at once. A hundred gallons of plain water run away downhill like any other brook, and leave the purses of the travellers it drowned lying in the mud.
 
@@ -1409,25 +1403,15 @@ At the first scrape of your boots, one huge body ducks out of the door with two 
 
 **» [Deception DC 14] Agree with both heads at once**
 
-`[Deception DC 14 — Ash the Sneaky rolls 10 — failed]`
+`[Deception DC 14 — Ash the Sneaky rolls 23 — passed]`
 
-<sub>scene `steading-balked`</sub>
+<sub>scene `steading-talked`</sub>
 
-You tell the left head the valley is its own. The right head hears you say it, and it does not like it one bit.
+"The valley is yours," you tell the left head. You turn to the right head. "And yours." Both heads hear you say it.
 
-**» Draw steel**
+The ettin stands very still until the left head says something unforgivable to the right one. The argument carries it out through the back of the hall, ogres and orc runners and all. You can hear it halfway down the mountain.
 
-<sub>scene `steading-roused`</sub>
-
-The ettin lifts both its clubs. For once both heads want the same thing, and the thing is you. The ogres spit out their breakfast. Their orcs duck behind them all.
-
-**Battle:** The Giants' Hall <sub>(`giants-hall` on `ruins`)</sub>
-
-**» Fight — won**
-
-The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
-
-_+140 gold (745)_
+**» Climb on past the empty hall**
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1493,11 +1477,17 @@ Sedge has stopped singing. Her hands are still in the rock, but she is listening
 
 Sedge has not looked away from you since you spoke. Nettle sings louder, to drown you out.
 
-**» Tell her the pen behind the kennels stands empty — The carter and his girl walked home from her sister's pen.**
+**» Promise her Thornwick will remember her this time — The reeve owes you, and he keeps the town's ledger.**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 27 — passed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 10 — failed]`
 
-"Her pen is empty," you tell Sedge. "The carter walked home, and the girl with one shoe. What your sister grew greedy for at the end is given back." Sedge is quiet for a long breath. "Then only the door is owed," she says.
+"Ink," Sedge says. "Your Thornwick had ink before, and it forgot her all the same."
+
+**» Name her sister a keeper, in the old words — The valley had words for the keepers of doors, once.**
+
+`[Religion DC 15 — Morgan Le Fey rolls 23 — passed]`
+
+You name her sister a keeper of the door, the old way, in words the valley used before it forgot what they were for. Sedge listens to the end. "No one has called her that in a long time," she says. "Someone kept the words, at least."
 
 <sub>scene `vigil-kept`</sub>
 
@@ -1526,6 +1516,8 @@ The valley remembers it as the year of three wars: the raiders, the graves, and 
 Mira, who keeps the Wander-Inn down in Thornwick, has hauled a barrel all the way up to the camp. She fills your cup before you can reach for your purse. "On the house," she says, and moves on down the line before you can thank her.
 
 Vex finds you at the edge of the firelight. He looks off toward the fen. "Here's to whoever is keeping that door tonight," he says.
+
+Hunters still hear the ettin some nights, far off in the high hills. It is still arguing with itself about the valley.
 
 Once a year the pikemen stand where the torches went out on the Calling's last night. Nobody makes a speech. They stand there until the light goes, and then they walk back down together.
 

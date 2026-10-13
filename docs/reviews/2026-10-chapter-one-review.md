@@ -497,3 +497,79 @@ I re-reviewed chapter one as Jaquays. I edited nothing. All four route transcrip
 3. **Give the den alternate entries and a back way.** Land `den-picked` at the Pens or Kennels, `den-slipped` at A Lone Fire, and `gate-fight` at The Pit. Open a drain or back passage into The Chief's Hall, from `vex-turned` or `den-pens-freed` (the carter knows it). Using it should skip `inner/f1-ambush-m4-m5` and The Pit.
 4. **Fix the XP curve.** Either cut the marsh payouts (the 30 XP at `ravine` and the 20 at `tracks`, and pay the side answers' avoided XP at half), or raise `levelBand.to` to 4 with the hall tuned for it. Make `den-pit` the real climax and soften `kennel-hyenas` and `pen-watch` from about 20% worn up to about 60%.
 5. **Give the marsh a real choice.** Replace the two-flag lock with one lock and two keys, `trail-read` OR `crossed-ravine`, each opening its own approach to The Hollow (dry line or sinkholes). Give `ambush` a non-combat answer, such as Wren's route, a cold-water/brand trick on the thralls, or a Nature or Arcana read of the brand that turns them back.
+
+---
+
+# Third pass: after the alarm, the fetch quest, and the archetypes (#399–#403)
+
+The same four critics, on chapter one and the new generator: the dungeon
+alarm, captives as a fetch quest, the two-flag rule, archetype room roles
+with story lore, and hidden back ways round locks.
+
+## What now works
+
+- **Lore in the rooms.** The lamb's skull, the reaching-hand stone, the tally
+  stick and Vargan's drowned house set up the hag's price before anyone pays
+  it (all four).
+- **The captives.** One plain quest, and the rusher's ending ("a new pair of
+  shoes") pays off the one shoe (Weis & Hickman).
+- **The generator thinks in jobs.** Rooms get a role before a name, locks are
+  worded by their holders, and patrols replace corridor ambushes (Jaquays).
+- **Thornwick has people in it.** Mira's flour, the birdcage with no bird, the
+  children throwing mud at the banner (Pratchett).
+
+## Where they agree
+
+1. **The back way skips the den's heart** (Novik, Weis & Hickman). In the
+   merciful run, a hidden door joins the Gate to the Chief's Hall: no Pit, no
+   Vex, no pens, and a seven-year-old left to the hag that nobody chose to leave.
+   A back way must never open into a story's goal room. The story's own back
+   way should be earned (the carter knows it, after `pens-settled`).
+2. **The generator's furniture still shows in the den** (Pratchett, Jaquays).
+   - A generated lock and key in a place whose locks belong to the story: "the
+     keeper wore the gate key on a thong" with no gate, and a forced door onto
+     "A Lone Fire".
+   - A berserker and an ogre guarding that key, in a place capped at
+     `maxFights: 0`.
+   - A safe tent to sleep in, inside an enemy camp.
+
+   A place that a story dresses should get no lock or key from the generator.
+3. **Mira's warmth still follows Wren and the mill** (Novik, Weis & Hickman).
+   The epilogue's `mira` cases for `wren saved` and `mill-saved` survived the
+   two-flag rework, so she toasts a party that left the girl to the water.
+   Cut them: freed is warm, taken is cold.
+4. **Generated text speaks the wrong grammar** (Novik, Pratchett). Lair text
+   says "the walls are scored" on an open marsh. The same potion turns up
+   three times on one road. Room text should split indoors and out as names
+   do, finds should not repeat within a place, and a story should be able to
+   give its own detail per role.
+5. **The alarm is a clock, not a consequence** (Jaquays, Weis & Hickman). Any
+   two fights rouse a place however cleanly they went. A flag set in town
+   still marks the den as roused for a party that came in quietly. Nothing
+   lowers the alarm, and the patrol is rated EASY. Raise it on noise
+   (retreats, failed forcing, foes who escape) rather than on any fight. Let
+   a quiet way in lower it, and make the patrol a real threat.
+
+## Also raised
+
+- **The lamb's price drifts** (Novik). "Every spring" (marsh), "a lamb each
+  moon" (den ledger), "one a winter" (carter, hag). Make the marsh line
+  midwinter, and make the den's line plainly Vargan's inflated tariff.
+- **Lore the player must find** (Weis & Hickman). Vargan's drowned-house plank
+  sits in an optional search along a corridor players rush through. Lore left
+  over should go first to rooms on the way to the goal.
+- **The climax** (Weis & Hickman). Nobody points the player to the carter's
+  line. The carter should say one line about Vargan's mother's house when
+  freed. `hollow-won`'s "will be waiting" contradicts the hag coming up out
+  of her water.
+- **The town's stock openings and the rulebook regulars** (Pratchett). Open on
+  one specific absurd thing. Let the sergeant, the witch and the guard talk
+  about Thornwick and drop the rule in passing. Merge the Lantern Temple with
+  Halden's chapel.
+- **NPCs who want things before the hall** (Novik). The Reedwife at the
+  water-gate, and Wren at the den's door when she is along.
+- **The grid** (Jaquays). It tests two shapes and one seed. It should test
+  every shape, several seeds, and each archetype on its own, and assert loops,
+  not just names.
+- **The marsh lock** (Jaquays, again). Make it `trail-read` OR
+  `crossed-ravine`, each with its own way to the Hollow.
