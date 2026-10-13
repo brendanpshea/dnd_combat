@@ -3,7 +3,7 @@
 import type { Scene } from '../../../adventure/types.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';
-import { AFTERMATH_CLAIMS, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, MIRA_COOL, PENS_LEAD, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
+import { AFTERMATH_CLAIMS, AFTERMATH_PAY, BIND_HAG, BIND_HAG_RITE, BIND_HAG_RITE_CHOICE, BIND_VARGAN, BOSS_HOARD, BOSS_WON, END_VARGAN, FREE_VARGAN, GATE_PASSED, HOLLOW_PASSED, LIEUTENANT, MIRA, PENS_LEAD, REEDWIFE_HOARD, REEDWIFE_LOST, SCOUT, SPY_LIST, VARGAN_BRAND, VARGAN_TURNS, VEX_OFFERS, WREN_ON_VEX, WREN_SAVED, turnUnread } from './parts.js';
 
 export const SCENES: Record<string, Scene> = {
   "road": {
@@ -165,12 +165,7 @@ export const SCENES: Record<string, Scene> = {
         once: true,
         hideWhenBlocked: true,
         requires: [{ kind: "notFlag", flag: "spy-caught" }, { kind: "notFlag", flag: "spy-seen" }],
-        check: {
-          skill: "insight",
-          dc: 12,
-          failTo: "tavern-blank",
-          failEffects: [{ kind: "setFlag", flag: "mira-read" }],
-        },
+        check: { skill: "insight", dc: 12, failTo: "tavern-blank" },
       },
       {
         id: "persuade",
@@ -562,11 +557,7 @@ export const SCENES: Record<string, Scene> = {
         text: "\"Don't look at me like that. If I knew his face, he'd be there already. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours.\"",
       },
       {
-        if: [
-          { kind: "notFlag", flag: "spy-seen" },
-          { kind: "notFlag", flag: "know-spy" },
-          { kind: "notFlag", flag: "mira-read" },
-        ],
+        if: [{ kind: "notFlag", flag: "spy-seen" }, { kind: "notFlag", flag: "know-spy" }],
         text: "\"Or ask {mira} at the {wander-inn}. She hears everything.\"",
       },
       {
@@ -1085,7 +1076,7 @@ export const SCENES: Record<string, Scene> = {
         id: "leave",
         label: "Leave her and press on",
         to: "scout-left",
-        effects: [{ kind: "setFlag", flag: "scout-walked-past" }],
+        effects: [{ kind: "setFlag", flag: "scout-walked-past" }, { kind: "npc", npc: "wren", attitude: -2 }],
       },
     ],
   },
@@ -2110,11 +2101,7 @@ export const SCENES: Record<string, Scene> = {
         to: "vargan-turns",
         hideWhenBlocked: true,
         attempt: "turn",
-        requires: [
-          { kind: "flag", flag: "pens-settled" },
-          { kind: "npc", npc: "vex", notFate: ["turned"] },
-          { kind: "notFlag", flag: "vargan-shaken" },
-        ],
+        requires: [{ kind: "flag", flag: "pens-settled" }, { kind: "npc", npc: "vex", notFate: ["turned"] }],
         check: { skill: "persuasion", dc: 10, failTo: "boss" },
       },
       {
@@ -2123,11 +2110,7 @@ export const SCENES: Record<string, Scene> = {
         to: "vargan-turns-alone",
         hideWhenBlocked: true,
         attempt: "turn",
-        requires: [
-          { kind: "flag", flag: "pens-settled" },
-          { kind: "npc", npc: "vex", fate: "turned" },
-          { kind: "notFlag", flag: "vargan-shaken" },
-        ],
+        requires: [{ kind: "flag", flag: "pens-settled" }, { kind: "npc", npc: "vex", fate: "turned" }],
         check: { skill: "persuasion", dc: 10, failTo: "boss-unguarded" },
       },
       {
@@ -2491,24 +2474,7 @@ export const SCENES: Record<string, Scene> = {
         text: "Behind him, {mira} catches your eye and very nearly smiles.",
       },
       {
-        if: [
-          { kind: "npc", npc: "vargan", notFate: ["dead"] },
-          { kind: "notFlag", flag: "captives-freed" },
-          { kind: "npc", npc: "wren", fate: "saved" },
-        ],
-        text: "Behind him, {mira} catches your eye and very nearly smiles.",
-      },
-      {
-        if: [
-          { kind: "npc", npc: "vargan", notFate: ["dead"] },
-          { kind: "notFlag", flag: "captives-freed" },
-          { kind: "npc", npc: "wren", notFate: ["saved"] },
-          { kind: "flag", flag: "mill-saved" },
-        ],
-        text: "Behind him, {mira} catches your eye and very nearly smiles.",
-      },
-      {
-        if: [{ kind: "npc", npc: "vargan", notFate: ["dead"] }, ...[MIRA_COOL].flat()],
+        if: [{ kind: "npc", npc: "vargan", notFate: ["dead"] }, { kind: "notFlag", flag: "captives-freed" }],
         text: "Behind him, {mira} watches from the inn door, wiping her hands on her apron.",
       },
       {
@@ -2516,7 +2482,7 @@ export const SCENES: Record<string, Scene> = {
         text: "Someone asks how the chief died, and you tell them: on his knees in his own hall, with the fight already over. The square goes quiet. Behind the reeve, {mira} looks at you, says nothing, and turns away.",
       },
     ],
-    next: [...[AFTERMATH_CLAIMS].flat()],
+    next: [...[AFTERMATH_PAY].flat()],
   },
   "aftermath-hub": {
     id: "aftermath-hub",
@@ -2724,15 +2690,11 @@ export const SCENES: Record<string, Scene> = {
             text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",
           },
           {
-            if: [{ kind: "notFlag", flag: "captives-freed" }, { kind: "npc", npc: "wren", fate: "saved" }],
+            if: [{ kind: "npc", npc: "wren", fate: "saved" }],
             text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",
           },
           {
-            if: [
-              { kind: "notFlag", flag: "captives-freed" },
-              { kind: "npc", npc: "wren", notFate: ["saved"] },
-              { kind: "flag", flag: "mill-saved" },
-            ],
+            if: [{ kind: "flag", flag: "mill-saved" }],
             text: "{mira} pours the first round on the house, and the second when she thinks you aren't counting. \"Don't go making a habit of saving towns,\" she warns you. \"People come to expect it.\" It is the nearest thing to thanks she keeps in stock, and you both know it.",
           },
           {

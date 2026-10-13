@@ -7,6 +7,7 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify": "bash scripts/verify.sh",
     "typecheck": "tsc --noEmit",
     "start": "tsx src/ui/cli/main.ts",
     "campaign": "tsx src/ui/cli/campaign.ts",

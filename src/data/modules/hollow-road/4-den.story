@@ -277,12 +277,12 @@ The chief's hall still reeks of smoke and old blood, and the child's shoe still 
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns  #turn-carter
   hide
   attempt: turn
-  ? pens-settled; npc vex not fate turned; not vargan-shaken
+  ? pens-settled; npc vex not fate turned
   check persuasion 10 → boss
 > [Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water." → vargan-turns-alone  #turn-carter-alone
   hide
   attempt: turn
-  ? pens-settled; npc vex fate turned; not vargan-shaken
+  ? pens-settled; npc vex fate turned
   check persuasion 10 → boss-unguarded
 > [Persuasion DC 10] "She owns you too. Help us end her." → vargan-turns  #turn-shaken
   hide

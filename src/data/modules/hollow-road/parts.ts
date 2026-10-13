@@ -142,13 +142,20 @@ export const REEDWIFE_LOST = [
   'You wake behind the throne, where somebody dragged you. {vargan} sits beside you with his burned hand in his lap. "She is still by the fire," he says. "Get up. I cannot finish her alone."',
 ];
 
-export const AFTERMATH_CLAIMS: Choice[] = [
+/** The reeve's strongbox first: paid (or refused, for a chief let go), the
+ *  company is in the square's hub with its other claims. */
+export const AFTERMATH_PAY: Choice[] = [
   { id: 'bounty', label: 'Let the reeve count out the bounty', to: 'claim-bounty',
     requires: [{ kind: 'notFlag', flag: 'bounty' }, { kind: 'notFlag', flag: 'got-bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold', amount: factValue('bounty-full') }, { kind: 'setFlag', flag: 'got-bounty' }] },
   { id: 'balance', label: 'Let the reeve settle the rest of the bounty', to: 'claim-balance',
     requires: [{ kind: 'flag', flag: 'bounty' }, { kind: 'notFlag', flag: 'got-bounty' }], hideWhenBlocked: true,
     effects: [{ kind: 'gold', amount: factValue('bounty-balance') }, { kind: 'setFlag', flag: 'got-bounty' }] },
+  { id: 'square', label: 'Turn to the crowd', to: 'aftermath-hub',
+    requires: [{ kind: 'flag', flag: 'got-bounty' }], hideWhenBlocked: true },
+];
+
+export const AFTERMATH_CLAIMS: Choice[] = [
   { id: 'banner', label: 'Unroll the {ashfang} banner on the well', to: 'claim-banner',
     requires: [{ kind: 'flag', flag: 'looted' }, { kind: 'notFlag', flag: 'got-banner' }],
     effects: [{ kind: 'gold', amount: factValue('bounty-banner') }, { kind: 'setFlag', flag: 'got-banner' }] },
@@ -160,17 +167,16 @@ export const AFTERMATH_CLAIMS: Choice[] = [
   ...([
     // (The captives are the company's to bring home: nobody does it for them.)
     [[{ kind: 'npc', npc: 'wren', fate: 'saved' }], []],
-    // Never found: the reeve's men find her, alive, and the company's quest
-    // for the scouts is someone else's doing (`scouts-unfound`).
-    [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }, { kind: 'notFlag', flag: 'scout-walked-past' }],
+    // Not saved, and alive at the end (never found, or walked past: she
+    // turned on the company when it stepped round her, at the time): the
+    // reeve's men find her, and the scouts' quest is someone else's doing.
+    [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }],
       [{ kind: 'setFlag', flag: 'scouts-unfound' }]],
-    [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'scout-bled-out' }, { kind: 'flag', flag: 'scout-walked-past' }],
-      [{ kind: 'npc', npc: 'wren', attitude: -2, hearsay: true }]],
     [[{ kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'flag', flag: 'scout-bled-out' }],
       [{ kind: 'npc', npc: 'wren', fate: 'lost' }]],
   ] as Array<[Requirement[], Effect[]]>).map(([when, also], i): Choice => ({
-    id: ['done', 'done-unsaved', 'done-passed', 'done-lost'][i]!, label: 'Let the crowd carry you to the {wander-inn}', to: 'epilogue',
-    requires: [{ kind: 'flag', flag: 'got-bounty' }, ...when], hideWhenBlocked: true,
+    id: ['done', 'done-unsaved', 'done-lost'][i]!, label: 'Let the crowd carry you to the {wander-inn}', to: 'epilogue',
+    requires: when, hideWhenBlocked: true,
     effects: [{ kind: 'setFlag', flag: 'won' }, ...also] })),
 ];
 
@@ -200,15 +206,6 @@ export const VEX_OFFERS = (lead: boolean): Choice[] => {
       effects: [{ kind: 'npc', npc: 'vex', met: true }, ...told] },
   ];
 };
-
-export const MIRA_WARM: Requirement[][] = [
-  [{ kind: 'flag', flag: 'captives-freed' }],
-  [{ kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', fate: 'saved' }],
-  [{ kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'flag', flag: 'mill-saved' }],
-];
-export const MIRA_COOL: Requirement[] = [
-  { kind: 'notFlag', flag: 'captives-freed' }, { kind: 'npc', npc: 'wren', notFate: ['saved'] }, { kind: 'notFlag', flag: 'mill-saved' },
-];
 
 export const MIRA = speaker(NPCS.mira!, { label: '{mira} the Innkeeper' });
 export const SCOUT = speaker(NPCS.wren!, { label: 'Wounded Scout', portraitId: 'npc-wounded', emoji: '🤕' });

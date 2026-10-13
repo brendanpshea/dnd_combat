@@ -35,7 +35,6 @@ art: loc-tavern 🍺
   once hide
   ? not spy-caught; not spy-seen
   check insight 12 → tavern-blank
-  fail do +mira-read
 > [Persuasion DC 12] Buy the whole room a round ({tavern-round}) → tavern-trail  #persuade
   once
   ? gold {tavern-round}
@@ -231,7 +230,7 @@ assumes: not spy-caught
 noBack: true
 The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the {ashfang} word of every cart that leaves. Nobody goes out until he's in the cells."
 ? not spy-seen | "Don't look at me like that. If I knew his face, he'd be there already. All I know is it's someone near the gate. Someone who's always about when a cart goes out. Find me who it is, and the road's yours."
-? not spy-seen; not know-spy; not mira-read | "Or ask {mira} at the {wander-inn}. She hears everything."
+? not spy-seen; not know-spy | "Or ask {mira} at the {wander-inn}. She hears everything."
 ? spy-seen | "And don't tell me you don't know who. Half the market watched that peddler whistle his knives out at you." He jerks his chin at the stall by the market. "Bring him in, and the road's yours."
 > [Deception DC 13] "Reeve's business. Stand aside." → gate-slipped  #bluff
   once hide

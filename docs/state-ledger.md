@@ -43,6 +43,12 @@ Anything not in the table. In particular:
   on every route.
 - **Tallies are read in bands.** Wren's regard: below 0, 0–1, 2 or more. The
   valley's regard: 0, 1, 2 or more.
+- **Two flags per condition, at most** (`MAX_CONDITION_FLAGS`). A choice, a
+  line, a place's routing or a slide tests no more than two story flags; an
+  NPC's fate counts as one. Needing more means the story wants a quest's
+  status, a tally, or first-match cases (an ending's `cases` need no `not`s
+  for the cases above them). `test/ledger.test.ts` holds every module to it;
+  a chapter over it (Wyrmcalling's brood) has an allowance that only shrinks.
 
 ## Budget
 

@@ -513,7 +513,13 @@ The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. H
 
 The reeve looks past you, up the marsh road, for the prisoner who isn't there. "You let him *walk*?" His face goes red, then white. "Thornwick pays for a chief it can see. Not for one you turned loose in my marsh."
 
-Behind him, Mira catches your eye and very nearly smiles.
+Behind him, Mira watches from the inn door, wiping her hands on her apron.
+
+**» Turn to the crowd**
+
+<sub>scene `aftermath-hub`</sub>
+
+The crowd presses in around the well, where the reeve's strongbox stands.
 
 **» Let the crowd carry you to the Wander-Inn**
 

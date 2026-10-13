@@ -36,7 +36,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   cover: 'loc-village',
   levelBand: { from: 1, to: 3 },
   places: {
-    'square/city': { reads: ['know-spy', 'mira-read'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
+    'square/city': { reads: ['know-spy'], exports: ['bounty', 'know-signal', 'mill-saved', 'spy-caught', 'spy-seen'] },
   },
   towns: {
     square: {

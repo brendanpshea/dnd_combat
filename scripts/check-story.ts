@@ -15,7 +15,7 @@ import { validateModule } from '../src/adventure/validate.js';
 import { checkModuleReach } from '../src/adventure/reach.js';
 import { maxXpReport, type XpAt } from '../src/adventure/xp-reach.js';
 import { LEVEL_XP } from '../src/campaign/campaign.js';
-import { LEDGER_BUDGET, spend } from '../src/data/modules/ledger.js';
+import { LEDGER_BUDGET, spend, wideConditions, MAX_CONDITION_FLAGS } from '../src/data/modules/ledger.js';
 
 const nth = (n: number) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const xpAt = (x: XpAt) => `${x.max.toLocaleString()} XP (${nth(x.level)}, ${Number.isFinite(x.headroom) ? `${x.headroom.toLocaleString()} short of ${nth(x.level + 1)}` : 'the top level'})`;
@@ -30,6 +30,8 @@ for (const m of MODULES) {
   const b = LEDGER_BUDGET[m.id];
   if (b && reach.states > b.states) errors.push(`reach walks ${reach.states.toLocaleString()} states, over its budget of ${b.states.toLocaleString()} (src/data/modules/ledger.ts)`);
   const sp = spend(m);
+  const wide = wideConditions(m);
+  if (wide.length > (b?.wide ?? 0)) errors.push(`${wide.length} conditions test more than ${MAX_CONDITION_FLAGS} story flags (allowed ${b?.wide ?? 0}):\n      ${wide.join('\n      ')}`);
   const budget = b ? `  flags ${sp.flags}/${b.flags} · conditional ${sp.conditional}/${b.conditional} · states ${reach.states.toLocaleString()}/${b.states.toLocaleString()}` : `  (${reach.states.toLocaleString()} states)`;
   const lines: string[] = [];
   if (xp && m.levelBand) {

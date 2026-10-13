@@ -95,8 +95,8 @@ describe('the trilogy\'s numeric facts', () => {
       expect(c.label).toContain(`${v(fact)} gold`);
     };
     paid(hr, 'board', 'ok', 'bounty-retainer');
-    paid(hr, 'aftermath-hub', 'bounty', 'bounty-full');
-    paid(hr, 'aftermath-hub', 'balance', 'bounty-balance');
+    paid(hr, 'aftermath', 'bounty', 'bounty-full');
+    paid(hr, 'aftermath', 'balance', 'bounty-balance');
     paid(hr, 'aftermath-hub', 'banner', 'bounty-banner');
     paid(hr, 'aftermath-hub', 'scout', 'scout-reward');
     expect(gold(choice(hr, 'spy-confront', 'investigate').check.failEffects)).toEqual([-v('pinched-purse')]);

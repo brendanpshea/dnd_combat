@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-123 scenes · 180 versions · 1,943,286 states searched (with text conditions tracked).
+123 scenes · 181 versions · 1,858,326 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -334,11 +334,11 @@ His crew sees the knife at his ribs. One by one, they find somewhere else to dri
 
 ## `gate-blocked` · story
 
-<sub>reads: flag:spy-seen, flag:know-spy, flag:mira-read</sub>
+<sub>reads: flag:spy-seen, flag:know-spy</sub>
 
 **3 versions**
 
-### 1. when not `spy-seen` · not `know-spy` · not `mira-read`
+### 1. when not `spy-seen` · not `know-spy`
 
 The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until he's in the cells."
 
@@ -346,7 +346,7 @@ The gate-warden lays his spear across the road and shakes his head, not unkindly
 
 "Or ask Mira at the Wander-Inn. She hears everything."
 
-### 2. when not `spy-seen` · `mira-read` — or — not `spy-seen` · `know-spy`
+### 2. when not `spy-seen` · `know-spy`
 
 The gate-warden lays his spear across the road and shakes his head, not unkindly. "Reeve's orders, and for once they're sound ones. Someone in this town sells the Ashfang word of every cart that leaves. Nobody goes out until he's in the cells."
 
@@ -1410,8 +1410,8 @@ He keeps his branded hand shut in a fist. His eyes keep going back to it.
 - » **[Warlock · Arcana DC 11] Name the bargain burned into his hand** [Arcana DC 11] <sub>open when Vex turned · a warlock in the party?; otherwise hidden</sub>
 - » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken` · Vex not turned; otherwise hidden</sub>
 - » **[Persuasion DC 14] "She drowned your mother's house. Help us end her."** [Persuasion DC 14] <sub>open when not `vargan-shaken` · Vex turned; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when not `vargan-shaken` · Vex not turned · `pens-settled`; otherwise hidden</sub>
-- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when not `vargan-shaken` · Vex turned · `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when Vex not turned · `pens-settled`; otherwise hidden</sub>
+- » **[Persuasion DC 10] "The carter's girl is home. Your mother's house is still under the water."** [Persuasion DC 10] <sub>open when Vex turned · `pens-settled`; otherwise hidden</sub>
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken` · Vex not turned; otherwise hidden</sub>
 - » **[Persuasion DC 10] "She owns you too. Help us end her."** [Persuasion DC 10] <sub>open when `vargan-shaken` · Vex turned; otherwise hidden</sub>
 - » **End them both** <sub>open when not `vargan-shaken` · Vex turned; otherwise hidden</sub>
@@ -1911,7 +1911,7 @@ Your cleric kneels beside him and studies the grey brand. There is no prayer for
 
 ## `aftermath` · story
 
-<sub>reads: flag:npc.vargan.fate.spared, flag:vargan-let-go, flag:bounty, flag:npc.vargan.fate.dead, flag:captives-freed, flag:npc.wren.fate.saved, flag:mill-saved, flag:got-bounty, flag:looted, flag:got-banner, flag:got-scout, flag:scout-bled-out, flag:scout-walked-past</sub>
+<sub>reads: flag:npc.vargan.fate.spared, flag:vargan-let-go, flag:bounty, flag:npc.vargan.fate.dead, flag:captives-freed, flag:got-bounty</sub>
 
 **7 versions**
 
@@ -1923,7 +1923,7 @@ The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. H
 
 Someone asks how the chief died, and you tell them: on his knees in his own hall, with the fight already over. The square goes quiet. Behind the reeve, Mira looks at you, says nothing, and turns away.
 
-### 2. when Vargan not dead · not `captives-freed` · Wren not saved · not `mill-saved` · not `got-bounty`
+### 2. when Vargan not dead · not `captives-freed` · not `got-bounty`
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
 
@@ -1933,7 +1933,7 @@ The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. H
 
 Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
-### 3. when Vargan not dead · `mill-saved` · not `got-bounty` — or — Vargan not dead · Wren saved · not `got-bounty` — or — Vargan not dead · `captives-freed` · not `got-bounty`
+### 3. when Vargan not dead · `captives-freed` · not `got-bounty`
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
 
@@ -1943,7 +1943,7 @@ The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. H
 
 Behind him, Mira catches your eye and very nearly smiles.
 
-### 4. when not `bounty` · not `captives-freed` · Wren not saved · not `mill-saved` · `got-bounty`
+### 4. when not `bounty` · not `captives-freed` · `got-bounty`
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
 
@@ -1953,7 +1953,7 @@ The reeve looks past you, up the marsh road, for the prisoner who isn't there. "
 
 Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
-### 5. when not `bounty` · `mill-saved` · `got-bounty` — or — not `bounty` · Wren saved · `got-bounty` — or — not `bounty` · `captives-freed` · `got-bounty`
+### 5. when not `bounty` · `captives-freed` · `got-bounty`
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
 
@@ -1963,7 +1963,7 @@ The reeve looks past you, up the marsh road, for the prisoner who isn't there. "
 
 Behind him, Mira catches your eye and very nearly smiles.
 
-### 6. when `bounty` · not `captives-freed` · Wren not saved · not `mill-saved` · `got-bounty`
+### 6. when `bounty` · not `captives-freed` · `got-bounty`
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
 
@@ -1975,7 +1975,7 @@ He holds out his hand for the retainer you drew at the board. He does not lower 
 
 Behind him, Mira watches from the inn door, wiping her hands on her apron.
 
-### 7. when `bounty` · `mill-saved` · `got-bounty` — or — `bounty` · Wren saved · `got-bounty` — or — `bounty` · `captives-freed` · `got-bounty`
+### 7. when `bounty` · `captives-freed` · `got-bounty`
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
 
@@ -1989,46 +1989,21 @@ Behind him, Mira catches your eye and very nearly smiles.
 
 - » **Let the reeve count out the bounty** <sub>open when not `bounty` · not `got-bounty`; otherwise hidden</sub>
 - » **Let the reeve settle the rest of the bounty** <sub>open when `bounty` · not `got-bounty`; otherwise hidden</sub>
-- » **Unroll the Ashfang banner on the well** <sub>open when `looted`; otherwise greyed</sub>
-- » **Look for Wren in the crowd** <sub>open when Wren saved; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren saved · `got-bounty`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren not saved · `got-bounty` · not `scout-bled-out` · not `scout-walked-past`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when `got-bounty` · not `scout-bled-out` · `scout-walked-past`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren not saved · `got-bounty` · `scout-bled-out`; otherwise hidden</sub>
+- » **Turn to the crowd** <sub>open when `got-bounty`; otherwise hidden</sub>
 
 ## `aftermath-hub` · story
 
-<sub>reads: flag:got-bounty, flag:vargan-let-go, flag:got-banner, flag:got-scout, flag:bounty, flag:looted, flag:npc.wren.fate.saved, flag:scout-bled-out, flag:scout-walked-past</sub>
+<sub>reads: flag:got-bounty, flag:vargan-let-go, flag:got-banner, flag:got-scout, flag:looted, flag:npc.wren.fate.saved, flag:scout-bled-out</sub>
 
-**7 versions**
+**8 versions**
 
-### 1. when not `got-bounty` · not `looted` — or — not `got-bounty` · not `got-banner` — or — `vargan-let-go` · not `looted` — or — `vargan-let-go` · not `got-banner`
-
-The crowd presses in around the well, where the reeve's strongbox stands.
-
-Wren has found a barrel to sit on, her crutch propped beside her. She is pretending not to watch you.
-
-### 2. when not `got-bounty` · Wren not saved — or — not `got-bounty` · not `got-scout` — or — `vargan-let-go` · Wren not saved — or — `vargan-let-go` · not `got-scout`
-
-The crowd presses in around the well, where the reeve's strongbox stands.
-
-Someone has hung the Ashfang banner from the well-rope, and the children are taking turns to throw mud at it.
-
-### 3. when not `got-bounty` · `got-banner` · `got-scout` — or — `vargan-let-go` · `got-banner` · `got-scout`
-
-The crowd presses in around the well, where the reeve's strongbox stands.
-
-Someone has hung the Ashfang banner from the well-rope, and the children are taking turns to throw mud at it.
-
-Wren has found a barrel to sit on, her crutch propped beside her. She is pretending not to watch you.
-
-### 4. when not `looted` · Wren not saved — or — not `got-scout` · not `looted` — or — not `got-banner` · Wren not saved — or — not `got-banner` · not `got-scout`
+### 1. when not `vargan-let-go` · not `looted` · Wren not saved — or — not `vargan-let-go` · not `got-scout` · not `looted` — or — not `vargan-let-go` · not `got-banner` · Wren not saved — or — not `vargan-let-go` · not `got-banner` · not `got-scout`
 
 The crowd presses in around the well, where the reeve's strongbox stands.
 
 The reeve has closed his ledger, and stands with his arms folded in case anyone else has a claim.
 
-### 5. when `got-bounty` · not `vargan-let-go` · `got-scout` · not `looted` — or — `got-bounty` · not `vargan-let-go` · not `got-banner` · `got-scout`
+### 2. when not `vargan-let-go` · `got-scout` · not `looted` — or — not `vargan-let-go` · not `got-banner` · `got-scout`
 
 The crowd presses in around the well, where the reeve's strongbox stands.
 
@@ -2036,7 +2011,7 @@ The reeve has closed his ledger, and stands with his arms folded in case anyone 
 
 Wren has found a barrel to sit on, her crutch propped beside her. She is pretending not to watch you.
 
-### 6. when `got-bounty` · not `vargan-let-go` · `got-banner` · Wren not saved — or — `got-bounty` · not `vargan-let-go` · `got-banner` · not `got-scout`
+### 3. when not `vargan-let-go` · `got-banner` · Wren not saved — or — not `vargan-let-go` · `got-banner` · not `got-scout`
 
 The crowd presses in around the well, where the reeve's strongbox stands.
 
@@ -2044,7 +2019,7 @@ The reeve has closed his ledger, and stands with his arms folded in case anyone 
 
 Someone has hung the Ashfang banner from the well-rope, and the children are taking turns to throw mud at it.
 
-### 7. when `got-bounty` · not `vargan-let-go` · `got-banner` · `got-scout`
+### 4. when not `vargan-let-go` · `got-banner` · `got-scout`
 
 The crowd presses in around the well, where the reeve's strongbox stands.
 
@@ -2054,14 +2029,35 @@ Someone has hung the Ashfang banner from the well-rope, and the children are tak
 
 Wren has found a barrel to sit on, her crutch propped beside her. She is pretending not to watch you.
 
-- » **Let the reeve count out the bounty** <sub>open when not `got-bounty` · not `bounty`; otherwise hidden</sub>
-- » **Let the reeve settle the rest of the bounty** <sub>open when not `got-bounty` · `bounty`; otherwise hidden</sub>
+### 5. when `vargan-let-go` · not `looted` · Wren not saved — or — `vargan-let-go` · not `got-scout` · not `looted` — or — `vargan-let-go` · not `got-banner` · Wren not saved — or — `vargan-let-go` · not `got-banner` · not `got-scout`
+
+The crowd presses in around the well, where the reeve's strongbox stands.
+
+### 6. when `vargan-let-go` · `got-scout` · not `looted` — or — `vargan-let-go` · not `got-banner` · `got-scout`
+
+The crowd presses in around the well, where the reeve's strongbox stands.
+
+Wren has found a barrel to sit on, her crutch propped beside her. She is pretending not to watch you.
+
+### 7. when `vargan-let-go` · `got-banner` · Wren not saved — or — `vargan-let-go` · `got-banner` · not `got-scout`
+
+The crowd presses in around the well, where the reeve's strongbox stands.
+
+Someone has hung the Ashfang banner from the well-rope, and the children are taking turns to throw mud at it.
+
+### 8. when `vargan-let-go` · `got-banner` · `got-scout`
+
+The crowd presses in around the well, where the reeve's strongbox stands.
+
+Someone has hung the Ashfang banner from the well-rope, and the children are taking turns to throw mud at it.
+
+Wren has found a barrel to sit on, her crutch propped beside her. She is pretending not to watch you.
+
 - » **Unroll the Ashfang banner on the well** <sub>open when not `got-banner` · `looted`; otherwise greyed</sub>
 - » **Look for Wren in the crowd** <sub>open when not `got-scout` · Wren saved; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `got-scout` · not `looted` · Wren saved — or — not `got-banner` · not `got-scout` · Wren saved — or — `got-bounty` · Wren saved; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `looted` · Wren not saved · not `scout-bled-out` · not `scout-walked-past` — or — not `got-banner` · Wren not saved · not `scout-bled-out` · not `scout-walked-past` — or — `got-bounty` · Wren not saved · not `scout-bled-out` · not `scout-walked-past`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `looted` · not `scout-bled-out` · `scout-walked-past` — or — not `got-banner` · not `scout-bled-out` · `scout-walked-past` — or — `got-bounty` · not `scout-bled-out` · `scout-walked-past`; otherwise hidden</sub>
-- » **Let the crowd carry you to the Wander-Inn** <sub>open when not `looted` · Wren not saved · `scout-bled-out` — or — not `got-banner` · Wren not saved · `scout-bled-out` — or — `got-bounty` · Wren not saved · `scout-bled-out`; otherwise hidden</sub>
+- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren saved; otherwise hidden</sub>
+- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren not saved · not `scout-bled-out`; otherwise hidden</sub>
+- » **Let the crowd carry you to the Wander-Inn** <sub>open when Wren not saved · `scout-bled-out`; otherwise hidden</sub>
 
 ## `claim-bounty` · story
 
@@ -2185,9 +2181,9 @@ The other scout lost her horse in the fen and walked home the long way round. Sh
 
 > **[when `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
-> **[when Wren saved · not `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+> **[when Wren saved]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
-> **[when Wren not saved · not `captives-freed` · `mill-saved`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
+> **[when `mill-saved`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
 Mira pours your round and takes your coin for it. "Town's still standing," she allows, and moves off down the bar.
 
