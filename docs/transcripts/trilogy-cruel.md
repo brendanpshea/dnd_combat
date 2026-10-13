@@ -329,7 +329,7 @@ You slip back out through the gate, into the quiet of the hollow.
 
 Two of them come out of a tent still buckling on stolen mail.
 
-**Battle:** gen:orc+scout+giant-hyena+giant-hyena <sub>(`gen:orc+scout+giant-hyena+giant-hyena` on `@room`)</sub>
+**Battle:** gen:berserker+giant-hyena+giant-hyena+berserker+guard <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -425,7 +425,7 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 _(a paragraph shown before: “Two of them come out of a…”)_
 
-**Battle:** gen:orc+scout+giant-hyena+giant-hyena <sub>(`gen:orc+scout+giant-hyena+giant-hyena` on `@room`)</sub>
+**Battle:** gen:berserker+giant-hyena+giant-hyena+berserker+guard <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
 
 **» Fight — won**
 
