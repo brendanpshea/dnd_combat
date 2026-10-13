@@ -757,6 +757,13 @@ export interface Module {
    * many it answers to. Anything else it sets is its own.
    */
   places?: Record<Id, { reads: string[]; exports?: string[]; budget?: number }>;
+  /**
+   * Each written scene's act (the .story file it is in). The reachability
+   * proof walks each act with only its own flags and what the acts hand each
+   * other (reach.ts, `actsOf`); a scene not listed belongs to the act of the
+   * first scene that leads to it.
+   */
+  acts?: Record<Id, string>;
   /** NPCs on this chapter's stage (staging.ts). */
   stage?: Record<Id, NpcStaging>;
   /** Quests, by id, compiled into the module's scenes (quests.ts). */
