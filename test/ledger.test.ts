@@ -6,7 +6,8 @@
 import { describe, it, expect } from 'vitest';
 import { MODULES } from '../src/data/modules/index.js';
 import { TRILOGY_NPCS } from '../src/data/modules/npcs.js';
-import { LEDGER_CARRIES, MAX_FATES, LEDGER_BANDS, LEDGER_BUDGET, spend, wideConditions, MAX_CONDITION_FLAGS } from '../src/data/modules/ledger.js';
+import { actExports } from '../src/adventure/reach.js';
+import { LEDGER_CARRIES, MAX_FATES, LEDGER_BANDS, LEDGER_BUDGET, spend, wideConditions, MAX_CONDITION_FLAGS, MAX_ACT_EXPORTS } from '../src/data/modules/ledger.js';
 
 const trilogy = MODULES.filter((m) => m.id in LEDGER_CARRIES);
 
@@ -53,5 +54,10 @@ describe('the ledger', () => {
     const wide = wideConditions(m);
     const allowed = LEDGER_BUDGET[id]?.wide ?? 0;
     expect(wide.length, wide.slice(0, 20).join('\n')).toBeLessThanOrEqual(allowed);
+  });
+
+  it.each(MODULES.filter((m) => m.acts).map((m) => [m.id, m] as const))(`%s hands at most ${MAX_ACT_EXPORTS} flags from any act to the others`, (_id, m) => {
+    const over = Object.entries(actExports(m)).filter(([, fs]) => fs.length > MAX_ACT_EXPORTS).map(([a, fs]) => `${a}: ${fs.join(', ')}`);
+    expect(over).toEqual([]);
   });
 });

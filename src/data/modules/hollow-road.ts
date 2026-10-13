@@ -9,7 +9,7 @@ import { TRILOGY_NPCS as NPCS, TRILOGY_RENAMED_FATES } from './npcs.js';
 import { TRILOGY_FACTS } from './canon.js';
 // The scenes are written in hollow-road/*.story (one file per place) and
 // built by `npm run stories`.
-import { SCENES as scenes } from './hollow-road/scenes.gen.js';
+import { SCENES as scenes, ACTS } from './hollow-road/scenes.gen.js';
 
 export const HOLLOW_ROAD_RENAMED_NPC_FLAGS: Record<string, string> = {
   'saved-scout': npcFateFlag('wren', 'saved'),
@@ -134,7 +134,7 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
   // Part 1 of the trilogy (docs/trilogy-plan.md): a victory carries the
   // company into The Sunken Barrows.
   sequel: 'sunken-barrows',
-  start: 'road', scenes, defeatScene: 'defeat', town: 'square/city',
+  start: 'road', scenes, acts: ACTS, defeatScene: 'defeat', town: 'square/city',
   // The clock: the Ashfang keep their captives for the Reedwife, and she
   // takes them when the moon goes dark. Six nights' sleep and they are gone.
   dawns: [

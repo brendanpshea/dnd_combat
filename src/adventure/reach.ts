@@ -35,7 +35,7 @@
 import { outsideOf } from './outside.js';
 import type { Id } from '../engine/types.js';
 import { HUB_REF, type Module, type Requirement, type Effect, type Scene } from './types.js';
-import { requirementsOf, effectsOf, parasOf, flagsWritten } from './graph.js';
+import { requirementsOf, effectsOf, parasOf, flagsWritten, refsOf } from './graph.js';
 import { isNpcFlag } from './npcs.js';
 import { MODULES } from '../data/modules/index.js';
 
@@ -408,7 +408,9 @@ function searchChapter(whole: Module, chapters: readonly Module[], collect?: Col
   const carried = new Map<string, string[]>();
   let states = 0;
   for (const [k, fulls] of groups) {
-    const run = searchModule(module, new Set(k ? k.split('|') : []), chapters, collect, fulls, xp);
+    const run = !collect && !xp && module.acts
+      ? searchActs(module, new Set(k ? k.split('|') : []), chapters)
+      : searchModule(module, new Set(k ? k.split('|') : []), chapters, collect, fulls, xp);
     if (run.skipped) return { errors: [], states: states + run.states, skipped: run.skipped };
     states += run.states;
     run.seen.forEach((id) => seen.add(id));
@@ -449,8 +451,115 @@ interface Run {
   seedOfFull?: number[];
 }
 
+/*
+ * ACTS. A chapter written in acts (Module.acts: one .story file each) is
+ * proved one act at a time. Each act's walk tracks only the flags its own
+ * scenes read (and the clock, the hubs visited, its own quests' flags, and,
+ * where the chapter is won, what it hands on); a flag read only in other
+ * acts is taken either way, like gold. So the acts' flags add instead of
+ * multiplying. Each walk reports only what is found in its own act (its
+ * scenes, its quests), where it tracks everything that matters; what one
+ * act knows of another is what that act's flags say, and nothing more.
+ */
+function actsOf(module: Module): Map<Id, string> {
+  const act = new Map(Object.entries(module.acts ?? {}));
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const [id, sc] of Object.entries(module.scenes)) {
+      const a = act.get(id);
+      if (a) for (const r of refsOf(sc)) if (module.scenes[r] && !act.has(r)) { act.set(r, a); changed = true; }
+    }
+  }
+  return act;
+}
+
+function searchActs(module: Module, handed: ReadonlySet<string>, chapters: readonly Module[]): Run {
+  const act = actsOf(module);
+  const names = [...new Set(act.values())];
+  const out: Run = { errors: [], states: 0, seen: new Set(), outputs: [], rewrites: new Set() };
+  const outputs = new Map<string, string[]>();
+  // A name shown before its introduction is a finding only if the walks of
+  // the act where it is shown and of the acts that introduce it (each exact
+  // about its own act) all find it.
+  const castBy = new Map<string, Map<string, string>>(); // act → finding key → error
+  const castKey = (e: string) => /^(\[[^\]]+\] names .+? before any introduction \([^)]*\))/.exec(e)?.[1];
+  for (const name of names) {
+    const run = searchModule(module, handed, chapters, undefined, [], undefined, { act: name, of: act });
+    if (run.skipped) return { ...out, states: out.states + run.states, skipped: `${name}: ${run.skipped}` };
+    out.states += run.states;
+    run.seen.forEach((id) => out.seen.add(id));
+    run.rewrites.forEach((f) => out.rewrites.add(f));
+    // Its own findings: in its scenes, or about the quests it settles.
+    const here = (e: string) => { const id = /^\[([^\]]+)\]/.exec(e)?.[1]; return !id || act.get(id) === name || e.includes(' the quest \''); };
+    const cast = new Map<string, string>();
+    for (const e of run.errors) { const k = castKey(e); if (k) cast.set(k, e); }
+    castBy.set(name, cast);
+    for (const e of run.errors.filter((x) => here(x) && !castKey(x))) if (!out.errors.some((x) => sameFinding(x, e))) out.errors.push(e);
+    for (const o of run.outputs) outputs.set(o.join('|'), o);
+  }
+  const castFound = new Map<string, string>();
+  for (const m of castBy.values()) for (const [k, e] of m) if (!castFound.has(k)) castFound.set(k, e);
+  for (const [k, e] of castFound) {
+    const intros = /introduction \(([^)]*)\)/.exec(k)![1]!.split(', ');
+    const at = act.get(/^\[([^\]]+)\]/.exec(k)![1]!);
+    const by = [...new Set([at, ...intros.map((id) => act.get(id))].filter((a): a is string => !!a))];
+    if (by.every((a) => castBy.get(a)?.has(k))) out.errors.push(e);
+  }
+  out.outputs = [...outputs.values()];
+  return out;
+}
+
+interface Focus { act: string; of: Map<Id, string> }
+
+/**
+ * What each act hands the others: the flags it sets that another act reads,
+ * by act (the ledger caps them, MAX_ACT_EXPORTS). A flag no act sets (a
+ * dawn's) belongs to no act.
+ */
+export function actExports(whole: Module): Record<string, string[]> {
+  if (!whole.acts) return {};
+  const module = outsideOf(whole);
+  const act = actsOf(module);
+  const readIn = new Map<string, Set<string>>();
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    for (const r of [...pathReads({ ...module, scenes: { [id]: sc } }), ...assumedReads({ ...module, scenes: { [id]: sc } })]) {
+      if (r.kind === 'flag' || r.kind === 'notFlag') { if (!readIn.has(r.flag)) readIn.set(r.flag, new Set()); readIn.get(r.flag)!.add(act.get(id) ?? ''); }
+    }
+  }
+  const out: Record<string, Set<string>> = {};
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    const a = act.get(id) ?? '';
+    for (const e of effectsOf(sc)) {
+      if (e.kind !== 'setFlag') continue;
+      if ([...(readIn.get(e.flag) ?? [])].some((b) => b !== a)) (out[a] ??= new Set()).add(e.flag);
+    }
+  }
+  return Object.fromEntries(Object.entries(out).map(([a, fs]) => [a, [...fs].sort()]));
+}
+
+/** The requirements on flags that cross acts: read in an act that does not
+ *  set them (or in more than one act). */
+function crossingReads(module: Module, act: Map<Id, string>): Requirement[] {
+  const readIn = new Map<string, Set<string>>(), setIn = new Map<string, Set<string>>();
+  const note = (m: Map<string, Set<string>>, k: string, a: string) => { if (!m.has(k)) m.set(k, new Set()); m.get(k)!.add(a); };
+  const reqs: Requirement[] = [];
+  for (const [id, sc] of Object.entries(module.scenes)) {
+    const a = act.get(id) ?? '';
+    for (const r of [...pathReads({ ...module, scenes: { [id]: sc } }), ...assumedReads({ ...module, scenes: { [id]: sc } })]) {
+      if (r.kind === 'flag' || r.kind === 'notFlag') { note(readIn, r.flag, a); reqs.push(r); }
+    }
+    for (const e of effectsOf(sc)) if (e.kind === 'setFlag' || e.kind === 'clearFlag') note(setIn, e.flag, a);
+  }
+  return reqs.filter((r) => {
+    const f = (r as { flag: string }).flag;
+    const rs = readIn.get(f)!, ws = setIn.get(f) ?? new Set();
+    return rs.size > 1 || [...rs].some((a) => !ws.has(a));
+  });
+}
+
 function searchModule(
   module: Module, handed: ReadonlySet<string>, chapters: readonly Module[], collect?: Collect, fulls: string[][] = [], xp?: XpTrace,
+  focus?: Focus,
 ): Run {
   const none: Run = { errors: [], states: 0, seen: new Set(), outputs: [], rewrites: new Set() };
   const ids = Object.keys(module.scenes);
@@ -483,7 +592,13 @@ function searchModule(
     // A snapshot can hold any value its source can: never a bit.
     : e.kind === 'copyFlag' || e.kind === 'addFlag' ? [e.kind === 'copyFlag' ? e.to : e.flag] : [])));
   for (const r of [...pathReads(module), ...assumedReads(module), ...extra]) if ((r.kind === 'flag' && typeof r.value === 'number') || r.kind === 'count') counted.add(r.flag);
-  for (const r of [...pathReads(module), ...assumedReads(module), ...extraFacts]) {
+  // An act's walk: only what its own scenes read (see searchActs).
+  const mine = (id: Id) => !focus || focus.of.get(id) === focus.act;
+  const own: Module = focus ? { ...module, scenes: Object.fromEntries(Object.entries(module.scenes).filter(([id]) => mine(id))) } : module;
+  // …and what crosses between acts (a flag one act sets and another reads),
+  // tracked in every act's walk: only an act's own flags are private to it.
+  const crossing = focus ? crossingReads(module, focus.of) : [];
+  for (const r of [...pathReads(own), ...assumedReads(own), ...crossing, ...extraFacts]) {
     if ((r.kind === 'flag' || r.kind === 'notFlag') && !settled.has(r.flag) && !counted.has(r.flag)) fact(`flag:${r.flag}`);
     if (r.kind === 'companion' || r.kind === 'noCompanion') fact(`companion:${r.companion}`);
     if (r.kind === 'visited') fact(`visited:${r.scene}`);
@@ -492,6 +607,14 @@ function searchModule(
   // A quest's own flags — taken, done, failed — are facts whether or not any
   // choice reads them: the proof that a taken quest can still be finished
   // needs to see them.
+  const questFlagsWhere = (x: unknown, keep: (o: unknown) => boolean): string[] => {
+    if (Array.isArray(x)) return x.flatMap((v) => questFlagsWhere(v, keep));
+    if (!x || typeof x !== 'object') return [];
+    const o = x as { kind?: string; entry?: { kind?: string; takenBy?: string; resolvedBy?: string; failedBy?: string | string[] } };
+    const own = o.kind === 'journal' && o.entry?.kind === 'quest' && o.entry.resolvedBy && keep(o)
+      ? [...(o.entry.takenBy ? [o.entry.takenBy] : []), o.entry.resolvedBy, ...(typeof o.entry.failedBy === 'string' ? [o.entry.failedBy] : o.entry.failedBy ?? [])] : [];
+    return [...own, ...Object.values(x).flatMap((v) => questFlagsWhere(v, keep))];
+  };
   const questFlags = (x: unknown): string[] => {
     if (Array.isArray(x)) return x.flatMap(questFlags);
     if (!x || typeof x !== 'object') return [];
@@ -500,7 +623,15 @@ function searchModule(
       ? [...(o.entry.takenBy ? [o.entry.takenBy] : []), o.entry.resolvedBy, ...(typeof o.entry.failedBy === 'string' ? [o.entry.failedBy] : o.entry.failedBy ?? [])] : [];
     return [...own, ...Object.values(x).flatMap(questFlags)];
   };
-  for (const f of new Set(questFlags(module.scenes))) if (!settled.has(f) && !counted.has(f)) fact(`flag:${f}`);
+  // An act's walk tracks the quests it settles (whose `resolvedBy` it sets).
+  const settles = (x: unknown): boolean => {
+    if (!focus) return true;
+    const o = x as { entry?: { resolvedBy?: string; failedBy?: string | string[] } };
+    const ends = new Set([o.entry?.resolvedBy, ...[o.entry?.failedBy ?? []].flat()]);
+    return Object.values(own.scenes).some((sc) => effectsOf(sc).some((e) => e.kind === 'setFlag' && ends.has(e.flag)));
+  };
+  const questFlagSet = new Set(questFlagsWhere(module.scenes, settles));
+  for (const f of questFlagSet) if (!settled.has(f) && !counted.has(f)) fact(`flag:${f}`);
   // What this chapter hands on, where a later chapter reads it: tracked so a
   // victory can say which mixes it carries.
   const downstream = new Set(sequelsOf(module, chapters).flatMap((m) => carriedReads(m, collect)));
@@ -508,6 +639,9 @@ function searchModule(
     ...(module.carries ?? []).filter((f) => downstream.has(`${module.id}:${f}`)).map((f) => ({ flag: f, as: `${module.id}:${f}` })),
     ...[...downstream].filter((f) => isNpcFlag(f) && written.has(f)).map((f) => ({ flag: f, as: f })),
   ];
+  // (An act's walk hands on only where the chapter is won.)
+  const wins = Object.entries(own.scenes).some(([, sc]) => sc.kind === 'ending' && sc.outcome === 'victory');
+  if (focus && !wins) handsOn.length = 0;
   handsOn.forEach((h) => fact(`flag:${h.flag}`));
   // The chapter's clock: which of the mornings that change something have
   // come. They come in order, so the next is always the first not yet come.
@@ -870,7 +1004,62 @@ function searchModule(
   const edgeLabel = new Map<number, string>();
   const sceneShadowBit = ids.map((id) => sbit(`visited:${id}`));
 
-  const add = (scene: number, hub: number, f: number, from: number, label: string): number => {
+  /*
+   * DEAD FACTS. A fact nothing can read any more, from where the party
+   * stands, is forgotten: states that differ only in it have the same future,
+   * so they are one state. `live[s]` is every fact read anywhere reachable
+   * from scene s, ignoring what gates the way (so it errs toward live). The
+   * clock, the hubs visited (travel), a quest's own flags and what the
+   * chapter hands on are read off any state, so always live. This is what
+   * keeps a chapter's acts from multiplying: what the marsh knew dies in the
+   * hall, once nothing on the way out goes back to the marsh.
+   * (The atlas's collect mode keeps every fact: it reads them off states.)
+   */
+  const live = liveFacts();
+  function liveFacts(): number[] {
+    const all = 2 ** facts.size - 1;
+    if (collect) return ids.map(() => all);
+    const maskOf = (m: Mask | null | undefined) => (m ? or(m.has, m.not) : 0);
+    const reads = compiled.map((c, i) => [
+      ...c.steps.map((st) => maskOf(st.req)),
+      ...c.nodes.flatMap((nd) => [maskOf(nd.req), ...nd.when.map((w) => maskOf(w.req))]),
+      ...c.events.map((ev) => maskOf(ev.until)),
+      // What the scene takes for granted is read there too (its proof).
+      ...assumedReads({ ...module, scenes: { [ids[i]!]: module.scenes[ids[i]!]! } }).map((r) =>
+        r.kind === 'flag' || r.kind === 'notFlag' ? bit(`flag:${r.flag}`)
+        : r.kind === 'companion' || r.kind === 'noCompanion' ? bit(`companion:${r.companion}`)
+        : r.kind === 'visited' ? bit(`visited:${r.scene}`) : 0),
+    ].reduce(or, 0));
+    const hubRefs = [...hubs, module.start].map((h) => index.get(h)).filter((x): x is number => x !== undefined);
+    const succ = compiled.map((c, i) => {
+      const refs = [...c.steps.map((st) => st.to), ...c.nodes.flatMap((nd) => [nd.to, ...nd.when.map((w) => w.to)]), ...c.events.map((ev) => ev.to)];
+      const sc = module.scenes[ids[i]!];
+      if (sc?.kind === 'rest') refs.push(sc.next);
+      const out = refs.filter((r) => r !== HUB_REF).map((r) => index.get(r)).filter((x): x is number => x !== undefined);
+      if (refs.includes(HUB_REF) || c.leave || c.travel) out.push(...hubRefs);
+      return out;
+    });
+    let always = 0;
+    for (const k of facts.keys()) {
+      if (k.startsWith('dawn:') || hubs.some((h) => k === `visited:${h}`)) always = or(always, bit(k));
+    }
+    for (const f of questFlagSet) always = or(always, bit(`flag:${f}`));
+    for (const h of handsOn) always = or(always, bit(`flag:${h.flag}`));
+    for (const d of dawnSteps) always = or(always, d.bit);
+    const out = reads.map((r) => or(r, always));
+    for (let changed = true; changed;) {
+      changed = false;
+      for (let i = 0; i < ids.length; i++) {
+        let m = out[i]!;
+        for (const j of succ[i]!) m = or(m, out[j]!);
+        if (m !== out[i]) { out[i] = m; changed = true; }
+      }
+    }
+    return out;
+  }
+
+  const add = (scene: number, hub: number, f0: number, from: number, label: string): number => {
+    const f = and(f0, live[scene]!);
     const key = pack(scene, hub, f);
     let n = idOf.get(key);
     if (n === undefined) {
@@ -1153,6 +1342,8 @@ function searchModule(
     for (const q of questsOf) {
       const t = q.T ? bitOf(q.T) : 0, d = bitOf(q.D), fs = q.F.map(bitOf).filter((b) => b >= 0);
       if (t < 0 || d < 0) continue;
+      // An act's walk proves only the quests it settles (searchActs).
+      if (focus && !questFlagSet.has(q.D)) continue;
       const ok = new Uint8Array(N);
       const stack: number[] = [];
       // Settled: done, or failed (a choice the story made). A quest may end

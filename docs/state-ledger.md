@@ -49,6 +49,12 @@ Anything not in the table. In particular:
   status, a tally, or first-match cases (an ending's `cases` need no `not`s
   for the cases above them). `test/ledger.test.ts` holds every module to it;
   a chapter over it (Wyrmcalling's brood) has an allowance that only shrinks.
+- **Acts hand each other at most five flags** (`MAX_ACT_EXPORTS`). Each
+  .story file is an act. The reachability proof walks one act at a time,
+  tracking that act's own flags and the flags acts hand each other; a flag
+  only another act reads is taken either way. Private flags add to the proof;
+  handed-on flags multiply it. Pass more between acts through a quest's status
+  or an NPC's fate, not a new flag.
 
 ## Budget
 

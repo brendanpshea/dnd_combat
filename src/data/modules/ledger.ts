@@ -38,6 +38,14 @@ export interface Budget { flags: number; conditional: number; states: number;
  * is a sign the story wants a quest's status or a tally, not a cross-product.
  */
 export const MAX_CONDITION_FLAGS = 2;
+
+/**
+ * The most flags one act (a .story file, Module.acts) may hand the others:
+ * flags it sets that steer a path in another act (reach.ts `actExports`).
+ * The proof walks each act with its own flags and these, so they are what
+ * multiplies; an act's private flags only add.
+ */
+export const MAX_ACT_EXPORTS = 5;
 export const LEDGER_BUDGET: Record<string, Budget> = {
   // Set just above the spend after the ledger round (Oct 2026): 39 / 94 /
   // 1.17M, 23 / 88 / 97k and 33 / 208 / 559k. Part 3 walked 3.0M before.
@@ -52,7 +60,10 @@ export const LEDGER_BUDGET: Record<string, Budget> = {
   // Lowered for the two-flag rule (Oct 2026): no condition tests more than
   // two story flags; Mira's mood is the captives', the reeve pays before the
   // crowd's hub, and Wren turns on a company the moment it walks past her.
-  'hollow-road': { flags: 36, conditional: 82, states: 1_800_000 },
+  // And again for acts (Oct 2026): the proof walks each act with its own
+  // flags and what the acts hand each other, and forgets a flag nothing
+  // ahead can read. 1.74M states to 395k.
+  'hollow-road': { flags: 36, conditional: 82, states: 450_000 },
   // Raised by exactly what round 17's bug fixes cost (Oct 2026): Halden's
   // bell for a company that never read the churchyard (+1).
   'sunken-barrows': { flags: 24, conditional: 87, states: 100_000 },
