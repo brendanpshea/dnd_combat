@@ -197,7 +197,7 @@ You trace a gentler slope downstream and lead the party around dry-shod. It cost
 
 **» Leave her and press on**
 
-<sub>scene `scout-left`</sub>
+<sub>scene `wounded-left`</sub>
 
 You step around the horse. She doesn't call after you. She only watches you go, jaw still set.
 

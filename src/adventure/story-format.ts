@@ -484,7 +484,12 @@ export function parseStory(text: string, file = 'story'): Record<Id, unknown> {
   let cur: { id: Id; lines: Array<{ text: string; no: number }>; head: string; no: number } | undefined;
   const flush = () => {
     if (!cur) return;
-    if (cur.lines.some((l) => l.text.trim() === 'kind: obstacle')) {
+    if (cur.lines.some((l) => l.text.trim() === 'kind: rescue')) {
+      for (const [id, lines] of expandRescue(cur.id, cur.lines, `${file}:${cur.no}`)) {
+        if (scenes[id]) throw new Error(`${file}:${cur.no}: '${id}' twice`);
+        scenes[id] = parseScene(id, '', lines, `${file}:${cur.no}`);
+      }
+    } else if (cur.lines.some((l) => l.text.trim() === 'kind: obstacle')) {
       for (const [id, lines] of expandObstacle(cur.id, cur.lines, `${file}:${cur.no}`)) {
         if (scenes[id]) throw new Error(`${file}:${cur.no}: '${id}' twice`);
         scenes[id] = parseScene(id, '', lines, `${file}:${cur.no}`);
@@ -626,6 +631,104 @@ function expandObstacle(id: Id, lines: Array<{ text: string; no: number }>, wher
         mk(goOf(a.failed, id, 'Back')), ...(f.length ? [mk(`  do ${f.join('; ')}`)] : [])]]);
     }
   }
+  return out;
+}
+
+/**
+ * A rescue (`kind: rescue`): someone hurt on the road, written as one block.
+ *
+ *     # wounded
+ *     kind: rescue
+ *     npc: @SCOUT                          (the approach is a dialogue with them)
+ *     who: wren                            their registry id
+ *     walked: scout-walked-past            set when the party walks past
+ *     saved do: @WREN_SAVED                what saving them does, either way
+ *     (the approach's prose)
+ *     heal item potion-healing > Give her a healing potion  #potion
+ *     heal religion 9 paladin > Lay hands on the wound  #lay-hands
+ *     heal medicine 12 > Ease her out and bind the leg  #medicine
+ *     leave > Leave her and press on  #leave
+ *     (what walking past is)
+ *     saved:                               (prose; then)
+ *     send > Send {wren} back to {thornwick}  #ok
+ *     join > Ask {wren} to come with you  #come    (and ? <requirements>)
+ *     joins:   failed:   passed:   dead:   gone:   along:   sent:
+ *     (each: its prose, `do` lines, and `go: <label>  #id`)
+ *
+ * It becomes the approach (`wounded`) and `wounded-saved`, `-failed`,
+ * `-left`, `-joins`, and the room's later visits (`-passed`, `-dead`,
+ * `-gone`, `-along`, `-sent`; see `rescueWhen`). A heal by class is shown
+ * only to that class; a check failed still saves them, slower (`failed`,
+ * which costs the day).
+ */
+function expandRescue(id: Id, lines: Array<{ text: string; no: number }>, where: string): Array<[Id, Array<{ text: string; no: number }>]> {
+  type L = { text: string; no: number };
+  const field = (k: string) => lines.find((l) => l.text.startsWith(`${k}: `))?.text.slice(k.length + 2);
+  const who = field('who'), walked = field('walked');
+  if (!who || !walked) throw new Error(`${where}: a rescue needs 'who: <npc>' and 'walked: <flag>'`);
+  const savedDo = field('saved do');
+  const own = new Set(['kind', 'who', 'walked', 'saved do']);
+  const SECTIONS = ['saved', 'joins', 'failed', 'passed', 'dead', 'gone', 'along', 'sent'];
+  const sec: Record<string, L[]> = { approach: [], left: [] };
+  const heals: string[] = [];
+  let send = '', join: { label: string; reqs: string[] } | undefined;
+  let into = 'approach';
+  const skillName = (skill: string) => skill.split('-').map((w, i) => (i && ['of', 'and'].includes(w) ? w : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+  const cap = (w: string) => w.charAt(0).toUpperCase() + w.slice(1);
+  let leave = '';
+  for (const l of lines) {
+    const t = l.text;
+    const k = /^(\w[\w -]*?): /.exec(t)?.[1];
+    if (into === 'approach' && k && own.has(k)) continue;
+    let m: RegExpExecArray | null;
+    if ((m = /^(\w+):$/.exec(t)) && SECTIONS.includes(m[1]!)) { into = m[1]!; (sec[into] ??= []); continue; }
+    if ((m = /^heal item (\S+) > (.+?)\s+#([\w-]+)$/.exec(t))) {
+      heals.push(`> ${m[2]} → ${id}-saved  #${m[3]}`, '  hide', `  ? item ${m[1]}`, `  do drop ${m[1]} x1`); continue;
+    }
+    if ((m = /^heal (\S+) (\d+)(?: (\w+))? > (.+?)\s+#([\w-]+)$/.exec(t))) {
+      const [, skill, dc, cls, label, cid] = m;
+      heals.push(`> [${cls ? `${cap(cls)} · ` : ''}${skillName(skill!)} DC ${dc}] ${label} → ${id}-saved  #${cid}`,
+        ...(cls ? ['  hide', `  ? class ${cls}`] : []), `  attempt: ${id}-wound`, `  check ${skill} ${dc} → ${id}-failed`);
+      continue;
+    }
+    if ((m = /^leave > (.+?)\s+#([\w-]+)$/.exec(t))) { leave = `> ${m[1]} → ${id}-left  #${m[2]}`; into = 'left'; continue; }
+    if ((m = /^send > (.+?)\s+#([\w-]+)$/.exec(t))) { send = `${m[1]}|${m[2]}`; continue; }
+    if ((m = /^join > (.+?)\s+#([\w-]+)$/.exec(t))) { join = { label: `${m[1]}|${m[2]}`, reqs: [] }; continue; }
+    if (join && into === 'saved' && /^\? [^|]+$/.test(t)) { join.reqs.push(t.slice(2)); continue; }
+    (sec[into] ??= []).push(l);
+  }
+  if (!heals.length || !leave || !send) throw new Error(`${where}: a rescue needs a 'heal', a 'leave' and a 'send'`);
+  const at = lines[0]?.no ?? 0;
+  const mk = (text: string): L => ({ text, no: at });
+  const art = field('art');
+  const OPT = /^(go: .*|do .*)$/;
+  const body = (ls: L[]) => ls.filter((l) => !OPT.test(l.text));
+  const does = (ls: L[]) => ls.filter((l) => l.text.startsWith('do ')).map((l) => l.text.slice(3));
+  const go = (ls: L[], fallback: string) => {
+    const g = ls.find((l) => l.text.startsWith('go: '))?.text.slice(4);
+    const m = g ? /^(.+?)(?: → (\S+))?\s+#([\w-]+)$/.exec(g) : undefined;
+    return m ? `> ${m[1]} → ${m[2] ?? '@hub'}  #${m[3]}` : `> ${fallback} → @hub  #ok`;
+  };
+  const scene = (sid: string, ls: L[], fallback: string, more: string[] = []): [Id, L[]] => {
+    const d = [...more, ...does(ls)];
+    return [sid, [mk('noBack: true'), ...(art ? [mk(`art: ${art}`)] : []), ...body(ls), mk(go(ls, fallback)), ...(d.length ? [mk(`  do ${d.join('; ')}`)] : [])]];
+  };
+  const saveDo = [...(savedDo ? [savedDo] : []), `npc ${who} attitude 1`];
+  const [sendLabel, sendId] = send.split('|');
+  const saved = sec.saved ?? [];
+  const out: Array<[Id, L[]]> = [
+    [id, [...lines.filter((l) => /^(npc|art|@npc): /.test(l.text)).map((l) => l), mk('kind: dialogue'), mk('noBack: true'),
+      ...(sec.approach ?? []).filter((l) => !/^(npc|art|@npc): /.test(l.text)), ...heals.map(mk), mk(leave), mk(`  do +${walked}; npc ${who} attitude -2`)]],
+    [`${id}-saved`, [mk('noBack: true'), ...(art ? [mk(`art: ${art}`)] : []), ...body(saved),
+      mk(`> ${sendLabel} → @hub  #${sendId}`), mk(`  do ${saveDo.join('; ')}`),
+      ...(join ? [mk(`> ${join.label.split('|')[0]} → ${id}-joins  #${join.label.split('|')[1]}`), mk('  hide'),
+        ...(join.reqs.length ? [mk(`  ? ${join.reqs.join('; ')}`)] : []), mk(`  do ${saveDo.join('; ')}; join ${who}`)] : [])]],
+    [`${id}-failed`, [mk('noBack: true'), ...(art ? [mk(`art: ${art}`)] : []), ...body(sec.failed ?? []),
+      mk(go(sec.failed ?? [], `${sendLabel}`).replace(/#ok$/, `#${sendId}`)), mk(`  do ${[...(savedDo ? [savedDo] : []), 'day', ...does(sec.failed ?? [])].join('; ')}`)]],
+    scene(`${id}-left`, sec.left ?? [], 'Keep walking'),
+  ];
+  if (join) out.push(scene(`${id}-joins`, sec.joins ?? [], 'Go on'));
+  for (const k of ['passed', 'dead', 'gone', 'along', 'sent']) if (sec[k]) out.push(scene(`${id}-${k}`, sec[k]!, 'Go on'));
   return out;
 }
 

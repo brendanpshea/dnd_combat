@@ -107,69 +107,63 @@ failure → @hub
   do +crossed-ravine; day
 
 # wounded
-kind: dialogue
+kind: rescue
 npc: @SCOUT
 art: 🤕
-noBack: true
+who: wren
+walked: scout-walked-past
+saved do: @WREN_SAVED
 A young scout in the reeve's colours lies pinned under a dead horse, an arrow through her leg, her jaw set hard against the pain. "I'm fine," she says — a lie you can see from here. "Get the horse off me and I'll tell you everything. How they're set, where they watch. I counted. That's the job."
 The mud under the arrow is dark and wet. She will not last many more nights out here.
-> Give her a healing potion → scout-saved  #potion
-  hide
-  ? item potion-healing
-  do drop potion-healing x1
-> [Paladin · Religion DC 9] Lay hands on the wound → scout-saved  #lay-hands
-  hide
-  ? class paladin
-  attempt: scout-wound
-  check religion 9 → scout-fail
-> [Cleric · Religion DC 9] Pray over the wound → scout-saved  #pray
-  hide
-  ? class cleric
-  attempt: scout-wound
-  check religion 9 → scout-fail
-> [Druid · Nature DC 9] Pack the wound with marsh-moss → scout-saved  #moss
-  hide
-  ? class druid
-  attempt: scout-wound
-  check nature 9 → scout-fail
-> [Medicine DC 12] Ease her out and bind the leg → scout-saved  #medicine
-  attempt: scout-wound
-  check medicine 12 → scout-fail
-> Leave her and press on → scout-left  #leave
-  do +scout-walked-past; npc wren attitude -2
-
-# scout-left
-art: loc-marsh 🐴
-noBack: true
+heal item potion-healing > Give her a healing potion  #potion
+heal religion 9 paladin > Lay hands on the wound  #lay-hands
+heal religion 9 cleric > Pray over the wound  #pray
+heal nature 9 druid > Pack the wound with marsh-moss  #moss
+heal medicine 12 > Ease her out and bind the leg  #medicine
+leave > Leave her and press on  #leave
 You step around the horse. She doesn't call after you. She only watches you go, jaw still set.
 Behind you the reeds close over the trail. You don't look back.
-> Keep walking → @hub  #ok
-
-# scout-passed
-art: loc-marsh 🐴
-assumes: scout-walked-past; not scout-bled-out
-noBack: true
-The dead horse still lies across the trail. The scout is gone. A line of flattened reeds drags away toward {thornwick}, and you cannot tell who made it.
-> Leave the horse where it lies → @hub  #ok
-
-# scout-saved
-noBack: true
-art: ❤️‍🩹
+saved:
 The horse comes off and the bleeding stops, and the scout lets out a breath she has been holding for hours. "**{wren}**," she offers, as if admitting to a name costs her something. She scratches the den's watch-posts into the mud, quick and exact.
 @WREN_ON_VEX
-> Send {wren} back to {thornwick} → @hub  #ok
-  do @WREN_SAVED; npc wren attitude 1
-> Ask {wren} to come with you through the marsh → wren-joins  #come
-  hide
-  ? not den-entered
-  do @WREN_SAVED; npc wren attitude 1; join wren
-
-# wren-joins
-noBack: true
-art: 🧭
+send > Send {wren} back to {thornwick}  #ok
+join > Ask {wren} to come with you through the marsh  #come
+? not den-entered
+joins:
 assumes: with wren
 {wren} tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don't." She takes up her bow. "As far as their gate. Then I go for the reeve's men, and you had better still be alive when I get back."
-> Follow {wren} into the marsh → @hub  #go
+go: Follow {wren} into the marsh  #go
+failed:
+It goes wrong. As the horse comes off her the arrowhead shifts, and the blood comes fast and dark. She fumbles at her belt for the healing potion she could never reach with the horse on top of her. You get it down her, and press on the wound until your arms shake.
+The bleeding stops at last, with the light already going. "**{wren}**," she says, grey to the lips. "In case you have to tell someone." She scratches the den's watch-posts into the mud, slower than she wants to. She is in no state to guide anyone anywhere today.
+@WREN_ON_VEX
+go: Send {wren} limping back to {thornwick}  #ok
+passed:
+assumes: scout-walked-past; not scout-bled-out
+The dead horse still lies across the trail. The scout is gone. A line of flattened reeds drags away toward {thornwick}, and you cannot tell who made it.
+go: Leave the horse where it lies  #ok
+dead:
+assumes: scout-bled-out; npc wren not fate saved,lost
+? not scout-walked-past | A young scout in the reeve's colours lies under the dead horse with an arrow through her leg. She died in the night, alone. There are tally-marks scratched in the mud by her hand. She was still counting the den's watch-posts.
+? not scout-walked-past | At her belt is the healing potion she could never reach with the horse on top of her.
+? scout-walked-past | A line of flattened reeds runs from the dead horse toward {thornwick} for a hundred yards, and stops. The scout you stepped round lies at the end of it, face down. She died in the night, alone.
+? scout-walked-past | She got the healing potion out of her belt at last. Her fingers are still closed round it, and the stopper is still in.
+There is no one on the road to tell you her name.
+go: Cover her and go  #ok
+do npc wren fate lost; +scout-covered; item potion-healing x1
+gone:
+assumes: npc wren fate lost
+The dead horse still lies across the trail, white with frost. Beside it is the low mound of reeds where you covered the scout.
+go: Leave her to her rest  #ok
+along:
+assumes: with wren
+The dead horse still lies across the trail. {wren} walks past it without looking. "He was a good horse," she says, too quickly. "Come on."
+go: Follow {wren} on  #ok
+sent:
+assumes: npc wren fate saved; without wren
+The dead horse still lies across the trail.
+{wren} is long gone to {thornwick} for the reeve's men. The flies have the horse to themselves.
+go: Keep to the trail  #ok
 
 # wren-parts
 noBack: true
@@ -178,49 +172,6 @@ assumes: with wren
 At the tree line above the hollow {wren} stops, and eases her weight off the leg. "This is as far as I said." She looks down at the hollow a long moment. "Reeve's men by nightfall, if I run. Leave me something to arrest."
 > Let her go, and face the gate → gate  #go
   do leave wren
-
-# scout-fail
-noBack: true
-art: 🩸
-It goes wrong. As the horse comes off her the arrowhead shifts, and the blood comes fast and dark. She fumbles at her belt for the healing potion she could never reach with the horse on top of her. You get it down her, and press on the wound until your arms shake.
-The bleeding stops at last, with the light already going. "**{wren}**," she says, grey to the lips. "In case you have to tell someone." She scratches the den's watch-posts into the mud, slower than she wants to. She is in no state to guide anyone anywhere today.
-@WREN_ON_VEX
-> Send {wren} limping back to {thornwick} → @hub  #ok
-  do @WREN_SAVED; day
-
-# scout-dead
-noBack: true
-art: loc-marsh 🐴
-assumes: scout-bled-out; npc wren not fate saved,lost
-? not scout-walked-past | A young scout in the reeve's colours lies under the dead horse with an arrow through her leg. She died in the night, alone. There are tally-marks scratched in the mud by her hand. She was still counting the den's watch-posts.
-? not scout-walked-past | At her belt is the healing potion she could never reach with the horse on top of her.
-? scout-walked-past | A line of flattened reeds runs from the dead horse toward {thornwick} for a hundred yards, and stops. The scout you stepped round lies at the end of it, face down. She died in the night, alone.
-? scout-walked-past | She got the healing potion out of her belt at last. Her fingers are still closed round it, and the stopper is still in.
-There is no one on the road to tell you her name.
-> Cover her and go → @hub  #ok
-  do npc wren fate lost; +scout-covered; item potion-healing x1
-
-# scout-gone
-art: loc-marsh 🐴
-assumes: npc wren fate lost
-noBack: true
-The dead horse still lies across the trail, white with frost. Beside it is the low mound of reeds where you covered the scout.
-> Leave her to her rest → @hub  #ok
-
-# scout-along
-art: loc-marsh 🐴
-assumes: with wren
-noBack: true
-The dead horse still lies across the trail. {wren} walks past it without looking. "He was a good horse," she says, too quickly. "Come on."
-> Follow {wren} on → @hub  #ok
-
-# scout-sent
-art: loc-marsh 🐴
-assumes: npc wren fate saved; without wren
-noBack: true
-The dead horse still lies across the trail.
-{wren} is long gone to {thornwick} for the reeve's men. The flies have the horse to themselves.
-> Keep to the trail → @hub  #ok
 
 # barrow
 kind: obstacle

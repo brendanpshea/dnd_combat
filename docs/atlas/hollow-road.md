@@ -18,7 +18,7 @@ Paragraphs whose exact text shows in more than one scene (a reused constant), gr
 
 - `spy-caught`, `spy-caught-loud`:
   - **S1** “Under a loose board at the back of his stall …”
-- `scout-saved`, `scout-fail`:
+- `wounded-saved`, `wounded-failed`:
   - **S2** “"You got the horse off me. Let me pay some of that back." She catches …”
   - **S3** “"You got the horse off me. Let me pay some of that back." She looks …”
 - `gate-signal`, `gate-sneak`:
@@ -696,21 +696,7 @@ The mud under the arrow is dark and wet. She will not last many more nights out 
 - » **[Medicine DC 12] Ease her out and bind the leg** [Medicine DC 12]
 - » **Leave her and press on**
 
-## `scout-left` · story
-
-You step around the horse. She doesn't call after you. She only watches you go, jaw still set.
-
-Behind you the reeds close over the trail. You don't look back.
-
-- » **Keep walking**
-
-## `scout-passed` · story
-
-The dead horse still lies across the trail. The scout is gone. A line of flattened reeds drags away toward Thornwick, and you cannot tell who made it.
-
-- » **Leave the horse where it lies**
-
-## `scout-saved` · story
+## `wounded-saved` · story
 
 <sub>reads: flag:npc.vex.met, flag:den-entered</sub>
 
@@ -722,7 +708,7 @@ The horse comes off and the bleeding stops, and the scout lets out a breath she 
 
 "You got the horse off me. Let me pay some of that back." She catches your wrist. "There's a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."
 
-<sub>(shared with: `scout-fail`)</sub>
+<sub>(shared with: `wounded-failed`)</sub>
 
 ### 2. when met Vex
 
@@ -730,24 +716,12 @@ The horse comes off and the bleeding stops, and the scout lets out a breath she 
 
 "You got the horse off me. Let me pay some of that back." She looks at the den-mud on your boots. "You've been inside already, so you've met Vex at his fire. He hates the chief worse than you do. Whatever you said to him, he'll remember it when the chief calls for his guards."
 
-<sub>(shared with: `scout-fail`)</sub>
+<sub>(shared with: `wounded-failed`)</sub>
 
 - » **Send Wren back to Thornwick**
 - » **Ask Wren to come with you through the marsh** <sub>open when not `den-entered`; otherwise hidden</sub>
 
-## `wren-joins` · story
-
-Wren tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don't." She takes up her bow. "As far as their gate. Then I go for the reeve's men, and you had better still be alive when I get back."
-
-- » **Follow Wren into the marsh**
-
-## `wren-parts` · story
-
-At the tree line above the hollow Wren stops, and eases her weight off the leg. "This is as far as I said." She looks down at the hollow a long moment. "Reeve's men by nightfall, if I run. Leave me something to arrest."
-
-- » **Let her go, and face the gate**
-
-## `scout-fail` · story
+## `wounded-failed` · story
 
 <sub>reads: flag:npc.vex.met</sub>
 
@@ -761,7 +735,7 @@ The bleeding stops at last, with the light already going. "**Wren**," she says, 
 
 "You got the horse off me. Let me pay some of that back." She catches your wrist. "There's a man in there hates the chief worse than you do — **Vex**, the lieutenant. Offer him a way out when you reach his fire, and he might stand his guards aside instead of setting them at your throat."
 
-<sub>(shared with: `scout-saved`)</sub>
+<sub>(shared with: `wounded-saved`)</sub>
 
 ### 2. when met Vex
 
@@ -771,11 +745,31 @@ The bleeding stops at last, with the light already going. "**Wren**," she says, 
 
 "You got the horse off me. Let me pay some of that back." She looks at the den-mud on your boots. "You've been inside already, so you've met Vex at his fire. He hates the chief worse than you do. Whatever you said to him, he'll remember it when the chief calls for his guards."
 
-<sub>(shared with: `scout-saved`)</sub>
+<sub>(shared with: `wounded-saved`)</sub>
 
 - » **Send Wren limping back to Thornwick**
 
-## `scout-dead` · story
+## `wounded-left` · story
+
+You step around the horse. She doesn't call after you. She only watches you go, jaw still set.
+
+Behind you the reeds close over the trail. You don't look back.
+
+- » **Keep walking**
+
+## `wounded-joins` · story
+
+Wren tests the bound leg, winces, and decides it will do. "I know where the sinkholes are. You don't." She takes up her bow. "As far as their gate. Then I go for the reeve's men, and you had better still be alive when I get back."
+
+- » **Follow Wren into the marsh**
+
+## `wounded-passed` · story
+
+The dead horse still lies across the trail. The scout is gone. A line of flattened reeds drags away toward Thornwick, and you cannot tell who made it.
+
+- » **Leave the horse where it lies**
+
+## `wounded-dead` · story
 
 <sub>reads: flag:scout-walked-past</sub>
 
@@ -799,25 +793,31 @@ There is no one on the road to tell you her name.
 
 - » **Cover her and go**
 
-## `scout-gone` · story
+## `wounded-gone` · story
 
 The dead horse still lies across the trail, white with frost. Beside it is the low mound of reeds where you covered the scout.
 
 - » **Leave her to her rest**
 
-## `scout-along` · story
+## `wounded-along` · story
 
 The dead horse still lies across the trail. Wren walks past it without looking. "He was a good horse," she says, too quickly. "Come on."
 
 - » **Follow Wren on**
 
-## `scout-sent` · story
+## `wounded-sent` · story
 
 The dead horse still lies across the trail.
 
 Wren is long gone to Thornwick for the reeve's men. The flies have the horse to themselves.
 
 - » **Keep to the trail**
+
+## `wren-parts` · story
+
+At the tree line above the hollow Wren stops, and eases her weight off the leg. "This is as far as I said." She looks down at the hollow a long moment. "Reeve's men by nightfall, if I run. Leave me something to arrest."
+
+- » **Let her go, and face the gate**
 
 ## `barrow` · story
 
@@ -2129,11 +2129,11 @@ In.
   - goes to `tracks-mapped` instead when `trail-known`
 - **Sunken Ravine** → `ravine` <sub>open when not `crossed-ravine`; otherwise greyed</sub>
 - **A Cry for Help** → `wounded`
-  - goes to `scout-along` instead when Wren in the party
-  - goes to `scout-sent` instead when Wren saved
-  - goes to `scout-gone` instead when Wren lost
-  - goes to `scout-dead` instead when `scout-bled-out`
-  - goes to `scout-passed` instead when `scout-walked-past`
+  - goes to `wounded-along` instead when Wren in the party
+  - goes to `wounded-sent` instead when Wren saved
+  - goes to `wounded-gone` instead when Wren lost
+  - goes to `wounded-dead` instead when `scout-bled-out`
+  - goes to `wounded-passed` instead when `scout-walked-past`
 - **A Sunken Barrow** → `barrow`
   - goes to `trail/delve-done` instead when `barrow-cleared`
 - **Webbed Thicket** → `thicket` <sub>open when `trail-read` · `crossed-ravine`; otherwise greyed</sub>

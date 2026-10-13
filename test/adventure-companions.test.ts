@@ -23,7 +23,7 @@ const SCOUT_HP = MONSTERS.scout!.hp;
 
 function withWren() {
   const state = startAdventure(newCampaign(3), HOLLOW);
-  enterScene(state, HOLLOW, 'scout-saved');
+  enterScene(state, HOLLOW, 'wounded-saved');
   choose(state, HOLLOW, 'come');
   return state;
 }
@@ -38,7 +38,7 @@ describe('joining and leaving', () => {
 
   it('sending her home leaves the party as it was', () => {
     const s = startAdventure(newCampaign(3), HOLLOW);
-    enterScene(s, HOLLOW, 'scout-saved');
+    enterScene(s, HOLLOW, 'wounded-saved');
     choose(s, HOLLOW, 'ok');
     expect(s.companions ?? []).toEqual([]);
     expect(s.flags[npcFateFlag('wren', 'saved')]).toBe(true);
@@ -61,7 +61,7 @@ describe('joining and leaving', () => {
     expect(validateModule(HOLLOW)).toEqual([]);
     const broken: Module = {
       ...HOLLOW,
-      scenes: { ...HOLLOW.scenes, 'wren-joins': { ...HOLLOW.scenes['wren-joins']!, kind: 'story', text: ['x'],
+      scenes: { ...HOLLOW.scenes, 'wounded-joins': { ...HOLLOW.scenes['wounded-joins']!, kind: 'story', text: ['x'],
         next: [{ id: 'x', label: 'x', to: 'trail', effects: [{ kind: 'joinParty', companion: 'nobody' }] }] } as never },
     };
     expect(validateModule(broken).some((e) => e.includes("unknown companion 'nobody'"))).toBe(true);

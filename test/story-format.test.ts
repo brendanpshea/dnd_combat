@@ -39,6 +39,21 @@ describe('the story format', () => {
     expect(s['barrow-settle'].next[0].effects[1]).toEqual({ kind: 'xp', amount: { $avoided: 'barrow-haunt' } });
   });
 
+  it('reads a rescue as its approach, its outcomes and its later visits', () => {
+    const s = parseStory([
+      '# hurt', 'kind: rescue', 'art: 🤕', 'who: wren', 'walked: walked-past', 'Someone is hurt.',
+      'heal item potion-healing > Give a potion  #potion', 'heal religion 9 cleric > Pray  #pray', 'heal medicine 12 > Bind it  #medicine',
+      'leave > Walk on  #leave', 'You walk on.',
+      'saved:', 'She lives.', 'send > Send her home  #ok', 'join > Take her along  #come', '? not inside',
+      'joins:', 'She comes.', 'failed:', 'She lives, slowly.', 'dead:', 'She died.', 'do npc wren fate lost',
+    ].join('\n'), 'rescue') as Record<string, any>;
+    expect(Object.keys(s).sort()).toEqual(['hurt', 'hurt-dead', 'hurt-failed', 'hurt-joins', 'hurt-left', 'hurt-saved']);
+    expect(s.hurt.next.find((c: { id: string }) => c.id === 'pray')).toMatchObject({ requires: [{ kind: 'classInParty', classId: 'cleric' }], check: { failTo: 'hurt-failed' } });
+    expect(s.hurt.next.find((c: { id: string }) => c.id === 'leave').effects).toContainEqual({ kind: 'setFlag', flag: 'walked-past' });
+    expect(s['hurt-saved'].next.find((c: { id: string }) => c.id === 'come')).toMatchObject({ to: 'hurt-joins', requires: [{ kind: 'notFlag', flag: 'inside' }] });
+    expect(s['hurt-failed'].next[0].effects).toContainEqual({ kind: 'passDay' });
+  });
+
   it('reads the shorthands', () => {
     const s = parseStory([
       '# board',
