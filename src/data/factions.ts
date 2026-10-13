@@ -25,6 +25,9 @@ export interface Faction {
   /** One of them, for prose: "a goblin". */
   one: string;
   themes: SpecTheme[];
+  /** What kind of place it makes of where it lives (archetypes.ts): the
+   *  roles its rooms play. */
+  archetype: Id;
   /** What it fields in its rooms. */
   members: Id[];
   /** Who leads it: one of these heads the floor's goal fight. */
@@ -53,7 +56,7 @@ export const ROUSED = {
 
 export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   {
-    id: 'kobolds', names: ['the Ashclaw kobolds', 'the Scalebound', 'the Tunnel Kin'], one: 'a kobold',
+    id: 'kobolds', archetype: 'hive', names: ['the Ashclaw kobolds', 'the Scalebound', 'the Tunnel Kin'], one: 'a kobold',
     themes: ['stone', 'ember'],
     members: ['kobold', 'kobold-emberling', 'giant-badger', 'giant-spider', 'white-wyrmling'],
     leaders: ['white-wyrmling', 'black-wyrmling', 'green-wyrmling', 'red-wyrmling', 'young-white'],
@@ -62,7 +65,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['Tiny footprints in the dust, hundreds of them, and a tripwire at ankle height.'],
   },
   {
-    id: 'goblins', names: ['the Redfang goblins', 'the Mudfoot tribe', 'the Grinning Knives'], one: 'a goblin',
+    id: 'goblins', archetype: 'camp', names: ['the Redfang goblins', 'the Mudfoot tribe', 'the Grinning Knives'], one: 'a goblin',
     themes: ['stone', 'forest', 'village', 'stockade'],
     members: ['goblin-warrior', 'goblin-hexer', 'worg', 'bugbear', 'ogre'],
     leaders: ['goblin-boss', 'bugbear', 'ogre', 'ettin'],
@@ -71,7 +74,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['Goblin marks scratched at eye height, and a bone tied to a string across the door.'],
   },
   {
-    id: 'restless-dead', names: ['the restless dead', 'the Unquiet', 'the Hungry Dead'], one: 'a corpse',
+    id: 'restless-dead', archetype: 'tomb', names: ['the restless dead', 'the Unquiet', 'the Hungry Dead'], one: 'a corpse',
     themes: ['graveyard', 'stone', 'bog'],
     members: ['skeleton', 'zombie', 'skeleton-bonechanter', 'ghoul', 'shadow', 'specter', 'ghast'],
     leaders: ['wight', 'mummy', 'ghast', 'wraith', 'vampire-spawn'],
@@ -79,7 +82,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['The smell reaches you first. Then a scrape, somewhere below, of something that should not be walking.'],
   },
   {
-    id: 'cult', names: ['the Cult of the Ashen Eye', 'the Hollow Choir', 'the Brothers of the Last Door'], one: 'a cultist',
+    id: 'cult', archetype: 'cult', names: ['the Cult of the Ashen Eye', 'the Hollow Choir', 'the Brothers of the Last Door'], one: 'a cultist',
     themes: ['stone', 'graveyard', 'village'],
     members: ['acolyte', 'guard', 'spy', 'imp', 'quasit', 'cult-fanatic'],
     leaders: ['cult-fanatic', 'priest', 'mage'],
@@ -88,7 +91,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['Chanting, far off, and a sigil daubed fresh on the wall.'],
   },
   {
-    id: 'bandits', names: ['the Black Hand', 'Tamsin\'s Crew', 'the Gallows Boys'], one: 'a bandit',
+    id: 'bandits', archetype: 'camp', names: ['the Black Hand', 'Tamsin\'s Crew', 'the Gallows Boys'], one: 'a bandit',
     themes: ['forest', 'village', 'stone', 'stockade'],
     members: ['bandit', 'guard', 'scout', 'spy', 'berserker'],
     leaders: ['bandit-captain', 'veteran', 'gladiator', 'assassin'],
@@ -97,7 +100,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['A cold campfire, a dropped dice cup, and boot prints going down.'],
   },
   {
-    id: 'wild', names: ['the beasts of the deep wood', 'the things in the brush', 'the pack'], one: 'a beast', beastly: true,
+    id: 'wild', archetype: 'lair', names: ['the beasts of the deep wood', 'the things in the brush', 'the pack'], one: 'a beast', beastly: true,
     themes: ['forest', 'bog'],
     members: ['wolf', 'giant-badger', 'giant-spider', 'dire-wolf', 'brown-bear', 'giant-boar', 'ettercap', 'owlbear'],
     leaders: ['giant-boar', 'ettercap', 'owlbear', 'giant-ape'],
@@ -105,7 +108,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['Claw marks on the stone, too deep for anything friendly.'],
   },
   {
-    id: 'lizardfolk', names: ['the Blackscale tribe', 'the Reed Hunters', 'the Silent Tongue'], one: 'a lizardfolk',
+    id: 'lizardfolk', archetype: 'hive', names: ['the Blackscale tribe', 'the Reed Hunters', 'the Silent Tongue'], one: 'a lizardfolk',
     themes: ['bog', 'marsh'],
     members: ['lizardfolk', 'giant-toad', 'giant-constrictor-snake', 'scout'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],
@@ -114,7 +117,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['Fish bones arranged in a careful spiral on the threshold.'],
   },
   {
-    id: 'fire-court', names: ['the Court of Cinders', 'the Ember Host', 'the Forgebound'], one: 'something burning',
+    id: 'fire-court', archetype: 'court', names: ['the Court of Cinders', 'the Ember Host', 'the Forgebound'], one: 'something burning',
     themes: ['ember'],
     members: ['magmin', 'magma-mephit', 'steam-mephit', 'azer', 'hell-hound'],
     leaders: ['azer-forgecaller', 'azer', 'hell-hound', 'salamander', 'fire-elemental'],
@@ -123,7 +126,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['The air shimmers, and the stone underfoot is warm as a hearth.'],
   },
   {
-    id: 'gnolls', names: ['the Laughing Pack', 'the Bloodmaw gnolls', 'the Hungry Ones'], one: 'a gnoll',
+    id: 'gnolls', archetype: 'lair', names: ['the Laughing Pack', 'the Bloodmaw gnolls', 'the Hungry Ones'], one: 'a gnoll',
     themes: ['forest', 'stone', 'stockade'],
     members: ['gnoll', 'giant-hyena', 'gnoll-packcaller'],
     leaders: ['gnoll-packcaller', 'ogre-mage'],
@@ -131,7 +134,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     sign: ['Laughter, high and wrong, from somewhere ahead.'],
   },
   {
-    id: 'hag-court', names: ['the Mire Coven', 'the Green Mother\'s brood', 'the Hollow Court'], one: 'something fey',
+    id: 'hag-court', archetype: 'court', names: ['the Mire Coven', 'the Green Mother\'s brood', 'the Hollow Court'], one: 'something fey',
     themes: ['bog', 'forest', 'marsh'],
     members: ['sprite', 'satyr', 'dryad', 'giant-toad', 'worg', 'will-o-wisp'],
     leaders: ['green-hag', 'night-hag'],
@@ -141,7 +144,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
   },
   // The out-of-doors themes' own (OUTDOOR_THEMES).
   {
-    id: 'raiders', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
+    id: 'raiders', archetype: 'camp', names: ['the raiders', 'the raiders of the den'], one: 'a raider',
     themes: ['stockade'],
     members: ['bandit', 'scout', 'orc', 'gnoll', 'giant-hyena', 'worg', 'bugbear', 'berserker', 'ogre'],
     leaders: ['bandit-captain', 'berserker', 'bugbear', 'ogre'],
@@ -157,7 +160,7 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     ],
   },
   {
-    id: 'marsh-things', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
+    id: 'marsh-things', archetype: 'lair', names: ['the things in the marsh'], one: 'one of the marsh\'s things', beastly: true,
     themes: ['marsh'],
     members: ['giant-toad', 'lizardfolk', 'zombie', 'giant-constrictor-snake', 'will-o-wisp', 'ghoul', 'ghast', 'giant-crocodile'],
     leaders: ['giant-constrictor-snake', 'lizardfolk', 'giant-crocodile'],

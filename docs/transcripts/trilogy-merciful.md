@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue-vigil` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=1`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=1`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=4`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=4`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=5`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=5`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -147,19 +147,43 @@ The reeds open, and the road back to Thornwick runs dry under your boots.
 
 **→ Trailhead** <sub>(room `m0`)</sub>
 
-→ A Cry for Help
+→ Dry Hummock
 
-<sub>scene `trail/f1-ambush-m0-m1`</sub>
+**→ Dry Hummock** <sub>(room `m1`)</sub>
 
-Something heavy slides off a tussock into the water, and then the water comes for you.
+A hump of firm ground, high enough above the water for a fire. You could camp here.
 
-**Battle:** gen:lizardfolk+zombie+zombie <sub>(`gen:lizardfolk+zombie+zombie` on `@room`)</sub>
+→ Trampled Reeds
 
-**» Fight — won**
+**→ Trampled Reeds** <sub>(room `m2`)</sub>
+
+The walls are scored with claw marks, low down.
+
+→ Fresh Tracks
+
+**→ Fresh Tracks** <sub>(room `m3`)</sub>
+
+_A hidden door: Fresh Tracks ↔ Hidden Cache._
+
+<sub>scene `tracks`</sub>
+
+Boot-prints and drag-marks cross the mud. Read them right, and they will lead you through the reeds.
+
+**» [Survival DC 12] Follow the boot-prints**
+
+`[Survival DC 12 — Elaine the Holy rolls 14 — passed]`
+
+<sub>scene `tracks-read`</sub>
+
+The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You've found the **safe path to the hollow**.
+
+**» Follow the dry line**
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-**→ A Cry for Help** <sub>(room `m1`)</sub>
+→ A Cry for Help
+
+**→ A Cry for Help** <sub>(room `m4`)</sub>
 
 <sub>scene `wounded`</sub>
 
@@ -187,19 +211,51 @@ _Journal (lead): Vex, the Lieutenant_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-→ Sunken Ravine
+→ Fresh Tracks
 
-**→ Sunken Ravine** <sub>(room `m2`)</sub>
+**→ Fresh Tracks** <sub>(room `m3`)</sub>
 
-<sub>scene `ravine`</sub>
+→ A Cry for Help
 
-A collapsed ravine cuts the trail. The other lip is close, but the gap between is all loose rock, and there is more than one way across it.
+**→ A Cry for Help** <sub>(room `m4`)</sub>
 
-**» Climb the sheer face**
+→ Fresh Tracks
 
-`[Athletics DC 13 — Arthur the Bold rolls 13 — passed]`
+**→ Fresh Tracks** <sub>(room `m3`)</sub>
 
-You haul each other up and over, hand over hand.
+→ Search the room
+
+<sub>scene `trail/f1-read-m3`</sub>
+
+Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.
+
+**» Go on**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ A Cry for Help
+
+**→ A Cry for Help** <sub>(room `m4`)</sub>
+
+→ Fresh Tracks
+
+**→ Fresh Tracks** <sub>(room `m3`)</sub>
+
+→ Hidden Cache
+
+**→ Hidden Cache** <sub>(room `cache`)</sub>
+
+→ Search the room
+
+<sub>scene `trail/f1-find-cache`</sub>
+
+Someone hid their best here: coin, and a flask of something red.
+
+**» Take it**
+
+_+55 gold (155)_
+
+_Gained: Potion of Greater Healing_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
@@ -207,27 +263,483 @@ You haul each other up and over, hand over hand.
 
 **→ Fresh Tracks** <sub>(room `m3`)</sub>
 
-_A hidden door: Fresh Tracks ↔ Hidden Cache._
+→ Trampled Reeds
 
-<sub>scene `tracks`</sub>
+**→ Trampled Reeds** <sub>(room `m2`)</sub>
 
-Boot-prints and drag-marks cross the mud. Read them right, and they will lead you through the reeds.
+→ Search the room
 
-**» [Survival DC 12] Follow the boot-prints**
+<sub>scene `trail/f1-find-m2`</sub>
 
-`[Survival DC 12 — Elaine the Holy rolls 17 — passed]`
+A pack left behind, with a potion still in it.
 
-<sub>scene `tracks-read`</sub>
+**» Take it**
 
-The tracks tell their whole story: a heavy patrol out at dusk, a lighter one back at dawn, always the same dry line through the reeds. You've found the **safe path to the hollow**.
-
-**» Follow the dry line**
+_Gained: Potion of Healing_
 
 **↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
 
-→ Cut Reeds
+→ Dry Hummock
 
-**→ Cut Reeds** <sub>(room `m4`)</sub>
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Search the room
+
+<sub>scene `trail/f1-find-m1`</sub>
+
+_(a paragraph shown before: “A pack left behind, with a potion…”)_
+
+**» Take it**
+
+_Gained: Potion of Healing_
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Back outside
+
+<sub>scene `trail/outside` (again)</sub>
+
+_(a paragraph shown before: “The reeds open, and the road back…”)_
+
+**» Walk back to Thornwick**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Fishellby's Stores
+
+<sub>scene `square/general`</sub>
+
+_The shop: Fishellby's Stores (the route buys nothing)._
+
+"Coin's coin, and I'll not ask where yours has been." **Bram** plants both hands on the stall. "Buying, or selling? Prices are fair. A dead customer never comes back for more, and I do like the repeat trade."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Smithy
+
+<sub>scene `square/smithy`</sub>
+
+_The shop: The Smithy (the route buys nothing)._
+
+The forge roars. "Steel or leather? I make both, and I make them to last."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Forge Temple
+
+<sub>scene `square/temple`</sub>
+
+**Coriol of Perrego**
+
+> **Coriol** looks up from the altar. "Peace be on you. What do you need of the Forge?"
+
+**» Leave the temple**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Horse Fair
+
+<sub>scene `square/landmark`</sub>
+
+A muddy yard of pens and shouting, where a horse changes hands for twice what it is worth.
+
+**» Walk on**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Wander-Inn
+
+<sub>scene `tavern` (again)</sub>
+
+**Mira the Innkeeper**
+
+_(a paragraph shown before: “Mira leans on the bar and waits…”)_
+
+**» [Insight DC 12] Read what she isn't saying**
+
+`[Insight DC 12 — Elaine the Holy rolls 13 — passed]`
+
+<sub>scene `tavern-spy`</sub>
+
+**Mira** sees you've noticed. She lowers her voice until it barely carries over the fire.
+
+"The Ashfang always seem to know which wagon's worth taking. Someone here feeds them word of every caravan that leaves — and I think I know who."
+
+"There's a **furtive peddler** who sets up by the **market**, near the gate. Sells nothing, buys nothing, but he's there every time a train rolls out. Watch him. If anyone's carrying word to the raiders, it's him."
+
+**» Back to your table**
+
+_Journal (quest): The Furtive Peddler_
+
+<sub>scene `tavern` (again)</sub>
+
+**Mira the Innkeeper**
+
+_(a paragraph shown before: “Mira leans on the bar and waits…”)_
+
+**» [Persuasion DC 12] Buy the whole room a round (3 gold)**
+
+_-3 gold (152)_
+
+`[Persuasion DC 12 — Elaine the Holy rolls 14 — passed]`
+
+<sub>scene `tavern-trail`</sub>
+
+A round on your coin loosens the whole room. An old trapper drags a finger through spilled ale, sketching the **marsh road** across the bar.
+
+"Here's the reeds, here's the deep water — and here," he taps a hollow in the hills, "is where their smoke rises of a morning. That's your den. Mind, the **trail** bites back long before you reach it."
+
+**» Back to your table**
+
+<sub>scene `tavern` (again)</sub>
+
+**Mira the Innkeeper**
+
+_(a paragraph shown before: “Mira leans on the bar and waits…”)_
+
+**» Ask her the way to the den**
+
+<sub>scene `tavern-plain`</sub>
+
+She jerks her chin at the window. "The marsh road, then. Follow it till the reeds close in, and keep going."
+
+"Buy a healing potion at the market before you go," Mira says. "I'd rather not bury anyone this month." She turns back to her taps.
+
+**» Back to your table**
+
+<sub>scene `tavern` (again)</sub>
+
+**Mira the Innkeeper**
+
+_(a paragraph shown before: “Mira leans on the bar and waits…”)_
+
+**» Drift over to the regulars' table**
+
+<sub>scene `regulars`</sub>
+
+Thornwick's older hands have claimed the long table by the fire — the sort who've survived enough to have firm opinions about how. They'll talk your ear clean off, if you let them. Some of it might even keep you breathing.
+
+**» Ask the hedge-witch about working spells**
+
+<sub>scene `rumor-magic`</sub>
+
+A woman with river-stones knotted in her hair doesn't look up from her knitting. "Magic's never free, whatever the college boys tell you. Every real working takes something out of you, and you've only so much to give before you sleep. Spend it like your last coppers, because in a long fight, that's what it is."
+
+"The strong workings, a held foe or a ward of blades, burn only as long as you hold them in your head. Take a hard knock and you'd best keep your focus, or the whole thing slips through your fingers. Can't hold two at once, either. So pick the one that'll matter."
+
+**» Nod your thanks**
+
+<sub>scene `regulars` (again)</sub>
+
+The old hands at the long table shove along the bench to make room for you again.
+
+**» Ask the caravan veteran about her axe**
+
+<sub>scene `rumor-weapons`</sub>
+
+A scarred caravan guard rolls her axe over on the table. "Every weapon's got a trick in it, if you know how to ask. A heavy blade bites one man and the swing carries on into the next. A mace'll rattle a foe, so his next swing at you goes wide."
+
+"Learn what the thing in your hand actually *does*. That's how you put down men twice your size."
+
+**» Nod your thanks**
+
+<sub>scene `regulars` (again)</sub>
+
+_(a paragraph shown before: “The old hands at the long table…”)_
+
+**» Ask the old reed-cutter about the lady in the water**
+
+<sub>scene `rumor-reeds`</sub>
+
+At the end of the bench an old reed-cutter sits with his hands round his cup, the fingers scarred white from a lifetime of sedge. He does not look up. "The lady in the water. My gran left her a lamb every midwinter, at the edge of the reeds, and so did hers. One a winter, for sitting by our door in the dark. That was the bargain, and the fen kept it."
+
+"Then the spring the water rose, the bargain went wrong somewhere, and nobody's left a lamb since. Folk say she's owed. Folk say you can hold her like that: say her own price back to her, the old way, and ask for nothing more." He drinks. "Folk say a lot of things."
+
+**» Nod your thanks**
+
+<sub>scene `regulars` (again)</sub>
+
+_(a paragraph shown before: “The old hands at the long table…”)_
+
+**» Ask the old sergeant how a real fight goes**
+
+<sub>scene `rumor-tactics`</sub>
+
+A grey-bearded man with a soldier's too-straight back taps the boards. "Rule one, and it's the reason I've still got both legs: don't turn your back on a man with a blade in reach. Step away careless and he gets a free cut at you as you go."
+
+"Want out of a scrap without the parting gift? Then do nothing else but get out of it. Eyes on his blade, back off slow, and don't try anything clever on the way. Especially you wand-wavers: get clear before you start your muttering, or you'll be eating steel halfway through the word."
+
+**» Nod your thanks**
+
+<sub>scene `regulars` (again)</sub>
+
+_(a paragraph shown before: “The old hands at the long table…”)_
+
+**» Leave them to their ale**
+
+<sub>scene `tavern` (again)</sub>
+
+**Mira the Innkeeper**
+
+_(a paragraph shown before: “Mira leans on the bar and waits…”)_
+
+**» Take a room for the night (1 gold, long rest)**
+
+_-1 gold (151)_
+
+<sub>scene `inn-rest`</sub>
+
+You take a room above the taproom, bolt the door, and sleep straight through until the smell of Mira's bread comes up the stairs. Your wounds have closed, and your head is clear. Out of the window, the old moon is a little thinner than it was.
+
+_Long rest._
+
+**Dawn — day 2.**
+
+<sub>scene `tavern` (again)</sub>
+
+**Mira the Innkeeper**
+
+_(a paragraph shown before: “Mira leans on the bar and waits…”)_
+
+**» Step out into the square**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Notice Board
+
+<sub>scene `board`</sub>
+
+Here is the reeve's bounty in full, nailed up and gone grey at the edges. He will pay good coin for proof the Ashfang chief is dead, and better still for their banner brought back whole.
+
+Someone has added a line at the bottom in a smaller, prouder hand: *"Thornwick does not beg. It pays its debts."* That ink is newer than the rest.
+
+**» Leave it for now**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Old Mill
+
+<sub>scene `mill`</sub>
+
+**Osk the Miller**
+
+> The mill's sails hang still, and the miller meets you at a barred door with a boat-hook in both hands. "Not raiders, this one. Something's roosting in my hedgerows — turned my dog stiff as a fencepost. *Stone*, you understand. Won't nobody come near the mill now, and the grain's standing."
+
+> "Clear them out and there's coin in it. Just — don't let the ugly things *touch* you."
+
+**» Beat the hedgerows**
+
+<sub>scene `mill-fight`</sub>
+
+Two bat-winged things burst out of the hedge in a fury of beak and scale, hissing like geese. "Cockatrices!" the miller shouts from his door. "Mind the beaks!"
+
+**Battle:** Cockatrice Flock <sub>(`cockatrice-flock` on `open`)</sub>
+
+**» Fight — won**
+
+_Level up: 1 → 2_
+
+The second cockatrice flops still. The miller pays up gladly, prods the stone dog, and allows that it makes a fair garden ornament.
+
+_+35 gold (186)_
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Peddler's Stall
+
+<sub>scene `spy-stalk`</sub>
+
+There he is, just where Mira said: a peddler with a stall of chipped buttons and a birdcage with no bird. He sells nothing, and he watches the gate.
+
+He hasn't seen you yet. Round the square, a few big men in work coats nurse their drinks and keep one eye on him.
+
+**» Walk straight up to his stall**
+
+<sub>scene `spy-confront`</sub>
+
+**The Peddler**
+
+> Up close he is younger than he looked, and he smells of the fish stall.
+
+> When your shadow falls across his goods he goes very still, and then he does the last thing you expect of a man selling buttons. He puts two fingers to his teeth and *whistles*. All round the square, hard-faced men start setting down their drinks. A thickset man in a good coat, the **fixer** who pays them, stands up last.
+
+**» [Investigation DC 13] Pick his crew out of the crowd first**
+
+`[Investigation DC 13 — Morgan Le Fey rolls 20 — passed]`
+
+<sub>scene `spy-ambush`</sub>
+
+The crew moves in from the stalls, two knives and three crossbows behind their fixer, but you are already where they didn't expect you. They scramble.
+
+**Battle:** Cutpurse Crew <sub>(`cutpurses` on `village`)</sub>
+
+**» Fight — won**
+
+The crew is still turning round when the fixer falls, and his hired blades throw down their knives, and the crossbows come down off the roofs. You are standing between them and the gate, so they all bolt the other way, straight into the reeve's watch.
+
+<sub>scene `spy-caught`</sub>
+
+His crew is down or gone, one way or another, and the peddler knows it. He sits down in the dirt. "I only carried word! I never lifted a blade!"
+
+Under a loose board at the back of his stall lies a list of every caravan that has left Thornwick this month. Someone has ticked off each one. The ticks are his. The names are in another man's writing. "The chief sends the names," he babbles. "He knows every carter in this town. I only tick them off."
+
+The rest comes out all in one breath, and the raiders' **gate-signal** with it. "Call that up to the watch-post and they'll open for you like you're one of their own. None of mine went out the gate," he adds, bitterly. "It's still good."
+
+The reeve pays a purse for the town's leak. The gate-warden is already waving you over.
+
+**» Hand him to the reeve**
+
+_+40 gold (226)_
+
+_Journal (lead): The Gate-Signal_
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+**Dawn — day 3.**
+
+→ The Marsh Road
+
+<sub>scene `trailhead-clear`</sub>
+
+The gate-warden waves you through, and the marsh road lies quiet. The goblins you met on it have not come back.
+
+**» Take the marsh road again**
+
+<sub>scene `trail` (again)</sub>
+
+_(a paragraph shown before: “Past the last fence-post the road runs…”)_
+
+**» Go in**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Trampled Reeds
+
+**→ Trampled Reeds** <sub>(room `m2`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Sunken Ravine
+
+**→ Sunken Ravine** <sub>(room `s1`)</sub>
+
+<sub>scene `ravine`</sub>
+
+A collapsed ravine cuts the trail. The other lip is close, but the gap between is all loose rock, and there is more than one way across it.
+
+**» Climb the sheer face**
+
+`[Athletics DC 13 — Arthur the Bold rolls 21 — passed]`
+
+You haul each other up and over, hand over hand.
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ A Sunken Barrow
+
+**→ A Sunken Barrow** <sub>(room `s2`)</sub>
+
+<sub>scene `barrow`</sub>
+
+Half-swallowed by the reeds lies a barrow-mound, its stones worn smooth as soap. Its capstone is cracked and weeping cold air. The marsh has been chewing at it for centuries. Lately, something below has been pushing at the capstone, and something else has been pushing it back down.
+
+Something gold glints in the dark below. So does something that moves without touching the water.
+
+**» Go down into the dark**
+
+<sub>scene `barrow-fight`</sub>
+
+The cold answers you. Two figures rise out of the grave-earth. One wears the form of a man, but it is nothing now but spite and winter air. It passes *through* the barrow stones to reach you. The other climbs up out of the grave-goods in rotten mail. It holds a green-bronze sword in its grey hand, and a cold light burns where its eyes should be.
+
+**Battle:** The Barrow Haunt <sub>(`barrow-haunt` on `corridor`)</sub>
+
+**» Fight — won**
+
+The cold shape shreds into mist, and the dead thing in mail folds down among the grave-goods and is only bones. Among the grave-goods you find a little plain silver, and leave the rest, on balance, where it lies.
+
+_+45 gold (271)_
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ Search the room
+
+<sub>scene `trail/f1-read-s2`</sub>
+
+A lamb's skull is tied to a stake here, old and green with moss. The reed-cutters left one every spring, once.
+
+**» Go on**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ A Sunken Barrow
+
+**→ A Sunken Barrow** <sub>(room `s2`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ A Sunken Barrow
+
+**→ A Sunken Barrow** <sub>(room `s2`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Back outside
+
+<sub>scene `trail/outside` (again)</sub>
+
+_(a paragraph shown before: “The reeds open, and the road back…”)_
+
+**» Back into the reeds**
+
+**↳ The Marsh Road** <sub>(dungeon `trail/delve`)</sub>
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Trampled Reeds
+
+**→ Trampled Reeds** <sub>(room `m2`)</sub>
+
+→ Fresh Tracks
+
+**→ Fresh Tracks** <sub>(room `m3`)</sub>
+
+→ A Cry for Help
+
+**→ A Cry for Help** <sub>(room `m4`)</sub>
 
 → Webbed Thicket
 
@@ -251,7 +763,7 @@ Something spins here, and it has been eating well off the Ashfang's road. But th
 
 The hollow opens below you, and the reeds in it are too still, and cold where the marsh should be warm. Nothing moves. Something out there is lying flat in the water, waiting for you to come closer.
 
-`[Group Perception DC 13 — 3/4 pass — passed]`
+`[Group Perception DC 13 — 2/4 pass — passed]`
 
 You catch the gleam of an eye among the reeds a breath before it moves. The trap is yours to spring.
 
@@ -263,7 +775,7 @@ You strike first. Scaled backs rise out of the water where they lay, a hunting-p
 
 **» Fight — won**
 
-_Level up: 1 → 2_
+_Level up: 2 → 3_
 
 The lizardfolk sink back into the dark water they came from, one by one.
 
@@ -283,15 +795,15 @@ _Journal (clue): The Reedwife_
 
 A wall of lashed timber rings the hollow, with a watch-post looming over its only gate. Somewhere beyond it, the chief is waiting.
 
-**» [Rogue · Sleight of Hand DC 10] Pick the lock on the little water-gate**
+**» [Deception DC 10] Call the stolen gate-signal up to the post**
 
-`[Sleight of Hand DC 10 — Ash the Sneaky rolls 18 — passed]`
+`[Deception DC 10 — Ash the Sneaky rolls 19 — passed]`
 
-<sub>scene `den-picked`</sub>
+<sub>scene `den-slipped`</sub>
 
-Down where the wall meets the marsh, a little gate lets the den draw water. Its lock is cheap and rusted. It takes your rogue about as long as a sneeze, and makes less noise.
+You are inside the wall, and no horn has sounded. Up in the gateway something hairy and twice a man's size scratches itself and watches the marsh, its back to you. A heap of spotted, dog-faced things snores by the fire.
 
-**» Slip inside**
+**» Keep low and move in among the tents**
 
 <sub>scene `inner`</sub>
 
@@ -325,91 +837,35 @@ You slip back out through the gate, into the quiet of the hollow.
 
 A tent nobody has slept in for a while, at the dark end of the lines. Quiet enough to rest in, in turns.
 
-→ Search the room
+→ The Pens
 
-<sub>scene `inner/f1-find-m1`</sub>
+**→ The Pens** <sub>(room `m2`)</sub>
 
-A pack left behind, with a potion still in it.
+<sub>scene `den-pens-door`</sub>
 
-**» Take it**
+Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in. Something in the straw shifts as your shadow falls across it.
 
-_Gained: Potion of Healing_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Gate
-
-**→ Gate** <sub>(room `m0`)</sub>
-
-→ Empty Tent
-
-**→ Empty Tent** <sub>(room `m1`)</sub>
-
-→ Watch Platform
-
-**→ Watch Platform** <sub>(room `key`)</sub>
-
-<sub>scene `inner/f1-fight-key`</sub>
-
-A raider looks up from the fire with his mouth full, and shouts with it.
-
-**Battle:** gen:bugbear+giant-hyena+bandit <sub>(`gen:bugbear+giant-hyena+bandit` on `@room`)</sub>
-
-**» [Intimidation DC 13] Tell them the chief is finished**
-
-`[Intimidation DC 13 — Arthur the Bold rolls 16 — passed]`
-
-They look at each other, then at the gate. Nobody here was paid enough for this.
-
-_Level up: 2 → 3_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-**→ Watch Platform** <sub>(room `key`)</sub>
-
-→ Search the room
-
-<sub>scene `inner/f1-find-key`</sub>
-
-A few coins, dropped and forgotten.
-
-**» Take it**
-
-_+20 gold (120)_
-
-**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
-
-→ Empty Tent
-
-**→ Empty Tent** <sub>(room `m1`)</sub>
-
-→ A Lone Fire
-
-**→ A Lone Fire** <sub>(room `m2`)</sub>
-
-_A hidden door: A Lone Fire ↔ Hidden Cache._
-
-<sub>scene `vex-parley`</sub>
-
-**Vex, the Lieutenant**
-
-> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
-
-> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
-
-> Before you can answer, he tips his head back toward the kennels. "One thing for nothing. There's a pen behind the dogs, with people in it. A carter and a little girl, among others. The chief keeps them for the lady in the water." He looks into his fire. "I never had the stomach to open it. You might. But do it before you go through to the chief. Once you're in that hall, don't count on walking back past the kennels."
-
-> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
-
-**» Refuse to deal with a raider**
+**» Look in the pen**
 
 _Journal (quest): Bring the Captives Home_
 
-<sub>scene `vex-dismissed`</sub>
+<sub>scene `den-pens`</sub>
 
-"Suit yourself." Vex turns back to his fire. "I won't help you. I won't get in your way, either."
+There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.
 
-**» Leave him to his fire**
+The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a lamb every midwinter, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve's men?"
+
+A chain and a heavy padlock hold the pen shut. Across the yard, a raider dozes by the fire with his spear across his lap.
+
+**» [Sleight of Hand DC 13] Work the padlock open quietly**
+
+`[Sleight of Hand DC 13 — Ash the Sneaky rolls 23 — passed]`
+
+<sub>scene `den-pens-freed`</sub>
+
+The pen comes open. The carter lifts the girl onto his back, and the reed-cutters take a kennel-pole each. "We'll make the gate," the carter says. "Find us in Thornwick, after." They slip off toward the dark of the marsh road, not making a sound.
+
+**» Back to the den**
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
@@ -433,13 +889,47 @@ The ogre crashes down across its own broken chains. The goaders and their champi
 
 Under the champion's barrel is a fat purse: the takings from every fight he ever won in this pit.
 
-_+40 gold (160)_
+_+40 gold (311)_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m4`)</sub>
+
+<sub>scene `vex-parley`</sub>
+
+**Vex, the Lieutenant**
+
+> At the lone fire a lean, grey-templed raider watches you come. A bare blade lies across his knees. He holds it as if he would rather be leaning on it.
+
+> "**Vex**," he says. "The chief's lieutenant, for my sins. He keeps an ogre in a pit for people like you. For me he keeps a knife he thinks I haven't seen." A thin smile, gone as fast. "So what do you offer a man for stepping aside?"
+
+> "Not tonight, though." He doesn't take his eyes off the fire. "The whole den is up and looking for you. I'm not turning my coat in front of all of them."
+
+**» Refuse to deal with a raider**
+
+<sub>scene `vex-dismissed`</sub>
+
+"Suit yourself." Vex turns back to his fire. "I won't help you. I won't get in your way, either."
+
+**» Leave him to his fire**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-read-m4`</sub>
+
+A drowned house is scratched into a plank: a boy on the roof, and the water at the door. Under it, in a child's letters, is a name. Vargan.
+
+**» Go on**
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
 → Kennels
 
-**→ Kennels** <sub>(room `m4`)</sub>
+**→ Kennels** <sub>(room `s1`)</sub>
 
 <sub>scene `den-hyenas`</sub>
 
@@ -449,11 +939,233 @@ Three giant hyenas and three grey wolves the size of ponies lunge to the ends of
 
 **» [Animal Handling DC 12] Throw them the meat off the cook fire**
 
-`[Animal Handling DC 12 — Elaine the Holy rolls 15 — passed]`
+`[Animal Handling DC 12 — Elaine the Holy rolls 20 — passed]`
 
 The pack falls on the meat, snarling at each other instead of you, and you step round them to the gate. Their keeper dropped his key ring as he ran. One key fits the plunder tent.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m4`)</sub>
+
+→ The Pit
+
+**→ The Pit** <sub>(room `m3`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-read-m3`</sub>
+
+A list in the chief's hand of what is owed to the water: grain, a lamb each moon, and "the carter and the girl, at the dark of the moon."
+
+**» Go on**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m4`)</sub>
+
+→ Kennels
+
+**→ Kennels** <sub>(room `s1`)</sub>
+
+→ Search the room
+
+<sub>scene `den-cache`</sub>
+
+A tent of stolen goods, heaped anyhow. A careful search turns up the best of it.
+
+`[Investigation DC 12 — Morgan Le Fey rolls 26 — passed]`
+
+Beneath the junk you find real coin and a caravan's lost potion. Stuffed in a sack at the bottom is the **Ashfang banner** itself. The reeve will pay extra for that.
+
+_+80 gold (391)_
+
+_Gained: Potion of Greater Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m4`)</sub>
+
+→ The Pit
+
+**→ The Pit** <sub>(room `m3`)</sub>
+
+→ The Pens
+
+**→ The Pens** <sub>(room `m2`)</sub>
+
+→ Search the room
+
+`[Investigation DC 16 — Morgan Le Fey rolls 23 — passed]`
+
+_A hidden door: The Pens ↔ Hidden Cache._
+
+<sub>scene `inner/f1-read-m2`</sub>
+
+A tally stick hangs from a tent pole, with a notch for every cart taken. At the top someone has cut a reaching hand.
+
+**» Go on**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Hidden Cache
+
+**→ Hidden Cache** <sub>(room `cache`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-find-cache`</sub>
+
+_(a paragraph shown before: “Someone hid their best here: coin, and…”)_
+
+**» Take it**
+
+_+70 gold (461)_
+
+_Gained: Potion of Greater Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ The Pens
+
+**→ The Pens** <sub>(room `m2`)</sub>
+
+→ Empty Tent
+
+**→ Empty Tent** <sub>(room `m1`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-find-m1`</sub>
+
+_(a paragraph shown before: “A pack left behind, with a potion…”)_
+
+**» Take it**
+
+_Gained: Potion of Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Gate
+
+**→ Gate** <sub>(room `m0`)</sub>
+
+→ Back outside
+
+<sub>scene `inner/outside` (again)</sub>
+
+_(a paragraph shown before: “You slip back out through the gate,…”)_
+
+**» Leave the den for now**
+
+<sub>scene `hollow-quiet`</sub>
+
+The hollow lies quiet where you broke the Reedwife's ambush, with nothing left of it but flattened reeds and still water. The den's wooden wall waits ahead.
+
+**» Make for the den's wall**
+
+<sub>scene `gate` (again)</sub>
+
+_(a paragraph shown before: “A wall of lashed timber rings the…”)_
+
+**» Slip back in the way you left**
+
+<sub>scene `inner` (again)</sub>
+
+_(a paragraph shown before: “Inside the wall the den is tents…”)_
+
+**» Go in**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+**→ Gate** <sub>(room `m0`)</sub>
+
+→ Empty Tent
+
+**→ Empty Tent** <sub>(room `m1`)</sub>
+
+→ Stolen Carts
+
+**→ Stolen Carts** <sub>(room `key`)</sub>
+
+Everything they took is piled here, and someone big sits on top of it.
+
+<sub>scene `inner/f1-fight-key`</sub>
+
+Two of them come out of a tent still buckling on stolen mail.
+
+**Battle:** gen:giant-hyena+giant-hyena+bugbear+bandit <sub>(`gen:giant-hyena+giant-hyena+bugbear+bandit` on `@room`)</sub>
+
+**» [Intimidation DC 13] Tell them the chief is finished**
+
+`[Intimidation DC 13 — Arthur the Bold rolls 24 — passed]`
+
+They look at each other, then at the gate. Nobody here was paid enough for this.
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+**→ Stolen Carts** <sub>(room `key`)</sub>
+
+→ Search the room
+
+<sub>scene `inner/f1-find-key`</sub>
+
+A flask of something red, put by for a bad day.
+
+**» Take it**
+
+_Gained: Potion of Healing_
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+→ Empty Tent
+
+<sub>scene `inner/f1-patrol`</sub>
+
+A raider looks up from the fire with his mouth full, and shouts with it.
+
+**Battle:** gen:berserker+gnoll <sub>(`gen:berserker+gnoll` on `@room`)</sub>
+
+**» Fight — won**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+**→ Empty Tent** <sub>(room `m1`)</sub>
+
+→ Gate
+
+**→ Gate** <sub>(room `m0`)</sub>
+
+→ Empty Tent
+
+**→ Empty Tent** <sub>(room `m1`)</sub>
+
+→ The Pens
+
+<sub>scene `inner/f1-patrol` (again)</sub>
+
+_(a paragraph shown before: “A raider looks up from the fire…”)_
+
+**Battle:** gen:berserker+gnoll <sub>(`gen:berserker+gnoll` on `@room`)</sub>
+
+**» Fight — won**
+
+**↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
+
+**→ The Pens** <sub>(room `m2`)</sub>
+
+→ The Pit
+
+**→ The Pit** <sub>(room `m3`)</sub>
+
+→ A Lone Fire
+
+**→ A Lone Fire** <sub>(room `m4`)</sub>
 
 → The Chief's Hall
 
@@ -475,7 +1187,7 @@ The hall is full of raiders who heard you coming, and none of them is sitting do
 
 **» [Persuasion DC 14] "She drowned your mother's house. Help us end her."**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 21 — passed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 16 — passed]`
 
 <sub>scene `vargan-turns`</sub>
 
@@ -489,7 +1201,7 @@ The hag looks down at him a moment, and when she looks up she is smiling.
 
 Before she can whistle for anyone, you speak her price the way a priest speaks a binding rite. Each word goes down slowly, like a stone: one lamb each midwinter, for sitting by their door in the dark. You ask for nothing more: no shallows, no pens, no chief.
 
-`[Religion DC 15 — Morgan Le Fey rolls 22 — passed]`
+`[Religion DC 15 — Morgan Le Fey rolls 19 — passed]`
 
 The words catch in her like a hook. She hisses and twists, but she cannot get free of them. "One lamb," she says at last, as if it tastes of mud. "See that they pay it."
 
@@ -513,7 +1225,7 @@ The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. H
 
 The reeve looks past you, up the marsh road, for the prisoner who isn't there. "You let him *walk*?" His face goes red, then white. "Thornwick pays for a chief it can see. Not for one you turned loose in my marsh."
 
-Behind him, Mira watches from the inn door, wiping her hands on her apron.
+Behind him, Mira catches your eye and very nearly smiles.
 
 **» Turn to the crowd**
 
@@ -539,9 +1251,13 @@ Mira pours the first round on the house, and the second when she thinks you aren
 
 Up in the hollow, the reeve's men pull down the den's timber wall one post at a time. They leave the posts for the marsh to take.
 
+The bounty notice comes down off the board in the square. Someone tears off the bottom corner first, the line in the prouder hand, and keeps it.
+
 At midwinter an old reed-cutter ties a lamb to a stake at the water's edge, the way his gran did. In the morning the rope hangs wet and empty, and nothing else is missing.
 
-Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
+Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.
+
+The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.
 
 ### Ending: victory
 
@@ -574,6 +1290,8 @@ Draw steel, for whatever good steel does against a shadow.
 **Battle:** Shadow Ambush <sub>(`shadow-ambush` on `corridor`)</sub>
 
 **» Fight — won**
+
+_Level up: 3 → 4_
 
 The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves, and the lamplight lies still on the grass.
 
@@ -639,7 +1357,7 @@ _The shop: Thornwick Market (the route buys nothing)._
 
 **» Take the reeve's commission**
 
-_+60 gold (220)_
+_+60 gold (521)_
 
 _Journal (npc): Reeve Aldous_
 
@@ -713,7 +1431,7 @@ The lights drift nearer, hopeful as dogs. Other things move between them, furthe
 
 **» [Religion DC 14] Speak his own liturgy back to him**
 
-`[Religion DC 14 — Morgan Le Fey rolls 18 — passed]`
+`[Religion DC 14 — Morgan Le Fey rolls 27 — passed]`
 
 <sub>scene `chapel-saved`</sub>
 
@@ -771,7 +1489,7 @@ The corpse-lights still sway over the black water, warm as windows. Wren keeps a
 
 **» [Survival DC 13] Find the dry way round the pools**
 
-`[Survival DC 13 — Elaine the Holy rolls 22 — passed]`
+`[Survival DC 13 — Elaine the Holy rolls 15 — passed]`
 
 <sub>scene `lights-skirted`</sub>
 
@@ -784,8 +1502,6 @@ One body is not like the others. It wears long robes the colour of grave-worms. 
 She looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
 
 **» Carry the purses home for the families**
-
-_Level up: 3 → 4_
 
 _Journal (clue): Robes the Colour of Worms_
 
@@ -817,7 +1533,7 @@ The nearest watcher turns its head with a sound like a millstone. The granite st
 
 **» [History DC 14] Show them the vigil's mark in Halden's book**
 
-`[History DC 14 — Morgan Le Fey rolls 24 — passed]`
+`[History DC 14 — Morgan Le Fey rolls 15 — passed]`
 
 You hold up Halden's book, open at the reed-woman's mark on the flyleaf. The old builders cut that same mark into the gate. You find it on the nearest stone and lay your hand flat on it.
 
@@ -923,7 +1639,7 @@ The cut is just wide enough for them. To get past, you will have to get through 
 
 **» Let your cleric raise a holy symbol and turn them aside — The dead give way to the gods, when the gods are asked properly.**
 
-`[Religion DC 10 — Elaine the Holy rolls 21 — passed]`
+`[Religion DC 10 — Elaine the Holy rolls 11 — passed]`
 
 Your cleric holds up a holy symbol, and a light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog. They press to the walls and leave you a road.
 
@@ -963,7 +1679,7 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 **» [History DC 15] Relieve him of his post, the old way**
 
-`[History DC 15 — Morgan Le Fey rolls 25 — passed]`
+`[History DC 15 — Morgan Le Fey rolls 22 — passed]`
 
 The painted hall showed how the old kings' soldiers saluted. You give that salute now, fist to chest, and tell him his watch is over.
 
@@ -993,7 +1709,7 @@ You pick his gold rings out of the dust where his hands fell.
 
 Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
 
-_+60 gold (280)_
+_+60 gold (581)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
 
@@ -1033,7 +1749,7 @@ The grey man leans in to his work. "Faster," he tells the chisel, sweetly reason
 
 **» [Persuasion DC 14] Tell Marrow what the king's wall says**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 23 — passed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 24 — passed]`
 
 <sub>scene `seal-doubt-words`</sub>
 
@@ -1057,7 +1773,7 @@ The last ghoul falls among the candles, beside the two kneelers who rose to figh
 
 Coins lie thick on the bottom step, thrown there by the faithful for the Warden. You gather them up, and Marrow does not look round.
 
-_+120 gold (400)_
+_+120 gold (701)_
 
 <sub>scene `marrow-spared`</sub>
 
@@ -1123,7 +1839,7 @@ At the edge of town Wren says "Thank you," fast, to the road, and walks on befor
 
 **» Go up to the reeve's hall**
 
-_+150 gold (550)_
+_+150 gold (851)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -1265,13 +1981,27 @@ The griffons come down on the switchbacks screaming, all beak and talon, and the
 
 **» Fight — won**
 
+_Level up: 4 → 5_
+
 The last griffon tumbles away down the loose rock. Above you the whole mountain is still climbing toward the stone.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
 **» Make camp (long rest)** <sub>(day 1)</sub>
 
-**Dawn — day 2.**
+<sub>scene `hills-night`</sub>
+
+In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
+
+The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
+
+**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
+
+**» Fight — won**
+
+The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
 
 → The Toll-Cliff
 
@@ -1295,13 +2025,15 @@ Higher up the rock, something else is roosting. It is a lean grey drake with lea
 
 **» Fight — won**
 
-_Level up: 4 → 5_
-
 The grey drake falls off the rock, and the manticore drops onto the trail beside it with one last offended word. "Toll." The pile in the overhang holds ten years of pickings, taken from frightened travellers.
 
-_+110 gold (660)_
+_+110 gold (961)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 1)</sub>
+
+**Dawn — day 2.**
 
 → The Boar-Runs
 
@@ -1337,17 +2069,9 @@ The wyrmling drops in the middle of a hiss, and its poison breath thins to a har
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
-_+75 gold (735)_
+_+75 gold (1036)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
-
-The stone's note is louder this morning.
-
-A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Flooded Pass
 
@@ -1371,9 +2095,17 @@ The water-giant falls apart all at once. A hundred gallons of plain water run aw
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
-_+50 gold (785)_
+_+50 gold (1086)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 2)</sub>
+
+**Dawn — day 3.**
+
+The stone's note is louder this morning.
+
+A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Blue Mesa
 
@@ -1389,23 +2121,7 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (880)_
-
-**↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 3)</sub>
-
-<sub>scene `hills-night`</sub>
-
-In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
-
-The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
-
-**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
-
-**» Fight — won**
-
-The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
+_+95 gold (1181)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1421,7 +2137,7 @@ Above the gate stands the **ogre-mage** Vex marked on his map, blue-skinned and 
 
 **» Buy the pass (600 gold)**
 
-_-600 gold (280)_
+_-600 gold (581)_
 
 <sub>scene `onihold-paid`</sub>
 
@@ -1461,7 +2177,7 @@ At the first scrape of your boots, one huge body ducks out of the door with two 
 
 **» [Deception DC 14] Agree with both heads at once**
 
-`[Deception DC 14 — Ash the Sneaky rolls 19 — passed]`
+`[Deception DC 14 — Ash the Sneaky rolls 23 — passed]`
 
 <sub>scene `steading-talked`</sub>
 
@@ -1559,7 +2275,7 @@ Sedge has not looked away from you since you spoke. Nettle sings louder, to drow
 
 **» Promise her the fen will pay the old price**
 
-`[Persuasion DC 15 — Elaine the Holy rolls 21 — passed]`
+`[Persuasion DC 15 — Elaine the Holy rolls 24 — passed]`
 
 "The fen-folk on the rim came up this mountain for us," you tell her. "There will be a lamb at the water's edge each midwinter, the way their grandparents left it." Sedge turns her burning face up toward the rim, where the fen-folk stand watching.
 
@@ -1585,7 +2301,7 @@ Vex decides for it. "The Calling's broken," he says, loud enough to carry. He sa
 
 **» Accept the valley's purse**
 
-_+250 gold (530)_
+_+250 gold (831)_
 
 <sub>scene `vigil-purse`</sub>
 

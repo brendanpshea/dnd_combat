@@ -72,6 +72,11 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
     spec: {
       // A road, not a maze: one long way through the reeds, held by the hag's creatures.
       level: 1, theme: 'marsh', shape: 'spine', rooms: 10, fights: 'inhabitants', factions: ['marsh-things'], maxFights: 0,
+      // What the marsh remembers of the lamb custom, and the hag's mark.
+      lore: [
+        'A lamb\'s skull is tied to a stake here, old and green with moss. The reed-cutters left one every spring, once.',
+        'Under the moss, a flat stone is cut with a reaching hand. It is the same mark the raiders burn into the carts they take.',
+      ],
       dressing: { name: 'The Marsh Road',
         door: 'Past the last fence-post the road runs out into reeds and black water, and goes on as a line of planks and tussocks.',
         outside: 'The reeds open, and the road back to {thornwick} runs dry under your boots.',
@@ -109,6 +114,12 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
       // A spine: no lock and key of its own, so no flag the whole chapter's
       // proof would have to carry twice over.
       level: 2, theme: 'stockade', shape: 'spine', rooms: 9, fights: 'inhabitants', factions: ['raiders'], maxFights: 0,
+      // What the camp lets slip about its chief and the one who pays him.
+      lore: [
+        'A tally stick hangs from a tent pole, with a notch for every cart taken. At the top someone has cut a reaching hand.',
+        'A drowned house is scratched into a plank: a boy on the roof, and the water at the door. Under it, in a child\'s letters, is a name. {vargan}.',
+        'A list in the chief\'s hand of what is owed to the water: grain, a lamb each moon, and "the carter and the girl, at the dark of the moon."',
+      ],
       dressing: { name: 'The {ashfang} Den',
         door: 'Inside the wall the den is tents and cook-smoke and stolen carts, and the noise of a camp at its fires.',
         outside: 'You slip back out through the gate, into the quiet of the hollow.',
