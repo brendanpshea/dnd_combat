@@ -129,7 +129,16 @@ export const HOLLOW_ROAD_MODULE: Module = withCanon({
         // What the hag is paid in: the captives, penned behind the kennels.
         { name: 'The Pens', text: 'Behind the kennels stands a pen of lashed stakes, the kind a farmer keeps pigs in.',
           hostage: {
-            who: 'the captives', as: { freed: 'captives-freed', taken: 'captives-taken' },
+            who: 'the captives', many: true, as: { freed: 'captives-freed', taken: 'captives-taken' },
+            // The den's noise does not move them: only the moon's dark gives them
+            // to her (the day-7 dawn). Storming the gate costs Vex, not the girl.
+            movedAt: false,
+            lines: {
+              pick: 'Work the padlock open quietly', force: 'Hack through the stakes, and never mind the noise',
+              watch: ['The noise carries. The raider by the fire jumps up and yells, and the den\'s watch comes running with him. Two hulking raiders with greataxes, four archers and an orc spread out in front of the pen. The carter pulls the girl down into the straw.'],
+              won: ['The last raider falls against the stakes. Across the yard a horn starts up, and the tent lines come awake.'],
+              lost: ['You go down in the mud in front of the pen, and come to in the straw of the pen itself, left for dead. The gate stands open and the captives are gone. Their tracks lead out toward the deep fen.'],
+            },
             found: [
               'There are no pigs. A grey-bearded carter, two reed-cutters and a girl of about seven blink up at you from the straw.',
               'The girl has one shoe, on her right foot. "They said the lady in the water comes for us when the moon goes dark," the carter whispers. "My gran left her a {door-price} every {door-midwinter}, and that was all she ever asked. Now the chief feeds her people." He swallows. "Are you the reeve\'s men?"',

@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-114 scenes · 176 versions · 1,257,202 states searched (with text conditions tracked).
+115 scenes · 180 versions · 1,236,722 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -1811,6 +1811,42 @@ Your cleric kneels beside him and studies the grey brand. There is no prayer for
 - » **Let him walk out into the marsh** — _The reeve pays for a chief he can see, and he will want his retainer back._ <sub>open when `bounty`; otherwise hidden</sub>
 - » **End it here**
 
+## `way-out` · story
+
+<sub>reads: flag:captives-freed, flag:captives-taken</sub>
+
+**4 versions**
+
+### 1. when not `captives-freed` · not `captives-taken`
+
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+
+Behind the kennels the pen still stands, and the carter is on his feet in the straw, gripping the stakes. No guard stands over it now.
+
+### 2. when not `captives-freed` · `captives-taken`
+
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+
+You pass the pen behind the kennels. It is empty, and the webbed prints in the mud are a night old.
+
+### 3. when `captives-freed` · not `captives-taken`
+
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+
+Somewhere ahead on the marsh road, the carter and the girl are already on their way home.
+
+### 4. when `captives-freed` · `captives-taken`
+
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+
+Somewhere ahead on the marsh road, the carter and the girl are already on their way home.
+
+You pass the pen behind the kennels. It is empty, and the webbed prints in the mud are a night old.
+
+- » **Break the pen open, and take them home** <sub>open when not `captives-freed` · not `captives-taken`; otherwise hidden</sub>
+- » **Walk out of the den** <sub>open when `captives-freed`; otherwise hidden</sub>
+- » **Walk out of the den** <sub>open when `captives-taken`; otherwise hidden</sub>
+
 ## `aftermath` · story
 
 <sub>reads: flag:npc.vargan.fate.spared, flag:vargan-let-go, flag:bounty, flag:npc.vargan.fate.dead, flag:captives-freed, flag:got-bounty</sub>
@@ -2043,7 +2079,7 @@ The reeve's men carried you in, she tells you, and then stood about in her tapro
 
 <sub>reads: flag:npc.vargan.fate.dead, flag:vargan-shaken, flag:vargan-let-go, flag:npc.vargan.fate.spared, flag:npc.vex.fate.turned, flag:npc.vex.met, flag:vex-rebuffed, flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, flag:scout-covered, flag:scout-walked-past, flag:captives-freed, flag:captives-taken, flag:got-banner, visited:board, flag:npc.reedwife.fate.bound, flag:mill-saved</sub>
 
-**2304 versions** — printed once, each conditional line marked with when it shows.
+**Too many combinations** — printed once, each conditional line marked with when it shows.
 
 *text:*
 
@@ -2053,9 +2089,9 @@ By morning the carters are already complaining about the state of the road. Mira
 
 *slides:*
 
-> **[when `vargan-shaken` · Vargan not spared]** Round the bonfire they tell it in low voices: the Ashfang chief wore the hag's brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.
+> **[when Vargan dead · `vargan-shaken`]** Round the bonfire they tell it in low voices: the Ashfang chief wore the hag's brand too, and he knelt in his own hall knowing it. The reed-cutters bury him at the edge of the shallows he sold, and leave the grave unmarked.
 
-> **[when Vargan not spared]** The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
+> **[when Vargan dead]** The reed-cutters bury Vargan at the edge of the shallows he sold. They leave the grave unmarked, and no one asks where it is.
 
 > **[when `vargan-let-go`]** The reeve keeps his bounty, and says so loudly. Before the month is out, a man with a scarred hand is cutting reeds in the shallows below the water-meadows. The reeve watches him from his window, and does not send the watch.
 
@@ -2079,11 +2115,11 @@ By morning the carters are already complaining about the state of the road. Mira
 
 The other scout lost her horse in the fen and walked home the long way round. She leads the reeve's men back down the marsh road. They find her partner still pinned under a dead horse, alive and furious, with every watch-post on the den's wall scratched into the mud.
 
-> **[when Vargan not spared]** Mira pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.
+> **[when Vargan dead]** Mira pours your round and sets it down without a word. She does not pour a second. When you leave, she is wiping the same cup she was wiping when you came in.
 
 > **[when `captives-freed`]** Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
-> **[on every route here]** Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
+> **[when `captives-taken`]** Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
 
 Mira pours your round and takes your coin for it. "Town's still standing," she allows, and moves off down the bar.
 

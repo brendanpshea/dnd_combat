@@ -288,3 +288,21 @@ art: loc-throne ⚖️
 > @BIND_VARGAN
 > @FREE_VARGAN('Let him walk out into the marsh')
 > @END_VARGAN
+
+# way-out
+noBack: true
+art: loc-camp 🌅
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+? captives-freed | Somewhere ahead on the marsh road, the carter and the girl are already on their way home.
+? captives-taken | You pass the pen behind the kennels. It is empty, and the webbed prints in the mud are a night old.
+? not captives-freed; not captives-taken | Behind the kennels the pen still stands, and the carter is on his feet in the straw, gripping the stakes. No guard stands over it now.
+> Break the pen open, and take them home → aftermath  #pen
+  hide
+  ? not captives-freed; not captives-taken
+  do +captives-freed; npc wren attitude 1
+> Walk out of the den → aftermath  #home
+  hide
+  ? captives-freed
+> Walk out of the den → aftermath  #home-taken
+  hide
+  ? captives-taken

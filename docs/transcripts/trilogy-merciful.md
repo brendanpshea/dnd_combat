@@ -8,9 +8,9 @@
 - **Party:** Arthur the Bold (human fighter), Morgan Le Fey (dwarf wizard), Elaine the Holy (elf cleric), Ash the Sneaky (halfling rogue)
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue-vigil` (victory) in The Wyrmcalling
-- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=1`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=1`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=4`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=4`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=2`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=5`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.halden.fate.saved`, `npc.marrow.fate.sings`, `npc.reedwife.fate.bound`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.fate.turned`, `npc.vex.met`, `npc.wren.attitude=5`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -1079,6 +1079,14 @@ Your cleric kneels beside him and studies the grey brand. There is no prayer for
 
 **» Let him walk out into the marsh — The reeve pays for a chief he can see.**
 
+<sub>scene `way-out`</sub>
+
+The den is breaking up around you. Raiders run for the reeds with whatever they can carry, and nobody stops to fight.
+
+Behind the kennels the pen still stands, and the carter is on his feet in the straw, gripping the stakes. No guard stands over it now.
+
+**» Break the pen open, and take them home**
+
 <sub>scene `aftermath`</sub>
 
 You come back down the marsh road into a Thornwick with every shutter in it thrown open. Word runs ahead of you; by the time you reach the square, the square is full.
@@ -1087,7 +1095,7 @@ The reeve is there too — stiff-backed, unsmiling, a strongbox under one arm. H
 
 The reeve looks past you, up the marsh road, for the prisoner who isn't there. "You let him *walk*?" His face goes red, then white. "Thornwick pays for a chief it can see. Not for one you turned loose in my marsh."
 
-Behind him, Mira watches from the inn door, wiping her hands on her apron.
+Behind him, Mira catches your eye and very nearly smiles.
 
 **» Turn to the crowd**
 
@@ -1109,7 +1117,7 @@ At the edge of the crowd, a lean, grey-templed man with no rope on his wrists to
 
 At dawn Wren limps out ahead of the reeve's men to round up what's left of the Ashfang. She makes a list first. The other scout, who lost her horse in the fen and walked home the long way round, helps her write it.
 
-Mira pours your round and does not look at you while she does it. The carter's chair by the fire stays empty all night, and nobody sits in it.
+Mira pours the first round on the house, and the second when she thinks you aren't counting. "Don't go making a habit of saving towns," she warns you. "People come to expect it." It is the nearest thing to thanks she keeps in stock, and you both know it.
 
 Up in the hollow, the reeve's men pull down the den's timber wall one post at a time. They leave the posts for the marsh to take.
 
@@ -1119,7 +1127,7 @@ At midwinter an old reed-cutter ties a lamb to a stake at the water's edge, the 
 
 Out at the old mill the sails are turning, and someone has tied a ribbon round the stone dog's neck.
 
-Every evening, a widow walks the edge of the marsh and calls a name across the water. Nobody has found the carter's girl, only one small shoe in the straw of an empty pen.
+The carter's girl sits on the edge of the well in a new pair of shoes. She shows them to anyone who stops long enough.
 
 ### Ending: victory
 
