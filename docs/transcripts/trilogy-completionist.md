@@ -789,7 +789,7 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 <sub>scene `inner/f1-read-s1`</sub>
 
-A tally stick hangs from a tent pole, with a notch for every cart taken. At the top someone has cut a reaching hand.
+A drowned house is scratched into a plank: a boy on the roof, and the water at the door. Under it, in a child's letters, is a name. Vargan.
 
 **» Go on**
 
@@ -831,17 +831,17 @@ Ashes, and a spoon.
 
 **→ Plunder Heap** <sub>(room `key`)</sub>
 
-Racks of blades, sacks of grain, and a keeper who does not want to share.
+Everything they took is piled here, and someone big sits on top of it.
 
 <sub>scene `inner/f1-fight-key`</sub>
 
 They were throwing dice for a carter's boots. They stop.
 
-**Battle:** gen:bugbear+gnoll+bugbear+scout <sub>(`gen:bugbear+gnoll+bugbear+scout` on `@room`)</sub>
+**Battle:** gen:berserker+ogre <sub>(`gen:berserker+ogre` on `@room`)</sub>
 
 **» Fight — won**
 
-One of them carried a heavy key.
+The keeper wore the gate key on a thong round his neck.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
@@ -867,7 +867,7 @@ _Gained: Potion of Healing_
 
 <sub>scene `inner/f1-read-m1`</sub>
 
-A drowned house is scratched into a plank: a boy on the roof, and the water at the door. Under it, in a child's letters, is a name. Vargan.
+A list in the chief's hand of what is owed to the water: grain, a lamb each moon, and "the carter and the girl, at the dark of the moon."
 
 **» Go on**
 
@@ -925,7 +925,7 @@ _+40 gold (456)_
 
 <sub>scene `inner/f1-read-m3`</sub>
 
-A list in the chief's hand of what is owed to the water: grain, a lamb each moon, and "the carter and the girl, at the dark of the moon."
+A tally stick hangs from a tent pole, with a notch for every cart taken. At the top someone has cut a reaching hand.
 
 **» Go on**
 
@@ -971,9 +971,9 @@ _Gained: Potion of Greater Healing_
 
 <sub>scene `inner/f1-patrol`</sub>
 
-Something laughs behind the wood pile, high and wrong, and the raiders by it get up.
+A raider looks up from the fire with his mouth full, and shouts with it.
 
-**Battle:** gen:bugbear+bugbear+bandit <sub>(`gen:bugbear+bugbear+bandit` on `@room`)</sub>
+**Battle:** gen:giant-hyena+bugbear+bandit <sub>(`gen:giant-hyena+bugbear+bandit` on `@room`)</sub>
 
 **» Fight — won**
 

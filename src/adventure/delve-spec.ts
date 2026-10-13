@@ -548,7 +548,9 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     const sceneId = f === 1 ? 'delve' : `delve-${f}`;
     const last = f === spec.floors;
     const n = spec.rooms || dice.int(...SIZE_ROOMS[spec.size ?? 'medium']);
-    const g = wire(spec.shape, n, dice, f, T.door, f === 1 ? spec.lock : undefined);
+    // A held floor's lock is its holders' own (a gate of lashed timber, a grave-gate).
+    const kind = holders[0] ? ARCHETYPES[holders[0].archetype] : undefined;
+    const g = wire(spec.shape, n, dice, f, kind ? kind.lock[T.outdoor ? 'out' : 'in'] : T.door, f === 1 ? spec.lock : undefined);
     let goal = g.main[g.main.length - 1]!;
     /** A goal piece's floor keeps the generated goal in its graph (so every
      *  "the last main room" reading stays right) but never builds it. */
@@ -724,6 +726,33 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
         ...(capped ? { loot: false as const } : {}) };
     }
 
+    /*
+     * A back way round the first lock, on a held floor whose lock is its own:
+     * hidden, found by sharp eyes or a search, from a room before the lock to
+     * the one just past it. A second answer to the locked door, besides its
+     * keeper and forcing it. Never round a story's lock: that is the story's.
+     */
+    const firstLock = g.links.find((l) => l.door?.locked && !storyLock && g.keys[0] && l.door.locked.some((q) => q.kind === 'flag' && q.flag === g.keys[0]!.flag));
+    if (held && kind && firstLock && dice.chance(0.6)) {
+      const degree = (r: Id) => g.links.filter((l) => l.a === r || l.b === r).length;
+      // Anywhere past the first lock and short of any other (the goal too: a
+      // back way into the hall still meets whoever holds it). A room has four
+      // sides, so one with three corridors has one left.
+      const reach = new Set([firstLock.b]);
+      for (let grew = true; grew;) {
+        grew = false;
+        for (const l of g.links) {
+          if (l.door?.locked || l.door?.secret) continue;
+          for (const [x, y] of [[l.a, l.b], [l.b, l.a]] as const) if (reach.has(x) && !reach.has(y) && g.afterLock.has(y)) { reach.add(y); grew = true; }
+        }
+      }
+      const to = [...reach].filter((id) => degree(id) < 4);
+      const from = g.main.filter((id) => !g.afterLock.has(id) && degree(id) < 4);
+      if (from.length && to.length) {
+        g.links.push({ a: dice.pick(from), b: dice.pick(to), length: 2, door: { secret: { dc: dice.int(12, 15) }, note: kind.backWay[T.outdoor ? 'out' : 'in'] } });
+      }
+    }
+
     const safe = new Set<Id>();
     const beforeLock = g.main.slice(1, -1).filter((id) => !g.afterLock.has(id) && !placed.has(id));
     if (beforeLock.length && !pieceGivesRest) {
@@ -742,6 +771,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
     }
     const keyOf = new Map(g.keys.map((k) => [k.room, k.flag]));
     let filler = 0;
+    // A held floor's pace: about half its cast rooms hold a fight. The roles
+    // that fight come first, and rooms with no role make up the rest.
+    const castable = [...g.main.slice(1, -1), ...g.side].filter((id) => id !== goal && id !== 'cache' && !placed.has(id) && !g.pieceRooms.has(id));
+    const target = Math.round(castable.length * 0.5);
     const roleOf = held ? castRoles(g, goal, placed, safe, keyOf, dice, (id) => factionOf(id) ?? holders[0]!, !!T.outdoor) : new Map<Id, Cast>();
     const rooms: DungeonRoom[] = [];
 
@@ -756,7 +789,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       const key = keyOf.get(id);
       const goalWin = goalOutcome();
       const win: Win = key
-        ? { to: '@hub', text: ['One of them carried a heavy key.'], effects: [{ kind: 'setFlag', flag: key }] }
+        ? { to: '@hub', text: [cast ? ARCHETYPES[cast.faction.archetype]?.key ?? 'One of them carried a heavy key.' : 'One of them carried a heavy key.'], effects: [{ kind: 'setFlag', flag: key }] }
         : isGoal ? goalWin : { to: '@hub' };
       // A key room and a goal always fight; a required room fights if it says so.
       const reqFight = req?.fight;
@@ -769,7 +802,7 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
       // A held floor's rooms fight as their role says (and a room with no
       // role, of the holders' own naming, half the time); any other floor's,
       // about half of them.
-      else if (!req && id !== 'cache' && (cast ? (cast.role ? !!cast.role.fight : dice.chance(0.5)) : dice.chance(0.55)) && filler < (spec.maxFights ?? Infinity)) {
+      else if (!req && id !== 'cache' && (cast ? (cast.role ? !!cast.role.fight : filler < target) : dice.chance(0.55)) && filler < (spec.maxFights ?? Infinity)) {
         filler++;
         room.fight = fight(id, fightOf(level, cast?.role?.fight ?? 'room', undefined, factionOf(id)), win);
       }

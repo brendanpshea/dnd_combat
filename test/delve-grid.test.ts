@@ -37,4 +37,21 @@ describe('a held place, for every faction', () => {
     }
     expect(JSON.stringify(module).includes('$one') || JSON.stringify(module).includes('$they')).toBe(false);
   });
+
+  it('words its locks as its holders would, and often hides a way round the first', () => {
+    let locked = 0, round = 0;
+    for (const { f, theme, level, shape } of grid) {
+      const { module } = generateSpecDelve(7, { theme, level, shape, fights: 'inhabitants', factions: [f.id] });
+      for (const sc of Object.values(module.scenes)) {
+        if (sc.kind !== 'dungeon') continue;
+        const kind = ARCHETYPES[f.archetype]!;
+        const locks = sc.dungeon.links.filter((l) => l.door?.locked);
+        if (!locks.length) continue;
+        locked++;
+        for (const l of locks) expect([kind.lock.in, kind.lock.out], `${f.id}: ${l.door!.note}`).toContain(l.door!.note);
+        if (sc.dungeon.links.some((l) => l.door?.secret && l.door.note)) round++;
+      }
+    }
+    expect(round / locked, `${round} of ${locked} locked floors have a back way`).toBeGreaterThan(0.3);
+  });
 });

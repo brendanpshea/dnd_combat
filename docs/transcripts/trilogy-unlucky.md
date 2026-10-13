@@ -1143,9 +1143,9 @@ A tent nobody has slept in for a while, at the dark end of the lines. Quiet enou
 
 <sub>scene `inner/f1-patrol`</sub>
 
-A raider looks up from the fire with his mouth full, and shouts with it.
+Something laughs behind the wood pile, high and wrong, and the raiders by it get up.
 
-**Battle:** gen:worg+scout+giant-hyena+bandit <sub>(`gen:worg+scout+giant-hyena+bandit` on `@room`)</sub>
+**Battle:** gen:gnoll+scout+giant-hyena+bandit <sub>(`gen:gnoll+scout+giant-hyena+bandit` on `@room`)</sub>
 
 **» Fight — lost**
 
@@ -1601,17 +1601,17 @@ A list in the chief's hand of what is owed to the water: grain, a lamb each moon
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-→ Stolen Carts
+→ Plunder Heap
 
-**→ Stolen Carts** <sub>(room `key`)</sub>
+**→ Plunder Heap** <sub>(room `key`)</sub>
 
 Everything they took is piled here, and someone big sits on top of it.
 
 <sub>scene `inner/f1-fight-key`</sub>
 
-They were throwing dice for a carter's boots. They stop.
+A raider looks up from the fire with his mouth full, and shouts with it.
 
-**Battle:** gen:orc+orc+giant-hyena+giant-hyena <sub>(`gen:orc+orc+giant-hyena+giant-hyena` on `@room`)</sub>
+**Battle:** gen:worg+bugbear+worg+bugbear <sub>(`gen:worg+bugbear+worg+bugbear` on `@room`)</sub>
 
 **» [Intimidation DC 13] Tell them the chief is finished**
 
@@ -1635,21 +1635,21 @@ _(a paragraph shown before: “You slip back out through the gate,…”)_
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-**→ Stolen Carts** <sub>(room `key`)</sub>
+**→ Plunder Heap** <sub>(room `key`)</sub>
 
 <sub>scene `inner/f1-fight-key` (again)</sub>
 
-_(a paragraph shown before: “They were throwing dice for a carter's…”)_
+_(a paragraph shown before: “A raider looks up from the fire…”)_
 
-**Battle:** gen:orc+orc+giant-hyena+giant-hyena <sub>(`gen:orc+orc+giant-hyena+giant-hyena` on `@room`)</sub>
+**Battle:** gen:worg+bugbear+worg+bugbear <sub>(`gen:worg+bugbear+worg+bugbear` on `@room`)</sub>
 
 **» Fight — won**
 
-One of them carried a heavy key.
+The keeper wore the gate key on a thong round his neck.
 
 **↳ The Ashfang Den** <sub>(dungeon `inner/delve`)</sub>
 
-**→ Stolen Carts** <sub>(room `key`)</sub>
+**→ Plunder Heap** <sub>(room `key`)</sub>
 
 → Search the room
 
@@ -1671,9 +1671,9 @@ _Gained: Potion of Healing_
 
 <sub>scene `inner/f1-patrol` (again)</sub>
 
-_(a paragraph shown before: “A raider looks up from the fire…”)_
+_(a paragraph shown before: “Something laughs behind the wood pile, high…”)_
 
-**Battle:** gen:worg+scout+giant-hyena+bandit <sub>(`gen:worg+scout+giant-hyena+bandit` on `@room`)</sub>
+**Battle:** gen:gnoll+scout+giant-hyena+bandit <sub>(`gen:gnoll+scout+giant-hyena+bandit` on `@room`)</sub>
 
 **» Fight — won**
 
