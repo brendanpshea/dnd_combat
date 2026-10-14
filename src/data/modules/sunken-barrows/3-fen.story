@@ -140,7 +140,7 @@ noBack: true
 ? not drowned-gold-home; with wren | {wren} watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
 ? drowned-gold-home; without wren | You tie the purses into a bundle, and count them twice. {^drowned-purses} families.
 ? not drowned-gold-home; without wren | You fill your pockets with the drowned folk's coin.
-The fen is quiet around you, and the black water lies still.
+Behind you, the fog closes over the pools again.
 > Go on into the fen → @hub  #on
 
 # pool

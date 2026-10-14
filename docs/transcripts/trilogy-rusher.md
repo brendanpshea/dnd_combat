@@ -961,7 +961,7 @@ _Journal (clue): Robes the Colour of Worms_
 
 Wren watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
 
-The fen is quiet around you, and the black water lies still.
+Behind you, the fog closes over the pools again.
 
 **» Go on into the fen**
 
@@ -1099,13 +1099,13 @@ The cut is just wide enough for them. Near the far end, one digger wears a chain
 
 <sub>scene `diggers-sneak`</sub>
 
-The picks ring loud enough to cover a footstep. You edge along the wall between swings, and not one head turns.
+The picks ring loud enough to cover a footstep. You edge along the wall between swings, and not one head turns. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.
 
 **» Go on**
 
 <sub>scene `diggers-chain`</sub>
 
-At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall. He is light now, just bones in a coat.
+At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is light now, just bones in a coat.
 
 The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 

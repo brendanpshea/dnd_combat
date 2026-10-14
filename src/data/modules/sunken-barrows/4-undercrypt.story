@@ -44,19 +44,19 @@ again:
 answer stealth 12 > Slip past along the wall  #sneak
 roller: group
 retry
-The picks ring loud enough to cover a footstep. You edge along the wall between swings, and not one head turns.
+The picks ring loud enough to cover a footstep. You edge along the wall between swings, and not one head turns. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.
 answer religion 13 > Say the burial words over them  #still
 attempt: words
-You speak the old words, slow and plain. *Lie down and be at peace. Your work is done.* One by one the picks go quiet, and the dead lie down in the cut in rows.
+You speak the old words, slow and plain. *Lie down and be at peace. Your work is done.* One by one the picks go quiet, and the dead lie down in the cut in rows. The digger in the reeve's chain is the last to lie down.
 answer deception 10 > Fall in at the back of the oldest rank  #ranks
 ? graves-ranks
 attempt: words
-You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing. The dead make room for you without breaking step, and you walk out the far end, still swinging.
+You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing. The dead make room for you without breaking step, and you walk out the far end, still swinging. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.
 answer religion 10 > Raise a holy symbol and turn them aside  #turn
 ? class cleric
 tag: Cleric
 attempt: words
-A light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog, and press to the walls, and leave you a road.
+A light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog, and press to the walls, and leave you a road. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.
 answer religion 10 > Stand in their road and speak your oath  #oath
 ? class paladin
 tag: Paladin
@@ -67,14 +67,14 @@ The dead come down the cut with their picks raised. Two are bare bones in grave-
 again:
 The dead are waiting in the cut this time, picks raised.
 won:
-The last digger falls across its pick. The cut goes quiet, apart from your breathing.
+The last digger to fall wears the reeve's chain. The cut goes quiet, apart from your breathing.
 
 // The old reeve home (a day's carrying, and the town's regard), or the
 // grave-goods, whose silvered spear bites the dead still ahead.
 # diggers-chain
 art: loc-crypt ⛓️
 noBack: true
-At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one {aldous} grips in his hall. He is light now, just bones in a coat.
+At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one {aldous} grips in his hall. He is light now, just bones in a coat.
 ? with wren | {wren} kneels and straightens the chain on his chest. "The reeve's grandfather," she says, and nothing else.
 The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
 > Carry him home in your cloak, though it will cost the day → @hub  #carry

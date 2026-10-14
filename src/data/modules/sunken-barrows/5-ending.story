@@ -7,7 +7,8 @@ The rope ladder brings you up out of the great barrow and into the open air.
 ? npc halden fate saved | Brother {halden} climbs out, blinking at the daylight. He says the burial words over every one of the dead in the grass.
 ? npc marrow fate bound | {marrow} climbs out behind you with his wrists tied. {wren} looks him up and down, and leaves his rope in your hands.
 ? npc marrow fate sings | {marrow} climbs out after you, and walks off alone toward {saltmere}. {wren} keeps her hand on her knife until the fog takes him.
-? grandfather-home | {wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
+? grandfather-home; without wren | {wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
+? grandfather-home; with wren | {wren} has carried the old man's feet since the cut, and she will not hand them over now. "Mind the ruts," she says, at every rut.
 ? not seal-cracked | The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 ? seal-cracked | The walk home is long and wet. Every so often one of you stops and looks back at the barrow-field, and the others wait, and listen with them.
 ? {"kind":"npc","npc":"wren","attitude":{"atLeast":2}} | At the edge of town {wren} says "Thank you," fast, to the road. She walks on before anyone can ask what for.
