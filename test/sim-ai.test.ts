@@ -9,7 +9,7 @@ import { runArena } from '../src/ai/arena.js';
 import { SPELLS } from '../src/data/spells.js';
 import { FEATURES } from '../src/data/features.js';
 import { ITEMS } from '../src/data/items.js';
-import { makeCombatant } from './helpers.js';
+import { makeCombatant, yieldToRunner } from './helpers.js';
 import { buildWave } from '../src/arena/run.js';
 import { newCampaign, buildCampaignParty, partyLevelOf } from '../src/campaign/campaign.js';
 import { buildMonster } from '../src/data/monsters.js';
@@ -125,7 +125,7 @@ describe('simulation AI behavior', () => {
     }
   }, 120000);
 
-  it('arena gate: sim AI is at least competitive with greedy (regression floor)', () => {
+  it('arena gate: sim AI is at least competitive with greedy (regression floor)', async () => {
     // A gross-regression tripwire, not a superiority proof (that's
     // `npm run arena` with hundreds of games — sim-normal sits ~52% vs the
     // hand-tuned greedy). The floor is set far below that true rate so
@@ -134,13 +134,15 @@ describe('simulation AI behavior', () => {
     // measure strength at all — a 16-game read carries ~±12 points — which is
     // exactly why this asserts a floor and not a number.
     const seeds = Array.from({ length: 8 }, (_, i) => i * 5 + 1);
-    const result = runArena(
-      (s, id) => chooseActionSim(s, id, FAST),
-      greedy,
-      seeds,
-    );
-    expect(result.stalls).toBe(0);
-    expect(result.aWinRate).toBeGreaterThanOrEqual(0.2);
+    // A seed at a time, yielding between them (see yieldToRunner).
+    let games = 0, aWins = 0, stalls = 0;
+    for (const seed of seeds) {
+      await yieldToRunner();
+      const r = runArena((s, id) => chooseActionSim(s, id, FAST), greedy, [seed]);
+      games += r.games; aWins += r.aWins; stalls += r.stalls;
+    }
+    expect(stalls).toBe(0);
+    expect(aWins / games).toBeGreaterThanOrEqual(0.2);
   }, 300000);
 });
 

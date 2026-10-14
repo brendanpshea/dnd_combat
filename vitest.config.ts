@@ -35,6 +35,15 @@ import { defineConfig, configDefaults } from 'vitest/config';
  * So on CI we leave TWO cores free, and use the `dot` reporter so 1900+ tests
  * don't each cost a live-tree redraw round-trip. Both are pinned in
  * `test/ci-config.test.ts` with the reason, so a tidy-up doesn't delete them.
+ *
+ * Cores were not the whole story. The nightly sims kept failing the same way
+ * with every test passing, because one test (the arena calibration) played
+ * 2,100 battles in a single synchronous loop, about four and a half minutes
+ * without an await. A worker that never yields cannot take the main process's
+ * answer off its queue; when the loop ends, its 60-second timer fires first.
+ * Nor does a run of synchronous tests: between tests vitest only awaits
+ * promises, which never reach the event loop. So every long sim loop awaits
+ * `yieldToRunner()` (test/helpers.ts) every few battles.
  */
 
 // The balance/sim harnesses: slow, CPU-bound, not deploy-blocking. One list,

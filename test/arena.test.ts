@@ -1,3 +1,4 @@
+import { yieldToRunner } from './helpers.js';
 import { describe, it, expect } from 'vitest';
 import { MONSTERS, MONSTER_XP, buildMonster, canThreatenAtRange } from '../src/data/monsters.js';
 import {
@@ -391,7 +392,7 @@ describe('generated fights complete', () => {
  * cannot be finished.
  */
 describe('arena difficulty calibration', () => {
-  it('an even-budget fight is still roughly even', () => {
+  it('an even-budget fight is still roughly even', async () => {
     const files = [3, 1, 5, 2, 6, 0, 7, 4];
     // Every level, not just 3 and 5. Those two were the only ones checked, and
     // they were the only two that stayed honest: a playthrough sweep found L1
@@ -423,6 +424,7 @@ describe('arena difficulty calibration', () => {
        */
       const N = 300;
       for (let i = 0; i < N; i++) {
+        if (i % 10 === 0) await yieldToRunner();
         // The caps are part of what a budget buys — without them this measures
         // a fight the arena would never actually generate.
         const e = generateEncounter(
