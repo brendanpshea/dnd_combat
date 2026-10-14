@@ -9,8 +9,8 @@
 - **Chapters:** The Hollow Road → victory; The Sunken Barrows → victory; The Wyrmcalling → victory
 - **Ending reached:** `wc-epilogue` (victory) in The Wyrmcalling
 - **The Hollow Road** — flags carried in: _none (start of the run)_; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`
-- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=4`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
-- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=4`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
+- **The Sunken Barrows** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`; flags carried out: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`
+- **The Wyrmcalling** — flags carried in: `hollow-road:captives-freed`, `hollow-road:won`, `npc.marrow.fate.sings`, `npc.reedwife.fate.dead`, `npc.reedwife.met`, `npc.vargan.fate.spared`, `npc.vex.met`, `npc.wren.attitude=3`, `npc.wren.fate.saved`, `npc.wren.met`, `sunken-barrows:regard=2`, `sunken-barrows:won`; flags carried out: _— (no sequel played)_
 - **Not simulated:** battles (the route decides won/lost; a win adds encounter XP as `runModule` does, no treasure), shopping, gear, fast travel. Paragraphs already shown earlier in the same chapter are folded to their first words.
 
 ## The Hollow Road `hollow-road`
@@ -1265,21 +1265,19 @@ A fountain whose water comes out cold in summer and warm in winter. Everyone in 
 
 → The Fen Road
 
-<sub>scene `fen-again`</sub>
+<sub>scene `wren-meet`</sub>
 
-The old raised road goes on into the fog, the same as before. The fen waits at the end of it.
+**Wren, the Reeve's Scout**
 
-**» Walk back to town**
+> The cart-road ends where the old raised road begins. **Wren** sits on a milestone there, putting an edge on a boot-knife, upright this time and with no dead horse on top of her. "Heard the bells. Figured you'd be along."
 
-**↳ Thornwick** <sub>(map `square/city`)</sub>
+> "I was out on the near fen at first light, and the drag-marks were still wet. They walk in step, and one set has nails in the heel. The dead don't buy boots. Somebody **living** walked out there with them. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground."
 
-→ The Fen Road
+**» Follow her onto the raised road**
 
-<sub>scene `fen-again` (again)</sub>
+_Wren joins the party._
 
-_(a paragraph shown before: “The old raised road goes on into…”)_
-
-**» Walk out along the raised road**
+_Journal (npc): Wren, the Reeve's Scout_
 
 <sub>scene `fen`</sub>
 
@@ -1303,6 +1301,8 @@ The flat water south of the old road is where the fen does its prettiest lying. 
 
 The lights drift nearer, hopeful as dogs. Between them, further out, two colder things stand in the clothes they drowned in.
 
+"We don't have to go through," Wren says quietly. "There's firm ground round the pools, if you can find it. Miss it, and the lights find *you*."
+
 **» Snuff them out**
 
 <sub>scene `lights-fight`</sub>
@@ -1321,6 +1321,8 @@ In the reeds at the pool's edge lie the drowned, with their purses still tied at
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.
 
+Wren looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
+
 **» Keep the purses. The dead won't spend them**
 
 _+55 gold (900)_
@@ -1331,7 +1333,7 @@ _Journal (clue): Robes the Colour of Worms_
 
 <sub>scene `purses-taken`</sub>
 
-You tie the purses into a bundle.
+Wren watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
 
 The fen is quiet around you, and the black water lies still.
 
@@ -1377,6 +1379,8 @@ _+25 gold (925)_
 
 > The congregation is dead. They stand in the water in row after row, every face turned to the altar.
 
+> Wren grips your arm. "That's **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley."
+
 > "**Welcome!**" Halden smiles at you, and the smile is terribly calm. "You've come to see the great work. The Warden below is gathering his flock at last. Will you kneel? Everyone kneels down here, sooner or later."
 
 **» Refuse the sermon and draw**
@@ -1395,6 +1399,8 @@ His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was n
 
 Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
 
+On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
+
 Under the altar cloth is a healing potion Halden never got to drink.
 
 _Gained: Potion of Healing_
@@ -1410,6 +1416,8 @@ _Journal (clue): The Rites of Sealing_
 <sub>scene `pool`</sub>
 
 The reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have fed something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.
+
+Wren picks up a coin and puts it back with great care. "Since the dead took to the fen roads, not one of them has dared come out this far with a coin." She takes one careful step back. "It will be hungry."
 
 **» Wade in and clear the pool**
 
@@ -1471,6 +1479,8 @@ Reeds, and more reeds. Nothing in them but frogs.
 
 All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **Barrow Gate**, mossed to the knees. Two weathered granite watchers crouch on top of it. In the gateway below them, an empty suit of green-bronze armour leans on its spear.
 
+Wren stops dead. "Those weren't in anybody's stories." The stone bases are mossy, but the watchers' claws are clean, and so is the spear.
+
 **» Walk up to the gate**
 
 <sub>scene `lychgate-fight`</sub>
@@ -1489,7 +1499,13 @@ Past the Barrow Gate the mounds rise in their dozens. At the field's heart the l
 
 Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
 
-**» Go down**
+Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
+
+"Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on. She ties a strip of the reeve's colours round your arm, quick and tight.
+
+**» Leave Wren the gate, and go down**
+
+_Wren leaves the party._
 
 <sub>scene `undercrypt`</sub>
 

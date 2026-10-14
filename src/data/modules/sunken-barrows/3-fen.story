@@ -39,6 +39,7 @@ won:
 {halden} sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
 His prayer book lies open on the altar, fen-damp. *The {door-price} each {door-midwinter} was never an offering,* says a note in his tidy hand. *It was her wage. The {reedwife} was the {warden}'s jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
 Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
+On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*
 Under the altar cloth is a healing potion {halden} never got to drink.
 do @CHAPEL_CLEARED
 
@@ -52,6 +53,7 @@ The thing inside {halden} lets go of him all at once, like a hand opening, and h
 He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk paid her a {door-price} each {door-midwinter}, and she kept the **{warden} of the Barrows** asleep. When she was gone from that door, his seal broke."
 ? npc reedwife fate bound | "They say you held her to her price." He shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. Nobody sits by his door."
 "The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair." He hands you a healing potion from under the altar cloth. "I bought it for a bad night. I think yours will be worse."
+He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the {barrow-gate}, and the gate's watchers still know it."
 > Take the prayer book → @hub  #on
   hide
   ? with wren
@@ -136,7 +138,8 @@ art: 💰
 noBack: true
 ? drowned-gold-home; with wren | {wren} helps you tie the purses into a bundle. She counts them twice. "{^drowned-purses}," she says. "That's {drowned-purses} families." She carries the bundle herself, and walks a little straighter for it.
 ? not drowned-gold-home; with wren | {wren} watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
-? without wren | You tie the purses into a bundle.
+? drowned-gold-home; without wren | You tie the purses into a bundle, and count them twice. {^drowned-purses} families.
+? not drowned-gold-home; without wren | You fill your pockets with the drowned folk's coin.
 The fen is quiet around you, and the black water lies still.
 > Go on into the fen → @hub  #on
 
