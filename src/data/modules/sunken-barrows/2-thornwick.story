@@ -80,7 +80,7 @@ art: loc-marsh 🌫️
 again:
 {wren} is still sitting on the milestone where the raised road begins. She looks up. "Ready?"
 > Follow her onto the raised road → fen  #go
-  do npc wren met; join wren
+  do npc wren met; join wren; +wren-joined
   journal npc n-wren: {wren}, the Reeve's Scout
     {wren} is Reeve {aldous}'s scout, and she will not be left behind. She guides you through the deep fen as far as the old barrow-country.
 

@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-72 scenes · 135 versions · 12,015 states searched (with text conditions tracked).
+72 scenes · 130 versions · 13,863 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -267,9 +267,9 @@ The gate-warden will not open the fen road without the reeve's say-so. "See Reev
 
 <sub>reads: flag:npc.wren.fate.saved, flag:npc.wren.fate.lost, return?</sub>
 
-**3 versions**
+**4 versions**
 
-### 1. when Wren not lost · the first visit?
+### 1. when Wren not saved · Wren not lost · the first visit?
 
 **Wren, the Reeve's Scout:**
 
@@ -295,11 +295,15 @@ The cart-road ends where the old raised road begins. A young woman in the reeve'
 
 "I was out on the near fen at first light, and the drag-marks were still wet. They walk in step, and one set has nails in the heel. The dead don't buy boots. Somebody **living** walked out there with them. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground."
 
+### 4. when Wren saved · the first visit?
+
+**Wren, the Reeve's Scout:**
+
+The cart-road ends where the old raised road begins. **Wren** sits on a milestone there, putting an edge on a boot-knife, upright this time and with no dead horse on top of her. "Heard the bells. Figured you'd be along."
+
+"I was out on the near fen at first light, and the drag-marks were still wet. They walk in step, and one set has nails in the heel. The dead don't buy boots. Somebody **living** walked out there with them. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground."
+
 - » **Follow her onto the raised road**
-
-**Never shown on any reachable route:**
-
-- when Wren saved: "The cart-road ends where the old raised road begins. **Wren** sits on a milestone there, putting an edge on a boot-knife, upright this time…"
 
 ## `fen-again` · story
 
@@ -312,25 +316,9 @@ The old raised road goes on into the fog, the same as before. The fen waits at t
 
 <sub>reads: companion:wren, flag:graves-ranks, return?</sub>
 
-**3 versions**
+**2 versions**
 
-### 1. when Wren not in the party · the first visit?
-
-**Brother Halden:**
-
-The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. A few are **black tallow**, and they smoke like wet wood. On the altar steps stands a priest, robes fen-stained, face serene. He is leading a congregation.
-
-The congregation is dead. They stand in the water in row after row, every face turned to the altar.
-
-"**Welcome!**" Halden smiles at you, and the smile is terribly calm. "You've come to see the great work. The Warden below is gathering his flock at last. Will you kneel? Everyone kneels down here, sooner or later."
-
-### 2. when a return visit?
-
-**Brother Halden:**
-
-The drowned congregation still stands in its rows, and Halden still waits on the altar steps. "You came back," he says, and beams. "Everyone does."
-
-### 3. when Wren in the party · the first visit?
+### 1. when the first visit?
 
 **Brother Halden:**
 
@@ -341,6 +329,12 @@ The congregation is dead. They stand in the water in row after row, every face t
 Wren grips your arm. "That's **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley."
 
 "**Welcome!**" Halden smiles at you, and the smile is terribly calm. "You've come to see the great work. The Warden below is gathering his flock at last. Will you kneel? Everyone kneels down here, sooner or later."
+
+### 2. when a return visit?
+
+**Brother Halden:**
+
+The drowned congregation still stands in its rows, and Halden still waits on the altar steps. "You came back," he says, and beams. "Everyone does."
 
 - » **[Religion DC 14] Speak his own burial words back to him** [Religion DC 14]
 - » **[Persuasion DC 12] Remind him the dead stepped out in ranks, to his bell** [Persuasion DC 12] <sub>open when `graves-ranks`; otherwise hidden</sub>
@@ -368,6 +362,8 @@ His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was n
 
 Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
 
+On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
+
 Under the altar cloth is a healing potion Halden never got to drink.
 
 ### 2. when a return visit?
@@ -383,6 +379,8 @@ Halden sinks down on the altar steps and does not rise again. At the end, he mos
 His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was never an offering,* says a note in his tidy hand. *It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
 
 Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
+
+On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
 Under the altar cloth is a healing potion Halden never got to drink.
 
@@ -422,6 +420,8 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 "The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair." He hands you a healing potion from under the altar cloth. "I bought it for a bad night. I think yours will be worse."
 
+He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the Barrow Gate, and the gate's watchers still know it."
+
 ### 2. when Reedwife bound
 
 **Brother Halden:**
@@ -436,32 +436,28 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 "The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair." He hands you a healing potion from under the altar cloth. "I bought it for a bad night. I think yours will be worse."
 
-- » **Take the prayer book** <sub>open when Wren in the party; otherwise hidden</sub>
-- » **Take the prayer book** <sub>open when Wren not in the party; otherwise hidden</sub>
+He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the Barrow Gate, and the gate's watchers still know it."
+
+- » **Take the prayer book** <sub>open on every route here</sub>
+- » **Take the prayer book** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `lights` · story
 
 <sub>reads: companion:wren, class:druid?, class:ranger?, return?</sub>
 
-**3 versions**
+**2 versions**
 
-### 1. when Wren not in the party · the first visit?
-
-The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror, soft and swaying, warm as windows. Corpse-candles: they walk mourners into the deep pools and hold them under.
-
-The lights drift nearer, hopeful as dogs. Between them, further out, two colder things stand in the clothes they drowned in.
-
-### 2. when a return visit?
-
-The corpse-lights still sway over the black water, warm as windows.
-
-### 3. when Wren in the party · the first visit?
+### 1. when the first visit?
 
 The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror, soft and swaying, warm as windows. Corpse-candles: they walk mourners into the deep pools and hold them under.
 
 The lights drift nearer, hopeful as dogs. Between them, further out, two colder things stand in the clothes they drowned in.
 
 "We don't have to go through," Wren says quietly. "There's firm ground round the pools, if you can find it. Miss it, and the lights find *you*."
+
+### 2. when a return visit?
+
+The corpse-lights still sway over the black water, warm as windows.
 
 - » **Snuff them out**
 - » **[Survival DC 13] Find the dry way round the pools** [Survival DC 13]
@@ -515,52 +511,41 @@ You drag each other out onto the mud, soaked and shaking. Behind you the last wi
 
 <sub>reads: companion:wren</sub>
 
-**2 versions**
-
-### 1. when Wren not in the party
-
-In the reeds at the pool's edge lie the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
-
-One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.
-
-### 2. when Wren in the party
-
 In the reeds at the pool's edge lie the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.
 
 Wren looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
 
-- » **Keep the purses. The dead won't spend them** <sub>open when Wren in the party; otherwise hidden</sub>
-- » **Keep the purses. The dead won't spend them** <sub>open when Wren not in the party; otherwise hidden</sub>
-- » **Carry the purses home for the families** <sub>open when Wren in the party; otherwise hidden</sub>
-- » **Carry the purses home for the families** <sub>open when Wren not in the party; otherwise hidden</sub>
+- » **Keep the purses. The dead won't spend them** <sub>open on every route here</sub>
+- » **Keep the purses. The dead won't spend them** <sub>**never open on any reachable route** (hidden)</sub>
+- » **Carry the purses home for the families** <sub>open on every route here</sub>
+- » **Carry the purses home for the families** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `purses-taken` · story
 
 <sub>reads: flag:drowned-gold-home, companion:wren</sub>
 
-**3 versions**
+**2 versions**
 
-### 1. when Wren not in the party
-
-You tie the purses into a bundle.
-
-The fen is quiet around you, and the black water lies still.
-
-### 2. when not `drowned-gold-home` · Wren in the party
+### 1. when not `drowned-gold-home`
 
 Wren watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
 
 The fen is quiet around you, and the black water lies still.
 
-### 3. when `drowned-gold-home` · Wren in the party
+### 2. when `drowned-gold-home`
 
 Wren helps you tie the purses into a bundle. She counts them twice. "Twelve," she says. "That's twelve families." She carries the bundle herself, and walks a little straighter for it.
 
 The fen is quiet around you, and the black water lies still.
 
 - » **Go on into the fen**
+
+**Never shown on any reachable route:**
+
+- when `drowned-gold-home` · Wren not in the party: "You tie the purses into a bundle, and count them twice. Twelve families."
+- when not `drowned-gold-home` · Wren not in the party: "You fill your pockets with the drowned folk's coin."
 
 ## `pool` · story
 
@@ -615,21 +600,17 @@ The serpents lie in loops like dropped rope. Your boots turn up everything the f
 
 <sub>reads: companion:wren, return?</sub>
 
-**3 versions**
+**2 versions**
 
-### 1. when Wren not in the party · the first visit?
-
-All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **Barrow Gate**, mossed to the knees. Two weathered granite watchers crouch on top of it. In the gateway below them, an empty suit of green-bronze armour leans on its spear.
-
-### 2. when a return visit?
-
-The two stone watchers sit on the gate again with their wings folded. The bronze armour leans in the gateway below them.
-
-### 3. when Wren in the party · the first visit?
+### 1. when the first visit?
 
 All the tracks come together here, and the barrow-country begins. A gate of standing stones rises ahead, the **Barrow Gate**, mossed to the knees. Two weathered granite watchers crouch on top of it. In the gateway below them, an empty suit of green-bronze armour leans on its spear.
 
 Wren stops dead. "Those weren't in anybody's stories." The stone bases are mossy, but the watchers' claws are clean, and so is the spear.
+
+### 2. when a return visit?
+
+The two stone watchers sit on the gate again with their wings folded. The bronze armour leans in the gateway below them.
 
 - » **[History DC 14] Show them the vigil's mark in Halden's book** [History DC 14] <sub>(once)</sub>
 - » **Walk up to the gate**
@@ -672,15 +653,9 @@ The watchers look at the book for a long, grinding moment, then fold their wings
 
 <sub>reads: companion:wren, flag:npc.wren.attitude</sub>
 
-**4 versions**
+**3 versions**
 
-### 1. when Wren not in the party
-
-Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
-
-Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
-
-### 2. when Wren in the party · Wren's regard < 0
+### 1. when Wren's regard < 0
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
@@ -690,7 +665,7 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
-### 3. when Wren in the party · Wren's regard 0–1
+### 2. when Wren's regard 0–1
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
@@ -698,7 +673,7 @@ Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**
 
 Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 
-### 4. when Wren in the party · Wren's regard ≥ 2
+### 3. when Wren's regard ≥ 2
 
 Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
@@ -708,9 +683,9 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 "Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on. She ties a strip of the reeve's colours round your arm, quick and tight.
 
-- » **Leave Wren the gate, and go down** <sub>open when Wren in the party; otherwise hidden</sub>
-- » **Ask Wren to come down with you** <sub>open when Wren in the party · Wren's regard ≥ 2; otherwise hidden</sub>
-- » **Go down** <sub>open when Wren not in the party; otherwise hidden</sub>
+- » **Leave Wren the gate, and go down** <sub>open on every route here</sub>
+- » **Ask Wren to come down with you** <sub>open when Wren's regard ≥ 2; otherwise hidden</sub>
+- » **Go down** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `hall` · story
 
@@ -1875,7 +1850,7 @@ In.
 
 ## `square/city` · explore
 
-<sub>reads: flag:reeve-task, flag:graves-read, flag:npc.wren.met</sub>
+<sub>reads: flag:reeve-task, flag:graves-read, flag:wren-joined</sub>
 
 **Map:** Thornwick
 
@@ -1885,7 +1860,7 @@ In.
   - goes to `square/city-done` instead when `graves-read`
 - **The Fen Road** → `wren-meet`
   - goes to `fen-shut` instead when not `reeve-task`
-  - goes to `fen-again` instead when met Wren
+  - goes to `fen-again` instead when `wren-joined`
 
 ## `square/city-done` · story
 
@@ -1899,7 +1874,8 @@ In.
 
 Conditional lines whose condition no reachable state meets (every atom pinned): dead text, or a condition that is wrong.
 
-- `wren-meet` — when Wren saved: "The cart-road ends where the old raised road begins. **Wren** sits on a milestone there, putting an edge on a boot-knife, upright this time…"
+- `purses-taken` — when `drowned-gold-home` · Wren not in the party: "You tie the purses into a bundle, and count them twice. Twelve families."
+- `purses-taken` — when not `drowned-gold-home` · Wren not in the party: "You fill your pockets with the drowned folk's coin."
 
 ## Dawns
 

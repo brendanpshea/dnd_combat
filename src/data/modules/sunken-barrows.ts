@@ -46,7 +46,7 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
           // Shut until the reeve says so; then Wren, once; then the road.
           { label: 'The Fen Road', replaces: 'gate', icon: 'tok-gate', text: [], event: { scene: 'wren-meet', when: [
             { if: [{ kind: 'notFlag', flag: 'reeve-task' }], to: 'fen-shut' },
-            { if: [{ kind: 'npc', npc: 'wren', met: true }], to: 'fen-again' }] } },
+            { if: [flag('wren-joined')], to: 'fen-again' }] } },
         ],
       },
       onLeave: { to: 'fen-again' },

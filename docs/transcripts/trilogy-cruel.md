@@ -829,6 +829,8 @@ His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was n
 
 Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
 
+On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
+
 Under the altar cloth is a healing potion Halden never got to drink.
 
 _Gained: Potion of Healing_

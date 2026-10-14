@@ -283,6 +283,7 @@ export const SCENES: Record<string, Scene> = {
         effects: [
           { kind: "npc", npc: "wren", met: true },
           { kind: "joinParty", companion: "wren" },
+          { kind: "setFlag", flag: "wren-joined" },
           {
             kind: "journal",
             entry: {
@@ -372,6 +373,7 @@ export const SCENES: Record<string, Scene> = {
         "{halden} sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.",
         "His prayer book lies open on the altar, fen-damp. *The {door-price} each {door-midwinter} was never an offering,* says a note in his tidy hand. *It was her wage. The {reedwife} was the {warden}'s jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*",
         "Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*",
+        "On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*",
         "Under the altar cloth is a healing potion {halden} never got to drink.",
       ],
       effects: [{ kind: "setFlag", flag: "chapel-cleared" }, ...[CHAPEL_CLEARED].flat()],
@@ -455,6 +457,7 @@ export const SCENES: Record<string, Scene> = {
         text: "\"They say you held her to her price.\" He shakes his head. \"A keeper held by strangers' words keeps the price, but not the watch. Nobody sits by his door.\"",
       },
       "\"The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair.\" He hands you a healing potion from under the altar cloth. \"I bought it for a bad night. I think yours will be worse.\"",
+      "He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. \"She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the {barrow-gate}, and the gate's watchers still know it.\"",
     ],
     next: [
       {
@@ -645,7 +648,14 @@ export const SCENES: Record<string, Scene> = {
         if: [{ kind: "notFlag", flag: "drowned-gold-home" }, { kind: "companion", companion: "wren" }],
         text: "{wren} watches you fill your pockets with the drowned folk's coin. \"Somebody's gran,\" she says at last, and walks on ahead.",
       },
-      { if: [{ kind: "noCompanion", companion: "wren" }], text: "You tie the purses into a bundle." },
+      {
+        if: [{ kind: "flag", flag: "drowned-gold-home" }, { kind: "noCompanion", companion: "wren" }],
+        text: "You tie the purses into a bundle, and count them twice. {^drowned-purses} families.",
+      },
+      {
+        if: [{ kind: "notFlag", flag: "drowned-gold-home" }, { kind: "noCompanion", companion: "wren" }],
+        text: "You fill your pockets with the drowned folk's coin.",
+      },
       "The fen is quiet around you, and the black water lies still.",
     ],
     next: [{ id: "on", label: "Go on into the fen", to: "@hub" }],
