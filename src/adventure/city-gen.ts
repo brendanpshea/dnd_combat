@@ -135,6 +135,12 @@ export interface CitySpec {
   lord?: string;
   /** The town's name, when a map around it already calls it something. */
   name?: string;
+  /**
+   * In a story: what the town's trouble does to its everyday places, in
+   * place of their cheerful defaults. Its notice board, what a shopkeeper
+   * says on the door, and its landmark as the trouble has left it.
+   */
+  mood?: { board?: string; shop?: string; landmark?: { label: string; text: string } };
   /** The sound of its people's names (default: one rolled for the size). */
   style?: NameStyle;
   /** A safe camp anywhere in town, as a story's home base has (default: rest at the inn). */
@@ -281,6 +287,7 @@ function person(dice: Dice, emoji: string, ctx: { style: NameStyle; names: Set<s
 interface VenueCtx { town: string; size: CitySize; level: number;
   /** The level its wares are for (see forSale). */
   stock: number; hub: Id; used: Set<string>; rumours: Rumour[]; watch: Id;
+  mood?: CitySpec['mood'];
   /** The town's name style, and every name it has handed out. */
   style: NameStyle; names: Set<string> }
 
@@ -302,7 +309,7 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
   // Shops keep the day's hours: shuttered after dark.
   const shop = (title: string, stock: Id[], who: NpcRef, intro: string, icon: string): Built => ({
     node: { id, label: title, icon, scene: id, requires: [{ kind: 'notFlag', flag: NIGHT }], note: 'Shuttered for the night.' },
-    scenes: [{ id, kind: 'shop', title, stock, npc: who, intro: [intro], next: ctx.hub }],
+    scenes: [{ id, kind: 'shop', title, stock, npc: who, intro: [ctx.mood?.shop ?? intro], next: ctx.hub }],
   });
   switch (kind) {
     case 'inn': {
@@ -405,13 +412,14 @@ function venue(kind: VenueKind, id: Id, dice: Dice, ctx: VenueCtx): Built {
     case 'notice-board':
       return {
         node: { id, label: 'Notice Board', icon: 'tok-notice', scene: id },
-        scenes: [{ id, kind: 'story', text: [`Notices, most of them old: a lost goat, a reward for a stolen cart, a warning about the roads out of ${ctx.town}.`],
+        scenes: [{ id, kind: 'story', text: [ctx.mood?.board ?? `Notices, most of them old: a lost goat, a reward for a stolen cart, a warning about the roads out of ${ctx.town}.`],
           next: [back('Step away')] }],
       };
     case 'landmark': {
       // Never the same landmark twice in one town.
       const left = LANDMARKS.filter(([l]) => !ctx.used.has(l));
-      const [label, icon, text] = dice.pick(left.length ? left : LANDMARKS);
+      const picked = dice.pick(left.length ? left : LANDMARKS);
+      const [label, icon, text] = ctx.mood?.landmark ? [ctx.mood.landmark.label, picked[1], ctx.mood.landmark.text] : picked;
       ctx.used.add(label);
       return { node: { id, label, icon, scene: id }, scenes: [{ id, kind: 'story', text: [text], next: [back('Walk on')] }] };
     }
@@ -553,6 +561,7 @@ export function checkCitySpec(spec: CitySpec, opts: CityOptions = {}): Required<
     size, level, venues: spec.venues ?? [], people, places, rumours: spec.rumours ?? [],
     streets: spec.streets ?? size !== 'village',
     stock: spec.stock ?? 0, lord: spec.lord ?? '', name: spec.name ?? '', style: spec.style ?? ('' as NameStyle), camp: spec.camp ?? false,
+    mood: spec.mood ?? {},
   };
 }
 
@@ -697,7 +706,7 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     budget: Math.round(evenBudgetFor(spec.level) * shareFor('room', spec.level)), maxMemberXp: memberCapFor(spec.level),
     maxCount: maxCountFor(spec.level), partyLevel: spec.level, members: WATCH,
   }, seedRng((seed ^ 0x9a7c) >>> 0)).value.members);
-  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, stock: spec.stock || spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch, style, names };
+  const ctx: VenueCtx = { town, size: spec.size, level: spec.level, stock: spec.stock || spec.level, hub: 'city', used: new Set<string>(), rumours: spec.rumours, watch, style, names, mood: spec.mood };
   const fightFor = (f: CustomPlace['fight']): Id => {
     if (typeof f === 'string') return f;
     const enc = generateEncounter({

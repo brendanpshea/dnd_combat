@@ -52,7 +52,7 @@ export function RESEALING(strained: boolean): Scene {
       { id: 'rites', label: 'Speak the rites aloud', skill: 'religion', dc: 13 + hard,
         success: { to: 'seal-closed', text: ['You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.', singers] },
         failure: { to: id, text: ['Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.'] } },
-      { id: 'letters', label: 'Read the lead letters as a spell', hint: 'They are cut deeper than any prayer needs.', skill: 'arcana', dc: 14 + hard,
+      { id: 'letters', label: 'Read the leaded letters as a spell', hint: 'They are cut deeper than any prayer needs.', skill: 'arcana', dc: 14 + hard,
         success: { to: 'seal-closed', text: ['The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter and speak its line from the book, and one by one they glow and set hard.', singers] },
         failure: { to: id, text: ['You trace the wrong line first. A letter spits its lead at your hand and goes dark.'] } },
       { id: 'kneelers', label: 'Turn the kneeling cultists to the words', hint: 'They came here to chant at this door.',

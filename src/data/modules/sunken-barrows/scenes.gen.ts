@@ -77,7 +77,7 @@ export const SCENES: Record<string, Scene> = {
     art: { emoji: "⛪" },
     noBack: true,
     text: [
-      "Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out and left on their own, and they left together.",
+      "Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out on their own.",
       "The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way: **out to the deep fen**.",
       "Every old headstone carries the same words, cut deep and green with moss. *Lie down and be at peace. Your work is done. The bell will wake you.* {thornwick}'s priests have said them over every grave for {thornwick-liturgy}.",
     ],
@@ -365,16 +365,16 @@ export const SCENES: Record<string, Scene> = {
       "{halden} sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in {thornwick}'s chapel colours step up beside him, their eyes as empty as the dead's.",
     ],
     again: [
-      "{halden} sighs again, a shepherd let down twice. \"The {warden} provides,\" he says, and his acolytes and his dead come for you once more.",
+      "{halden} sighs. \"The {warden} provides,\" he says, and his acolytes and his dead wade toward you.",
     ],
     onWin: {
       to: "@hub",
       text: [
         "{halden} sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.",
         "His prayer book lies open on the altar, fen-damp. *The {door-price} each {door-midwinter} was never an offering,* says a note in his tidy hand. *It was her wage. The {reedwife} was the {warden}'s jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*",
-        "Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*",
+        "Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.* Below that, crowded into the margin: *She had sisters in the deep reeds. Kin keep accounts.*",
         "On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*",
-        "Under the altar cloth is a healing potion {halden} never got to drink.",
+        "Under the altar cloth is a healing potion {halden} never got to drink. On your way out you climb the leaning tower and cut the drowned bell's rope.",
       ],
       effects: [{ kind: "setFlag", flag: "chapel-cleared" }, ...[CHAPEL_CLEARED].flat()],
     },
@@ -385,7 +385,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-temple", emoji: "🕯️" },
     text: [
-      "You say the words cut on every old headstone in his churchyard, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*",
+      "You say the words cut on every old headstone in his churchyard, slow and plain. *Lie down and be at peace. Your work is done.* You stop there, short of the line about the bell.",
     ],
     next: [
       {
@@ -457,7 +457,8 @@ export const SCENES: Record<string, Scene> = {
         text: "\"They say you held her to her price.\" He shakes his head. \"A keeper held by strangers' words keeps the price, but not the watch. Nobody sits by his door.\"",
       },
       "\"The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair.\" He hands you a healing potion from under the altar cloth. \"I bought it for a bad night. I think yours will be worse.\"",
-      "He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. \"She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the {barrow-gate}, and the gate's watchers still know it.\"",
+      "He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. \"She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the {barrow-gate}, and the gate's watchers still know it.\" He lowers his voice. \"And she had sisters in the deep reeds. Kin keep accounts.\"",
+      "Before you go, {halden} climbs the leaning tower and cuts the drowned bell's rope with his own knife.",
     ],
     next: [
       {
@@ -580,18 +581,13 @@ export const SCENES: Record<string, Scene> = {
     text: [
       "In the reeds at the pool's edge lie the drowned, with their purses still tied at their belts. There are {drowned-purses} purses, {drowned-gold} between them, and two hold a stoppered healing potion against the fen-fever.",
       "One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.",
-      {
-        if: [{ kind: "companion", companion: "wren" }],
-        text: "{wren} looks at the purses, then at you. \"Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call.\"",
-      },
+      "{wren} looks at the purses, then at you. \"Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call.\"",
     ],
     next: [
       {
         id: "keep",
         label: "Keep the purses. The dead won't spend them",
         to: "purses-taken",
-        hideWhenBlocked: true,
-        requires: [{ kind: "companion", companion: "wren" }],
         effects: [
           { kind: "gold", amount: factValue("drowned-gold") },
           { kind: "addItem", itemId: "potion-healing", qty: 2 },
@@ -600,37 +596,15 @@ export const SCENES: Record<string, Scene> = {
         ],
       },
       {
-        id: "keep-alone",
-        label: "Keep the purses. The dead won't spend them",
-        to: "purses-taken",
-        requires: [{ kind: "noCompanion", companion: "wren" }],
-        hideWhenBlocked: true,
-        effects: [
-          { kind: "gold", amount: factValue("drowned-gold") },
-          { kind: "addItem", itemId: "potion-healing", qty: 2 },
-          ...[WORM_CLUE].flat(),
-        ],
-      },
-      {
         id: "home",
         label: "Carry the purses home for the families",
         to: "purses-taken",
-        hideWhenBlocked: true,
-        requires: [{ kind: "companion", companion: "wren" }],
         effects: [
           { kind: "setFlag", flag: "drowned-gold-home" },
           ...[REGARD].flat(),
           ...[WORM_CLUE].flat(),
           { kind: "npc", npc: "wren", attitude: 1 },
         ],
-      },
-      {
-        id: "home-alone",
-        label: "Carry the purses home for the families",
-        to: "purses-taken",
-        requires: [{ kind: "noCompanion", companion: "wren" }],
-        hideWhenBlocked: true,
-        effects: [{ kind: "setFlag", flag: "drowned-gold-home" }, ...[REGARD].flat(), ...[WORM_CLUE].flat()],
       },
     ],
   },
@@ -641,20 +615,12 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     text: [
       {
-        if: [{ kind: "flag", flag: "drowned-gold-home" }, { kind: "companion", companion: "wren" }],
+        if: [{ kind: "flag", flag: "drowned-gold-home" }],
         text: "{wren} helps you tie the purses into a bundle. She counts them twice. \"{^drowned-purses},\" she says. \"That's {drowned-purses} families.\" She carries the bundle herself, and walks a little straighter for it.",
       },
       {
-        if: [{ kind: "notFlag", flag: "drowned-gold-home" }, { kind: "companion", companion: "wren" }],
+        if: [{ kind: "notFlag", flag: "drowned-gold-home" }],
         text: "{wren} watches you fill your pockets with the drowned folk's coin. \"Somebody's gran,\" she says at last, and walks on ahead.",
-      },
-      {
-        if: [{ kind: "flag", flag: "drowned-gold-home" }, { kind: "noCompanion", companion: "wren" }],
-        text: "You tie the purses into a bundle, and count them twice. {^drowned-purses} families.",
-      },
-      {
-        if: [{ kind: "notFlag", flag: "drowned-gold-home" }, { kind: "noCompanion", companion: "wren" }],
-        text: "You fill your pockets with the drowned folk's coin.",
       },
       "Behind you, the fog closes over the pools again.",
     ],
@@ -770,7 +736,7 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-crypt", emoji: "⛩️" },
     noBack: true,
     text: [
-      "Past the {barrow-gate} the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.",
+      "Past the {barrow-gate} the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every trail of the walking dead goes down into it.",
       "Letters are cut into the lintel, worn almost smooth. *Here is the **{undercrypt}**. Let it stay shut.*",
       {
         if: [{ kind: "companion", companion: "wren" }],
@@ -799,7 +765,7 @@ export const SCENES: Record<string, Scene> = {
         label: "Ask {wren} to come down with you",
         to: "undercrypt",
         hideWhenBlocked: true,
-        requires: [{ kind: "companion", companion: "wren" }, { kind: "npc", npc: "wren", attitude: { atLeast: 2 } }],
+        requires: [{ kind: "companion", companion: "wren" }, { kind: "npc", npc: "wren", attitude: { atLeast: 0 } }],
         effects: [{ kind: "setFlag", flag: "lychgate-cleared" }],
       },
       {
@@ -834,6 +800,7 @@ export const SCENES: Record<string, Scene> = {
         if: [{ kind: "flag", flag: "diggers-passed" }],
         text: "He sees your torch and is not alarmed. \"You got past my diggers,\" he says kindly. \"No matter. They have dug enough.\"",
       },
+      "\"The {warden} wants every seam of lead out of the hill,\" he adds, \"so there is none left to pour back into his door.\"",
       {
         if: [{ kind: "notFlag", flag: "door-straining" }],
         text: "\"Soon enough, the {warden} will put his own shoulder to the door.\" He picks up his lantern and goes on down into the dark.",
@@ -870,7 +837,7 @@ export const SCENES: Record<string, Scene> = {
     dc: 12,
     art: { emoji: "💀" },
     intro: [
-      "Skulls fill this room from floor to ceiling, stacked in rows like bricks. Old gold winks from the niches between them. A careful eye might take some of it back up.",
+      "The kings' household lies here in niches cut into the rock, each with a little grave-gold at its feet. A careful eye might take some of it back up.",
     ],
     success: {
       to: "@hub",
@@ -1030,12 +997,12 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-crypt", emoji: "⛓️" },
     noBack: true,
     text: [
-      "At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one {aldous} grips in his hall. He is light now, just bones in a coat.",
+      "At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one {aldous} grips in his hall. He is just bones in a coat now, light but awkward.",
       {
         if: [{ kind: "companion", companion: "wren" }],
         text: "{wren} kneels and straightens the chain on his chest. \"The reeve's grandfather,\" she says, and nothing else.",
       },
-      "The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.",
+      "The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and you will carry him with care or not at all.",
     ],
     next: [
       {
@@ -1076,9 +1043,9 @@ export const SCENES: Record<string, Scene> = {
     kind: "story",
     art: { imageId: "loc-crypt", emoji: "⚔️" },
     text: [
-      "This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings, and takes a **stance**.",
+      "This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in his eye sockets. He draws a sword of green bronze, like the soldiers in the paintings, and takes his stance.",
     ],
-    again: ["The old guardsman stands before its slab again, sword drawn, cold light in its eyes."],
+    again: ["The old guardsman stands before his slab again, sword drawn, cold light in his eyes."],
     next: [
       {
         id: "salute",
@@ -1098,13 +1065,13 @@ export const SCENES: Record<string, Scene> = {
     encounterId: "wight-tomb",
     mapId: "corridor",
     intro: [
-      "From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.",
+      "From the slabs on either side of him, two skeletons rise. They snap to their feet at the same instant, and come for you.",
     ],
-    again: ["The guardsman's two skeletons stand at its sides, heads turned toward you."],
+    again: ["His two skeletons stand at his sides, heads turned toward you."],
     onWin: {
       to: "@hub",
       text: [
-        "The wight comes apart at the joints and lies down in its own armour. Under its slab lies a guardsman's pay that no one ever came to collect.",
+        "The wight comes apart at the joints and lies down in his own armour. Under his slab lies a guardsman's pay that no one ever came to collect.",
       ],
       effects: [{ kind: "setFlag", flag: "wights-down" }, { kind: "gold", amount: 40 }],
     },
@@ -1132,7 +1099,7 @@ export const SCENES: Record<string, Scene> = {
     encounterId: "barrow-king",
     mapId: "ruins",
     intro: [
-      "Old masons sealed the king's chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Inside, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.",
+      "Old masons sealed the king's chamber in lead. Something has peeled the lead back from within. Beyond it, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.",
       "The embalmed king turns. Someone has set a crown of green bronze back on his head, and set it straight. Two of his household dead lurch from the corners, and beside the throne a barrow-soldier in green bronze draws its sword.",
     ],
     again: [
@@ -1267,10 +1234,10 @@ export const SCENES: Record<string, Scene> = {
         if: [{ kind: "flag", flag: "kneelers-scorned" }],
         text: "{marrow} hears you out without stopping his chisel. \"Then the {warden} chose {thornwick},\" he says. \"He chose well.\" Behind him the kneelers laugh, all together, and lift their black candles higher.",
       },
-      "{marrow} turns with the chisel in his hand, and rage floods the sweet reason off his face. \"The door opens for the *faithful*!\" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.",
+      "{marrow} turns with the chisel in his hand, and the patience goes out of his face. \"The door opens for the *faithful*!\" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.",
     ],
     again: [
-      "{marrow} turns from the door again, chisel in hand. The armour, the ghouls and the two soldiers in green bronze come for you once more.",
+      "{marrow} turns from the door again, chisel in hand. The armour has a dent in it now. It does not seem to mind.",
     ],
     onWin: {
       to: "seal-door",
@@ -1280,6 +1247,7 @@ export const SCENES: Record<string, Scene> = {
       effects: [
         { kind: "setFlag", flag: "cult-broken" },
         { kind: "setFlag", flag: "marrow-dead" },
+        { kind: "setFlag", flag: "kneelers-scorned" },
         { kind: "gold", amount: 120 },
       ],
     },
@@ -1308,7 +1276,7 @@ export const SCENES: Record<string, Scene> = {
       },
       {
         if: [{ kind: "npc", npc: "halden", fate: "saved" }],
-        text: "Boots scrape in the shaft above. Brother {halden} drops down it, skinning his palms, and limps down the last stair. He promised to follow you down, and he has.",
+        text: "Boots scrape in the shaft above. Brother {halden} drops down it, skinning his palms, and limps down the last stair.",
       },
     ],
     next: [
@@ -1511,17 +1479,18 @@ export const SCENES: Record<string, Scene> = {
         if: [{ kind: "notFlag", flag: "grandfather-home" }],
         text: "That evening, in the reeve's hall, {aldous} counts your purse into your hands himself, coin by coin, and does not lose count once.",
       },
+      "{aldous} has read {halden}'s notes. \"So the price we stopped paying was the one keeping us asleep in our beds,\" he says. \"{thornwick} pays its debts. We had forgotten that one.\"",
       "{thornwick} reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.",
       {
         if: [{ kind: "flag", flag: "drowned-gold-home" }],
         text: "The fen-folk come in from the far pools for the reburials, and {wren} hands over the drowned folk's purses one by one. One widow opens hers and finds a carved bone button among the coins. \"He always kept that,\" she says, and holds the purse to her chest.",
       },
-      "Every night of the reburials the {wander-inn} fills with mourners, and the innkeeper keeps a pot on. \"A town remembers who fed it while it buried its dead,\" she says. \"Longer than it remembers who dug the graves.\"",
+      "Every night of the reburials the {wander-inn} fills with mourners, and {mira}, who keeps it, keeps a pot on. \"A town remembers who fed it while it buried its dead,\" she says. \"Longer than it remembers who dug the graves.\"",
     ],
     next: [
       {
         id: "mira",
-        label: "Spend the reeve's purse on a hot supper for the whole taproom ({taproom-supper})",
+        label: "Buy the whole taproom supper on the reeve's coin ({taproom-supper})",
         to: "sb-supper",
         hideWhenBlocked: true,
         requires: [{ kind: "gold", atLeast: factValue("taproom-supper") }],
@@ -1608,15 +1577,27 @@ export const SCENES: Record<string, Scene> = {
       },
       {
         if: [{ kind: "npc", npc: "halden", fate: "saved" }],
-        text: "Brother {halden} keeps the vigil now, and he reads the rites a little louder than he needs to.",
+        text: "Brother {halden} keeps the vigil now. Each {door-midwinter} he sits a night by the barrow door, and reads the rites a little louder than he needs to.",
       },
       {
         if: [{ kind: "npc", npc: "halden", notFate: ["saved"] }],
         text: "{halden} and his acolytes share a new grave by the chapel. {mira} of the {wander-inn} paid for the white headstone. Under the names it says only *Asleep*.",
       },
       {
-        if: [{ kind: "npc", npc: "wren", met: true }],
-        text: "{wren} wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.",
+        thread: "wren",
+        cases: [
+          {
+            if: [{ kind: "npc", npc: "wren", attitude: { below: 0 } }],
+            text: "{wren} walks the old road alone now, once a season, and asks for no company.",
+          },
+          {
+            text: "{wren} wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.",
+          },
+        ],
+      },
+      {
+        if: [{ kind: "npc", npc: "reedwife", fate: "bound" }],
+        text: "At {door-midwinter} the fen-folk carry the {door-price} past the hag's stake and out to the barrow door, and leave it on the step. The vigil is theirs to keep now.",
       },
       {
         if: [],
@@ -1647,7 +1628,9 @@ export const SCENES: Record<string, Scene> = {
         text: "On the night the barrows close, at the fen's edge, two figures step out of the reeds, tall and green-fingered, with river-weed in their hair. They are the {reedwife}'s sisters. They look at the sealed barrow-field, and then at the town, and take their time about both.",
       },
     ],
-    text: ["In {thornwick}'s churchyard the turf is back over every grave, and the bell-rope hangs still."],
+    text: [
+      "In {thornwick}'s churchyard the turf is back over every grave. Out in the fen, the drowned chapel's bell hangs without a rope, and does not ring.",
+    ],
   },
 };
 

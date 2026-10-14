@@ -10,6 +10,7 @@ A thin grey man in a gravedigger's apron stands under the last panel. He smooths
 ? npc halden fate saved | A grey little gravedigger, {halden} said. The one who brought the candles.
 ? not diggers-passed | He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
 ? diggers-passed | He sees your torch and is not alarmed. "You got past my diggers," he says kindly. "No matter. They have dug enough."
+"The {warden} wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
 ? not door-straining | "Soon enough, the {warden} will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
 ? door-straining | "You felt the ground shake? That was the {warden}, leaning on his door." He picks up his lantern and goes on down into the dark.
 > Go deeper in → @hub  #on
@@ -22,7 +23,7 @@ kind: check
 skill: investigation
 dc: 12
 art: 💀
-Skulls fill this room from floor to ceiling, stacked in rows like bricks. Old gold winks from the niches between them. A careful eye might take some of it back up.
+The kings' household lies here in niches cut into the rock, each with a little grave-gold at its feet. A careful eye might take some of it back up.
 success → @hub
   Behind a row of skulls, the builders left a hidden nook. Inside are coins stamped with kings with no names, and a flask of drink that has gone strong with age instead of sour.
   do gold 90; item potion-greater-healing x1
@@ -74,9 +75,9 @@ The last digger to fall wears the reeve's chain. The cut goes quiet, apart from 
 # diggers-chain
 art: loc-crypt ⛓️
 noBack: true
-At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one {aldous} grips in his hall. He is light now, just bones in a coat.
+At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one {aldous} grips in his hall. He is just bones in a coat now, light but awkward.
 ? with wren | {wren} kneels and straightens the chain on his chest. "The reeve's grandfather," she says, and nothing else.
-The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and you will carry him with care or not at all.
 > Carry him home in your cloak, though it will cost the day → @hub  #carry
   do +diggers-passed; +grandfather-home; @REGARD; {"kind":"npc","npc":"wren","attitude":1,"hearsay":true}; day
   journal clue c-grandfather: The Old Reeve
@@ -91,25 +92,25 @@ kind: obstacle
 art: loc-crypt ⚔️
 fight: wight-tomb on corridor
 done: wights-down
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings, and takes a **stance**.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in his eye sockets. He draws a sword of green bronze, like the soldiers in the paintings, and takes his stance.
 again:
-The old guardsman stands before its slab again, sword drawn, cold light in its eyes.
+The old guardsman stands before his slab again, sword drawn, cold light in his eyes.
 answer history 15 > Relieve him of his post, the old way  #salute
 ? hall-seen
 You give the salute the painted hall showed, fist to chest, and tell him his watch is over. At last he lowers his sword and lies back down on his slab, and his skeletons lie down with him.
 fight > Draw on him  #fight
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+From the slabs on either side of him, two skeletons rise. They snap to their feet at the same instant, and come for you.
 again:
-The guardsman's two skeletons stand at its sides, heads turned toward you.
+His two skeletons stand at his sides, heads turned toward you.
 won:
-The wight comes apart at the joints and lies down in its own armour. Under its slab lies a guardsman's pay that no one ever came to collect.
+The wight comes apart at the joints and lies down in his own armour. Under his slab lies a guardsman's pay that no one ever came to collect.
 do gold 40
 
 # king
 kind: battle
 encounterId: barrow-king
 mapId: ruins
-Old masons sealed the king's chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Inside, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
+Old masons sealed the king's chamber in lead. Something has peeled the lead back from within. Beyond it, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
 The embalmed king turns. Someone has set a crown of green bronze back on his head, and set it straight. Two of his household dead lurch from the corners, and beside the throne a barrow-soldier in green bronze draws its sword.
 again:
 The embalmed king still stands before his wall of crossed-out villages. His household dead lurch out of the corners again, and his soldier draws its sword.
@@ -190,12 +191,13 @@ mapId: firepit
 noFlee: true
 @loot: {"bonusTier":"rare"}
 ? kneelers-scorned | {marrow} hears you out without stopping his chisel. "Then the {warden} chose {thornwick}," he says. "He chose well." Behind him the kneelers laugh, all together, and lift their black candles higher.
-{marrow} turns with the chisel in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
+{marrow} turns with the chisel in his hand, and the patience goes out of his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
 again:
-{marrow} turns from the door again, chisel in hand. The armour, the ghouls and the two soldiers in green bronze come for you once more.
+{marrow} turns from the door again, chisel in hand. The armour has a dent in it now. It does not seem to mind.
 won → seal-door
   {marrow} dies reaching for the door. His kneeling faithful stare at the body and do not get up. Coins lie thick on the bottom step, where the faithful threw them. You sweep them into a sack.
-  do +cult-broken; +marrow-dead; gold 120
+  // His faithful will not chant for the company that killed him.
+  do +cult-broken; +marrow-dead; +kneelers-scorned; gold 120
 lost → seal-battle-lost
 
 # seal-battle-lost
@@ -212,7 +214,7 @@ art: loc-dungeon 🚪
 noBack: true
 Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the {warden} leans on what is left of its lead.
 ? not marrow-dead | {marrow} looks up at the letters he pried loose. "I thought he would give them back to me," he says. "My faithful will sing whatever I sing. Or you can take me up to your reeve."
-? npc halden fate saved | Boots scrape in the shaft above. Brother {halden} drops down it, skinning his palms, and limps down the last stair. He promised to follow you down, and he has.
+? npc halden fate saved | Boots scrape in the shaft above. Brother {halden} drops down it, skinning his palms, and limps down the last stair.
 > Make {marrow} lead his faithful in the rites → seal-door-book  #sing
   hide
   ? not marrow-dead

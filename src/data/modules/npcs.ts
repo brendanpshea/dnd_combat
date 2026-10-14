@@ -29,7 +29,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
       'hollow-road': ['road', 'tavern-meet'],
       // Her taproom; and "Mira the innkeeper", "Mira of the Wander-Inn" for a
       // company that never stops at the inn.
-      'sunken-barrows': ['lychyard-lost', 'inn', 'sb-defeat', 'sb-supper', 'sb-epilogue'],
+      'sunken-barrows': ['lychyard-lost', 'inn', 'sb-defeat', 'sb-hall', 'sb-supper', 'sb-epilogue'],
       // "Mira's inn" at the fen-folk's fire; "Mira, who keeps the Wander-Inn" at the end.
       wyrmcalling: ['fenfolk-fire', 'fenfolk-fire-cracked', 'wc-epilogue', 'wc-epilogue-vigil'],
     },
