@@ -16,7 +16,6 @@ import {
   spoilOffer, spoilPool, spoilTierFor, spoilTierLabel, spoilPrize,
   SPOIL_CHOICES, PERMANENT_FROM_LEVEL,
 } from '../src/arena/spoils.js';
-import { ITEMS } from '../src/data/items.js';
 import { WEAPONS } from '../src/data/weapons.js';
 import { TRINKETS } from '../src/data/trinkets.js';
 import { ARMOR } from '../src/data/armor.js';

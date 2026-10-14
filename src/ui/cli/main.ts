@@ -12,7 +12,7 @@ import { buildParty } from '../../builder/character.js';
 import { MAPS, MAP_IDS, farRank } from '../../data/maps.js';
 import { ENCOUNTERS, buildEncounter } from '../../data/encounters.js';
 import { SPECIES } from '../../data/species.js';
-import { runBattle, argValue, parseSeed, AiLevel } from './battle.js';
+import { runBattle, argValue, parseSeed, type AiLevel } from './battle.js';
 
 async function main() {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });

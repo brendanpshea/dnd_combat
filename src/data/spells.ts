@@ -13,7 +13,7 @@ import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
-import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, type Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage as rawApplyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -2168,7 +2168,6 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'wis', dc);
       const events: GameEvent[] = [save.event];
       if (!save.success && !wardedAgainstMagicalBinding(state.combatants[targetId]!, 'paralyzed')) {
-        const t = state.combatants[targetId]!;
         events.push(...applyCondition(state, targetId, {
           id: 'paralyzed', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
@@ -2361,7 +2360,6 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'con', dc);
       const events: GameEvent[] = [save.event];
       if (!save.success) {
-        const t = state.combatants[targetId]!;
         events.push(...applyCondition(state, targetId, { id: 'blinded', sourceId: casterId, repeatSave: { ability: 'con', dc, magical: true } }, { magical: true }));
       }
       return events;
@@ -2748,7 +2746,6 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '👁️‍🗨️',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
-      const target = state.combatants[targetId]!;
       state.combatants[casterId]!.concentratingOn = { spellId: 'hex', targetIds: [targetId] };
       return applyCondition(state, targetId, { id: 'hexed', sourceId: casterId, concentration: true }, { magical: true });
     },
@@ -2760,7 +2757,6 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🎯',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
-      const target = state.combatants[targetId]!;
       state.combatants[casterId]!.concentratingOn = { spellId: 'hunters-mark', targetIds: [targetId] };
       return applyCondition(state, targetId, { id: 'marked', sourceId: casterId, concentration: true }, { magical: true });
     },
@@ -3548,7 +3544,6 @@ export const SPELLS: Record<Id, SpellData> = {
       const save = savingThrow(state, targetId, 'wis', dc);
       const events: GameEvent[] = [save.event];
       if (!save.success && !wardedAgainstMagicalBinding(state.combatants[targetId]!, 'paralyzed')) {
-        const t = state.combatants[targetId]!;
         events.push(...applyCondition(state, targetId, {
           id: 'paralyzed', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
@@ -3719,7 +3714,6 @@ export const SPELLS: Record<Id, SpellData> = {
     upcast: true,
     icon: '🔥',
     cast({ state, casterId, slotLevel, positions }) {
-      const caster = state.combatants[casterId]!;
       const dc = spellDc(state, casterId);
       // The SRD raises BOTH halves by a d6 per slot above 5th, so both dice
       // expressions scale — checked against the entry rather than assumed.

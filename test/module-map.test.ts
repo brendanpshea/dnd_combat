@@ -4,7 +4,6 @@
  */
 import { describe, it, expect } from 'vitest';
 import { moduleMap, needsOf } from '../src/adventure/module-map.js';
-import { npcFateFlag } from '../src/adventure/npcs.js';
 import { MODULES } from '../src/data/modules/index.js';
 import { HUB_REF } from '../src/adventure/types.js';
 

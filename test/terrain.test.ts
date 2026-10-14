@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { MAPS, MAP_IDS, parseMap, farRank } from '../src/data/maps.js';
 import { Combat } from '../src/engine/combat.js';
-import { buildParty, buildCharacter } from '../src/builder/character.js';
+import { buildParty } from '../src/builder/character.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { cellAt } from '../src/engine/types.js';
 import { hasLineOfSight, reachable } from '../src/engine/grid.js';

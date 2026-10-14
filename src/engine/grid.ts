@@ -2,7 +2,7 @@
  * Grid geometry: Chebyshev distance, line of sight, BFS pathing over terrain
  * cost, and AoE templates.
  */
-import { GridState, Position, Cell, TerrainId, Id, Ability, DamageType, cellAt, posEq } from './types.js';
+import { type GridState, type Position, type Cell, type TerrainId, type Id, type Ability, type DamageType, cellAt, posEq } from './types.js';
 
 export const CELL_FEET = 5;
 

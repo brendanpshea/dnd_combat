@@ -332,7 +332,7 @@ function meetBrief(
      * still never swaps for anything dearer than what it replaces, so the
      * budget is as safe as it was.
      */
-    const order = out.map((id, i) => i)
+    const order = out.map((_id, i) => i)
       .filter((i) => !holds(out[i]!))
       .sort((a, b) => (MONSTER_XP[out[a]!] ?? 0) - (MONSTER_XP[out[b]!] ?? 0));
     let swapped = false;

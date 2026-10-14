@@ -1,7 +1,7 @@
 /**
  * Character construction: class + species + level → Combatant.
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
 import { ORIGIN_FEATS, skilledSkills } from '../data/feats.js';

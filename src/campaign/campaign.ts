@@ -26,14 +26,14 @@ import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { missingRoles } from './roles.js';
 import { actsOnItsOwn } from '../engine/rules/summon.js';
-import { CLASSES, SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool, kitFor, defaultKitId } from '../data/classes.js';
+import { CLASSES, type SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool, kitFor, defaultKitId } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { ORIGIN_FEATS, defaultFeatFor, skilledSkills } from '../data/feats.js';
 import { SPECIES } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/encounters.js';
 import type { Rarity } from '../data/armor.js';
 import { rollDice } from '../engine/dice.js';
-import { RngState, next, seedRng, rollDie } from '../engine/rng.js';
+import { type RngState, next, seedRng, rollDie } from '../engine/rng.js';
 
 export interface PartyCharacter {
   classId: Id;

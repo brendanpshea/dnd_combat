@@ -34,12 +34,12 @@ const TIPS: TipDef[] = [
   {
     id: 'downed-ally', icon: '❤️‍🩹', title: 'Down, not dead',
     body: 'A hero at 0 HP is unconscious, not dead — still on the board, and back on their feet the instant any healing reaches them. Get a potion or a Cure Wounds to them before the enemy moves on.',
-    test: (e, s, isP) => e.some((x) => x.type === 'downed' && isP(x.combatantId)),
+    test: (e, _s, isP) => e.some((x) => x.type === 'downed' && isP(x.combatantId)),
   },
   {
     id: 'control', icon: '⛓️', title: 'Held in place',
     body: 'One of your heroes is under a control effect — tap the badge on their token to see exactly what it stops. Many of these let you retry a saving throw at the end of each turn to shake free.',
-    test: (e, s, isP) => e.some((x) => x.type === 'conditionApplied' && isP(x.combatantId)
+    test: (e, _s, isP) => e.some((x) => x.type === 'conditionApplied' && isP(x.combatantId)
       && CONDITION_META[x.condition]?.kind === 'control'),
   },
   {
@@ -53,28 +53,28 @@ const TIPS: TipDef[] = [
   {
     id: 'concentration', icon: '🌀', title: 'Hold your focus',
     body: 'That spell needs concentration to keep going — if the caster takes damage they must save or lose it, and they can only concentrate on one spell at a time. Guard your caster while it\'s up.',
-    test: (e, s, isP) => e.some((x) => x.type === 'spellCast' && isP(x.casterId) && !!SPELLS[x.spellId]?.concentration),
+    test: (e, _s, isP) => e.some((x) => x.type === 'spellCast' && isP(x.casterId) && !!SPELLS[x.spellId]?.concentration),
   },
   {
     id: 'slot', icon: '🔮', title: 'Spend slots wisely',
     body: 'Leveled spells burn a spell slot, and you have only a few — the pips beside a caster\'s HP show what\'s left, and they come back on a long rest. Cantrips cost nothing, so lean on them between the big moments.',
-    test: (e, s, isP) => e.some((x) => x.type === 'spellCast' && isP(x.casterId) && (SPELLS[x.spellId]?.level ?? 0) >= 1),
+    test: (e, _s, isP) => e.some((x) => x.type === 'spellCast' && isP(x.casterId) && (SPELLS[x.spellId]?.level ?? 0) >= 1),
   },
   {
     id: 'hidden', icon: '👻', title: 'Out of sight',
     body: 'Hidden: enemies can\'t target you directly, and your next attack lands with advantage. Attacking or casting gives you away — so line up something worth the reveal.',
-    test: (e, s, isP) => e.some((x) => x.type === 'hideCheck' && x.success && isP(x.combatantId)),
+    test: (e, _s, isP) => e.some((x) => x.type === 'hideCheck' && x.success && isP(x.combatantId)),
   },
   {
     id: 'mastery', icon: '🎯', title: 'Weapon masteries',
     body: 'That extra effect on your hit is a weapon mastery — each weapon has its own trick (Sap, Vex, Topple, and more) that fires when you connect. Tap a weapon\'s ⓘ to see what it does.',
-    test: (e, s, isP) => e.some((x) => x.type === 'conditionApplied' && !!x.sourceId && isP(x.sourceId)
+    test: (e, _s, isP) => e.some((x) => x.type === 'conditionApplied' && !!x.sourceId && isP(x.sourceId)
       && (x.condition === 'sapped' || x.condition === 'vexed' || x.condition === 'slowed')),
   },
   {
     id: 'crit', icon: '💥', title: 'Critical hit',
     body: 'A natural 20 always hits and *crits* — you roll your damage dice twice. Champions crit on 19 too. Downed and paralyzed targets hand you a crit on any melee hit.',
-    test: (e, s, isP) => e.some((x) => x.type === 'attackRolled' && x.crit && isP(x.attackerId)),
+    test: (e, _s, isP) => e.some((x) => x.type === 'attackRolled' && x.crit && isP(x.attackerId)),
   },
 ];
 

@@ -45,7 +45,7 @@ function fight() {
   return { c, casterId: caster.id, allyId: 'ally' };
 }
 
-function cast(c: Combat, casterId: string, allyId: string) {
+function cast(c: Combat, _casterId: string, allyId: string) {
   return c.apply({ kind: 'castSpell', spellId: 'polymorph', slotLevel: 4, targets: [{ combatantId: allyId }] });
 }
 

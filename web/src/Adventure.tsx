@@ -10,7 +10,7 @@ import { Combat } from '../../src/engine/combat.js';
 import {
   newCampaign, buildCampaignParty, applyAdventureVictory, readBackSurvivors,
   type CampaignState, type AdventureVictory,
-  itemName, itemIcon, partyNeedsRest, preparedLimit, levelForXp, fullRest,
+  partyNeedsRest, preparedLimit, levelForXp,
 } from '../../src/campaign/campaign.js';
 // The party screen — packs, gear, camp buffs, camp casting — now lives in its
 // own module because the arena needs it too. Everything it used to import here
@@ -18,11 +18,9 @@ import {
 import { PartyScreen } from './PartyScreen.js';
 import { DungeonMap } from './DungeonMap.js';
 import { seenTips, markTipSeen } from './tips.js';
-import { SPELLS } from '../../src/data/spells.js';
 import { SpellTray } from './SpellTray.js';
-import { spellSheet } from './gameInfo.js';
 import { MONSTERS } from '../../src/data/monsters.js';
-import { buildEncounter, ENCOUNTERS, encounterFor } from '../../src/data/encounters.js';
+import { buildEncounter, encounterFor } from '../../src/data/encounters.js';
 import { parseMap } from '../../src/data/maps.js';
 import type { TeamId } from '../../src/engine/types.js';
 import {
@@ -31,13 +29,13 @@ import {
   exploreNodes, enterNode, resolveBattle, resolveShopOrRest, battleSeed, battleMap,
   battleOptions, parleyBattle, sneakBattle, fleeBattle, battleSurpriseOf,
   companionCombatants, readBackCompanions,
-  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, restOptions, restsByRoom, dayOf, paragraphsFor, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft, battleWonBefore,
+  hubReturn, hubReturnTitle, returnToHub, campRule, campRest, restOptions, restsByRoom, dayOf, sceneParagraphs, introParagraphs, eligibleRollers, nightsLeft, battleWonBefore,
   travelDestinations, fastTravel, carryCompanyInto, endingDisposition, endingText,
   type AdventureState, type AdventureEvent, type BattleOptions,
   requirementMet,
   battleEncounter,
 } from '../../src/adventure/runtime.js';
-import type { Module, Scene, CampRule, TownGround, LandGround } from '../../src/adventure/types.js';
+import type { Module, Scene, TownGround, LandGround } from '../../src/adventure/types.js';
 import type { BattleProps } from './App.js';
 import { Portrait } from './Portrait.js';
 import { DiceCheck } from './DiceCheck.js';

@@ -3,7 +3,7 @@
  * scene uses. The scenes (*.story) name them as `@NAME`.
  */
 import type { Scene, Effect, Choice, Para, Requirement } from '../../../adventure/types.js';
-import { speaker, npcMetFlag, npcFateFlag } from '../../../adventure/npcs.js';
+import { speaker, npcMetFlag } from '../../../adventure/npcs.js';
 import { TRILOGY_NPCS as NPCS } from '../npcs.js';
 import { factValue } from '../canon.js';
 import { avoidedFightXP } from '../../encounters.js';

@@ -20,13 +20,12 @@
  * require them.
  */
 import type { Id } from '../engine/types.js';
-import { RUNTIME_FLAGS, type EmbeddedDelve, type EmbeddedTown, type ExploreNode, type Module, type Outcome, type Requirement, type Scene } from './types.js';
+import { RUNTIME_FLAGS, type EmbeddedDelve, type EmbeddedTown, type Module, type Outcome, type Scene } from './types.js';
 import type { AdventureState } from './runtime.js';
 import { generateSpecDelve } from './delve-spec.js';
 import { generateCity } from './city-gen.js';
 import { validateModule } from './validate.js';
 import { compileQuests } from './quests.js';
-import { outsideOf } from './outside.js';
 import { isNpcFlag } from './npcs.js';
 
 /** Keys whose string value names a scene. */

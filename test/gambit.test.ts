@@ -27,8 +27,6 @@ import { makeCombatant } from './helpers.js';
 import { Combat } from '../src/engine/combat.js';
 import { SKILL_ABILITY } from '../src/data/classes.js';
 import { blocksMovement } from '../src/engine/grid.js';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import type { Combatant } from '../src/engine/types.js';
 
 /** A spread of real generated waves, the thing the rules actually run against. */

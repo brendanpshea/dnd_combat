@@ -21,7 +21,7 @@ import {
   type CampaignState, type RestResult, newCampaign, buildCampaignParty, partyLevelOf, preparableSpells, preparedRoom, partyPreparedRoom,
   applyArenaVictory, reviveParty, buyItem, itemPrice, itemName, itemIcon,
   SHOP_STOCK, shopOffering, addItem, sellItem, attemptHaggle, attemptSteal,
-  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck, groupSkillCheck, bestAtSkill,
+  partyStash, sellFromStash, HAGGLE, STEAL_DC, STEAL_FINE, partySkillCheck,
   scrollLearnable, learnSpellFromScroll, drinkCampBuffPotion, useStoreSpell,
   itemFitFor,
 } from '../../src/campaign/campaign.js';
@@ -45,7 +45,7 @@ import {
   runComplete, summarise, RUN_TARGET_XP, MEDAL_LABEL, MEDAL_ICON, type RunSummary,
 } from '../../src/arena/medal.js';
 import { spoilPrize } from '../../src/arena/spoils.js';
-import { gatesFor, gateFor, gateLocked, type Gate } from '../../src/arena/gates.js';
+import { gatesFor, gateFor, gateLocked } from '../../src/arena/gates.js';
 import {
   bountiesFor, bountyGold, claimedBounties, spellsCastBy, type Bounty,
 } from '../../src/arena/bounties.js';
@@ -1026,7 +1026,9 @@ export function ArenaScreen({ Battle, onExit }: Props) {
   // ---- the gate: what's coming, the party, and the shop ----
   const shelf = shopOffering(SHOP_STOCK, level, `arena-${run.wave}`)
     .filter((id) => itemPrice(id) !== undefined);
-  const grid = parseMap(wave.map);
+  // The grid is never read here, but the parse stays: parseMap throws on a
+  // malformed map, and dropping the call would change what this render does.
+  parseMap(wave.map);
 
   // Everyone with a prepared list worth opening. A fighter has none, and
   // offering them a spell tray is a dead button.

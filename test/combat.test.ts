@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Combat, startCombat } from '../src/engine/combat.js';
-import { step, legalActions, isLegalAction, Action } from '../src/engine/actions.js';
+import { step, isLegalAction } from '../src/engine/actions.js';
 import { endTurn, currentCombatant } from '../src/engine/turn.js';
 import { makeCombatant } from './helpers.js';
 import { cellAt } from '../src/engine/types.js';
@@ -8,7 +8,6 @@ import type { Combatant } from '../src/engine/types.js';
 import { checkWinner } from '../src/engine/rules/attack.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
-import { chooseAction } from '../src/ai/greedy.js';
 
 function duel(seed = 1) {
   return new Combat({

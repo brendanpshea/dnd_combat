@@ -37,7 +37,7 @@ function board(foes: Position[], seed = 3) {
   return { c, meId: me.id };
 }
 
-function conjure(c: Combat, meId: string, at: Position, slotLevel = 3) {
+function conjure(c: Combat, _meId: string, at: Position, slotLevel = 3) {
   return c.apply({ kind: 'castSpell', spellId: 'conjure-animals', slotLevel, targets: [{ position: at }] });
 }
 

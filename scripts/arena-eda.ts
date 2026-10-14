@@ -37,7 +37,7 @@
 import {
   newCampaign, applyArenaVictory, buildCampaignParty, partyLevelOf, reviveParty, randomizeParty,
   LEVEL_XP, growSpellsForLevel, preparableSpells, preparedLimit, setPrepared,
-  SHOP_STOCK, itemPrice, buyItem, equipItem, equipBlocked, groupSkillCheck,
+  SHOP_STOCK, itemPrice, buyItem, equipItem,
 } from '../src/campaign/campaign.js';
 import { ARMOR as ARMOR_TABLE, armorClass } from '../src/data/armor.js';
 import { next } from '../src/engine/rng.js';

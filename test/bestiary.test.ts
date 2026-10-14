@@ -15,7 +15,7 @@ import { arenaRoster } from '../src/arena/encounter.js';
 import { acOf } from '../src/data/armor.js';
 import { FEATURES } from '../src/data/features.js';
 import { makeCombatant } from './helpers.js';
-import { abilityMod, proficiencyBonus, Position, Combatant } from '../src/engine/types.js';
+import { abilityMod, proficiencyBonus, type Combatant } from '../src/engine/types.js';
 
 function until(c: Combat, id: string) {
   let guard = 0;

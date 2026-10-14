@@ -5,7 +5,7 @@
 import type { GameState, Id, DamageType } from '../../src/engine/types.js';
 import type { GameEvent } from '../../src/engine/events.js';
 import { WEAPONS } from '../../src/data/weapons.js';
-import { sfx, Sfx } from './sound.js';
+import { sfx, type Sfx } from './sound.js';
 import { posKey } from './actionGroups.js';
 import { CONDITION_META } from './conditions.js';
 import { reachCells } from '../../src/engine/rules/reach.js';

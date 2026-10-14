@@ -8,7 +8,7 @@
  * first action is returned (we re-plan after every action anyway).
  */
 import type { GameState, Id, TeamId } from '../engine/types.js';
-import { legalActions, step, Action } from '../engine/actions.js';
+import { legalActions, step, type Action } from '../engine/actions.js';
 import { currentCombatant } from '../engine/turn.js';
 import { seedRng } from '../engine/rng.js';
 import { evaluate, unitWorth } from './evaluate.js';

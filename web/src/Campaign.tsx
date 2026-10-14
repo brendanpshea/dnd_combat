@@ -3,7 +3,7 @@
  * progress in localStorage. All game logic lives in src/campaign; this file
  * is forms and routing.
  */
-import { useRef, useState, ComponentType } from 'react';
+import { useRef, useState, type ComponentType } from 'react';
 import { actsOnItsOwn } from '../../src/engine/rules/summon.js';
 import { Combat } from '../../src/engine/combat.js';
 import type { TeamId, Id, ItemStack } from '../../src/engine/types.js';
@@ -16,17 +16,15 @@ import { WEAPONS } from '../../src/data/weapons.js';
 import { acOf } from '../../src/data/armor.js';
 import { TRINKETS } from '../../src/data/trinkets.js';
 import {
-  CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
+  type CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, itemIcon, SHOP_STOCK, shopOffering, STAGES,
-  giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot,
+  giveItem, equipItem, equipBlocked, unequipSlot, type EquipSlot,
   partyStash, claimFromStash, stashItem, sellFromStash,
-  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shopVisitFor,
+  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, type SkillRoll, shopVisitFor,
   partyLevelOf, LEVEL_XP, MAX_LEVEL, shortRest, longRest,
   PARTY_TEMPLATES, applyPartyTemplate, randomizeParty,
   isStoreHealingSource, storeSpellActions, useStoreHealing, useStoreSpell,
-  preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
-  spellbookPool, spellbookLimit, chosenSpellbook,
-  knownRitualSpells, setPrepared, setCantrips, setSpellbook, resetPrepared,
+  preparedLimit, preparedSpells, cantripLimit,
   scrollLearnable, learnSpellFromScroll, EQUIP_SLOTS,
 } from '../../src/campaign/campaign.js';
 import { saveCampaignWeb, loadCampaignWeb, deleteCampaignWeb } from './campaignStorage.js';
