@@ -242,7 +242,6 @@ describe('vicious weapons', () => {
     // +3d6 sometimes; a vicious weapon is +0 always and +2d6 always. Against
     // the wrong target the vicious one wins, and against its quarry it loses.
     const slayer = WEAPONS['dragon-slayer']!;
-    const vicious = WEAPONS['vicious-longsword']!;
     const avg = (dice: string) => Number(dice.split('d')[0]) * (Number(dice.split('d')[1]) + 1) / 2;
     const viciousAlways = avg('2d6');
     const slayerOffTarget = slayer.damageBonus ?? 0;

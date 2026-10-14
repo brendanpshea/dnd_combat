@@ -57,7 +57,7 @@ import {
   slideLines,
 } from '../src/adventure/runtime.js';
 import type { CampaignState } from '../src/campaign/campaign.js';
-import { ENCOUNTERS, encounterFor } from '../src/data/encounters.js';
+import { encounterFor } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
 import { moduleById } from '../src/data/modules/index.js';
 import { LEDGER_BANDS } from '../src/data/modules/ledger.js';

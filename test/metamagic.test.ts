@@ -325,7 +325,7 @@ describe('Heightened Spell', () => {
     // one `cast` call and is cleared in a `finally`; if the clearing broke, the
     // next creature to save would keep saving at disadvantage forever, which is
     // the kind of leak a per-cast flag invites.
-    const { c, meId } = caster(['hold-person', 'fire-bolt']);
+    const { c } = caster(['hold-person', 'fire-bolt']);
     c.apply(heighten('hold-person', 2));
     expect(c.state.metamagicCast, 'the bend must not outlive the cast').toBeUndefined();
   });

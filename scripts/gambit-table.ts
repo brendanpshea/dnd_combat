@@ -65,28 +65,6 @@ const cond = (c: Combatant, id: Parameters<typeof String>[0] extends never ? nev
 /** The weakest N foes, by hit points — who a scare would land on. */
 const weakest = (foes: Combatant[], n: number) =>
   [...foes].sort((a, b) => a.hp - b.hp).slice(0, n);
-/** The one that headlines the wave. */
-const champion = (foes: Combatant[]) =>
-  [...foes].sort((a, b) => b.hp - a.hp).slice(0, 1);
-
-/**
- * Hiding needs a NUMBER, not just the condition.
- *
- * `discoverHidden` skips any `hidden` whose `hideCheck` is undefined, so a bare
- * `{ id: 'hidden' }` can never be found — permanently invisible, which is not a
- * gambit, it is a win button. The value is the Stealth total that earned it, so
- * it is measured at two: 15, about what a proficient scout rolls, and 20, a
- * good roll. Monsters spot with 15 + Wis + proficiency, so the gap between
- * those two is most of the difference between "seen on their first turn" and
- * "seen never".
- */
-const hide = (c: Combatant, hideCheck: number) =>
-  c.conditions.push({ id: 'hidden', sourceId: c.id, hideCheck });
-
-/** Strange herbs, taken badly: a fifth of everyone's health, never fatal. */
-const bleed = (c: Combatant) => { c.hp = Math.max(1, c.hp - Math.floor(c.maxHp * 0.2)); };
-/** Taken well: a fifth of maximum, as temporary hit points. */
-const dose = (c: Combatant) => { c.tempHp = (c.tempHp ?? 0) + Math.floor(c.maxHp * 0.2); };
 
 /**
  * A free, walkable square on or near `row`, avoiding everyone already placed.
@@ -307,32 +285,5 @@ export function outcomes(level: number, outcome: Outcome | undefined, seeds: num
     won.push(combat.state.winner === 'team1');
   }
   return won;
-}
-
-const rate = (won: boolean[]) => (100 * won.filter(Boolean).length) / won.length;
-
-/**
- * The paired delta, and how much of it is signal.
- *
- * Every column fights the same fights, so the only samples carrying any
- * information about an outcome are the ones it FLIPPED. Reading two independent
- * win rates and subtracting throws that away and reports a confidence interval
- * twice as wide as the experiment actually earned — at n=400 that is +/-5
- * points against +/-2, which is the difference between "these two outcomes are
- * the same size" being a finding and being unmeasurable.
- *
- * b = the outcome lost a fight the baseline won; c = it won one the baseline
- * lost. The delta is (c - b)/n and its standard error is sqrt(b + c)/n — the
- * McNemar form, which cares only about the discordant pairs.
- */
-function paired(base: boolean[], test: boolean[]): { delta: number; se: number } {
-  let b = 0;
-  let c = 0;
-  for (const [i, won] of base.entries()) {
-    if (won && !test[i]) b++;
-    if (!won && test[i]) c++;
-  }
-  const n = base.length;
-  return { delta: (100 * (c - b)) / n, se: (100 * Math.sqrt(b + c)) / n };
 }
 

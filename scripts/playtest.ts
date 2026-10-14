@@ -19,7 +19,7 @@ import { chooseAction } from '../src/ai/greedy.js';
 import {
   newCampaign, randomizeParty, buildCampaignParty, partyLevelOf, longRest,
   applyArenaVictory, reviveParty, shopOffering, SHOP_STOCK, itemPrice, itemName,
-  buyItem, equipItem, equipBlocked, addItem, MAX_LEVEL, applyPartyTemplate, setPartyClass,
+  buyItem, equipItem, equipBlocked, addItem, applyPartyTemplate, setPartyClass,
   type CampaignState,
 } from '../src/campaign/campaign.js';
 import {
@@ -29,10 +29,10 @@ import { membersCoinXP } from '../src/data/encounters.js';
 import {
   buildWave, newArenaRun, recordResult, advanceDay, type ArenaRunState, type DayHalf,
 } from '../src/arena/run.js';
-import { halfOf, dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../src/arena/day.js';
+import { dayOf, dayLevelOf, lunch, night, noteSpentItems } from '../src/arena/day.js';
 import { revivalCost, payRevival, isFirstDefeat } from '../src/arena/revival.js';
 import { runComplete, summarise, type MedalTier } from '../src/arena/medal.js';
-import { bountiesFor, claimedBounties, spellsCastBy } from '../src/arena/bounties.js';
+import { bountiesFor, claimedBounties } from '../src/arena/bounties.js';
 import { spoilOffer, spoilTierFor } from '../src/arena/spoils.js';
 import { deployFoes } from '../src/arena/deploy.js';
 import { parseMap } from '../src/data/maps.js';

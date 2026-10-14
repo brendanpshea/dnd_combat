@@ -9,7 +9,7 @@ import { runArena } from '../src/ai/arena.js';
 import { SPELLS } from '../src/data/spells.js';
 import { FEATURES } from '../src/data/features.js';
 import { ITEMS } from '../src/data/items.js';
-import { makeCombatant, yieldToRunner } from './helpers.js';
+import { yieldToRunner } from './helpers.js';
 import { buildWave } from '../src/arena/run.js';
 import { newCampaign, buildCampaignParty, partyLevelOf } from '../src/campaign/campaign.js';
 import { buildMonster } from '../src/data/monsters.js';

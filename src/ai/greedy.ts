@@ -27,7 +27,7 @@ import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
 import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith, shillelaghDamage } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
-import { legalActions, Action } from '../engine/actions.js';
+import { legalActions, type Action } from '../engine/actions.js';
 
 // --- probability / EV helpers ----------------------------------------------
 
@@ -59,7 +59,7 @@ function hitProb(bonus: number, ac: number, mode: 'flat' | 'advantage' | 'disadv
  */
 let heightenedVictim: Id | undefined;
 
-function saveFailProb(state: GameState, target: Combatant, ability: keyof Combatant['abilities'], dc: number): number {
+function saveFailProb(_state: GameState, target: Combatant, ability: keyof Combatant['abilities'], dc: number): number {
   const bonus =
     abilityMod(target.abilities[ability]) +
     (target.savingThrowProfs.includes(ability) ? proficiencyBonus(target.level) : 0);
@@ -1414,7 +1414,6 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       if (t.conditions.some((c) => c.id === 'warded')) return 0;
       // Worth more on a target enemies are already reaching for.
-      const threatened = nearestEnemyDist(state, t.position, t.team) <= 2;
       // +2 AC is roughly a tenth of the attacks against them missing instead.
       return incomingPerRound(state, t) * 0.10 * 3 - slotCost;
     }

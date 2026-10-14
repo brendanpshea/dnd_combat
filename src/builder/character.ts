@@ -1,13 +1,13 @@
 /**
  * Character construction: class + species + level → Combatant.
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool, DamageType } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
 import { ORIGIN_FEATS, skilledSkills } from '../data/feats.js';
 import { backgroundSkills } from '../data/backgrounds.js';
 import type { SkillId } from '../data/classes.js';
-import { defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
+import { ABILITIES, defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
 import { FEATURES, ragesAt } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
@@ -111,16 +111,37 @@ export function assignStats(priority: readonly Ability[]): AbilityScores {
 }
 
 /** Average-rounded-up hit die per level after 1st (the 5e fixed value). */
-function hpForLevel(hitDie: number, conMod: number, level: number): number {
-  const first = hitDie + conMod;
-  const perLevel = Math.ceil((hitDie + 1) / 2) + conMod;
-  return first + (level - 1) * perLevel;
+/**
+ * Hit points from hit dice: the full die at 1st level, then each later level's
+ * rolled die (`rolls[0]` is 2nd level) or, where there is no valid roll, the
+ * fixed average every character has always used.
+ */
+function hpForLevel(hitDie: number, conMod: number, level: number, rolls: readonly number[] = []): number {
+  const average = Math.ceil((hitDie + 1) / 2);
+  let hp = hitDie + conMod;
+  for (let l = 2; l <= level; l++) {
+    const roll = rolls[l - 2];
+    const die = roll !== undefined && Number.isInteger(roll) && roll >= 1 && roll <= hitDie ? roll : average;
+    hp += die + conMod;
+  }
+  return hp;
+}
+
+/** Ability scores given directly (rolled stats) are honoured only if every one is a whole number from 1 to 20. */
+function isLegalAbilities(abilities: Record<Ability, number> | undefined): abilities is Record<Ability, number> {
+  return abilities !== undefined && ABILITIES.every((ab) => Number.isInteger(abilities[ab]) && abilities[ab] >= 1 && abilities[ab] <= 20);
 }
 
 export interface BuildOptions {
   classId: Id;
   team: TeamId;
   position: Position;
+  /**
+   * The combatant's id. Missing → `${team}-${classId}`, which is unique only
+   * while a team has one character per class; a party with two fighters must
+   * name them apart here.
+   */
+  id?: string;
   name?: string;
   portraitId?: Id;
   level?: number;
@@ -143,6 +164,19 @@ export interface BuildOptions {
    * ignored rather than honoured — a save file must not be a way to buy 15s.
    */
   statBuild?: StatBuild;
+  /**
+   * Ability scores given outright, e.g. rolled ones, in place of `statBuild`:
+   * the scores before level-up increases and worn items, which still apply.
+   * Honoured only if all six are whole numbers from 1 to 20; otherwise the
+   * point-buy path decides as if this were missing.
+   */
+  abilities?: Record<Ability, number>;
+  /**
+   * Rolled hit dice for 2nd level and up, in order (1st level always takes the
+   * full die). Levels with no roll, or an impossible one, use the fixed
+   * average, so a character built without this is unchanged.
+   */
+  hitDieRolls?: number[];
   /**
    * Origin feats, from the background (and a second one for humans). Unknown
    * ids are skipped rather than throwing — a save may name a feat a later
@@ -226,9 +260,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   if (!species) throw new Error(`Unknown species: ${speciesId}`);
   const level = opts.level ?? 1;
   const kit = kitFor(cls, opts.kitId);
-  const abilities = isLegalStatBuild(opts.statBuild)
-    ? resolveStatBuild(opts.statBuild)
-    : resolveStatBuild(defaultStatBuild(kit.statPriority));
+  const abilities = isLegalAbilities(opts.abilities)
+    ? { ...opts.abilities }
+    : isLegalStatBuild(opts.statBuild)
+      ? resolveStatBuild(opts.statBuild)
+      : resolveStatBuild(defaultStatBuild(kit.statPriority));
   /**
    * ABILITY SCORE INCREASES, AND THE ONE THAT USED TO EVAPORATE.
    *
@@ -305,7 +341,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     .some(([lvl, ids]) => Number(lvl) <= level && ids.includes('draconic-resilience'))
     ? 3 + (level - 3)
     : 0;
-  const maxHp = hpForLevel(cls.hitDie, conMod, level) + (species.hpPerLevel ?? 0) * level +
+  const maxHp = hpForLevel(cls.hitDie, conMod, level, opts.hitDieRolls) + (species.hpPerLevel ?? 0) * level +
     heldGrants.reduce((n, g) => n + (g.hpPerLevel ?? 0) * level, 0) + draconicHp +
     // Tough. Per level and not a flat lump, exactly like a species' own bonus,
     // so it stays worth taking at 8th instead of rounding to nothing.
@@ -485,7 +521,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     : baseSkills;
 
   const combatant: Combatant = {
-    id: `${opts.team}-${opts.classId}`,
+    id: opts.id ?? `${opts.team}-${opts.classId}`,
     name: opts.name ?? cls.name,
     unconsciousAtZero: true,   // heroes drop; monsters die
     creatureType: 'humanoid',  // every playable species is a humanoid

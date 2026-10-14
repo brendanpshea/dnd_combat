@@ -10,23 +10,22 @@ import * as readline from 'node:readline/promises';
 import { Combat } from '../../engine/combat.js';
 import { buildEncounter, ENCOUNTERS } from '../../data/encounters.js';
 import { MAPS, farRank } from '../../data/maps.js';
-import { ITEMS } from '../../data/items.js';
 import { CLASSES } from '../../data/classes.js';
 import { SPELLS } from '../../data/spells.js';
 import type { Id } from '../../engine/types.js';
 import {
-  CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
+  type CampaignState, newCampaign, currentStage, isComplete, buildCampaignParty,
   applyVictory, buyItem, sellItem, itemPrice, itemName, SHOP_STOCK, STAGES,
-  giveItem, equipItem, equipBlocked, unequipSlot, EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
+  giveItem, equipItem, equipBlocked, unequipSlot, type EquipSlot, partyLevelOf, LEVEL_XP, MAX_LEVEL,
   levelUpSummary,
-  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, SkillRoll, shortRest, longRest,
+  attemptSteal, attemptHaggle, bestAtSkill, HAGGLE, type SkillRoll, shortRest, longRest,
   preparableSpells, preparedLimit, preparedSpells, knownCantrips, cantripPool, cantripLimit,
   spellbookPool, spellbookLimit, chosenSpellbook, setSpellbook,
   knownRitualSpells, setPrepared, setCantrips, resetPrepared,
   scrollLearnable, learnSpellFromScroll,
 } from '../../campaign/campaign.js';
 import { saveCampaign, loadCampaign, deleteSave } from '../../campaign/save.js';
-import { runBattle, chooseFrom, argValue, parseSeed, AiLevel } from './battle.js';
+import { runBattle, chooseFrom, argValue, parseSeed, type AiLevel } from './battle.js';
 
 function xpLine(c: CampaignState): string {
   const level = partyLevelOf(c);

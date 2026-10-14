@@ -2,15 +2,13 @@ import { expandModule } from '../src/adventure/embed.js';
 import { describe, it, expect } from 'vitest';
 import {
   newCampaign, characterSkillCheck, partySkillCheck, groupSkillCheck,
-  characterSkillBonus, bestAtSkill, levelForXp, setPartyBackground, setPartyClass,
-  type CampaignState,
+  characterSkillBonus, levelForXp, setPartyBackground, setPartyClass,
 } from '../src/campaign/campaign.js';
 import { SKILL_ABILITY } from '../src/data/classes.js';
 import { BACKGROUNDS } from '../src/data/backgrounds.js';
 import { validateModule } from '../src/adventure/validate.js';
-import { npcFateFlag } from '../src/adventure/npcs.js';
 import {
-  startAdventure, choose, currentScene, enterScene, legalChoices, rollSceneCheck,
+  startAdventure, choose, currentScene, enterScene, legalChoices,
   legalApproaches, tryApproach,
   requirementMet, exploreNodes, enterNode, hubReturn, hubReturnTitle, returnToHub, campRule, campRest,
   travelDestinations, fastTravel,

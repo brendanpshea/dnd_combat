@@ -11,7 +11,7 @@
  * beat easier to follow on a phone mid-fight.
  */
 import nlp from 'compromise';
-import type { Module, Para, Paragraph } from './types.js';
+import type { Module, Para } from './types.js';
 
 /** Strip the markdown and glyphs the UI renders, so scoring sees only prose. */
 function plain(text: string): string {
@@ -212,18 +212,6 @@ const ADJECTIVAL_PARTICIPLES = new Set([
   'wounded', 'dead', 'gone', 'alone', 'open', 'shut', 'closed', 'crowded',
   'deserted', 'abandoned', 'ruined', 'rotted', 'cracked', 'crooked', 'pointed',
   'jagged', 'twisted', 'hooded', 'bearded', 'aged', 'sacred', 'wicked', 'naked',
-]);
-
-const IRREGULAR_PARTICIPLES = new Set([
-  'taken', 'given', 'held', 'kept', 'built', 'made', 'found', 'left', 'sworn',
-  'worn', 'torn', 'broken', 'chosen', 'driven', 'drawn', 'thrown', 'known',
-  'shown', 'seen', 'done', 'begun', 'sung', 'hung', 'struck', 'bound', 'wound',
-  'laid', 'paid', 'said', 'sold', 'told', 'brought', 'bought', 'caught',
-  'taught', 'fought', 'sent', 'spent', 'bent', 'lost', 'meant', 'set', 'put',
-  'cut', 'hit', 'hurt', 'let', 'led', 'fed', 'bled', 'met', 'lit', 'hidden',
-  'ridden', 'risen', 'fallen', 'beaten', 'eaten', 'forgotten', 'written',
-  'frozen', 'stolen', 'woken', 'spoken', 'borne', 'born', 'slain', 'lain',
-  'heard', 'buried', 'carried', 'slept', 'swept', 'kept', 'crept',
 ]);
 
 const norm = (w: string) => w.toLowerCase().replace(/[^a-z']/g, '');

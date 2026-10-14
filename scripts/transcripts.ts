@@ -45,7 +45,7 @@ import { roomOf, linksFrom } from '../src/adventure/dungeon.js';
 import {
   type AdventureState, type AdventureEvent,
   startAdventure, carryCompanyInto, carriedFlags, currentScene, enterScene, legalChoices, choose,
-  rollSceneCheck, nightsLeft, battleWonBefore, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
+  rollSceneCheck, battleWonBefore, legalApproaches, tryApproach, exploreNodes, enterNode, resolveBattle,
   resolveShopOrRest, dungeonExits, walkTo, canSearch, searchRoom, forceDoor, dungeonExitHere,
   leaveDungeon, battleOptions, parleyBattle, fleeBattle, campRule, campRest, restOptions, dungeonProgress,
   endingText, dayOf, battleSurpriseOf, battleMap, battleEncounter,
@@ -54,7 +54,7 @@ import { ROOM_MAP_REF } from '../src/adventure/types.js';
 import type { MapData } from '../src/data/maps.js';
 import { type CampaignState, newCampaign, xpAward, levelForXp, itemName, fullRest } from '../src/campaign/campaign.js';
 import { seedRng } from '../src/engine/rng.js';
-import { ENCOUNTERS, encounterFor } from '../src/data/encounters.js';
+import { encounterFor } from '../src/data/encounters.js';
 import { SKILL_LABEL, type SkillId } from '../src/data/classes.js';
 import { moduleById } from '../src/data/modules/index.js';
 import { expandModule } from '../src/adventure/embed.js';

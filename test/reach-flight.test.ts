@@ -8,8 +8,6 @@
 import { describe, it, expect } from 'vitest';
 import { tokenScale } from '../web/src/token-scale.js';
 import { TOKEN_FILL } from '../web/src/token-fill.js';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { MONSTERS, buildMonster } from '../src/data/monsters.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { Combat } from '../src/engine/combat.js';

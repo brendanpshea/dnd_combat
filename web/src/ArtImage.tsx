@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback, type CSSProperties } from 'react';
 import { Silhouette } from './Silhouette.js';
 
 /**
@@ -81,7 +81,7 @@ export function ArtImage({
    * image-only, which meant a Huge monster's stand-in was the same size as a
    * Tiny one's until its picture landed.
    */
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }) {
   const [state, setState] = useState<'loading' | 'ok' | 'failed'>('loading');
 

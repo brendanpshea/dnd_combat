@@ -17,16 +17,16 @@ import type { Id } from '../engine/types.js';
 import { abilityMod, cellAt, type Combatant, type GridState, type Position } from '../engine/types.js';
 import { blocksMovement } from '../engine/grid.js';
 import { buildMonster } from '../data/monsters.js';
-import { ENCOUNTERS, encounterFor } from '../data/encounters.js';
+import { encounterFor } from '../data/encounters.js';
 import { MONSTERS } from '../data/monsters.js';
 import { rollDie } from '../engine/rng.js';
 import { MAPS, type MapData } from '../data/maps.js';
 import { generateArenaMap } from '../arena/map.js';
 import {
   type CampaignState, type SkillRoll, type GroupCheckResult,
-  characterSkillCheck, partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
+  characterSkillCheck, type partySkillCheck, groupSkillCheck, bestAtSkill, characterSkillBonus,
   levelForXp, LEVEL_XP, partyStash, addItem, healParty, shortRest, longRest, reviveParty,
-  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
+  attemptHaggle, attemptSteal, itemPrice, SHOP_STOCK, type HAGGLE, shopOffering, partyLevelOf, fullRest, growSpellsForLevel,
 } from '../campaign/campaign.js';
 import {
   HUB_REF, ROOM_MAP_REF, CAUGHT_STEALING, NIGHT, ALARM_ROUSED,
@@ -1096,7 +1096,7 @@ function eventScene(state: AdventureState, ev: NonNullable<DungeonRoom['event']>
  * time; any secret door sharp eyes catch; its fight, until won; then its event.
  * A fight leaves the arrival pending, so once it is won the event still plays.
  */
-function arrive(state: AdventureState, module: Module, sceneId: Id, d: Dungeon, p: DungeonProgress): AdventureEvent[] {
+function arrive(state: AdventureState, module: Module, _sceneId: Id, d: Dungeon, p: DungeonProgress): AdventureEvent[] {
   const room = roomOf(d, p.at)!;
   const events: AdventureEvent[] = [];
   const first = !p.seen.includes(room.id);

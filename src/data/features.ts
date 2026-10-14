@@ -324,7 +324,6 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'heroic-inspiration', name: 'Heroic Inspiration', trigger: 'free',
     uses: { count: 1, per: 'encounter' },
     apply({ state, actorId }) {
-      const c = state.combatants[actorId]!;
       return applyCondition(state, actorId, { id: 'inspired', sourceId: actorId }, { magical: false });
     },
   },
@@ -1359,7 +1358,6 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'sacred-weapon', name: 'Channel Divinity: Sacred Weapon', trigger: 'bonus',
     uses: { count: 1, per: 'shortRest' },
     apply({ state, actorId }) {
-      const c = state.combatants[actorId]!;
       return applyCondition(state, actorId, { id: 'sacredWeapon', sourceId: actorId }, { magical: true });
     },
   },

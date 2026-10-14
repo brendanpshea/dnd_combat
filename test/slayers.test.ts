@@ -5,8 +5,8 @@ import { buildMonster, MONSTERS } from '../src/data/monsters.js';
 import { WEAPONS, weaponCategory, isWeaponProficient, baseWeaponId } from '../src/data/weapons.js';
 import { chooseAction } from '../src/ai/greedy.js';
 import { rarityOf, isObtainable } from '../src/campaign/campaign.js';
-import { parseMap, type MapData } from '../src/data/maps.js';
-import type { Combatant, CreatureType, Id } from '../src/engine/types.js';
+import type { MapData } from '../src/data/maps.js';
+import type { CreatureType, Id } from '../src/engine/types.js';
 
 /**
  * Bane weapons: extra dice, but only against the creature types they were made

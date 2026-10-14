@@ -10,12 +10,12 @@
 import type { GameState, Id, Position, Combatant, ConditionId } from './types.js';
 import { posEq, cellAt, isDown, isIncapacitated, heldInPlace } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
-import { SPELLS, SpellData, validTarget, directionFromDelta, spellShots, damageReactions } from '../data/spells.js';
+import { SPELLS, type SpellData, validTarget, directionFromDelta, spellShots, damageReactions } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS, isCharged, chargesLeft } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
-import { blocksMovement, distanceFeet, distanceCells, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, Direction8, inBounds } from './grid.js';
+import { blocksMovement, distanceFeet, distanceCells, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, type Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';

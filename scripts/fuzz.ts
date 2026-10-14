@@ -17,7 +17,7 @@
  */
 import { Combat } from '../src/engine/combat.js';
 import { chooseAction } from '../src/ai/greedy.js';
-import { legalActions, isLegalAction, type Action } from '../src/engine/actions.js';
+import { isLegalAction, type Action } from '../src/engine/actions.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster, MONSTERS, MONSTER_XP } from '../src/data/monsters.js';
 import { CLASSES } from '../src/data/classes.js';

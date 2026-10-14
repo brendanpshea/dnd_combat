@@ -63,7 +63,7 @@ const goldNeeded = (requires: Array<{ kind: string; atLeast?: number }> | undefi
 describe('the trilogy\'s numeric facts', () => {
   const numeric = Object.entries(TRILOGY_FACTS).filter(([, f]) => f.value !== undefined);
 
-  it.each(numeric)('%s: its text spells its value, and the prose says it', (id, fact) => {
+  it.each(numeric)('%s: its text spells its value, and the prose says it', (_id, fact) => {
     expect(spelled(fact.text)).toBe(fact.value);
     // A loss is shown as it happens, so its number is never said (unspoken).
     expect(PROSE.some((s) => s.toLowerCase().includes(fact.text.toLowerCase()))).toBe(!fact.unspoken);

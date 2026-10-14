@@ -19,7 +19,7 @@ import { legalActions, isLegalAction, type Action } from '../src/engine/actions.
 import { canShove, shoveDc } from '../src/engine/rules/shove.js';
 import { skillMod } from '../src/engine/rules/skills.js';
 import { chooseAction, scoreShoveForTest } from '../src/ai/greedy.js';
-import { abilityMod, proficiencyBonus, cellAt } from '../src/engine/types.js';
+import { cellAt } from '../src/engine/types.js';
 import type { Combatant, Position } from '../src/engine/types.js';
 
 function board(opts: { foeAt?: Position; foeId?: string; hazardAt?: Position; seed?: number } = {}) {

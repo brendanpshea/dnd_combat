@@ -1,5 +1,3 @@
-import type { CreatureSize } from '../../src/engine/types.js';
-import { bandedScale } from '../../src/data/token-size.js';
 /**
  * Character/monster art lookup. Processed WebP assets live in web/public/art
  * (see art/process.py); anything without art falls back to the emoji glyph.

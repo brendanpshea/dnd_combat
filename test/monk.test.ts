@@ -89,7 +89,7 @@ describe('Monk: Focus, and the three things that spend it', () => {
     // THE test. Three buttons, one budget — and a technique that forgot to pay
     // would look exactly like a technique that works.
     for (const featureId of ['flurry-of-blows', 'patient-defense', 'step-of-the-wind']) {
-      const { c, me, live } = fight(4);
+      const { c, live } = fight(4);
       const before = live().featureUses['monks-focus']!.current;
       c.apply({ kind: 'useFeature', featureId });
       expect(live().featureUses['monks-focus']!.current, `${featureId} did not pay`).toBe(before - 1);
@@ -97,7 +97,7 @@ describe('Monk: Focus, and the three things that spend it', () => {
   });
 
   it('does nothing at all once the pool is empty', () => {
-    const { c, me, live } = fight(2);
+    const { c, live } = fight(2);
     live().featureUses['monks-focus']!.current = 0;
     const hpBefore = c.state.combatants['d1']!.hp;
     c.apply({ kind: 'useFeature', featureId: 'flurry-of-blows' });

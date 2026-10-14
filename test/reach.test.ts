@@ -5,7 +5,7 @@
 import { slideLines } from '../src/adventure/runtime.js';
 import { describe, it, expect } from 'vitest';
 import { checkModuleReach } from '../src/adventure/reach.js';
-import { npcFateFlag, npcMetFlag } from '../src/adventure/npcs.js';
+import { npcMetFlag } from '../src/adventure/npcs.js';
 import { validateModule } from '../src/adventure/validate.js';
 import { MODULES } from '../src/data/modules/index.js';
 import type { Module, Scene } from '../src/adventure/types.js';

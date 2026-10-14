@@ -393,7 +393,6 @@ describe('generated fights complete', () => {
  */
 describe('arena difficulty calibration', () => {
   it('an even-budget fight is still roughly even', async () => {
-    const files = [3, 1, 5, 2, 6, 0, 7, 4];
     // Every level, not just 3 and 5. Those two were the only ones checked, and
     // they were the only two that stayed honest: a playthrough sweep found L1
     // at 77%, L2 at 38% and L4 at 41% while these two sat at 47% and 51%.

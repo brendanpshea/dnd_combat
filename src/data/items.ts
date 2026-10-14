@@ -14,7 +14,7 @@ import { pushCreature } from '../engine/rules/movement.js';
 import { summonCombatant } from '../engine/rules/summon.js';
 import { distanceFeet } from '../engine/grid.js';
 import { SPELLS } from './spells.js';
-import { acOf, Rarity } from './armor.js';
+import { acOf, type Rarity } from './armor.js';
 import { CLASSES, classScrollPool } from './classes.js';
 import type { GameEvent } from '../engine/events.js';
 import { applyCondition } from '../engine/rules/conditions.js';
@@ -381,7 +381,6 @@ export const ITEMS: Record<Id, ConsumableData> = {
       const targetId = targetIds[0]!;
       const save = savingThrow(state, targetId, 'con', 15, { magical: true });
       const events: GameEvent[] = [save.event];
-      const t = state.combatants[targetId]!;
       // Free Action is the counter, exactly as it is for Hold Person: this is
       // magic causing the Paralyzed condition, which is what the ring refuses.
       if (!save.success) {
@@ -462,7 +461,6 @@ export const ITEMS: Record<Id, ConsumableData> = {
       const targetId = targetIds[0]!;
       const save = savingThrow(state, targetId, 'str', 17, { magical: true });
       const events: GameEvent[] = [save.event];
-      const t = state.combatants[targetId]!;
       if (!save.success) {
         events.push(...applyCondition(state, targetId, { id: 'restrained', sourceId: userId, repeatSave: { ability: 'str', dc: 17 } }, { magical: true }));
       }

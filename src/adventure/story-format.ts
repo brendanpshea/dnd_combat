@@ -250,7 +250,6 @@ function nameRuns<T>(list: readonly T[], minLen: number, print: (x: T) => string
   return out;
 }
 const reqList = (rs: unknown[]) => nameRuns(rs as Record<string, unknown>[], 40, printReq).join('; ');
-const effList = (es: unknown[]) => nameRuns(es as Record<string, unknown>[], 30, printEff).join('; ');
 
 const PROSE_OF: Record<string, string> = { story: 'text', ending: 'text', dialogue: 'lines', battle: 'intro', check: 'intro', challenge: 'intro', rest: 'intro', shop: 'intro' };
 const PROSE = ['text', 'lines', 'intro', 'again'];

@@ -2,8 +2,8 @@
  * Movement execution with opportunity attacks.
  */
 import type { GameState, Combatant, Id, Position, GridState } from '../types.js';
-import { cellAt, posEq, abilityMod, isDown, isIncapacitated, canReact, immuneToCondition, heldInPlace, wardedAgainstMagicalBinding } from '../types.js';
-import { blocksMovement, reachable, pathTo, adjacent, sphere2x2, popIllusion, type StepDanger } from '../grid.js';
+import { cellAt, posEq, abilityMod, isDown, canReact, immuneToCondition, heldInPlace, wardedAgainstMagicalBinding } from '../types.js';
+import { blocksMovement, reachable, pathTo, sphere2x2, popIllusion, type StepDanger } from '../grid.js';
 import { reachesCell } from './reach.js';
 import { WEAPONS } from '../../data/weapons.js';
 import { resolveAttack, applyDamage } from './attack.js';

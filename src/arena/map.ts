@@ -192,7 +192,7 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
      * taking it away is the fight.
      */
     name: 'gallery', weight: 0,
-    stamp: (put, mid, roll, height, width) => {
+    stamp: (put, _mid, roll, _height, width) => {
       /*
        * Two or three rows in FRONT of the shooters' own rank — and written as
        * a distance from the top of the stamp rather than from `mid`, because
@@ -291,7 +291,7 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // Pillars. Nothing is blocked for long, but no sightline is safe either:
     // one step either way changes who can see whom.
     name: 'pillars', weight: 18,
-    stamp: (put, mid, roll, height, width) => {
+    stamp: (put, _mid, roll, height, width) => {
       const step = 3;
       for (let y = 2; y <= height - 3; y += step) {
         // Alternate rows by index: `y / step` is never whole for y = 2, 5, 8,
@@ -319,7 +319,7 @@ const LAYOUTS: Array<{ name: LayoutName; weight: number; stamp: Stamp }> = [
     // edges; anything that has to close wants the middle, and gets shot doing
     // it. This is the one that most rewards a rogue: two long walls to work.
     name: 'crossfire', weight: 16,
-    stamp: (put, mid, roll, height, width) => {
+    stamp: (put, mid, _roll, height, width) => {
       const span = Math.min(5, Math.max(3, height - 6));
       for (let k = 0; k < span; k++) {
         put(1, mid - 1 + k, '+');

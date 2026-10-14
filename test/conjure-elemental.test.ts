@@ -20,13 +20,12 @@ import { describe, it, expect } from 'vitest';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
-import { SPELLS } from '../src/data/spells.js';
 import { CLASSES } from '../src/data/classes.js';
 import { actsOnItsOwn } from '../src/engine/rules/summon.js';
 import { breakConcentration } from '../src/engine/rules/attack.js';
 import { scoreCastForTest } from '../src/ai/greedy.js';
 import { activateSummons } from '../src/data/spells.js';
-import type { Combatant, Id, Position } from '../src/engine/types.js';
+import type { Position } from '../src/engine/types.js';
 
 const at = (x: number, y: number): Position => ({ x, y });
 

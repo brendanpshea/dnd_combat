@@ -8,7 +8,7 @@ import { MAPS, parseMap } from '../data/maps.js';
 import type { MapData } from '../data/maps.js';
 import { seedRng } from './rng.js';
 import { rollInitiative, currentCombatant } from './turn.js';
-import { legalActions, step, Action } from './actions.js';
+import { legalActions, step, type Action } from './actions.js';
 import type { GameEvent } from './events.js';
 
 export interface CombatSetup {

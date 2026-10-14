@@ -2,7 +2,7 @@
  * Dice expressions ('2d8+3', '1d10', 'd4-1') and d20 rolls with
  * advantage/disadvantage.
  */
-import { RngState, rollDie } from './rng.js';
+import { type RngState, rollDie } from './rng.js';
 
 export interface DiceExpr {
   count: number;

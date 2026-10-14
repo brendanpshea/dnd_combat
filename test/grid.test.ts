@@ -3,7 +3,7 @@ import {
   makeGrid, distanceCells, distanceFeet, adjacent, hasLineOfSight,
   reachable, pathTo, sphere2x2, cone15,
 } from '../src/engine/grid.js';
-import { cellAt, Position } from '../src/engine/types.js';
+import { cellAt, type Position } from '../src/engine/types.js';
 
 const p = (x: number, y: number): Position => ({ x, y });
 

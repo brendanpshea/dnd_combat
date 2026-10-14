@@ -4,11 +4,11 @@
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover } from '../types.js';
-import { WEAPONS, WeaponData, isWeaponProficient } from '../../data/weapons.js';
+import { WEAPONS, type WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
-import { distanceFeet, distanceCells, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
+import { distanceFeet, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
 import { dismissSummonedBy, dismissSummonsOfSpell, actsOnItsOwn } from './summon.js';
 import { withinReach, reachesCell, reachFeet } from './reach.js';
 import { attackableWeapons } from './equipment.js';
