@@ -2363,7 +2363,7 @@ const scenes: Record<string, Scene> = {
     id: 'calling-won', kind: 'story', noBack: true, art: { imageId: 'loc-mountain', emoji: '🌅' },
     text: [
       { if: [{ kind: 'flag', flag: CRACKED }],
-        text: 'At the foot of the stone, the grey hands go limp and sink back down through the cracks, toward the fen.' },
+        text: 'Round the black rock, the grey hands go limp and sink back down through the cracks, toward the fen.' },
       // The company's one line at the chapter's key beat (rule 15), unless
       // Halden is here to say the words himself (see the ending's slides).
       { if: [{ kind: 'classInParty', classId: 'cleric' }, { kind: 'noCompanion', companion: 'halden' }],

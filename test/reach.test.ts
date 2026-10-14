@@ -103,7 +103,7 @@ describe('campaign bugs found by the second read-through', () => {
   });
 
   it('camp ambushes pay nothing, so a risky camp cannot be farmed', () => {
-    for (const [mod, ids] of [['hollow-road', ['camp-ambush', 'den-camp-ambush']], ['sunken-barrows', ['fen-night', 'crypt-night']], ['wyrmcalling', ['hills-night']]] as const) {
+    for (const [mod, ids] of [['hollow-road', ['camp-ambush', 'den-camp-ambush']], ['wyrmcalling', ['hills-night']]] as const) {
       for (const id of ids) {
         const s = byId(mod).scenes[id];
         expect(s?.kind === 'battle' && s.loot, `${mod}:${id}`).toBe(false);

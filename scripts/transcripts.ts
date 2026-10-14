@@ -568,8 +568,10 @@ function playChapter(
     key, times: counts.get(key) ?? 0, dist: distOf(target), novel: novelScene(target), defeat: isDefeat(target),
   });
 
+  const trail: string[] = [];
   for (let step = 0; step < maxSteps; step++) {
     const scene = currentScene(state, module);
+    trail.push(scene.id); if (trail.length > 40) trail.shift();
     switch (scene.kind) {
       case 'ending': {
         // The ending's paragraphs and slides came in on the event stream; they
@@ -785,7 +787,7 @@ function playChapter(
       }
     }
   }
-  throw new Error(`${route.id}: '${module.id}' did not reach an ending within ${maxSteps} steps`);
+  throw new Error(`${route.id}: '${module.id}' did not reach an ending within ${maxSteps} steps; last: ${trail.join(' ')}`);
 }
 
 // --- Whole routes -----------------------------------------------------------

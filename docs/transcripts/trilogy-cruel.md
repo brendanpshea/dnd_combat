@@ -329,9 +329,9 @@ You slip back out through the gate, into the quiet of the hollow.
 
 <sub>scene `inner/f1-patrol`</sub>
 
-Torches come round the tents, and a voice shouts that it has found you.
+A horn sounds close by, and the raiders who were hunting you stop hunting.
 
-**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+berserker+berserker+bandit` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -425,9 +425,9 @@ The pen comes open. The carter lifts the girl onto his back, and the reed-cutter
 
 <sub>scene `inner/f1-patrol` (again)</sub>
 
-_(a paragraph shown before: “Torches come round the tents, and a…”)_
+_(a paragraph shown before: “A horn sounds close by, and the…”)_
 
-**Battle:** Berserker and company <sub>(`gen:berserker+giant-hyena+giant-hyena+berserker+guard` on `@room`)</sub>
+**Battle:** Berserker and company <sub>(`gen:berserker+berserker+berserker+bandit` on `@room`)</sub>
 
 **» Fight — won**
 
@@ -561,25 +561,23 @@ _Journal (quest): The Opened Graves_
 
 <sub>scene `lychyard`</sub>
 
-The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them. Holy ground does not slow them down at all.
+The churchyard gate hangs off its hinge. Between the headstones the darkness has come loose, and four shapes of it glide toward you across the grass. You can feel the cold coming off them.
 
-Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. She turns toward you, and her face is the face of a woman three weeks buried.
+Behind them, by the newest grave, stands a woman in a burial shift. The lamplight goes straight through her. Her face is the face of a woman three weeks buried.
 
-On either side of her, two of the new-buried stand up out of their open graves. They step onto the grass together, square and in step, like men called to the roll. They are grey and gnawing, and one of them reeks of rot.
-
-Draw steel, for whatever good steel does against a shadow.
+On either side of her, two of the new-buried stand up out of their open graves. They step onto the grass together, square and in step, like men called to the roll.
 
 **Battle:** Shadow Ambush <sub>(`shadow-ambush` on `corridor`)</sub>
 
 **» Fight — won**
 
-The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves, and the lamplight lies still on the grass.
+The last shadow tears on your blade and is gone. The woman in the shift sinks back into her grave without a sound. The two that stepped up out of the earth lie still across their own graves.
 
 <sub>scene `grave-morning`</sub>
 
-Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead didn't wait for anyone to take them. They climbed out and left on their own, and they left together.
+Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out and left on their own, and they left together.
 
-The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way, straight as a drawn line: **out to the deep fen**.
+The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way: **out to the deep fen**.
 
 Every old headstone carries the same words, cut deep and green with moss. *Lie down and be at peace. Your work is done. The bell will wake you.* Thornwick's priests have said them over every grave for three hundred winters.
 
@@ -587,55 +585,29 @@ Every old headstone carries the same words, cut deep and green with moss. *Lie d
 
 _Journal (clue): They Walk One Way_
 
-**↳ Thornwick** <sub>(map `town`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
-→ The Wander-Inn
+→ The Fen Road
 
-<sub>scene `inn`</sub>
+<sub>scene `fen-shut`</sub>
 
-**Mira the Innkeeper**
+The gate-warden will not open the fen road without the reeve's say-so. "See Reeve Aldous at his hall," he says, and folds his arms.
 
-> The Wander-Inn is full, and the drinkers are in no hurry to leave, not with the churchyard standing open across the lane. **Mira** sets down a bowl in front of you unasked.
-
-> "Well." She says it flat, and wipes the bar hard enough to take the varnish off. "I'll say it, since the rest of them won't. You saw off the Reedwife, and this whole town drank to it. I poured. Now the dead get up and walk, and we all sleep with the lamp lit."
-
-> "Not a soul in here can tell you what the one thing has to do with the other. That's why they keep looking at you." She tops up your cup. "Brother Halden's not rung the chapel bell in a week. He walked out toward the fen with his prayer book, and he hasn't come back."
-
-> She stops with the jug still tilted. "Some of them haven't forgotten the chief, either. On his knees in his own hall, they say, and his hag no help to him." She sets the jug down. "I haven't forgotten it myself."
-
-> "Eat. Then go see the reeve. He's been pacing his hall since the bells."
-
-**» Go back out to the street**
-
-**↳ Thornwick** <sub>(map `town`)</sub>
-
-→ Market
-
-<sub>scene `sb-market`</sub>
-
-_The shop: Thornwick Market (the route buys nothing)._
-
-"Grave-trouble, they say." **Bram** spreads his hands over the stall. "Then you'll be wanting silver, steel, and no questions. Two of the three I stock."
-
-**↳ Thornwick** <sub>(map `town`)</sub>
-
-→ The Reeve's Hall
+**» Go and see the reeve**
 
 <sub>scene `reeve-hall`</sub>
 
 **Reeve Aldous**
 
-> The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you, watching the fen fog eat his water-meadows. One fist grips his chain of office like a weapon he doesn't know how to use.
+> The reeve's hall smells of candle-wax and ledgers. **Reeve Aldous** stands at the window with his back to you, watching the fen fog eat his water-meadows.
 
-> "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that, one way and another. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
+> "You have returned," he says, without turning. "You broke the Ashfang for us, and Thornwick remembers that. Now the marsh has sent us a new trouble. My grandfather's grave stands empty. We buried him in his chain of office, the twin of this one. He is gone."
 
-> "Those shallows were common water in my grandfather's day," Aldous says to the glass. "It is written so in my ledger. Vargan sold them to the hag anyway, and sold her a carter off the marsh road besides, and his granddaughter with him. I wrote the sale down under the bounty, and the day you killed him under that."
+> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
 
-> He turns. His collar is undone, and there is ink on his cuff. "You stood in my churchyard when the bells rang, and my watch did not. So I am paying you, sixty gold in your hand today and the rest when it is done. Follow my dead into the fen, find what calls them, and put it down."
+> "My scout, Wren, will meet you at the fen road. She asked for the task before I could give it."
 
-> "My scout, Wren, will meet you at the fen road. She asked for the task before I could give it. Thornwick's people do not wait to be told."
-
-**» Take the reeve's commission**
+**» Accept the reeve's commission**
 
 _+60 gold (420)_
 
@@ -643,19 +615,75 @@ _Journal (npc): Reeve Aldous_
 
 _Journal (lead): Into the Deep Fen_
 
-**↳ Thornwick** <sub>(map `town`)</sub>
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Bram's Stores
+
+<sub>scene `square/general`</sub>
+
+_The shop: Bram's Stores (the route buys nothing)._
+
+"Grave-trouble, they say." **Bram** spreads his hands over the stall. "Then you'll be wanting silver, steel, and no questions. Two of the three I stock."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Smithy
+
+<sub>scene `square/smithy`</sub>
+
+_The shop: The Smithy (the route buys nothing)._
+
+The forge roars. "Steel or leather? I make both, and I make them to last."
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Dawn Temple
+
+<sub>scene `square/temple`</sub>
+
+**Sabel Thatcherby**
+
+> **Sabel** looks up from the altar. "Peace be on you. What do you need of the Dawn?"
+
+**» See what the temple sells**
+
+<sub>scene `square/temple-wares`</sub>
+
+_The shop: Dawn Temple (the route buys nothing)._
+
+"Scrolls of the faith, and the draughts the sisters brew."
+
+<sub>scene `square/temple` (again)</sub>
+
+**Sabel Thatcherby**
+
+_(a paragraph shown before: “Sabel looks up from the altar. "Peace…”)_
+
+**» Leave the temple**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Notice Board
+
+<sub>scene `square/notice-board`</sub>
+
+Notices, most of them old: a lost goat, a reward for a stolen cart, a warning about the roads out of Thornwick.
+
+**» Step away**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
 
 → The Fen Road
 
-<sub>scene `fen-out`</sub>
+<sub>scene `wren-meet`</sub>
 
 **Wren, the Reeve's Scout**
 
-> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. Her bow leans strung against the milestone.
+> The cart-road ends where the old raised road begins. A young woman in the reeve's colours sits on a milestone there, sharpening a boot-knife. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here.
 
-> She favours one leg when she stands, and pretends she doesn't. "**Wren**. The reeve's scout." She says it fast, like she practised it on the way here. She catches you looking at the leg. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
+> She favours one leg when she stands, and pretends she doesn't. "A dead horse came down on me on the marsh road, last season. I was under it until the reeve's men brought me in. It holds."
 
-> "I was out on the near fen at first light, and the drag-marks were still wet. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground, and I won't pretend I do."
+> "I was out on the near fen at first light, and the drag-marks were still wet. They walk in step, and one set has nails in the heel. The dead don't buy boots. Somebody **living** walked out there with them. Every trail runs to the old barrow-country, past the **drowned chapel** and past the **corpse-lights**. I can walk you as far as the barrow-country. Past that, I don't know the ground."
 
 **» Follow her onto the raised road**
 
@@ -663,51 +691,57 @@ _Wren joins the party._
 
 _Journal (npc): Wren, the Reeve's Scout_
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+<sub>scene `fen`</sub>
 
-→ The Raised Road
+The old raised road goes on into the fog, one great flat stone after another. The fen closes in on both sides.
 
-<sub>scene `causeway`</sub>
+**» Go in**
 
-The old raised road was here long before the cart-track that meets it. Each of its great flat stones would take a team of oxen to shift. Wren crouches at its edge and reads the mud, slow and careful.
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
 
-"Here. And here." Footprints, water-filled, in files. "Your churchyard dead came through in *step*. And look at this." She points to older prints, sunk deeper and wider. "They weren't the first. The fen's own dead have been walking for days. Whatever's calling has been at it a while, and it isn't calling them to wander. It's calling them to **work**."
+**→ Trailhead** <sub>(room `m0`)</sub>
 
-Wren frowns at one print and sets her thumb in it. "This one has nails in the heel. The dead don't buy boots. Somebody **living** walked out here with them."
+Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.
 
-There are two ways on: north to the broken tower of the **drowned chapel**, or south across the flat water where the **corpse-lights** dance. Past them both, where all the tracks come together, the barrow-country waits.
+→ Back outside
 
-**» Head into the fen**
+<sub>scene `fen/outside`</sub>
 
-_Journal (clue): Called to Work_
+The fog thins, and the cart-road back to Thornwick runs firm under your boots.
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**» Back into the fen**
+
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+A hump of firm ground, high enough above the water for a fire. You could camp here.
+
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
 
 → The Corpse-Lights
 
+**→ The Corpse-Lights** <sub>(room `m3`)</sub>
+
 <sub>scene `lights`</sub>
 
-The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror — soft, swaying, warm as windows. Wren's face goes carefully blank. "Corpse-candles. They walk mourners into the deep pools and hold them under. Half the people the fen has taken this year are *under this water*."
+The flat water south of the old road is where the fen does its prettiest lying. Lights hang over the black mirror, soft and swaying, warm as windows. Corpse-candles: they walk mourners into the deep pools and hold them under.
 
-The lights drift nearer, hopeful as dogs. Other things move between them, further out. They are two colder things, still in the clothes they drowned in.
+The lights drift nearer, hopeful as dogs. Between them, further out, two colder things stand in the clothes they drowned in.
 
 "We don't have to go through," Wren says quietly. "There's firm ground round the pools, if you can find it. Miss it, and the lights find *you*."
 
 **» Snuff them out**
 
-<sub>scene `lights-call`</sub>
-
-The lights turn toward you all at once. They don't make a sound, but you hear them anyway. They sound like home, and supper, and someone calling your name across a field.
-
-Your feet want to walk to them. Every one of you has to decide not to.
-
-`[Group Insight DC 12 — 4/4 pass — passed]`
-
-You know a lie when it sings to you. You plant your boots in the mud and stay where you are. The lights stop pretending.
-
 <sub>scene `lights-fight`</sub>
 
-Four of the lights come in low and fast over the water, crackling with stolen life. The two drowned things rise between them, trailing fen-mist, their mouths open on screams the water drank years ago.
+Four of the lights come in low and fast over the water, crackling with stolen life. The two drowned things rise between them, their mouths open on screams the water drank years ago.
 
 **Battle:** The Corpse-Lights <sub>(`corpse-lights` on `bog`)</sub>
 
@@ -717,13 +751,13 @@ _Level up: 3 → 4_
 
 The last wisp winks out, and the water goes dark for good.
 
-<sub>scene `lights-won`</sub>
+<sub>scene `purses`</sub>
 
-In the shallows you find the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
+In the reeds at the pool's edge lie the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
 
-One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. Wren turns it over with her boot. "That's no fen-folk," she says. "No one from here dresses like that to go walking."
+One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.
 
-She looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
+Wren looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
 
 **» Keep the purses. The dead won't spend them**
 
@@ -733,37 +767,57 @@ _Gained: Potion of Healing ×2_
 
 _Journal (clue): Robes the Colour of Worms_
 
-<sub>scene `lights-kept`</sub>
+<sub>scene `purses-taken`</sub>
 
-Wren watches you fill your pockets with the drowned folk's coin and their two potions. She says nothing for a while. "Somebody's gran," she says at last, and walks on ahead.
+Wren watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
 
-**» Follow her into the fen**
+The fen is quiet around you, and the black water lies still.
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**» Go on into the fen**
 
-**» Make camp (long rest)** <sub>(day 1)</sub>
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
 
-**Dawn — day 2.**
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
+
+→ The Corpse-Lights
+
+**→ The Corpse-Lights** <sub>(room `m3`)</sub>
+
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
+
+→ The Corpse-Lights
+
+**→ The Corpse-Lights** <sub>(room `m3`)</sub>
+
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
 
 → The Drowned Chapel
+
+**→ The Drowned Chapel** <sub>(room `s2`)</sub>
 
 <sub>scene `chapel`</sub>
 
 **Brother Halden**
 
-> The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. Most are plain white wax. A few are **black tallow**, and they smoke like wet wood. On the dry island of the altar steps stands a priest. His robes are fen-stained, his face serene. He is leading a congregation.
+> The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. A few are **black tallow**, and they smoke like wet wood. On the altar steps stands a priest, robes fen-stained, face serene. He is leading a congregation.
 
-> The congregation is dead. They stand in the water in row after row, mud-black and empty-eyed, every face turned to the altar.
+> The congregation is dead. They stand in the water in row after row, every face turned to the altar.
 
-> Wren grips your arm. "That's **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley. He could never get a room to go quiet."
+> Wren grips your arm. "That's **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley."
 
-> "**Welcome!**" Halden beams at you with terrible peace, and the whole room goes quiet for him. "You've come to see the great work. The Warden below is gathering his flock at last. I merely… keep the service, until he calls them down. Will you kneel? Everyone kneels down here, sooner or later."
+> "**Welcome!**" Halden smiles at you, and the smile is terribly calm. "You've come to see the great work. The Warden below is gathering his flock at last. Will you kneel? Everyone kneels down here, sooner or later."
 
 **» Refuse the sermon and draw**
 
 <sub>scene `chapel-fight`</sub>
 
-Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's. "The Warden provides," says Halden, and sets them on you.
+Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's.
 
 **Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
 
@@ -771,59 +825,225 @@ Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning
 
 Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
 
-<sub>scene `chapel-won`</sub>
+His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was never an offering,* says a note in his tidy hand. *It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
 
-Halden's prayer book lies open on the altar, fen-damp but easy to read. Notes crowd the margins in his tidy hand, and the first of them is almost cheerful. *Found it in the old pages at last. The lamb each midwinter was never an offering. It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep.*
+Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
 
-The next note is shorter. *She is gone from her door, and he is waking.* Below that: *It has me ring the drowned tower's bell each night. The bell will wake you, we tell the dead. Forgive me. It does.*
-
-Further down the hand starts to shake, and the nib tears the page. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow, and it will take nerve. Not me. It will not let it be me.* On the flyleaf someone has inked a mark of reeds and a reaching hand, and beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
-
-"That's the hag's brand," Wren says, reading over your shoulder. "Every marsh-thing that ran with the Ashfang wore it, the lizardfolk in the hollow too." She reads the second note twice, then shuts the book and hands it to you. "The door's past the Barrow Gate. I'll get you that far."
-
-Under the altar cloth you find a healing potion that Halden never got to drink. On the way out, Wren sniffs one of the black candles and makes a face. "Halden never bought these in Thornwick. No chandler in the valley makes them."
-
-**» Take the prayer book**
+Under the altar cloth is a healing potion Halden never got to drink.
 
 _Gained: Potion of Healing_
 
 _Journal (clue): The Rites of Sealing_
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+**» Make camp (long rest)** <sub>(day 1)</sub>
+
+**Dawn — day 2.**
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Back outside
+
+<sub>scene `fen/outside` (again)</sub>
+
+_(a paragraph shown before: “The fog thins, and the cart-road back…”)_
+
+**» Walk back to Thornwick**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Bram's Stores
+
+<sub>scene `square/general` (again)</sub>
+
+_The shop: Bram's Stores (the route buys nothing)._
+
+_(a paragraph shown before: “"Grave-trouble, they say." Bram spreads his hands…”)_
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Smithy
+
+<sub>scene `square/smithy` (again)</sub>
+
+_The shop: The Smithy (the route buys nothing)._
+
+_(a paragraph shown before: “The forge roars. "Steel or leather? I…”)_
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Dawn Temple
+
+<sub>scene `square/temple` (again)</sub>
+
+**Sabel Thatcherby**
+
+_(a paragraph shown before: “Sabel looks up from the altar. "Peace…”)_
+
+**» Ask for healing (30 gold)**
+
+_-30 gold (445)_
+
+<sub>scene `square/temple-healed`</sub>
+
+Warm hands, an old prayer, and your wounds close like they were never there.
+
+**» Give thanks**
+
+<sub>scene `square/temple` (again)</sub>
+
+**Sabel Thatcherby**
+
+_(a paragraph shown before: “Sabel looks up from the altar. "Peace…”)_
+
+**» Leave the temple**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ Notice Board
+
+<sub>scene `square/notice-board` (again)</sub>
+
+_(a paragraph shown before: “Notices, most of them old: a lost…”)_
+
+**» Step away**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Fen Road
+
+<sub>scene `fen-again`</sub>
+
+The old raised road goes on into the fog, the same as before. The fen waits at the end of it.
+
+**» Walk out along the raised road**
+
+<sub>scene `fen` (again)</sub>
+
+_(a paragraph shown before: “The old raised road goes on into…”)_
+
+**» Go in**
+
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
 
 → The Serpent Pool
 
+**→ The Serpent Pool** <sub>(room `s1`)</sub>
+
 <sub>scene `pool`</sub>
 
-North of the chapel the reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. The surface moves once, with no wind to move it, in a line longer than a boat.
+The reeds part around a pool so still it looks solid. Old offerings crowd the rim: coins, combs, grinding-stones. Fen-folk have fed something here for generations. The surface moves once, with no wind to move it, in a line longer than a boat.
 
-Wren picks up a coin and puts it back with great care. "The fen-folk fed the pool so the pool stayed *in* the pool. Since the dead took to the fen roads, not one of them has dared come out this far with a coin." The water ripples again, closer. Wren takes one careful step back. "It will be hungry."
+Wren picks up a coin and puts it back with great care. "Since the dead took to the fen roads, not one of them has dared come out this far with a coin." She takes one careful step back. "It will be hungry."
 
 **» Wade in and clear the pool**
 
 <sub>scene `pool-fight`</sub>
 
-The pool empties itself at you. Three snakes the girth of roof-beams pour over the rim in oiled coils. A century of offerings fed them to that size, and lately so has anyone who walked too close.
+The pool empties itself at you. Three snakes the girth of roof-beams pour over the rim in oiled coils.
 
 **Battle:** The Serpent Pool <sub>(`serpent-pool` on `marsh`)</sub>
 
 **» Fight — won**
 
-The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion. The pool is plain water now.
+The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion.
 
-_+85 gold (560)_
+_+85 gold (530)_
 
 _Gained: Potion of Greater Healing_
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
 
-**» Make camp (long rest)** <sub>(day 2)</sub>
+→ Dry Hummock
 
-**Dawn — day 3.**
+**→ Dry Hummock** <sub>(room `m1`)</sub>
 
-The ground shivered once in the night, deep down under the fen, the way a door shivers when someone shoves it from the other side. It did not happen again.
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ The Serpent Pool
+
+**→ The Serpent Pool** <sub>(room `s1`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Back outside
+
+<sub>scene `fen/outside` (again)</sub>
+
+_(a paragraph shown before: “The fog thins, and the cart-road back…”)_
+
+**» Back into the fen**
+
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ The Serpent Pool
+
+**→ The Serpent Pool** <sub>(room `s1`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ Dry Hummock
+
+**→ Dry Hummock** <sub>(room `m1`)</sub>
+
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
+
+→ The Corpse-Lights
+
+**→ The Corpse-Lights** <sub>(room `m3`)</sub>
+
+→ Eel Weir
+
+**→ Eel Weir** <sub>(room `m4`)</sub>
+
+_A hidden door: Eel Weir ↔ Hidden Cache._
 
 → The Barrow Gate
+
+**→ The Barrow Gate** <sub>(room `m5`)</sub>
 
 <sub>scene `lychgate`</sub>
 
@@ -835,177 +1055,135 @@ Wren stops dead. "Those weren't in anybody's stories." The stone bases are mossy
 
 <sub>scene `lychgate-fight`</sub>
 
-The nearest watcher turns its head with a sound like a millstone. The granite stretches, cracks its wings, and drops on you like a falling roof. Below it, the empty armour lifts its spear and steps out of the gateway.
+The nearest watcher turns its head with a sound like a millstone. The granite cracks its wings and drops on you like a falling roof. Below it, the empty armour lifts its spear and steps out of the gateway.
 
 **Battle:** The Watchers at the Barrow Gate <sub>(`barrow-watchers` on `ruins`)</sub>
 
 **» Fight — won**
 
-The second gargoyle shatters mid-dive and rains down as plain gravel, over the green-bronze plates scattered across the road. The Barrow Gate stands unwatched now. Beyond it, the field of burial mounds opens out ahead of you.
+The second gargoyle breaks apart in the air. It rains down as plain gravel, over the bronze plates that lie across the road.
 
 <sub>scene `lychgate-won`</sub>
 
-Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**. Not fallen in, but *unlocked*. A doorway of dressed stone breathes out cold. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
+Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
 
-Letters are cut into the lintel over the doorway, worn almost smooth.
-
-Wren scrapes the moss out of them with her thumbnail and reads them aloud, slowly. "*Here is the **Undercrypt**. Let it stay shut.*" She wipes her thumb on her coat.
+Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
 
 Wren looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 
 She does not wish you luck. She checks her bowstring instead, and watches the fen, not you.
 
-**» Ask Wren to come down with you**
+**» Leave Wren the gate, and go down**
 
 _Wren leaves the party._
 
-<sub>scene `lychgate-wren-stays`</sub>
-
-"No," Wren says. "I said I'd get you to the barrow-country, and I have."
-
-She sits down on the nearest stone with her bow strung beside her, facing the fen. You leave her at her post and start down the worked steps.
-
-**» Go down into the Undercrypt**
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-**→ The Barrow Stair** <sub>(room `stair`)</sub>
+<sub>scene `undercrypt`</sub>
 
 Worked steps lead down into the cold. Your torch makes a small, brave circle, and the dark waits politely outside it.
 
-→ Climb out to the barrow-field
+**» Go in**
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
-→ The Raised Road
+**→ Entrance** <sub>(room `m0`)</sub>
 
-<sub>scene `causeway-done`</sub>
+The steps go down past the dead, and the dead do not stay quiet.
 
-The old road's stones stretch on into the fog. The files of footprints are still there, filling slowly with water.
+The smell reaches you first. Then a scrape, somewhere below, of something that should not be walking.
 
-**» Leave the footprints to the water**
+_A hidden door: Entrance ↔ Hidden Cache._
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
+→ Back outside
 
-→ The Corpse-Lights
+<sub>scene `undercrypt/outside`</sub>
 
-<sub>scene `lights-done`</sub>
+You climb out into the grey light of the barrow-field.
 
-The flat water lies dark and truthful, and nothing dances over it now.
+**» Back down the stair**
 
-**» Head back into the fen**
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
-
-→ The Serpent Pool
-
-<sub>scene `pool-done`</sub>
-
-The serpent pool sits quiet, and the offerings on its rim gleam dully. It is deep and cold, and finally ordinary.
-
-**» Head back into the fen**
-
-**↳ The Deep Fen** <sub>(map `fen`)</sub>
-
-→ The Barrow Gate
-
-<sub>scene `lychgate-open`</sub>
-
-The Barrow Gate stands unwatched, its broken guardians spread across the old road as gravel and green bronze.
-
-Beyond, the great barrow's doorway breathes out cold.
-
-Wren keeps her post at the stones, arms wrapped tight against more than the chill.
-
-**» Go down into the Undercrypt**
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-**→ The Barrow Stair** <sub>(room `stair`)</sub>
+**→ Entrance** <sub>(room `m0`)</sub>
 
 → The Painted Hall
 
-**→ The Painted Hall** <sub>(room `hall`)</sub>
-
-_A hidden door: The Painted Hall ↔ The Bone Room._
+**→ The Painted Hall** <sub>(room `m1`)</sub>
 
 <sub>scene `hall`</sub>
 
-The stair opens into a painted hall. Artists covered these walls before Thornwick had a name. The pictures tell one story, over and over. A **door** stands under the earth with a **horned warden** behind it, and before it, age after age, a **woman of the reeds** keeps watch.
+The stair opens into a painted hall. The pictures tell one story, over and over. A **door** stands under the earth with a **horned warden** behind it, and before it, age after age, a **woman of the reeds** keeps watch.
 
 In one panel a line of soldiers in green bronze stands before the door, each with a fist pressed flat to his chest. It is the old kings' salute, and the painter took great care over it.
 
-The last panel is fresh mud smeared over old paint. One angry stroke crosses out the woman of the reeds. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**
+The last panel is fresh mud smeared over old paint. One angry stroke crosses her out. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**
 
-The mud is still wet. A thin grey man in a gravedigger's apron stands under the last panel. He is smoothing the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip, and a lit lantern stands at his feet.
+A thin grey man in a gravedigger's apron stands under the last panel. He smooths the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
 
-He sees your torch and is not alarmed. "Mind the cut," he says kindly. "They are working down there, and they don't like to be stopped. Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark, in no hurry at all.
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
+
+"Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
 
 **» Go deeper in**
 
 _Journal (clue): The Door Opens From Within_
 
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
 → The Lead Cut
 
-**→ The Lead Cut** <sub>(room `diggers`)</sub>
-
-<sub>scene `diggers-cut`</sub>
-
-The passage narrows into a long cut through the rock. Ahead of you, dozens of picks ring on stone.
-
-**» Creep up and look**
+**→ The Lead Cut** <sub>(room `m2`)</sub>
 
 <sub>scene `diggers`</sub>
 
 Thornwick's dead fill the cut. They still wear their burial clothes. They chip at a seam of grey **lead** in the wall with picks, stones and bare fingers. No one stands over them. The picks keep time on their own.
 
-The cut is just wide enough for them. To get past, you will have to get through them. Near the far end, one digger wears a chain of office over its burial coat.
+The cut is just wide enough for them. Near the far end, one digger wears a chain of office over its burial coat.
 
-**» Slip past along the wall — The picks ring loud enough to cover a footstep.**
+**» [Stealth DC 12] Slip past along the wall**
 
-`[Group Stealth DC 12 — 2/4 pass — passed]`
+`[Group Stealth DC 12 — 1/4 pass — failed]`
 
-You edge along the wall between swings. Not one head turns. At the far end, the digger with the chain lowers its pick, and does not lift it again.
+<sub>scene `diggers-fight`</sub>
 
-<sub>scene `diggers-chain`</sub>
+The dead come down the cut with their picks raised. Two are bare bones in grave-rags. Three are fresh, and still wear the faces Thornwick buried. Hit hard, and try not to look.
 
-At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall.
-
-He has stopped answering the call that brought him down here. He is light now, just bones in a coat.
-
-The diggers stacked their grave-goods against the wall as they worked. There are rings, buckles and a scatter of old coin. On top lies a boar-spear with a silvered head, laid in some old watchman's grave to keep the dead from getting up. The way ahead is narrow and dark. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
-
-**» Lay him down here, chain and all, and take the grave-goods**
-
-_+40 gold (600)_
-
-_Gained: Silvered Spear_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-→ The Barrow-Guard
-
-<sub>scene `crypt-ambush`</sub>
-
-A black candle burns on the floor of the passage. A man kneels beside it, robed like the drowned stranger in the fen. He hears you, and smiles.
-
-"The Worm goes before the Warden," he says. Two ghouls and two old skeletons climb to their feet around him and come at you.
-
-**Battle:** Crypt Crawlers <sub>(`crypt` on `@room`)</sub>
+**Battle:** The Diggers <sub>(`diggers` on `corridor`)</sub>
 
 **» Fight — won**
 
-The man in the robe dies still holding his candle. It smells of the fen.
+The last digger falls across its pick. The cut goes quiet, apart from your breathing.
 
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
+<sub>scene `diggers-chain`</sub>
 
-**→ The Barrow-Guard** <sub>(room `guard`)</sub>
+At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one Aldous grips in his hall. He is light now, just bones in a coat.
+
+The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+
+**» Lay him down here, chain and all, and take the grave-goods**
+
+_+40 gold (570)_
+
+_Gained: Silvered Spear_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
+
+→ Niche Walk
+
+**→ Niche Walk** <sub>(room `m3`)</sub>
+
+The shelves of the dead run on into the dark, full and quiet.
+
+→ The Barrow-Guard
+
+**→ The Barrow-Guard** <sub>(room `m4`)</sub>
 
 <sub>scene `wights`</sub>
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings. It does not shuffle like the other dead. It takes a **stance**.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings, and takes a **stance**.
+
+**» Draw on him**
+
+<sub>scene `wights-fight`</sub>
 
 From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
 
@@ -1013,89 +1191,65 @@ From the slabs on either side, two skeletons rise to guard it. They snap to thei
 
 **» Fight — won**
 
-The wight comes apart at the joints and lies down in its own armour. The cold light in its eyes gutters out, and its skeletons clatter down after it.
+The wight comes apart at the joints and lies down in its own armour. Under its slab lies a guardsman's pay that no one ever came to collect.
 
-Under its slab lies a guardsman's pay that no one ever came to collect, old coins gone green in a rotted pouch.
+_+40 gold (610)_
 
-_+40 gold (640)_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-**» Make camp (long rest)** <sub>(day 3)</sub>
-
-**Dawn — day 4.**
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
 → The King's Chamber
 
-**→ The King's Chamber** <sub>(room `king`)</sub>
+**→ The King's Chamber** <sub>(room `m5`)</sub>
 
 <sub>scene `king`</sub>
 
-Old masons sealed the king's chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Within, a figure in grave-wrappings the colour of old honey stands before a wall carved with names.
+Old masons sealed the king's chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Inside, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
 
-They are the names of villages, hundreds of them, and a line runs through every one. You know a few from old songs, and none of them stand anymore.
+The embalmed king turns. Someone has set a crown of green bronze back on his head, and set it straight. Two of his household dead lurch from the corners, and beside the throne a barrow-soldier in green bronze draws its sword.
 
-The embalmed king turns. His wrappings are new-tied at wrist and throat, the knots still tight and pale. Someone has set a crown of green bronze back on his head, and set it straight. The eyes behind the wrappings burn with a slow, pleased light. Two of his household dead lurch from the corners, still in their funeral best. Beside the throne, a barrow-soldier in green bronze draws its sword.
-
-**Battle:** The Embalmed King <sub>(`barrow-king` on `@room`)</sub>
+**Battle:** The Embalmed King <sub>(`barrow-king` on `ruins`)</sub>
 
 **» Fight — won**
 
-The king crumbles, his grave-cloths sagging around nothing but dust and old spice, his servants drop mid-lurch, and his soldier folds down in its bronze. Behind him, at the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
+The king crumbles to dust and old spice, his servants drop mid-lurch, and his soldier folds down in its bronze. At the bottom of the wall, one name sits freshly carved, with no line through it yet. **THORNWICK**.
 
-You pick his gold rings out of the dust where his hands fell.
+You pick his gold rings out of the dust. Behind the throne, a burial shaft drops into the dark, and chanting comes up out of it. There will be no climbing back up it.
 
-Behind the king's throne, a burial shaft drops into the dark. The chanting comes up out of it.
+_+60 gold (670)_
 
-_+60 gold (700)_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt`)</sub>
-
-**→ The King's Chamber** <sub>(room `king`)</sub>
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
 → Drop down the burial shaft
 
-**↳ The Warden's Stair** <sub>(dungeon `warden-stair`)</sub>
+<sub>scene `shaft`</sub>
 
-**→ The Shaft's Foot** <sub>(room `shaft`)</sub>
+You land hard in old bones and older dust. The shaft goes up into the dark, far out of reach. Below, black candles burn on every step of the last stair, toward the chanting.
 
-You land hard in old bones and older dust. The shaft goes up into the dark, far out of reach.
-
-Below, black candles burn on every step of the last stair. You will not need your torch again. The only way now is down, toward the chanting.
-
-→ The Warden's Door
-
-**→ The Warden's Door** <sub>(room `seal`)</sub>
+**» Go down toward the chanting**
 
 <sub>scene `seal-approach`</sub>
 
-The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall. Old words are cut across it, and lead fills every letter. The stone bows *outward*, straining, as something behind it leans its weight on it.
+The lowest stair ends at the door the paintings promised. It is a slab of stone the size of a barn wall, with old words cut across it and lead in every letter. The stone bows *outward*, as something behind it leans its weight on it.
 
-The chanting comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms, like the drowned stranger among the corpse-lights. "The Worm goes before the Warden," they chant, over and over. Their leader is the thin grey man from the painted hall, in his gravedigger's apron. He pries the lead out of the door one letter at a time with a chisel of bone, while an acolyte holds a candle for him.
+The chanting comes from the **living**. They kneel at the door with candles of black tallow, in long robes the colour of grave-worms. Their leader is the thin grey man from the painted hall. He pries the lead out of the door one letter at a time with a chisel of bone.
 
-A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door itself sit two soldiers of the old kings in green bronze, their swords point-down between their feet. Their eyes are points of cold light. They watch the stair, and wait for an order.
+A walking suit of ancient armour guards the stair. Two ghouls crouch among the candles like pets. Against the door sit two soldiers of the old kings in green bronze, waiting for an order.
 
-The grey man leans in to his work. "Faster," he tells the chisel, sweetly reasonable. He sees you, and he does not stop working. "**Marrow**," he says, by way of greeting. "I brought your priest his candles."
-
-"I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last. Forty graves, and then I walked away and left them all in the cold. The Warden leaves nobody in the cold. Under him the dead stand together, and they have work to do. Is that so wicked?" He sets the chisel to the next letter. "The rites are in your pack, I expect. Say them over my body, if you must."
+"**Marrow**," the grey man says, without stopping. "I brought your priest his candles. I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last, and walked away and left them in the cold. The Warden leaves nobody in the cold. Is that so wicked?"
 
 **» Interrupt the service**
 
 <sub>scene `seal-battle`</sub>
 
-Marrow turns with the chisel still in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte drops the candle and pulls a knife. The armour grinds down the stair. The ghouls come low and fast between the candles, and one of them stinks worse than the grave.
-
-Against the door, the two bronze soldiers get to their feet. Marrow woke them to keep his door, and they draw their swords.
+Marrow turns with the chisel in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
 
 **Battle:** The Worm at the Door <sub>(`cult-at-door` on `firepit`)</sub>
 
 **» Fight — won**
 
-Marrow dies reaching for the door. The two bronze soldiers lie broken at its foot, among the armour's scattered plates and the ghouls. His kneeling faithful stare at the body and do not get up. No one stands between you and the door now, and the book is in your hands.
+Marrow dies reaching for the door. His kneeling faithful stare at the body and do not get up. Coins lie thick on the bottom step, where the faithful threw them. You sweep them into a sack.
 
-Coins lie thick on the bottom step, where the faithful threw them at the door. You sweep them into a sack before you open the book.
-
-_+120 gold (820)_
+_+120 gold (790)_
 
 <sub>scene `seal-door`</sub>
 
@@ -1103,49 +1257,63 @@ Quiet settles over the last stair. Only the door still makes a sound, a slow gri
 
 **» Open Halden's book at the door**
 
+<sub>scene `seal-door-book`</sub>
+
+You open Halden's book.
+
+**» Read**
+
 <sub>scene `resealing`</sub>
 
-The great door still bulges outward, and half the lead is gone from its letters. Against the far wall the robed faithful are still on their knees, watching you over their guttering black candles.
+The great door still bulges outward, and half the lead is gone from its letters.
 
-Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door, and it will take nerve.
+Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door.
 
 **» Speak the rites aloud**
 
-`[Religion DC 13 — Morgan Le Fey rolls 24 — passed]`
+`[Religion DC 13 — Morgan Le Fey rolls 8 — failed]`
 
-You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
+Your voice cracks on the oldest word, and the rest come out wrong. The letters stay dark. The door groans, and leans a little harder.
 
-<sub>scene `seal-clean`</sub>
+**» Read the lead letters as a spell — They are cut deeper than any prayer needs.**
 
-Line by line the great door stops *straining*, and last of all the weight behind it eases off. Something enormous behind the stone turns away, unhurried and unimpressed, like a sleeper turning over in a warm bed. Far above you, across the barrow-field, every walking corpse lies down where it stands.
+`[Arcana DC 14 — Morgan Le Fey rolls 6 — failed]`
 
-The **Warden** sleeps. The door is shut.
+You trace the wrong line first. A letter spits its lead at your hand and goes dark.
 
-Among the cult's packs you find how they came down: a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.
+**» Turn the kneeling cultists to the words — They came here to chant at this door.**
 
-**» Climb the cult's rope ladder back to the light**
+`[Persuasion DC 14 — Elaine the Holy rolls 15 — passed]`
+
+You hold the book up where the kneelers can see it. "You came to sing to the Warden," you tell them. "Then sing this." One voice joins yours, then five, then all of them.
+
+<sub>scene `seal-closed`</sub>
+
+Line by line the great door stops *straining*, and the weight behind it eases off. Something enormous turns away, unhurried, like a sleeper turning over in a warm bed. The **Warden** sleeps. The door is shut.
+
+Far above you, across the barrow-field, every walking corpse lies down where it stands.
+
+Among the cult's packs you find a rope ladder and a grapnel. You throw the hook up the burial shaft until it bites.
+
+**» Climb back to the light**
 
 <sub>scene `sb-aftermath`</sub>
 
 The rope ladder brings you up out of the great barrow and into the open air.
 
-Wren is still holding the Barrow Gate when you come up. She is upright, knife out, in a great field of dead who have finally stopped moving. She wears the look of someone determined to have been calm the whole time.
+Wren is still at the gate when you come up, with her knife out. All round her, the dead lie still in the grass at last. She looks like someone who means to have been calm the whole time.
 
 The walk home is long and wet. The door under the barrows is shut behind you, and the fen is only a fen again.
 
-Wren talks to the fen-folk on the road the whole way home, and not much to you.
-
 **» Go up to the reeve's hall**
 
-_+150 gold (970)_
+_+150 gold (940)_
 
 <sub>scene `sb-hall`</sub>
 
 That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin, and does not lose count once.
 
-Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every single service.
-
-With Halden in the ground, the town has no priest. Your cleric says the burial words at every grave, and each time stops short of the line about the bell.
+Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 
 Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
@@ -1163,11 +1331,9 @@ Every night since the graves opened, a lamp has burned in the window of the Wand
 
 The old reeve's grave in the churchyard stays empty. Aldous fills it in anyway, and visits it every week.
 
-Deep under the barrow-field, the Warden's door stands shut in the dark. Marrow's bone chisel lies on the bottom step, among the cold candle-ends.
+Deep under the barrow-field, the Warden's door stands shut in the dark, among the cold candle-ends.
 
-Out in the fen, the drowned chapel leans a little further every winter. Someone has cut the rope from its bell.
-
-On the night the barrows close, at the fen's edge, two figures step out of the reeds, tall and green-fingered, with river-weed in their hair. They are the Reedwife's sisters, with her long hands. They look at the sealed barrow-field, and then at the town, and take their time about both. The reeds close behind them without a ripple.
+On the night the barrows close, at the fen's edge, two figures step out of the reeds, tall and green-fingered, with river-weed in their hair. They are the Reedwife's sisters. They look at the sealed barrow-field, and then at the town, and take their time about both.
 
 ### Ending: victory
 
@@ -1267,8 +1433,6 @@ The griffons come down on the switchbacks screaming, all beak and talon, and the
 
 **» Fight — won**
 
-_Level up: 4 → 5_
-
 The last griffon tumbles away down the loose rock. Above you the whole mountain is still climbing toward the stone.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
@@ -1311,9 +1475,11 @@ The drumming turns into thunder. Three boars the size of hay-carts come down the
 
 **» Fight — won**
 
+_Level up: 4 → 5_
+
 The stampede breaks around its fallen leaders. The rest of the herd scatters over the far ridge, away from the valley. A drover's torn purse hangs from the lead boar's tusk, still half full.
 
-_+40 gold (1010)_
+_+40 gold (980)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1339,25 +1505,17 @@ The wyrmling drops in the middle of a hiss, and its poison breath thins to a har
 
 Up the mountain, the Calling's note bends. Nettle's voice rides it down the wind, close as a whisper. "One fewer, little debtors. I have marked it down. We have so many more."
 
-_+75 gold (1085)_
+_+75 gold (1055)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
 **» Make camp (long rest)** <sub>(day 2)</sub>
 
-<sub>scene `hills-night`</sub>
+**Dawn — day 3.**
 
-In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
+The stone's note is louder this morning.
 
-The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
-
-**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
-
-**» Fight — won**
-
-The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
-
-**↳ The High Hills** <sub>(map `hills`)</sub>
+A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Flooded Pass
 
@@ -1381,17 +1539,9 @@ The water-giant falls apart all at once. A hundred gallons of plain water run aw
 
 Behind it, the crack in the rock is closing. Just before it shuts, cold air sighs out of it one last time, and it smells of the fen.
 
-_+50 gold (1135)_
+_+50 gold (1105)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
-
-The stone's note is louder this morning.
-
-A rider from the scouts' fire brings word at first light. Three more nights before the Calling peaks, the Chief of Scouts reckons, and not one more.
 
 → The Blue Mesa
 
@@ -1407,7 +1557,23 @@ Along a broken wall, a blue **wyrmling** uncoils, crackling, and the air turns s
 
 The wyrmling falls off the wall trailing dead sparks, and the copper rods go cold. The whirlwind blows itself out, and the stone things lie in pieces at the foot of the tower among the kobolds. The hoard here was tribute, saved up for a dragon's future. It rides out in your packs instead.
 
-_+95 gold (1230)_
+_+95 gold (1200)_
+
+**↳ The High Hills** <sub>(map `hills`)</sub>
+
+**» Make camp (long rest)** <sub>(day 3)</sub>
+
+<sub>scene `hills-night`</sub>
+
+In your sleep you see a stone door under the fen. Two tall green women stand in front of it with their backs to you. The younger one turns, and her face is wet. "You broke our sister," she says. The elder, Nettle, does not turn. "So we will take the valley from you," she says. "It is only fair."
+
+The singing starts in the dream and goes on after it. It is sweet, and wrong, and getting closer. Birds with women's faces come riding the night wind down from the crags. Behind them comes a lean grey drake with leathery wings and a sting on its tail. Their song tugs at your legs and puts words in your head. *Stand up. Walk to the edge. It is not far.* You wake in time, because the sentry is shouting.
+
+**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
+
+**» Fight — won**
+
+The drake goes down thrashing, and the last harpy drops into the dark with its song broken off mid-note. You kick the scattered fire back together and stand round it, too wide awake to lie down again. No one mentions the dream.
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1433,7 +1599,7 @@ The horn sounds twice, and the gate opens on the ogre-mage's guard. Three orcs i
 
 The ogre-mage falls out of its own darkness, astonished right to the end. Its drilled guard lies dead at the gate, and the fort's war-chest sits unguarded in the yard.
 
-_+130 gold (1360)_
+_+130 gold (1330)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1461,7 +1627,7 @@ The wyrmling's fire goes out from the inside, and it is finally, simply small. I
 
 The stone's song dips, and Nettle's voice comes down the wind with it. "That one was promised a war. Never mind." She sounds bored.
 
-_+120 gold (1480)_
+_+120 gold (1450)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
@@ -1489,23 +1655,17 @@ The gorgon's head comes up, and its breath comes with it. A rolling green vapour
 
 The gorgon crashes onto its side with its iron plates ringing, and the young bull lies among the broken statues near it. Two of those statues were never people. The green vapour thins away to nothing. At the end of one row stands a stone peddler with his money-box at his feet, and the box is not stone.
 
-_+100 gold (1580)_
+_+100 gold (1550)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
 
 **» Make camp (long rest)** <sub>(day 4)</sub>
 
-<sub>scene `hills-night` (again)</sub>
+**Dawn — day 5.**
 
-The same dream comes back: the stone door under the fen, and the two green women in front of it. The singing starts, and the birds with women's faces come riding the night wind down from the crags, the grey drake behind them. You wake in time, because the sentry is shouting.
+The stone sang all night. Loose stones crept down the slope in the dark, ticking against each other, and nothing had touched them.
 
-**Battle:** Harpies of the Crags <sub>(`crag-harpies` on `open`)</sub>
-
-**» Fight — won**
-
-_(a paragraph shown before: “The drake goes down thrashing, and the…”)_
-
-**↳ The High Hills** <sub>(map `hills`)</sub>
+A runner from the command tent brings Vex's word: he has doubled the watch. "Tonight," the message says. "Anything still in those dens will fly."
 
 → The Giants' Hall
 
@@ -1529,17 +1689,9 @@ The ettin lifts both its clubs. For once both heads want the same thing, and the
 
 The ettin goes down still arguing about whose fault it was. The orc runners fall beside it. Inside the hall you find tribute, plunder, and an entire orchard's worth of pickled fruit, taken from the valley one cart at a time.
 
-_+140 gold (1720)_
+_+140 gold (1690)_
 
 **↳ The High Hills** <sub>(map `hills`)</sub>
-
-**» Make camp (long rest)** <sub>(day 4)</sub>
-
-**Dawn — day 5.**
-
-The stone sang all night. Loose stones crept down the slope in the dark, ticking against each other, and nothing had touched them.
-
-A runner from the command tent brings Vex's word: he has doubled the watch. "Tonight," the message says. "Anything still in those dens will fly."
 
 → The Last Ridge
 
@@ -1605,21 +1757,9 @@ Nettle sees you looking at her wrists, and she laughs. "Pull, then. The mountain
 
 **» Drag their hands out of the rock**
 
-`[Athletics DC 15 — Arthur the Bold rolls 9 — failed]`
+`[Athletics DC 15 — Arthur the Bold rolls 30 — passed]`
 
-The rock holds them fast. You let go with burned palms, and the stone pulls them deeper.
-
-**» Sing a wrong note into the Calling**
-
-`[Arcana DC 15 — Morgan Le Fey rolls 12 — failed]`
-
-Your wrong note goes into the song and vanishes. The Calling swallows it and sings on.
-
-**» Say Halden's rites over the stone — Their oldest words are for shutting doors.**
-
-`[Religion DC 11 — Morgan Le Fey rolls 17 — passed]`
-
-Halden's old words fall on the stone like cold water on a hot pan. The black rock hisses and lets go. Both sisters stagger free with steam rising off their arms.
+The stone gives a crack like a snapped bone and throws the sisters off. They land in a crouch, with ash falling out of their hair and nothing left in the rock to hide behind.
 
 <sub>scene `sisters-battle`</sub>
 
@@ -1633,7 +1773,7 @@ Nettle falls first, clawing at your boots, still telling you what you owe. Sedge
 
 The black fang has no one left to spend. It cracks from top to bottom, and the Calling stops: not with thunder, but with the huge, ringing quiet of a held note let go.
 
-_+200 gold (1920)_
+_+200 gold (1890)_
 
 <sub>scene `calling-won`</sub>
 

@@ -725,6 +725,12 @@ function draftCity(seed: number, spec: Required<CitySpec>): Module {
     if (keeps) {
       // They run it: the venue's own keeper stands aside.
       if (venueScene?.kind === 'shop') Object.assign(venueScene, { npc, intro: [who.lines[0]!] });
+      // A shop named for its owner is named for them.
+      const owned = venueScene?.kind === 'shop' ? /^.+'s (Stores|Armoury)$/.exec(venueScene.title ?? '') : null;
+      if (owned && venueScene?.kind === 'shop') {
+        venueScene.title = `${who.name}'s ${owned[1]}`;
+        for (const n of nodes) if (n.scene === who.at) n.label = venueScene.title;
+      }
       if (venueScene?.kind === 'dialogue') Object.assign(venueScene, { npc, lines: who.lines });
       const wares = scenes[`${who.at}-wares`];
       if (wares?.kind === 'shop') Object.assign(wares, { npc });

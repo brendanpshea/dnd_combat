@@ -1070,7 +1070,13 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
           req.loot === 'gold' ? [{ kind: 'gold', amount: 30 + 10 * level }] : [{ kind: 'addItem', itemId: req.loot }]);
       } else if (id === 'cache' && dress) {
         // (A story's place: somebody's own stash, and no potion.)
-        room.search = find(id, `Somebody's stash, wrapped in oilcloth: ${holders.length && !holders[0]!.beastly ? `the savings of ${dice.pick(holders[0]!.names.length ? [holders[0]!.one] : ['someone'])} who meant to run` : 'a purse nobody came back for'}.`,
+        const one = holders.length && !holders[0]!.beastly && holders[0]!.archetype !== 'tomb' ? dice.pick(holders[0]!.names.length ? [holders[0]!.one] : ['someone']) : undefined;
+        room.search = find(id, one ? dice.pick([`Somebody's stash, wrapped in oilcloth: the savings of ${one} who meant to run.`,
+          `A loose stone, and a bundle behind it. ${capFirst(one)} was putting coin by for the road.`,
+          `A bag pushed into a gap where nobody would look. Whoever hid it never came back for it.`,
+          `A purse sewn into an old blanket. Someone here was saving against a bad winter.`,
+          `Coins in a cracked pot under a loose board, ${one}'s, by the mark scratched on the lid.`])
+          : dice.pick(['A purse nobody came back for, tucked out of sight.', 'A bag pushed into a gap where nobody would look. Whoever hid it never came back for it.']),
           [{ kind: 'gold', amount: 20 + 10 * level }]);
       } else if (id === 'cache') {
         room.search = find(id, 'Someone hid their best here: coin, and a flask of something red.',

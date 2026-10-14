@@ -82,6 +82,8 @@ export const FACTIONS: Record<Id, Faction> = Object.fromEntries(([
     leaders: ['wight', 'mummy', 'ghast', 'wraith', 'vampire-spawn'],
     rooms: ['Open Graves', 'Bone Pit', 'Embalming Hall', 'Mourning Chapel'],
     sign: ['The smell reaches you first. Then a scrape, somewhere below, of something that should not be walking.'],
+    roused: ['Somewhere below, bone knocks on stone, then again, nearer. Whatever sleeps here has stopped sleeping.'],
+    patrol: ['Something has followed you through the dark, and it has caught up.'],
   },
   {
     id: 'cult', archetype: 'cult', names: ['the Cult of the Ashen Eye', 'the Hollow Choir', 'the Brothers of the Last Door'], one: 'a cultist',

@@ -34,6 +34,7 @@ export function outsideOf(module: Module): Module {
     if (!d.proveApart) { delves[at] = d; continue; }
     const hub = `${at}/delve`;
     const nodes: ExploreNode[] = [];
+    let anyDone = false;
     (d.spec.require ?? []).forEach((r, i) => {
       // Whether an optional room is done is the delve's own business: nothing
       // outside it asks, so its outside shows the event every time, and its
@@ -58,6 +59,7 @@ export function outsideOf(module: Module): Module {
       // which keeps its flag out of the proof and its pay to once (XP ceiling).
       const doneIf = (r.event?.until ?? []).filter((q) => q.kind === 'flag');
       const done = !gates && doneIf.length ? [{ if: doneIf, to: doneScene(hub) }] : [];
+      if (done.length) anyDone = true;
       if (r.event) at_(r.event.scene, 'e', [...until, ...before], [...done, ...(r.event.when ?? [])]);
       // Someone held there (RequiredRoom.hostage): what the chapter sees is
       // its two flags. Got out (with what that pays and the story's own
@@ -83,7 +85,7 @@ export function outsideOf(module: Module): Module {
     nodes.push({ id: 'fights', label: 'Its own fights', icon: 'tok-mystery', scene: fights, x: 90, y: 70 });
     scenes[at] = { id: at, kind: 'story', noBack: true, text: ['In.'], next: [{ id: 'in', label: 'In', to: hub }] };
     scenes[hub] = { id: hub, kind: 'explore', map: { title: d.title ?? 'Inside', art: { emoji: '🏚️' }, entry: ['out'], nodes } };
-    scenes[doneScene(hub)] = doneBeat(hub);
+    if (anyDone) scenes[doneScene(hub)] = doneBeat(hub);
   }
   /*
    * A town the same way: a map with a marker for each of the story's places
