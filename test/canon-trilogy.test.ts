@@ -103,8 +103,8 @@ describe('the trilogy\'s numeric facts', () => {
     charged(hr, 'tavern', 'persuade', 'tavern-round');
     charged(hr, 'tavern', 'room', 'inn-room');
     charged(sb, 'inn', 'room', 'inn-room');
-    paid(sb, 'lights-won', 'keep', 'drowned-gold');
-    paid(sb, 'marrow-spared', 'bind', 'offering-purse');
+    paid(sb, 'purses', 'keep', 'drowned-gold');
+    paid(sb, 'seal-door', 'bind', 'offering-purse');
     charged(sb, 'sb-hall', 'mira', 'taproom-supper');
     charged(wc, 'onihold', 'pay', 'ogre-toll');
   });

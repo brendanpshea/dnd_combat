@@ -5246,7 +5246,7 @@ Up on the rim, Vex's pikes raise a ragged cheer. Far down the slope, faint and d
 
 ### 3. when Part 2 seal-cracked · no cleric in the party? — or — Part 2 seal-cracked · Halden in the party
 
-At the foot of the stone, the grey hands go limp and sink back down through the cracks, toward the fen.
+Round the black rock, the grey hands go limp and sink back down through the cracks, toward the fen.
 
 Below you, pass by pass, the hills go quiet. Out on the slopes, things that were walking toward the valley stop, shake their heads, and turn back toward their own high places. The wingbeats fade off the wind.
 
@@ -5254,7 +5254,7 @@ Up on the rim, Vex's pikes raise a ragged cheer. Far down the slope, faint and d
 
 ### 4. when Part 2 seal-cracked · a cleric in the party? · Halden not in the party
 
-At the foot of the stone, the grey hands go limp and sink back down through the cracks, toward the fen.
+Round the black rock, the grey hands go limp and sink back down through the cracks, toward the fen.
 
 Your cleric scatters a handful of grit over the dry reeds and says the short prayer for the dead. It is the only one the sisters will get.
 

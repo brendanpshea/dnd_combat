@@ -29,7 +29,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
       'hollow-road': ['road', 'tavern-meet'],
       // Her taproom; and "Mira the innkeeper", "Mira of the Wander-Inn" for a
       // company that never stops at the inn.
-      'sunken-barrows': ['lychyard-lost', 'inn', 'inn-later', 'sb-defeat', 'sb-claim-round', 'sb-epilogue'],
+      'sunken-barrows': ['lychyard-lost', 'inn', 'sb-defeat', 'sb-supper', 'sb-epilogue'],
       // "Mira's inn" at the fen-folk's fire; "Mira, who keeps the Wander-Inn" at the end.
       wyrmcalling: ['fenfolk-fire', 'fenfolk-fire-cracked', 'wc-epilogue', 'wc-epilogue-vigil'],
     },
@@ -45,7 +45,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     fates: ['saved', 'lost'],
     introducedAt: {
       'hollow-road': ['wounded-saved', 'wounded-failed'],
-      'sunken-barrows': ['reeve-hall', 'fen-out', 'fen-partner', 'fen-reunion'],
+      'sunken-barrows': ['reeve-hall', 'wren-meet'],
       // Her fire, the council on the rim, and "Wren's scouts" at the forts they took.
       wyrmcalling: ['scouts-fire-old', 'scouts-fire-saved', 'scouts-late', 'war-council'],
     },
@@ -54,7 +54,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     id: 'tamsin', name: 'Tamsin',
     // A name, not state: the scout who died under the horse, when {wren}'s
     // fate is `lost`.
-    introducedAt: { 'sunken-barrows': ['fen-partner'] },
+    introducedAt: { 'sunken-barrows': ['wren-meet'] },
   },
   vex: {
     id: 'vex', name: 'Vex', aka: ['the lieutenant'], portraitId: 'npc-captain', emoji: '🗡️',
@@ -97,15 +97,13 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     fates: ['dead', 'bound'],
     introducedAt: {
       'hollow-road': ['hollow-won', 'boss-approach'],
-      'sunken-barrows': ['inn', 'chapel-saved', 'chapel-won'],
+      'sunken-barrows': ['inn', 'chapel-saved', 'chapel-fight'],
       wyrmcalling: ['muster', 'envoys'],
     },
   },
   bram: {
     id: 'bram', name: 'Bram', portraitId: 'npc-merchant', emoji: '🧑‍🌾',
     introducedAt: {
-      // (In {thornwick} he keeps the generated town's store, which says so.)
-      'sunken-barrows': ['sb-market'],
       // His stores; "Bram's stores" at the wagons, "Bram's war-stores" in the
       // hospital tent, the hoard he will buy, the arrows he sells in the ending.
       wyrmcalling: ['wc-stores', 'wagons-busy', 'wagons-paid', 'wagons-carter', 'wc-defeat', 'redden', 'wc-epilogue', 'wc-epilogue-vigil'],
@@ -119,7 +117,7 @@ export const TRILOGY_NPCS: Record<Id, NpcDef> = {
     id: 'aldous', name: 'Aldous', portraitId: 'npc-noble', emoji: '⚖️',
     introducedAt: {
       // "See Reeve Aldous at his hall": the fen road's note, on the town map.
-      'sunken-barrows': ['town', 'reeve-hall'],
+      'sunken-barrows': ['reeve-hall', 'fen-shut'],
       // His note to the company, signed, at the muster (the valley's regard
       // at 1 or more); "Reeve Aldous" in the ending slides.
       wyrmcalling: ['muster', 'wc-epilogue', 'wc-epilogue-vigil'],

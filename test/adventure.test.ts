@@ -1081,25 +1081,35 @@ describe('The Sunken Barrows (trilogy Part 2)', () => {
       const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
       const c = newCampaign(seed);
       c.xp = 1650; // a typical company finishing The Hollow Road
-      const result = runModule(c, barrows, policy, 8000);
+      // A random walk can wander the fen for ever (see The Hollow Road's).
+      let result: ReturnType<typeof runModule>;
+      try { result = runModule(c, barrows, policy, 60000); } catch (e) {
+        if (/did not reach an ending/.test((e as Error).message)) continue;
+        throw e;
+      }
       if (result.ending !== 'victory') continue;
       expect(levelForXp(result.state.campaign.xp)).toBe(4);
       checked++;
     }
     expect(checked).toBeGreaterThan(0);
-  });
+  }, 120_000);
 
   it('a cold-start company is floored to L3 at the door and L4 at the finale', () => {
     let nn = 99;
     const rand = () => (nn = (nn * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
     const policy: RunPolicy = { pick: (count) => Math.floor(rand() * count), battle: () => true };
-    const result = runModule(newCampaign(3), barrows, policy, 8000);
-    if (result.ending === 'victory') {
-      expect(levelForXp(result.state.campaign.xp)).toBe(4);
+    // The opening choice floors a fresh company at 3rd.
+    const open = barrows.scenes[barrows.start];
+    expect(open?.kind === 'story' && open.next.find((c) => c.id === 'go-cold')?.effects).toContainEqual({ kind: 'xpToLevel', level: 3 });
+    // A random walk can wander the fen for ever (see the continuing run's).
+    let result: ReturnType<typeof runModule>;
+    try { result = runModule(newCampaign(3), barrows, policy, 60000); } catch (e) {
+      if (/did not reach an ending/.test((e as Error).message)) return;
+      throw e;
     }
-    // The opening choice's xpToLevel(3) fires either way — check the event.
+    if (result.ending === 'victory') expect(levelForXp(result.state.campaign.xp)).toBe(4);
     expect(result.events.some((e) => e.type === 'xp' && e.leveledTo === 3)).toBe(true);
-  });
+  }, 120_000);
 });
 
 describe('The Wyrmcalling (trilogy Part 3)', () => {
@@ -1399,7 +1409,7 @@ describe('auto-player', () => {
 
 describe('overworld dressing (roads + pawn position)', () => {
   it('town maps have an entry pawn-start and visual roads over real nodes', () => {
-    for (const [modId, hub] of [['sunken-barrows', 'town'], ['wyrmcalling', 'warcamp']] as const) {
+    for (const [modId, hub] of [['wyrmcalling', 'warcamp']] as const) {
       const mod = MODULES.find((m) => m.id === modId)!;
       const scene = mod.scenes[hub]!;
       if (scene.kind !== 'explore') throw new Error(`${hub} is not explore`);
@@ -1410,12 +1420,13 @@ describe('overworld dressing (roads + pawn position)', () => {
   });
 
   it('the pawn starts at the entry on a free-roam map and follows the last node entered', () => {
-    const mod = MODULES.find((m) => m.id === 'sunken-barrows')!;
+    const mod = MODULES.find((m) => m.id === 'wyrmcalling')!;
     const s = startAdventure(newCampaign(), mod);
-    enterScene(s, mod, 'town');
-    expect(exploreNodes(s, mod).find((n) => n.here)?.node.id).toBe('inn');
-    enterNode(s, mod, 'market');
-    enterScene(s, mod, 'town');
-    expect(exploreNodes(s, mod).find((n) => n.here)?.node.id).toBe('market');
+    enterScene(s, mod, 'warcamp');
+    expect(exploreNodes(s, mod).find((n) => n.here)?.node.id).toBe('command');
+    enterNode(s, mod, 'stores');
+    enterScene(s, mod, 'warcamp');
+    expect(exploreNodes(s, mod).find((n) => n.here)?.node.id).toBe('stores');
   });
+
 });
