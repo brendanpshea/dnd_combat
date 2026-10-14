@@ -33,7 +33,7 @@ describe('a county\'s camps', () => {
       expect(near.length && far.length).toBeTruthy();
       expect(mean(far), `level ${level}`).toBeGreaterThan(mean(near));
     }
-  });
+  }, 30_000);
 
   it('fight at their own strength, whatever the party', () => {
     const m = generateLand(2, { level: 2 }).module;

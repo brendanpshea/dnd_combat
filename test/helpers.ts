@@ -70,3 +70,12 @@ export function makeCombatant(over: Partial<Combatant> & { team: TeamId; positio
     ...defined(over),
   };
 }
+
+/**
+ * Let the test runner breathe. A sim that plays battles for minutes without
+ * an await keeps its worker from answering vitest's progress calls, and the
+ * worker's 60-second RPC timer fires the moment the loop ends: "Timeout
+ * calling onTaskUpdate", with every test passed. Await this every few
+ * battles in a long loop (vitest.config.ts has the rest of that story).
+ */
+export const yieldToRunner = (): Promise<void> => new Promise((done) => setImmediate(done));
