@@ -656,7 +656,7 @@ export const SCENES: Record<string, Scene> = {
         if: [{ kind: "notFlag", flag: "drowned-gold-home" }, { kind: "noCompanion", companion: "wren" }],
         text: "You fill your pockets with the drowned folk's coin.",
       },
-      "The fen is quiet around you, and the black water lies still.",
+      "Behind you, the fog closes over the pools again.",
     ],
     next: [{ id: "on", label: "Go on into the fen", to: "@hub" }],
   },
@@ -953,7 +953,7 @@ export const SCENES: Record<string, Scene> = {
     again: ["The dead are waiting in the cut this time, picks raised."],
     onWin: {
       to: "diggers-chain",
-      text: ["The last digger falls across its pick. The cut goes quiet, apart from your breathing."],
+      text: ["The last digger to fall wears the reeve's chain. The cut goes quiet, apart from your breathing."],
     },
   },
   "diggers-sneak": {
@@ -962,7 +962,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-crypt", emoji: "⛏️" },
     text: [
-      "The picks ring loud enough to cover a footstep. You edge along the wall between swings, and not one head turns.",
+      "The picks ring loud enough to cover a footstep. You edge along the wall between swings, and not one head turns. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.",
     ],
     next: [
       {
@@ -979,7 +979,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-crypt", emoji: "⛏️" },
     text: [
-      "You speak the old words, slow and plain. *Lie down and be at peace. Your work is done.* One by one the picks go quiet, and the dead lie down in the cut in rows.",
+      "You speak the old words, slow and plain. *Lie down and be at peace. Your work is done.* One by one the picks go quiet, and the dead lie down in the cut in rows. The digger in the reeve's chain is the last to lie down.",
     ],
     next: [
       {
@@ -996,7 +996,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-crypt", emoji: "⛏️" },
     text: [
-      "You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing. The dead make room for you without breaking step, and you walk out the far end, still swinging.",
+      "You find the oldest rank by its grave-clothes and fall in at the back of it. Swing, step, swing. The dead make room for you without breaking step, and you walk out the far end, still swinging. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.",
     ],
     next: [
       {
@@ -1013,7 +1013,7 @@ export const SCENES: Record<string, Scene> = {
     noBack: true,
     art: { imageId: "loc-crypt", emoji: "⛏️" },
     text: [
-      "A light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog, and press to the walls, and leave you a road.",
+      "A light that is not torch-light fills the cut. The dead shuffle back from it like sheep from a dog, and press to the walls, and leave you a road. At the far end, the digger in the reeve's chain lowers its pick, and does not lift it again.",
     ],
     next: [
       {
@@ -1030,7 +1030,7 @@ export const SCENES: Record<string, Scene> = {
     art: { imageId: "loc-crypt", emoji: "⛓️" },
     noBack: true,
     text: [
-      "At the end of the cut, an old man in a good burial coat has folded down against the wall. A reeve's chain of office hangs round his neck, the twin of the one {aldous} grips in his hall. He is light now, just bones in a coat.",
+      "At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one {aldous} grips in his hall. He is light now, just bones in a coat.",
       {
         if: [{ kind: "companion", companion: "wren" }],
         text: "{wren} kneels and straightens the chain on his chest. \"The reeve's grandfather,\" she says, and nothing else.",
@@ -1454,8 +1454,12 @@ export const SCENES: Record<string, Scene> = {
         text: "{marrow} climbs out after you, and walks off alone toward {saltmere}. {wren} keeps her hand on her knife until the fog takes him.",
       },
       {
-        if: [{ kind: "flag", flag: "grandfather-home" }],
+        if: [{ kind: "flag", flag: "grandfather-home" }, { kind: "noCompanion", companion: "wren" }],
         text: "{wren} sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. \"I've got his feet,\" she says. \"Mind the ruts.\"",
+      },
+      {
+        if: [{ kind: "flag", flag: "grandfather-home" }, { kind: "companion", companion: "wren" }],
+        text: "{wren} has carried the old man's feet since the cut, and she will not hand them over now. \"Mind the ruts,\" she says, at every rut.",
       },
       {
         if: [{ kind: "notFlag", flag: "seal-cracked" }],
