@@ -10,7 +10,7 @@ Every version of every scene that some reachable state can produce — every rou
 - `reads:` lists what the scene's conditions read. Choices show as a player sees them in that version: offered, ~~greyed~~ with the reason, or absent (hidden).
 - <sub>(shared with: …)</sub> under a paragraph: the same words show in those scenes too (many: see the index of shared paragraphs). Change it, and read it in every one.
 
-72 scenes · 130 versions · 13,863 states searched (with text conditions tracked).
+72 scenes · 130 versions · 8,474 states searched (with text conditions tracked).
 
 ## Shared paragraphs
 
@@ -107,7 +107,7 @@ You wake in the Wander-Inn with the sun up. The bell-ringers carried you in. "Th
 
 ## `grave-morning` · story
 
-Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out and left on their own, and they left together.
+Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out on their own.
 
 The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way: **out to the deep fen**.
 
@@ -360,15 +360,15 @@ Halden sinks down on the altar steps and does not rise again. At the end, he mos
 
 His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was never an offering,* says a note in his tidy hand. *It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
 
-Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
+Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.* Below that, crowded into the margin: *She had sisters in the deep reeds. Kin keep accounts.*
 
 On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-Under the altar cloth is a healing potion Halden never got to drink.
+Under the altar cloth is a healing potion Halden never got to drink. On your way out you climb the leaning tower and cut the drowned bell's rope.
 
 ### 2. when a return visit?
 
-Halden sighs again, a shepherd let down twice. "The Warden provides," he says, and his acolytes and his dead come for you once more.
+Halden sighs. "The Warden provides," he says, and his acolytes and his dead wade toward you.
 
 **Battle:** The Drowned Chapel
 
@@ -378,15 +378,15 @@ Halden sinks down on the altar steps and does not rise again. At the end, he mos
 
 His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was never an offering,* says a note in his tidy hand. *It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
 
-Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
+Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.* Below that, crowded into the margin: *She had sisters in the deep reeds. Kin keep accounts.*
 
 On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
 
-Under the altar cloth is a healing potion Halden never got to drink.
+Under the altar cloth is a healing potion Halden never got to drink. On your way out you climb the leaning tower and cut the drowned bell's rope.
 
 ## `chapel-liturgy` · story
 
-You say the words cut on every old headstone in his churchyard, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*
+You say the words cut on every old headstone in his churchyard, slow and plain. *Lie down and be at peace. Your work is done.* You stop there, short of the line about the bell.
 
 - » **Go on**
 
@@ -420,7 +420,9 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 "The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair." He hands you a healing potion from under the altar cloth. "I bought it for a bad night. I think yours will be worse."
 
-He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the Barrow Gate, and the gate's watchers still know it."
+He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the Barrow Gate, and the gate's watchers still know it." He lowers his voice. "And she had sisters in the deep reeds. Kin keep accounts."
+
+Before you go, Halden climbs the leaning tower and cuts the drowned bell's rope with his own knife.
 
 ### 2. when Reedwife bound
 
@@ -436,7 +438,9 @@ He pushes his prayer book into your hands. "The **Reedwife** was never just a ha
 
 "The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair." He hands you a healing potion from under the altar cloth. "I bought it for a bad night. I think yours will be worse."
 
-He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the Barrow Gate, and the gate's watchers still know it."
+He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the Barrow Gate, and the gate's watchers still know it." He lowers his voice. "And she had sisters in the deep reeds. Kin keep accounts."
+
+Before you go, Halden climbs the leaning tower and cuts the drowned bell's rope with his own knife.
 
 - » **Take the prayer book** <sub>open on every route here</sub>
 - » **Take the prayer book** <sub>**never open on any reachable route** (hidden)</sub>
@@ -509,22 +513,18 @@ You drag each other out onto the mud, soaked and shaking. Behind you the last wi
 
 ## `purses` · story
 
-<sub>reads: companion:wren</sub>
-
 In the reeds at the pool's edge lie the drowned, with their purses still tied at their belts. There are twelve purses, fifty-five gold between them, and two hold a stoppered healing potion against the fen-fever.
 
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.
 
 Wren looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
 
-- » **Keep the purses. The dead won't spend them** <sub>open on every route here</sub>
-- » **Keep the purses. The dead won't spend them** <sub>**never open on any reachable route** (hidden)</sub>
-- » **Carry the purses home for the families** <sub>open on every route here</sub>
-- » **Carry the purses home for the families** <sub>**never open on any reachable route** (hidden)</sub>
+- » **Keep the purses. The dead won't spend them**
+- » **Carry the purses home for the families**
 
 ## `purses-taken` · story
 
-<sub>reads: flag:drowned-gold-home, companion:wren</sub>
+<sub>reads: flag:drowned-gold-home</sub>
 
 **2 versions**
 
@@ -541,11 +541,6 @@ Wren helps you tie the purses into a bundle. She counts them twice. "Twelve," sh
 Behind you, the fog closes over the pools again.
 
 - » **Go on into the fen**
-
-**Never shown on any reachable route:**
-
-- when `drowned-gold-home` · Wren not in the party: "You tie the purses into a bundle, and count them twice. Twelve families."
-- when not `drowned-gold-home` · Wren not in the party: "You fill your pockets with the drowned folk's coin."
 
 ## `pool` · story
 
@@ -657,7 +652,7 @@ The watchers look at the book for a long, grinding moment, then fold their wings
 
 ### 1. when Wren's regard < 0
 
-Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
+Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every trail of the walking dead goes down into it.
 
 Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
 
@@ -667,7 +662,7 @@ She does not wish you luck. She checks her bowstring instead, and watches the fe
 
 ### 2. when Wren's regard 0–1
 
-Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
+Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every trail of the walking dead goes down into it.
 
 Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
 
@@ -675,7 +670,7 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 
 ### 3. when Wren's regard ≥ 2
 
-Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
+Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every trail of the walking dead goes down into it.
 
 Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
 
@@ -684,7 +679,7 @@ Wren looks at the steps, then at you. "I don't know the ground past here," she s
 "Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on. She ties a strip of the reeve's colours round your arm, quick and tight.
 
 - » **Leave Wren the gate, and go down** <sub>open on every route here</sub>
-- » **Ask Wren to come down with you** <sub>open when Wren's regard ≥ 2; otherwise hidden</sub>
+- » **Ask Wren to come down with you** <sub>open when Wren's regard 0–1 or Wren's regard ≥ 2; otherwise hidden</sub>
 - » **Go down** <sub>**never open on any reachable route** (hidden)</sub>
 
 ## `hall` · story
@@ -705,6 +700,8 @@ A thin grey man in a gravedigger's apron stands under the last panel. He smooths
 
 He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
 
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
+
 "Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
 
 ### 2. when Halden not saved · not `diggers-passed` · `door-straining`
@@ -718,6 +715,8 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses her
 A thin grey man in a gravedigger's apron stands under the last panel. He smooths the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
 
 He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
+
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
 
 "You felt the ground shake? That was the Warden, leaning on his door." He picks up his lantern and goes on down into the dark.
 
@@ -733,6 +732,8 @@ A thin grey man in a gravedigger's apron stands under the last panel. He smooths
 
 He sees your torch and is not alarmed. "You got past my diggers," he says kindly. "No matter. They have dug enough."
 
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
+
 "Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
 
 ### 4. when Halden not saved · `diggers-passed` · `door-straining`
@@ -746,6 +747,8 @@ The last panel is fresh mud smeared over old paint. One angry stroke crosses her
 A thin grey man in a gravedigger's apron stands under the last panel. He smooths the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
 
 He sees your torch and is not alarmed. "You got past my diggers," he says kindly. "No matter. They have dug enough."
+
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
 
 "You felt the ground shake? That was the Warden, leaning on his door." He picks up his lantern and goes on down into the dark.
 
@@ -763,6 +766,8 @@ A grey little gravedigger, Halden said. The one who brought the candles.
 
 He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
 
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
+
 "Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
 
 ### 6. when Halden saved · not `diggers-passed` · `door-straining`
@@ -778,6 +783,8 @@ A thin grey man in a gravedigger's apron stands under the last panel. He smooths
 A grey little gravedigger, Halden said. The one who brought the candles.
 
 He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
+
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
 
 "You felt the ground shake? That was the Warden, leaning on his door." He picks up his lantern and goes on down into the dark.
 
@@ -795,6 +802,8 @@ A grey little gravedigger, Halden said. The one who brought the candles.
 
 He sees your torch and is not alarmed. "You got past my diggers," he says kindly. "No matter. They have dug enough."
 
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
+
 "Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
 
 ### 8. when Halden saved · `diggers-passed` · `door-straining`
@@ -811,13 +820,15 @@ A grey little gravedigger, Halden said. The one who brought the candles.
 
 He sees your torch and is not alarmed. "You got past my diggers," he says kindly. "No matter. They have dug enough."
 
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
+
 "You felt the ground shake? That was the Warden, leaning on his door." He picks up his lantern and goes on down into the dark.
 
 - » **Go deeper in**
 
 ## `ossuary` · check
 
-Skulls fill this room from floor to ceiling, stacked in rows like bricks. Old gold winks from the niches between them. A careful eye might take some of it back up.
+The kings' household lies here in niches cut into the rock, each with a little grave-gold at its feet. A careful eye might take some of it back up.
 
 **Check:** [Investigation DC 12]
 
@@ -910,17 +921,17 @@ A light that is not torch-light fills the cut. The dead shuffle back from it lik
 
 ### 1. when Wren not in the party
 
-At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is light now, just bones in a coat.
+At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is just bones in a coat now, light but awkward.
 
-The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and you will carry him with care or not at all.
 
 ### 2. when Wren in the party
 
-At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is light now, just bones in a coat.
+At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is just bones in a coat now, light but awkward.
 
 Wren kneels and straightens the chain on his chest. "The reeve's grandfather," she says, and nothing else.
 
-The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and you will carry him with care or not at all.
 
 - » **Carry him home in your cloak, though it will cost the day**
 - » **Lay him down here, chain and all, and take the grave-goods**
@@ -933,11 +944,11 @@ The diggers stacked their grave-goods against the wall: rings, buckles, old coin
 
 ### 1. when the first visit?
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings, and takes a **stance**.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in his eye sockets. He draws a sword of green bronze, like the soldiers in the paintings, and takes his stance.
 
 ### 2. when a return visit?
 
-The old guardsman stands before its slab again, sword drawn, cold light in its eyes.
+The old guardsman stands before his slab again, sword drawn, cold light in his eyes.
 
 - » **[History DC 15] Relieve him of his post, the old way** [History DC 15] <sub>(once)</sub> <sub>open when `hall-seen`; otherwise hidden</sub>
 - » **Draw on him**
@@ -950,23 +961,23 @@ The old guardsman stands before its slab again, sword drawn, cold light in its e
 
 ### 1. when the first visit?
 
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+From the slabs on either side of him, two skeletons rise. They snap to their feet at the same instant, and come for you.
 
 **Battle:** Wight Tomb
 
 *Won:*
 
-The wight comes apart at the joints and lies down in its own armour. Under its slab lies a guardsman's pay that no one ever came to collect.
+The wight comes apart at the joints and lies down in his own armour. Under his slab lies a guardsman's pay that no one ever came to collect.
 
 ### 2. when a return visit?
 
-The guardsman's two skeletons stand at its sides, heads turned toward you.
+His two skeletons stand at his sides, heads turned toward you.
 
 **Battle:** Wight Tomb
 
 *Won:*
 
-The wight comes apart at the joints and lies down in its own armour. Under its slab lies a guardsman's pay that no one ever came to collect.
+The wight comes apart at the joints and lies down in his own armour. Under his slab lies a guardsman's pay that no one ever came to collect.
 
 ## `wights-salute` · story
 
@@ -982,7 +993,7 @@ You give the salute the painted hall showed, fist to chest, and tell him his wat
 
 ### 1. when the first visit?
 
-Old masons sealed the king's chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Inside, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
+Old masons sealed the king's chamber in lead. Something has peeled the lead back from within. Beyond it, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
 
 The embalmed king turns. Someone has set a crown of green bronze back on his head, and set it straight. Two of his household dead lurch from the corners, and beside the throne a barrow-soldier in green bronze draws its sword.
 
@@ -1112,7 +1123,7 @@ The ghouls drag you down among the candles. When you come round, you are lying b
 
 ### 1. when not `kneelers-scorned` · the first visit?
 
-Marrow turns with the chisel in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
+Marrow turns with the chisel in his hand, and the patience goes out of his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
 
 **Battle:** The Worm at the Door
 
@@ -1122,7 +1133,7 @@ Marrow dies reaching for the door. His kneeling faithful stare at the body and d
 
 ### 2. when a return visit?
 
-Marrow turns from the door again, chisel in hand. The armour, the ghouls and the two soldiers in green bronze come for you once more.
+Marrow turns from the door again, chisel in hand. The armour has a dent in it now. It does not seem to mind.
 
 **Battle:** The Worm at the Door
 
@@ -1134,7 +1145,7 @@ Marrow dies reaching for the door. His kneeling faithful stare at the body and d
 
 Marrow hears you out without stopping his chisel. "Then the Warden chose Thornwick," he says. "He chose well." Behind him the kneelers laugh, all together, and lift their black candles higher.
 
-Marrow turns with the chisel in his hand, and rage floods the sweet reason off his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
+Marrow turns with the chisel in his hand, and the patience goes out of his face. "The door opens for the *faithful*!" His acolyte pulls a knife. The armour grinds down the stair, the ghouls come low and fast between the candles, and the two bronze soldiers get to their feet.
 
 **Battle:** The Worm at the Door
 
@@ -1164,7 +1175,7 @@ Quiet settles over the last stair. Only the door still makes a sound, a slow gri
 
 Marrow looks up at the letters he pried loose. "I thought he would give them back to me," he says. "My faithful will sing whatever I sing. Or you can take me up to your reeve."
 
-Boots scrape in the shaft above. Brother Halden drops down it, skinning his palms, and limps down the last stair. He promised to follow you down, and he has.
+Boots scrape in the shaft above. Brother Halden drops down it, skinning his palms, and limps down the last stair.
 
 ### 3. when `marrow-dead` · Halden not saved
 
@@ -1174,7 +1185,7 @@ Quiet settles over the last stair. Only the door still makes a sound, a slow gri
 
 Quiet settles over the last stair. Only the door still makes a sound, a slow grinding, as the Warden leans on what is left of its lead.
 
-Boots scrape in the shaft above. Brother Halden drops down it, skinning his palms, and limps down the last stair. He promised to follow you down, and he has.
+Boots scrape in the shaft above. Brother Halden drops down it, skinning his palms, and limps down the last stair.
 
 - » **Make Marrow lead his faithful in the rites** <sub>open when not `marrow-dead`; otherwise hidden</sub>
 - » **Bind Marrow for the reeve, and take the cult's offering-purse** <sub>open when not `marrow-dead`; otherwise hidden</sub>
@@ -1239,13 +1250,13 @@ Your voice cracks on the oldest word, and the rest come out wrong. The letters s
 
 <sub>(shared with: `resealing-shifted`)</sub>
 
-*Read the lead letters as a spell, passed:*
+*Read the leaded letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter and speak its line from the book, and one by one they glow and set hard.
 
 <sub>(shared with: `resealing-shifted`)</sub>
 
-*Read the lead letters as a spell, failed:*
+*Read the leaded letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark.
 
@@ -1319,7 +1330,7 @@ Your voice cracks on the oldest word, and the rest come out wrong. The letters s
 
 <sub>(shared with: `resealing-shifted`)</sub>
 
-*Read the lead letters as a spell, passed:*
+*Read the leaded letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter and speak its line from the book, and one by one they glow and set hard.
 
@@ -1329,7 +1340,7 @@ At the back of the stair, Marrow's kneelers chant every line back. The whole sta
 
 <sub>(shared with: `resealing-shifted`)</sub>
 
-*Read the lead letters as a spell, failed:*
+*Read the leaded letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark.
 
@@ -1376,7 +1387,7 @@ Halden opens his mouth, and the voice that comes out is not quite his. He shuts 
 <sub>(shared with: `resealing-shifted`)</sub>
 
 - » **Speak the rites aloud** [Religion DC 13]
-- » **Read the lead letters as a spell** [Arcana DC 14] — _They are cut deeper than any prayer needs._
+- » **Read the leaded letters as a spell** [Arcana DC 14] — _They are cut deeper than any prayer needs._
 - » **Turn the kneeling cultists to the words** [Persuasion DC 14] — _They came here to chant at this door._ <sub>open when Marrow not sings · not `kneelers-scorned`; otherwise hidden</sub>
 - » **Let Marrow lead his faithful in the rites** [Persuasion DC 9] <sub>open when Marrow sings; otherwise hidden</sub>
 - » **Give Halden the book** [Religion DC 8] <sub>open when Halden saved; otherwise hidden</sub>
@@ -1417,13 +1428,13 @@ Your voice cracks on the oldest word, and the rest come out wrong. The letters s
 
 <sub>(shared with: `resealing`)</sub>
 
-*Read the lead letters as a spell, passed:*
+*Read the leaded letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter and speak its line from the book, and one by one they glow and set hard.
 
 <sub>(shared with: `resealing`)</sub>
 
-*Read the lead letters as a spell, failed:*
+*Read the leaded letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark.
 
@@ -1499,7 +1510,7 @@ Your voice cracks on the oldest word, and the rest come out wrong. The letters s
 
 <sub>(shared with: `resealing`)</sub>
 
-*Read the lead letters as a spell, passed:*
+*Read the leaded letters as a spell, passed:*
 
 The letters are not a prayer at all. They are a lock, and the rites are its key. You trace each letter and speak its line from the book, and one by one they glow and set hard.
 
@@ -1509,7 +1520,7 @@ At the back of the stair, Marrow's kneelers chant every line back. The whole sta
 
 <sub>(shared with: `resealing`)</sub>
 
-*Read the lead letters as a spell, failed:*
+*Read the leaded letters as a spell, failed:*
 
 You trace the wrong line first. A letter spits its lead at your hand and goes dark.
 
@@ -1556,7 +1567,7 @@ Halden opens his mouth, and the voice that comes out is not quite his. He shuts 
 <sub>(shared with: `resealing`)</sub>
 
 - » **Speak the rites aloud** [Religion DC 15]
-- » **Read the lead letters as a spell** [Arcana DC 16] — _They are cut deeper than any prayer needs._
+- » **Read the leaded letters as a spell** [Arcana DC 16] — _They are cut deeper than any prayer needs._
 - » **Turn the kneeling cultists to the words** [Persuasion DC 16] — _They came here to chant at this door._ <sub>open when Marrow not sings · not `kneelers-scorned`; otherwise hidden</sub>
 - » **Let Marrow lead his faithful in the rites** [Persuasion DC 9] <sub>open when Marrow sings; otherwise hidden</sub>
 - » **Give Halden the book** [Religion DC 8] <sub>open when Halden saved; otherwise hidden</sub>
@@ -1619,13 +1630,13 @@ Among the cult's packs you find a rope ladder and a grapnel. You throw the hook 
 
 <sub>reads: companion:wren, flag:npc.halden.fate.saved, flag:npc.marrow.fate.bound, flag:npc.marrow.fate.sings, flag:grandfather-home, flag:seal-cracked, flag:npc.wren.attitude</sub>
 
-**72 versions** — printed once, each conditional line marked with when it shows.
+**96 versions** — printed once, each conditional line marked with when it shows.
 
 *text:*
 
 The rope ladder brings you up out of the great barrow and into the open air.
 
-> **[when Wren's regard < 2 — or — Wren not in the party]** Wren is still at the gate when you come up, with her knife out. All round her, the dead lie still in the grass at last. She looks like someone who means to have been calm the whole time.
+> **[when Wren not in the party]** Wren is still at the gate when you come up, with her knife out. All round her, the dead lie still in the grass at last. She looks like someone who means to have been calm the whole time.
 
 > **[when Wren in the party]** Wren comes up behind you. At the top she stands a long moment among the dead, who lie still in the grass at last. Then she unstrings her bow.
 
@@ -1635,7 +1646,7 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when Marrow sings]** Marrow climbs out after you, and walks off alone toward Saltmere. Wren keeps her hand on her knife until the fog takes him.
 
-> **[when `grandfather-home` · Wren's regard < 2 — or — Wren not in the party · `grandfather-home`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
+> **[when Wren not in the party · `grandfather-home`]** Wren sees the chain glint in the folds of your cloak, and she knows it. She takes one end of the bundle before you can ask. "I've got his feet," she says. "Mind the ruts."
 
 > **[when Wren in the party · `grandfather-home`]** Wren has carried the old man's feet since the cut, and she will not hand them over now. "Mind the ruts," she says, at every rut.
 
@@ -1645,7 +1656,7 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 > **[when Wren's regard ≥ 2]** At the edge of town Wren says "Thank you," fast, to the road. She walks on before anyone can ask what for.
 
-- » **Go up to the reeve's hall** <sub>open when Wren's regard < 2 — or — Wren not in the party; otherwise hidden</sub>
+- » **Go up to the reeve's hall** <sub>open when Wren not in the party; otherwise hidden</sub>
 - » **Go up to the reeve's hall** <sub>open when Wren in the party; otherwise hidden</sub>
 
 ## `sb-hall` · story
@@ -1658,19 +1669,23 @@ The rope ladder brings you up out of the great barrow and into the open air.
 
 That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin, and does not lose count once.
 
+Aldous has read Halden's notes. "So the price we stopped paying was the one keeping us asleep in our beds," he says. "Thornwick pays its debts. We had forgotten that one."
+
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 
-Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
+Every night of the reburials the Wander-Inn fills with mourners, and Mira, who keeps it, keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
 ### 2. when not `grandfather-home` · `drowned-gold-home`
 
 That evening, in the reeve's hall, Aldous counts your purse into your hands himself, coin by coin, and does not lose count once.
 
+Aldous has read Halden's notes. "So the price we stopped paying was the one keeping us asleep in our beds," he says. "Thornwick pays its debts. We had forgotten that one."
+
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 
 The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest.
 
-Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
+Every night of the reburials the Wander-Inn fills with mourners, and Mira, who keeps it, keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
 ### 3. when `grandfather-home` · not `drowned-gold-home`
 
@@ -1678,9 +1693,11 @@ That evening you carry the old man into the reeve's hall and lay him on the long
 
 Then he counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
 
+Aldous has read Halden's notes. "So the price we stopped paying was the one keeping us asleep in our beds," he says. "Thornwick pays its debts. We had forgotten that one."
+
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 
-Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
+Every night of the reburials the Wander-Inn fills with mourners, and Mira, who keeps it, keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
 ### 4. when `grandfather-home` · `drowned-gold-home`
 
@@ -1688,13 +1705,15 @@ That evening you carry the old man into the reeve's hall and lay him on the long
 
 Then he counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
 
+Aldous has read Halden's notes. "So the price we stopped paying was the one keeping us asleep in our beds," he says. "Thornwick pays its debts. We had forgotten that one."
+
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 
 The fen-folk come in from the far pools for the reburials, and Wren hands over the drowned folk's purses one by one. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest.
 
-Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
+Every night of the reburials the Wander-Inn fills with mourners, and Mira, who keeps it, keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
-- » **Spend the reeve's purse on a hot supper for the whole taproom (150 gold)** <sub>open when gold ≥ 150?; otherwise hidden</sub>
+- » **Buy the whole taproom supper on the reeve's coin (150 gold)** <sub>open when gold ≥ 150?; otherwise hidden</sub>
 - » **Let the town sleep**
 
 ## `sb-supper` · story
@@ -1734,13 +1753,13 @@ Eel-catchers found you by the old road at first light, Mira says. They carried y
 
 ## `sb-epilogue` · ending
 
-<sub>reads: flag:npc.vex.fate.turned, flag:npc.vargan.fate.spared, flag:npc.marrow.fate.bound, flag:npc.marrow.fate.sings, flag:npc.halden.fate.saved, flag:npc.wren.met, flag:drowned-gold-home, flag:grandfather-home, flag:diggers-passed, flag:seal-cracked</sub>
+<sub>reads: flag:npc.vex.fate.turned, flag:npc.vargan.fate.spared, flag:npc.marrow.fate.bound, flag:npc.marrow.fate.sings, flag:npc.halden.fate.saved, flag:npc.wren.attitude, flag:npc.reedwife.fate.bound, flag:drowned-gold-home, flag:grandfather-home, flag:diggers-passed, flag:seal-cracked</sub>
 
-**192 versions** — printed once, each conditional line marked with when it shows.
+**768 versions** — printed once, each conditional line marked with when it shows.
 
 *text:*
 
-In Thornwick's churchyard the turf is back over every grave, and the bell-rope hangs still.
+In Thornwick's churchyard the turf is back over every grave. Out in the fen, the drowned chapel's bell hangs without a rope, and does not ring.
 
 *slides:*
 
@@ -1752,11 +1771,15 @@ In Thornwick's churchyard the turf is back over every grave, and the bell-rope h
 
 > **[when Marrow sings]** In Saltmere, Marrow keeps the graves he once left in the cold. He says the rites over them every evening.
 
-> **[when Halden saved]** Brother Halden keeps the vigil now, and he reads the rites a little louder than he needs to.
+> **[when Halden saved]** Brother Halden keeps the vigil now. Each midwinter he sits a night by the barrow door, and reads the rites a little louder than he needs to.
 
 > **[when Halden not saved]** Halden and his acolytes share a new grave by the chapel. Mira of the Wander-Inn paid for the white headstone. Under the names it says only *Asleep*.
 
-> **[on every route here]** Wren wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.
+> **[when Wren's regard < 0]** Wren walks the old road alone now, once a season, and asks for no company.
+
+Wren wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season.
+
+> **[when Reedwife bound]** At midwinter the fen-folk carry the lamb past the hag's stake and out to the barrow door, and leave it on the step. The vigil is theirs to keep now.
 
 Every night since the graves opened, a lamp has burned in the window of the Wander-Inn. Now Mira takes it down and blows it out.
 
@@ -1871,13 +1894,6 @@ In.
 <sub>(shared with: `fen/delve-done`, `undercrypt/delve-done`)</sub>
 
 - » **Back**
-
-## Never shown
-
-Conditional lines whose condition no reachable state meets (every atom pinned): dead text, or a condition that is wrong.
-
-- `purses-taken` — when `drowned-gold-home` · Wren not in the party: "You tie the purses into a bundle, and count them twice. Twelve families."
-- `purses-taken` — when not `drowned-gold-home` · Wren not in the party: "You fill your pockets with the drowned folk's coin."
 
 ## Dawns
 

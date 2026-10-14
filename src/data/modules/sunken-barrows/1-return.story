@@ -39,7 +39,7 @@ You wake in the {wander-inn} with the sun up. The bell-ringers carried you in. "
 # grave-morning
 art: ⛪
 noBack: true
-Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out and left on their own, and they left together.
+Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out on their own.
 The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way: **out to the deep fen**.
 Every old headstone carries the same words, cut deep and green with moss. *Lie down and be at peace. Your work is done. The bell will wake you.* {thornwick}'s priests have said them over every grave for {thornwick-liturgy}.
 > Take it to the town → square/city  #on

@@ -49,7 +49,7 @@ The last shadow tears on your blade and is gone. The woman in the shift sinks ba
 
 <sub>scene `grave-morning`</sub>
 
-Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out and left on their own, and they left together.
+Morning shows the churchyard plain, and plain is worse. A dozen graves stand open — dug *outward*, turf thrown wide from below. The dead climbed out on their own.
 
 The drag-marks run through the gap in the wall and out across the water-meadows. Every one of them points the same way: **out to the deep fen**.
 
@@ -155,49 +155,7 @@ _The shop: Bram's Stores (the route buys nothing)._
 
 _The shop: The Smithy (the route buys nothing)._
 
-The forge roars. "Steel or leather? I make both, and I make them to last."
-
-**↳ Thornwick** <sub>(map `square/city`)</sub>
-
-→ Tide Temple
-
-<sub>scene `square/temple`</sub>
-
-**Wihtwold Sandybrook**
-
-> **Wihtwold** looks up from the altar. "Peace be on you. What do you need of the Tide?"
-
-**» Ask for healing (30 gold)**
-
-_-30 gold (379)_
-
-<sub>scene `square/temple-healed`</sub>
-
-Warm hands, an old prayer, and your wounds close like they were never there.
-
-**» Give thanks**
-
-<sub>scene `square/temple` (again)</sub>
-
-**Wihtwold Sandybrook**
-
-_(a paragraph shown before: “Wihtwold looks up from the altar. "Peace…”)_
-
-**» See what the temple sells**
-
-<sub>scene `square/temple-wares`</sub>
-
-_The shop: Tide Temple (the route buys nothing)._
-
-"Scrolls of the faith, and the draughts the sisters brew."
-
-<sub>scene `square/temple` (again)</sub>
-
-**Wihtwold Sandybrook**
-
-_(a paragraph shown before: “Wihtwold looks up from the altar. "Peace…”)_
-
-**» Leave the temple**
+"Whatever you need, take it, and pay me after." The shopkeeper does not look up. "Nobody's bought anything since the bells but candles and nails."
 
 **↳ Thornwick** <sub>(map `square/city`)</sub>
 
@@ -205,9 +163,19 @@ _(a paragraph shown before: “Wihtwold looks up from the altar. "Peace…”)_
 
 <sub>scene `square/notice-board`</sub>
 
-Notices, most of them old: a lost goat, a reward for a stolen cart, a warning about the roads out of Thornwick.
+Every old notice is covered by a new one, in the reeve's hand: the names of the opened graves, oldest first. Under them, smaller: *Reburials when they are found.*
 
 **» Step away**
+
+**↳ Thornwick** <sub>(map `square/city`)</sub>
+
+→ The Chapel
+
+<sub>scene `square/place-the-chapel`</sub>
+
+The chapel door stands open, and nobody is at the altar. A frightened acolyte is keeping the candles lit. "Brother Halden rang the bell every evening," she says. "I don't know the words for it. I keep the candles lit instead."
+
+**» Walk on**
 
 **↳ Thornwick** <sub>(map `square/city`)</sub>
 
@@ -241,85 +209,13 @@ The old raised road goes on into the fog, one great flat stone after another. Th
 
 Planks and tussocks lead off into the reeds. Behind you, the last fence-post leans in the mud.
 
-_A hidden door: Trailhead ↔ Hidden Cache._
+→ Plank Walk
 
-→ Hidden Cache
-
-**→ Hidden Cache** <sub>(room `cache`)</sub>
-
-→ Search the room
-
-<sub>scene `fen/f1-find-cache`</sub>
-
-A purse nobody came back for, tucked out of sight.
-
-**» Take it**
-
-_+50 gold (429)_
-
-**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
-
-→ Trailhead
-
-**→ Trailhead** <sub>(room `m0`)</sub>
-
-→ Heron Rookery
-
-**→ Heron Rookery** <sub>(room `s2`)</sub>
-
-→ Trailhead
-
-**→ Trailhead** <sub>(room `m0`)</sub>
-
-→ Search the room
-
-Reeds, and more reeds. Nothing in them but frogs.
-
-→ The Drowned Chapel
-
-**→ The Drowned Chapel** <sub>(room `m1`)</sub>
-
-<sub>scene `chapel`</sub>
-
-**Brother Halden**
-
-> The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. A few are **black tallow**, and they smoke like wet wood. On the altar steps stands a priest, robes fen-stained, face serene. He is leading a congregation.
-
-> The congregation is dead. They stand in the water in row after row, every face turned to the altar.
-
-> Wren grips your arm. "That's **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley."
-
-> "**Welcome!**" Halden smiles at you, and the smile is terribly calm. "You've come to see the great work. The Warden below is gathering his flock at last. Will you kneel? Everyone kneels down here, sooner or later."
-
-**» Refuse the sermon and draw**
-
-<sub>scene `chapel-fight`</sub>
-
-Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's.
-
-**Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
-
-**» Fight — won**
-
-Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
-
-His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was never an offering,* says a note in his tidy hand. *It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
-
-Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
-
-On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
-
-Under the altar cloth is a healing potion Halden never got to drink.
-
-_Gained: Potion of Healing_
-
-_Journal (clue): The Rites of Sealing_
-
-**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+**→ Plank Walk** <sub>(room `s1`)</sub>
 
 → The Corpse-Lights
 
-**→ The Corpse-Lights** <sub>(room `m2`)</sub>
+**→ The Corpse-Lights** <sub>(room `s2`)</sub>
 
 <sub>scene `lights`</sub>
 
@@ -351,7 +247,7 @@ Wren looks at the purses, then at you. "Those belonged to somebody's husband, so
 
 **» Keep the purses. The dead won't spend them**
 
-_+55 gold (484)_
+_+55 gold (464)_
 
 _Gained: Potion of Healing ×2_
 
@@ -367,25 +263,17 @@ Behind you, the fog closes over the pools again.
 
 **↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
 
-→ Dry Hummock
+→ Plank Walk
 
-**→ Dry Hummock** <sub>(room `m3`)</sub>
+**→ Plank Walk** <sub>(room `s1`)</sub>
 
-A hump of firm ground, high enough above the water for a fire. You could camp here.
+→ Drowned Hut
 
-**» Make camp (long rest)** <sub>(day 2)</sub>
-
-**Dawn — day 3.**
-
-The ground shook once in the night, deep down. It felt like a door when someone shoves it from the other side.
-
-→ Willow Island
-
-**→ Willow Island** <sub>(room `m4`)</sub>
+**→ Drowned Hut** <sub>(room `s3`)</sub>
 
 → The Serpent Pool
 
-**→ The Serpent Pool** <sub>(room `s1`)</sub>
+**→ The Serpent Pool** <sub>(room `s4`)</sub>
 
 <sub>scene `pool`</sub>
 
@@ -405,31 +293,111 @@ The pool empties itself at you. Three snakes the girth of roof-beams pour over t
 
 The serpents lie in loops like dropped rope. Your boots turn up everything the fen-folk ever left here, from old coins to a sealed flask of potion.
 
-_+85 gold (569)_
+_+85 gold (549)_
 
 _Gained: Potion of Greater Healing_
 
 **↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
 
-→ Willow Island
+→ Drowned Hut
 
-**→ Willow Island** <sub>(room `m4`)</sub>
+**→ Drowned Hut** <sub>(room `s3`)</sub>
+
+→ Plank Walk
+
+**→ Plank Walk** <sub>(room `s1`)</sub>
 
 → Search the room
 
-<sub>scene `fen/f1-find-m4`</sub>
+<sub>scene `fen/f1-find-s1`</sub>
 
 A few coins, dropped and forgotten.
 
 **» Take it**
 
-_+25 gold (594)_
+_+25 gold (574)_
 
 **↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
 
+→ Trailhead
+
+**→ Trailhead** <sub>(room `m0`)</sub>
+
+→ The Drowned Chapel
+
+**→ The Drowned Chapel** <sub>(room `m1`)</sub>
+
+_A hidden door: The Drowned Chapel ↔ Hidden Cache._
+
+<sub>scene `chapel`</sub>
+
+**Brother Halden**
+
+> The chapel kneels in the water, drowned to its windows, its bell-tower leaning like a man listening. Candles burn on every ledge. A few are **black tallow**, and they smoke like wet wood. On the altar steps stands a priest, robes fen-stained, face serene. He is leading a congregation.
+
+> The congregation is dead. They stand in the water in row after row, every face turned to the altar.
+
+> Wren grips your arm. "That's **Brother Halden**," she whispers. "He kept the little chapel in Thornwick. Mildest man in the valley."
+
+> "**Welcome!**" Halden smiles at you, and the smile is terribly calm. "You've come to see the great work. The Warden below is gathering his flock at last. Will you kneel? Everyone kneels down here, sooner or later."
+
+**» Refuse the sermon and draw**
+
+<sub>scene `chapel-fight`</sub>
+
+Halden sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in Thornwick's chapel colours step up beside him, their eyes as empty as the dead's.
+
+**Battle:** The Drowned Chapel <sub>(`drowned-chapel` on `ruins`)</sub>
+
+**» Fight — won**
+
+Halden sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
+
+His prayer book lies open on the altar, fen-damp. *The lamb each midwinter was never an offering,* says a note in his tidy hand. *It was her wage. The Reedwife was the Warden's jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
+
+Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.* Below that, crowded into the margin: *She had sisters in the deep reeds. Kin keep accounts.*
+
+On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the Barrow Gate, and the watchers there still know it.*
+
+Under the altar cloth is a healing potion Halden never got to drink. On your way out you climb the leaning tower and cut the drowned bell's rope.
+
+_Gained: Potion of Healing_
+
+_Journal (clue): The Rites of Sealing_
+
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+
+→ Hidden Cache
+
+**→ Hidden Cache** <sub>(room `cache`)</sub>
+
+→ Search the room
+
+<sub>scene `fen/f1-find-cache`</sub>
+
+A bag pushed into a gap where nobody would look. Whoever hid it never came back for it.
+
+**» Take it**
+
+_+50 gold (624)_
+
+**↳ The Deep Fen** <sub>(dungeon `fen/delve`)</sub>
+
+→ The Drowned Chapel
+
+**→ The Drowned Chapel** <sub>(room `m1`)</sub>
+
+→ Search the room
+
+Mud, and the bones of something small.
+
+→ Black Pool
+
+**→ Black Pool** <sub>(room `m2`)</sub>
+
 → The Barrow Gate
 
-**→ The Barrow Gate** <sub>(room `m5`)</sub>
+**→ The Barrow Gate** <sub>(room `m3`)</sub>
 
 <sub>scene `lychgate`</sub>
 
@@ -453,7 +421,7 @@ The second gargoyle breaks apart in the air. It rains down as plain gravel, over
 
 <sub>scene `lychgate-won`</sub>
 
-Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
+Past the Barrow Gate the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every trail of the walking dead goes down into it.
 
 Letters are cut into the lintel, worn almost smooth. *Here is the **Undercrypt**. Let it stay shut.*
 
@@ -479,6 +447,94 @@ The steps go down past the dead, and the dead do not stay quiet.
 
 The smell reaches you first. Then a scrape, somewhere below, of something that should not be walking.
 
+→ The Painted Hall
+
+**→ The Painted Hall** <sub>(room `r1`)</sub>
+
+<sub>scene `hall`</sub>
+
+The stair opens into a painted hall. The pictures tell one story, over and over. A **door** stands under the earth with a **horned warden** behind it, and before it, age after age, a **woman of the reeds** keeps watch.
+
+In one panel a line of soldiers in green bronze stands before the door, each with a fist pressed flat to his chest. It is the old kings' salute, and the painter took great care over it.
+
+The last panel is fresh mud smeared over old paint. One angry stroke crosses her out. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**
+
+A thin grey man in a gravedigger's apron stands under the last panel. He smooths the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
+
+He sees your torch and is not alarmed. "Mind the cut," he says kindly. "My diggers are working down there, and they don't like to be stopped."
+
+"The Warden wants every seam of lead out of the hill," he adds, "so there is none left to pour back into his door."
+
+"Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
+
+**» Go deeper in**
+
+_Journal (clue): The Door Opens From Within_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
+
+→ Shrine
+
+**→ Shrine** <sub>(room `s1`)</sub>
+
+A small altar, its candles long out. Someone left an offering.
+
+→ The Painted Hall
+
+**→ The Painted Hall** <sub>(room `r1`)</sub>
+
+→ Search the room
+
+<sub>scene `undercrypt/f1-read-r1`</sub>
+
+A second tablet, older than the first: three reed-women at the door, not one, and the two behind her watching the one who sits.
+
+**» Go on**
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
+
+→ The Bone Room
+
+**→ The Bone Room** <sub>(room `r2`)</sub>
+
+_A hidden door: The Bone Room ↔ Hidden Cache._
+
+→ Hidden Cache
+
+**→ Hidden Cache** <sub>(room `cache`)</sub>
+
+→ Search the room
+
+<sub>scene `undercrypt/f1-find-cache`</sub>
+
+_(a paragraph shown before: “A bag pushed into a gap where…”)_
+
+**» Take it**
+
+_+50 gold (674)_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
+
+→ The Bone Room
+
+**→ The Bone Room** <sub>(room `r2`)</sub>
+
+→ Search the room
+
+<sub>scene `ossuary`</sub>
+
+The kings' household lies here in niches cut into the rock, each with a little grave-gold at its feet. A careful eye might take some of it back up.
+
+`[Investigation DC 12 — Morgan Le Fey rolls 17 — passed]`
+
+Behind a row of skulls, the builders left a hidden nook. Inside are coins stamped with kings with no names, and a flask of drink that has gone strong with age instead of sour.
+
+_+90 gold (764)_
+
+_Gained: Potion of Greater Healing_
+
+**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
+
 → The Lead Cut
 
 **→ The Lead Cut** <sub>(room `m1`)</sub>
@@ -503,75 +559,23 @@ The last digger to fall wears the reeve's chain. The cut goes quiet, apart from 
 
 <sub>scene `diggers-chain`</sub>
 
-At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is light now, just bones in a coat.
+At the end of the cut, the old man in the reeve's chain has folded down against the wall, in a good burial coat. His chain of office is the twin of the one Aldous grips in his hall. He is just bones in a coat now, light but awkward.
 
-The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and the old man will slow you all the way down.
+The diggers stacked their grave-goods against the wall: rings, buckles, old coin, and a boar-spear with a silvered head. You can carry the old man, or the heap, but not both, and you will carry him with care or not at all.
 
 **» Carry him home in your cloak, though it will cost the day**
 
-**Dawn — day 4.**
+**Dawn — day 3.**
+
+The ground shook once in the night, deep down. It felt like a door when someone shoves it from the other side.
 
 _Journal (clue): The Old Reeve_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
-→ The Painted Hall
-
-**→ The Painted Hall** <sub>(room `m2`)</sub>
-
-<sub>scene `hall`</sub>
-
-The stair opens into a painted hall. The pictures tell one story, over and over. A **door** stands under the earth with a **horned warden** behind it, and before it, age after age, a **woman of the reeds** keeps watch.
-
-In one panel a line of soldiers in green bronze stands before the door, each with a fist pressed flat to his chest. It is the old kings' salute, and the painter took great care over it.
-
-The last panel is fresh mud smeared over old paint. One angry stroke crosses her out. Beneath her, many dead hands scrawled the words: **THE VIGIL HAS ENDED. THE DOOR OPENS FROM WITHIN.**
-
-A thin grey man in a gravedigger's apron stands under the last panel. He smooths the mud flat with his palm, the way you would pat down a fresh grave. A bundle of black candles hangs at his hip.
-
-He sees your torch and is not alarmed. "You got past my diggers," he says kindly. "No matter. They have dug enough."
-
-"Soon enough, the Warden will put his own shoulder to the door." He picks up his lantern and goes on down into the dark.
-
-**» Go deeper in**
-
-_Journal (clue): The Door Opens From Within_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
-
-→ Bone Gallery
-
-**→ Bone Gallery** <sub>(room `m3`)</sub>
-
-Skulls stacked to the ceiling, every one of them still.
-
-→ The Bone Room
-
-**→ The Bone Room** <sub>(room `s1`)</sub>
-
 → Search the room
 
-<sub>scene `ossuary`</sub>
-
-Skulls fill this room from floor to ceiling, stacked in rows like bricks. Old gold winks from the niches between them. A careful eye might take some of it back up.
-
-`[Investigation DC 12 — Morgan Le Fey rolls 25 — passed]`
-
-Behind a row of skulls, the builders left a hidden nook. Inside are coins stamped with kings with no names, and a flask of drink that has gone strong with age instead of sour.
-
-_+90 gold (684)_
-
-_Gained: Potion of Greater Healing_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
-
-→ Bone Gallery
-
-**→ Bone Gallery** <sub>(room `m3`)</sub>
-
-→ Search the room
-
-<sub>scene `undercrypt/f1-read-m3`</sub>
+<sub>scene `undercrypt/f1-read-m1`</sub>
 
 Names are scratched into the plaster here, hundreds of them, each in a different hand. The newest is still white.
 
@@ -581,53 +585,31 @@ Names are scratched into the plaster here, hundreds of them, each in a different
 
 → The Barrow-Guard
 
-**→ The Barrow-Guard** <sub>(room `m4`)</sub>
-
-_A hidden door: The Barrow-Guard ↔ Hidden Cache._
+**→ The Barrow-Guard** <sub>(room `m2`)</sub>
 
 <sub>scene `wights`</sub>
 
-This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in its eye sockets. It draws a sword of green bronze, like the soldiers in the paintings, and takes a **stance**.
+This is the hall of the kings' guard. Three slabs of black stone stand in the dark. On the middle one, an old guardsman in barrow-armour sits *up*, with cold light burning in his eye sockets. He draws a sword of green bronze, like the soldiers in the paintings, and takes his stance.
 
 **» Draw on him**
 
 <sub>scene `wights-fight`</sub>
 
-From the slabs on either side, two skeletons rise to guard it. They snap to their feet at the same instant, and come for you.
+From the slabs on either side of him, two skeletons rise. They snap to their feet at the same instant, and come for you.
 
 **Battle:** Wight Tomb <sub>(`wight-tomb` on `corridor`)</sub>
 
 **» Fight — won**
 
-The wight comes apart at the joints and lies down in its own armour. Under its slab lies a guardsman's pay that no one ever came to collect.
+The wight comes apart at the joints and lies down in his own armour. Under his slab lies a guardsman's pay that no one ever came to collect.
 
-_+40 gold (724)_
-
-**↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
-
-→ Hidden Cache
-
-**→ Hidden Cache** <sub>(room `cache`)</sub>
-
-→ Search the room
-
-<sub>scene `undercrypt/f1-find-cache`</sub>
-
-_(a paragraph shown before: “A purse nobody came back for, tucked…”)_
-
-**» Take it**
-
-_+50 gold (774)_
+_+40 gold (804)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
-→ The Barrow-Guard
-
-**→ The Barrow-Guard** <sub>(room `m4`)</sub>
-
 → Search the room
 
-<sub>scene `undercrypt/f1-read-m4`</sub>
+<sub>scene `undercrypt/f1-read-m2`</sub>
 
 A niche holds a lead tablet, half pried loose. On it, a reed-woman sits before a door, and a line of tiny figures bring her lambs.
 
@@ -637,11 +619,11 @@ A niche holds a lead tablet, half pried loose. On it, a reed-woman sits before a
 
 → The King's Chamber
 
-**→ The King's Chamber** <sub>(room `m5`)</sub>
+**→ The King's Chamber** <sub>(room `m3`)</sub>
 
 <sub>scene `king`</sub>
 
-Old masons sealed the king's chamber in lead. Something has peeled the lead back like fruit-rind, from the *inside*. Inside, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
+Old masons sealed the king's chamber in lead. Something has peeled the lead back from within. Beyond it, a figure in grave-wrappings the colour of old honey stands before a carved wall. It is cut with the names of villages, hundreds of them, and a line runs through every one.
 
 The embalmed king turns. Someone has set a crown of green bronze back on his head, and set it straight. Two of his household dead lurch from the corners, and beside the throne a barrow-soldier in green bronze draws its sword.
 
@@ -653,7 +635,7 @@ The king crumbles to dust and old spice, his servants drop mid-lurch, and his so
 
 You pick his gold rings out of the dust. Behind the throne, a burial shaft drops into the dark, and chanting comes up out of it. There will be no climbing back up it.
 
-_+60 gold (834)_
+_+60 gold (864)_
 
 **↳ The Undercrypt** <sub>(dungeon `undercrypt/delve`)</sub>
 
@@ -671,9 +653,7 @@ You sleep badly, under the black candles, with the chanting for a lullaby. Nobod
 
 _Long rest._
 
-**Dawn — day 5.**
-
-The ground shook again before dawn, longer this time. Far below, old stone gave a little.
+**Dawn — day 4.**
 
 <sub>scene `shaft` (again)</sub>
 
@@ -691,11 +671,9 @@ A walking suit of ancient armour guards the stair. Two ghouls crouch among the c
 
 "**Marrow**," the grey man says, without stopping. "I brought your priest his candles. I dug graves at Saltmere for thirty years. Then the fever came. I buried the whole village, my wife and my two boys last, and walked away and left them in the cold. The Warden leaves nobody in the cold. Is that so wicked?"
 
-The door has shifted in its frame since the ground shook. A line of dark shows along its top. "He leaned on it in the night," Marrow says. "It will be harder to shut now."
-
 **» [Persuasion DC 14] Tell Marrow what the king's wall says**
 
-`[Persuasion DC 14 — Elaine the Holy rolls 23 — passed]`
+`[Persuasion DC 14 — Elaine the Holy rolls 22 — passed]`
 
 <sub>scene `seal-doubt-words`</sub>
 
@@ -717,7 +695,7 @@ The last ghoul falls among the candles. The bronze soldier that rose lies broken
 
 Coins lie thick on the bottom step, thrown there by the faithful. You gather them up.
 
-_+120 gold (954)_
+_+120 gold (984)_
 
 <sub>scene `seal-door`</sub>
 
@@ -735,17 +713,15 @@ You open Halden's book.
 
 **» Read**
 
-<sub>scene `resealing-shifted`</sub>
+<sub>scene `resealing`</sub>
 
 The great door still bulges outward, and half the lead is gone from its letters.
-
-A line of dark, a finger wide, shows along its top, where the stone gave in the night.
 
 Halden's book lies open in your hands. The rites fill three pages, and the oldest words look too old for a living mouth. Someone has to say them, now, at this door.
 
 **» Speak the rites aloud**
 
-`[Religion DC 15 — Morgan Le Fey rolls 17 — passed]`
+`[Religion DC 13 — Morgan Le Fey rolls 20 — passed]`
 
 You read the old rites by black candle-light. You stumble over the oldest words, and say them again until they come out right. With each word, the lead in its letter warms and sets hard.
 
@@ -775,7 +751,7 @@ The walk home is long and wet. The door under the barrows is shut behind you, an
 
 **» Go up to the reeve's hall**
 
-_+150 gold (1104)_
+_+150 gold (1134)_
 
 <sub>scene `sb-hall`</sub>
 
@@ -783,13 +759,15 @@ That evening you carry the old man into the reeve's hall and lay him on the long
 
 Then he counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
 
+Aldous has read Halden's notes. "So the price we stopped paying was the one keeping us asleep in our beds," he says. "Thornwick pays its debts. We had forgotten that one."
+
 Thornwick reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 
-Every night of the reburials the Wander-Inn fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
+Every night of the reburials the Wander-Inn fills with mourners, and Mira, who keeps it, keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
 
-**» Spend the reeve's purse on a hot supper for the whole taproom (150 gold)**
+**» Buy the whole taproom supper on the reeve's coin (150 gold)**
 
-_-150 gold (954)_
+_-150 gold (984)_
 
 <sub>scene `sb-supper`</sub>
 
@@ -799,7 +777,7 @@ The whole taproom eats on your coin. Someone stands and names Thornwick's dead, 
 
 <sub>scene `sb-epilogue`</sub>
 
-In Thornwick's churchyard the turf is back over every grave, and the bell-rope hangs still.
+In Thornwick's churchyard the turf is back over every grave. Out in the fen, the drowned chapel's bell hangs without a rope, and does not ring.
 
 In Saltmere, Marrow keeps the graves he once left in the cold. He says the rites over them every evening.
 

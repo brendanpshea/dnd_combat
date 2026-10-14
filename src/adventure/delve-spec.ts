@@ -915,8 +915,10 @@ function draftSpec(seed: number, spec: Full, story: ReadonlySet<string>): Module
 
     // Ambushes on a corridor or two (never through a lock). Not on a held
     // floor: its holders come looking when it is roused (Dungeon.alarm).
+    // Not where a story wants none of the generator's fights (`maxFights: 0`):
+    // drawn for nobody in particular, they could field anyone at all.
     const held = holders.length > 0;
-    for (const l of held ? [] : dice.shuffle(g.links.filter((x) => !x.door && !pieceLinks.has(x))).slice(0, dice.int(1, 2))) {
+    for (const l of held || spec.maxFights === 0 ? [] : dice.shuffle(g.links.filter((x) => !x.door && !pieceLinks.has(x))).slice(0, dice.int(1, 2))) {
       const id = `${pre}ambush-${l.a}-${l.b}`;
       l.door = { ambush: { chance: 0.4, battle: id } };
       // Where the story caps the place's fights, a corridor ambush is a setback, not a payday.

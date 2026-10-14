@@ -29,10 +29,11 @@ noBack: true
 ? grandfather-home | That evening you carry the old man into the reeve's hall and lay him on the long table among the ledgers. {aldous} takes off his own chain of office and lays it beside his grandfather's. The links match. "He taught me to wear this straight," he says, and his voice gives out on the last word.
 ? grandfather-home | Then he counts your purse into your hands himself, coin by coin. He loses count twice, and does not seem to mind.
 ? not grandfather-home | That evening, in the reeve's hall, {aldous} counts your purse into your hands himself, coin by coin, and does not lose count once.
+{aldous} has read {halden}'s notes. "So the price we stopped paying was the one keeping us asleep in our beds," he says. "{thornwick} pays its debts. We had forgotten that one."
 {thornwick} reburies its dead in the following days, oldest graves first. The reeve stands bareheaded at every service.
 ? drowned-gold-home | The fen-folk come in from the far pools for the reburials, and {wren} hands over the drowned folk's purses one by one. One widow opens hers and finds a carved bone button among the coins. "He always kept that," she says, and holds the purse to her chest.
-Every night of the reburials the {wander-inn} fills with mourners, and the innkeeper keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
-> Spend the reeve's purse on a hot supper for the whole taproom ({taproom-supper}) → sb-supper  #mira
+Every night of the reburials the {wander-inn} fills with mourners, and {mira}, who keeps it, keeps a pot on. "A town remembers who fed it while it buried its dead," she says. "Longer than it remembers who dug the graves."
+> Buy the whole taproom supper on the reeve's coin ({taproom-supper}) → sb-supper  #mira
   hide
   ? gold {taproom-supper}
   do gold -{taproom-supper}; @REGARD
@@ -72,9 +73,12 @@ art: 🏆
     {"if":[{"kind":"npc","npc":"vargan","fate":"spared"}],"text":"Out in the reed-beds, {vargan} stops cutting when a burial goes by on the lane. He takes off his cap until it has passed."},
     {"if":[{"kind":"npc","npc":"marrow","fate":"bound"}],"text":"{marrow} waits in the reeve's cells. He asks for a shovel. After some thought, {aldous} gives him the churchyard to mend."},
     {"if":[{"kind":"npc","npc":"marrow","fate":"sings"}],"text":"In {saltmere}, {marrow} keeps the graves he once left in the cold. He says the rites over them every evening."},
-    {"if":[{"kind":"npc","npc":"halden","fate":"saved"}],"text":"Brother {halden} keeps the vigil now, and he reads the rites a little louder than he needs to."},
+    {"if":[{"kind":"npc","npc":"halden","fate":"saved"}],"text":"Brother {halden} keeps the vigil now. Each {door-midwinter} he sits a night by the barrow door, and reads the rites a little louder than he needs to."},
     {"if":[{"kind":"npc","npc":"halden","notFate":["saved"]}],"text":"{halden} and his acolytes share a new grave by the chapel. {mira} of the {wander-inn} paid for the white headstone. Under the names it says only *Asleep*."},
-    {"if":[{"kind":"npc","npc":"wren","met":true}],"text":"{wren} wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season."},
+    {"thread":"wren","cases":[
+      {"if":[{"kind":"npc","npc":"wren","attitude":{"below":0}}],"text":"{wren} walks the old road alone now, once a season, and asks for no company."},
+      {"text":"{wren} wears a captain's knot in the reeve's colours now, to her plain horror. She leads the watch that walks the old road once a season."}]},
+    {"if":[{"kind":"npc","npc":"reedwife","fate":"bound"}],"text":"At {door-midwinter} the fen-folk carry the {door-price} past the hag's stake and out to the barrow door, and leave it on the step. The vigil is theirs to keep now."},
     {"if":[],"text":"Every night since the graves opened, a lamp has burned in the window of the {wander-inn}. Now {mira} takes it down and blows it out."},
     {"if":[{"kind":"flag","flag":"drowned-gold-home"}],"text":"The widow who found the bone button sews it back onto her husband's good coat. They bury him in it beside the rest of {thornwick}'s dead, oldest graves first."},
     {"if":[{"kind":"flag","flag":"grandfather-home"}],"text":"{aldous} buries his grandfather a second time, chain and all, and digs the grave himself."},
@@ -83,4 +87,4 @@ art: 🏆
     {"if":[{"kind":"flag","flag":"seal-cracked"}],"text":"On still nights the fen-folk swear that something under the barrows knocks, faintly, like a knuckle on a door."},
     {"if":[],"text":"On the night the barrows close, at the fen's edge, two figures step out of the reeds, tall and green-fingered, with river-weed in their hair. They are the {reedwife}'s sisters. They look at the sealed barrow-field, and then at the town, and take their time about both."}
   ]
-In {thornwick}'s churchyard the turf is back over every grave, and the bell-rope hangs still.
+In {thornwick}'s churchyard the turf is back over every grave. Out in the fen, the drowned chapel's bell hangs without a rope, and does not ring.

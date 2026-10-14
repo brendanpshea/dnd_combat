@@ -18,7 +18,7 @@ answer religion 14 > Speak his own burial words back to him  #liturgy
 attempt: liturgy
 to: chapel-saved
 do npc halden fate saved
-You say the words cut on every old headstone in his churchyard, slow and plain. *Lie down and be at peace. Your work is done. The bell will wake you.*
+You say the words cut on every old headstone in his churchyard, slow and plain. *Lie down and be at peace. Your work is done.* You stop there, short of the line about the bell.
 answer persuasion 12 > Remind him the dead stepped out in ranks, to his bell  #bell
 ? graves-ranks
 attempt: liturgy
@@ -34,13 +34,13 @@ You tell him his bell in {thornwick} has rung for nothing but alarms since he le
 fight > Refuse the sermon and draw  #fight
 {halden} sighs, a shepherd let down by his flock. Two skeletons in rotted mourning-clothes wade out of the rows, and behind them two of his drowned parishioners, grey and gnawing. Two acolytes in {thornwick}'s chapel colours step up beside him, their eyes as empty as the dead's.
 again:
-{halden} sighs again, a shepherd let down twice. "The {warden} provides," he says, and his acolytes and his dead come for you once more.
+{halden} sighs. "The {warden} provides," he says, and his acolytes and his dead wade toward you.
 won:
 {halden} sinks down on the altar steps and does not rise again. At the end, he mostly looks relieved.
 His prayer book lies open on the altar, fen-damp. *The {door-price} each {door-midwinter} was never an offering,* says a note in his tidy hand. *It was her wage. The {reedwife} was the {warden}'s jailer, and we paid her to keep him asleep. She is gone from her door, and he is waking.*
-Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.*
+Further down, the hand shakes. *The rites of sealing are on the last three pages. Someone must say them at his door, in the great barrow. Not me. It will not let it be me.* Below that, crowded into the margin: *She had sisters in the deep reeds. Kin keep accounts.*
 On the flyleaf someone has inked a mark of reeds and a reaching hand. Beside it, steady again: *Her brand. It was the vigil's mark before she took it. The old builders cut it on the {barrow-gate}, and the watchers there still know it.*
-Under the altar cloth is a healing potion {halden} never got to drink.
+Under the altar cloth is a healing potion {halden} never got to drink. On your way out you climb the leaning tower and cut the drowned bell's rope.
 do @CHAPEL_CLEARED
 
 # chapel-saved
@@ -53,7 +53,8 @@ The thing inside {halden} lets go of him all at once, like a hand opening, and h
 He pushes his prayer book into your hands. "The **{reedwife}** was never just a hag. She was a jailer. The fen-folk paid her a {door-price} each {door-midwinter}, and she kept the **{warden} of the Barrows** asleep. When she was gone from that door, his seal broke."
 ? npc reedwife fate bound | "They say you held her to her price." He shakes his head. "A keeper held by strangers' words keeps the price, but not the watch. Nobody sits by his door."
 "The rites of sealing are at the back. Someone must say them whole at his door. I'll follow you down and wait on the stair." He hands you a healing potion from under the altar cloth. "I bought it for a bad night. I think yours will be worse."
-He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the {barrow-gate}, and the gate's watchers still know it."
+He taps the flyleaf, where he has inked a mark of reeds and a reaching hand. "She wore it as her brand, but it was the vigil's mark first. The old builders cut it on the {barrow-gate}, and the gate's watchers still know it." He lowers his voice. "And she had sisters in the deep reeds. Kin keep accounts."
+Before you go, {halden} climbs the leaning tower and cuts the drowned bell's rope with his own knife.
 > Take the prayer book → @hub  #on
   hide
   ? with wren
@@ -115,31 +116,17 @@ art: 💰
 noBack: true
 In the reeds at the pool's edge lie the drowned, with their purses still tied at their belts. There are {drowned-purses} purses, {drowned-gold} between them, and two hold a stoppered healing potion against the fen-fever.
 One body is not like the others. It wears long robes the colour of grave-worms, and a stub of **black candle** sits in its belt. No fen-folk dresses like that to go walking.
-? with wren | {wren} looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
+{wren} looks at the purses, then at you. "Those belonged to somebody's husband, somebody's gran. The families could use them. So could you. Your call."
 > Keep the purses. The dead won't spend them → purses-taken  #keep
-  hide
-  ? with wren
   do gold {drowned-gold}; item potion-healing x2; @WORM_CLUE; npc wren attitude -1
-> Keep the purses. The dead won't spend them → purses-taken  #keep-alone
-  ? without wren
-  hide
-  do gold {drowned-gold}; item potion-healing x2; @WORM_CLUE
 > Carry the purses home for the families → purses-taken  #home
-  hide
-  ? with wren
   do +drowned-gold-home; @REGARD; @WORM_CLUE; npc wren attitude 1
-> Carry the purses home for the families → purses-taken  #home-alone
-  ? without wren
-  hide
-  do +drowned-gold-home; @REGARD; @WORM_CLUE
 
 # purses-taken
 art: 💰
 noBack: true
-? drowned-gold-home; with wren | {wren} helps you tie the purses into a bundle. She counts them twice. "{^drowned-purses}," she says. "That's {drowned-purses} families." She carries the bundle herself, and walks a little straighter for it.
-? not drowned-gold-home; with wren | {wren} watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
-? drowned-gold-home; without wren | You tie the purses into a bundle, and count them twice. {^drowned-purses} families.
-? not drowned-gold-home; without wren | You fill your pockets with the drowned folk's coin.
+? drowned-gold-home | {wren} helps you tie the purses into a bundle. She counts them twice. "{^drowned-purses}," she says. "That's {drowned-purses} families." She carries the bundle herself, and walks a little straighter for it.
+? not drowned-gold-home | {wren} watches you fill your pockets with the drowned folk's coin. "Somebody's gran," she says at last, and walks on ahead.
 Behind you, the fog closes over the pools again.
 > Go on into the fen → @hub  #on
 
@@ -187,7 +174,7 @@ The second gargoyle breaks apart in the air. It rains down as plain gravel, over
 # lychgate-won
 art: loc-crypt ⛩️
 noBack: true
-Past the {barrow-gate} the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every file of the walking dead leads down into it like thread into a needle.
+Past the {barrow-gate} the mounds rise in their dozens. At the field's heart the largest barrow stands **open**, not fallen in but *unlocked*. Worked steps lead down. Every trail of the walking dead goes down into it.
 Letters are cut into the lintel, worn almost smooth. *Here is the **{undercrypt}**. Let it stay shut.*
 ? with wren | {wren} looks at the steps, then at you. "I don't know the ground past here," she says. "I'll hold the gate."
 ? with wren; {"kind":"npc","npc":"wren","attitude":{"atLeast":2}} | "Someone has to be standing here when you walk back out." You pretend, kindly, not to hear the *when* she leans on. She ties a strip of the reeve's colours round your arm, quick and tight.
@@ -199,7 +186,7 @@ Letters are cut into the lintel, worn almost smooth. *Here is the **{undercrypt}
 // Only a company she would follow anywhere can ask.
 > Ask {wren} to come down with you → undercrypt  #ask
   hide
-  ? with wren; {"kind":"npc","npc":"wren","attitude":{"atLeast":2}}
+  ? with wren; {"kind":"npc","npc":"wren","attitude":{"atLeast":0}}
   do +lychgate-cleared
 > Go down → undercrypt  #down-alone
   hide

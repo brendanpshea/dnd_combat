@@ -33,10 +33,19 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
     square: {
       spec: {
         size: 'village', level: 3, name: '{thornwick}', camp: true,
+        // A town burying its dead twice: its everyday places know it.
+        mood: {
+          board: 'Every old notice is covered by a new one, in the reeve\'s hand: the names of the opened graves, oldest first. Under them, smaller: *Reburials when they are found.*',
+          shop: '"Whatever you need, take it, and pay me after." The shopkeeper does not look up. "Nobody\'s bought anything since the bells but candles and nails."',
+          landmark: { label: 'The Horse Fair', text: 'The horse fair is shut. One dealer leans on an empty pen and says nobody buys a horse the week their gran walks off.' },
+        },
         people: [{ name: '{bram}', at: 'general', keeps: true,
           lines: ['"Grave-trouble, they say." **{bram}** spreads his hands over the stall. "Then you\'ll be wanting silver, steel, and no questions. Two of the three I stock."'] }],
         places: [
           { label: 'The {wander-inn}', replaces: 'inn', text: [], event: { scene: 'inn' } },
+          // Halden's own chapel, with Halden gone.
+          { label: 'The Chapel', replaces: 'temple', icon: 'tok-temple',
+            text: ['The chapel door stands open, and nobody is at the altar. A frightened acolyte is keeping the candles lit. "Brother {halden} rang the bell every evening," she says. "I don\'t know the words for it. I keep the candles lit instead."'] },
           { label: 'The Reeve\'s Hall', icon: 'tok-house',
             text: ['The reeve\'s clerk meets you at the door. "The commission stands, and the reeve relies upon you."'],
             event: { scene: 'reeve-hall', until: [flag('reeve-task')] } },
@@ -59,7 +68,7 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
     fen: {
       spec: {
         // Open country, held by nobody: the chapel and the lights are the story's.
-        level: 3, theme: 'marsh', shape: 'spine', rooms: 9, maxFights: 0,
+        level: 3, theme: 'marsh', shape: 'hub', rooms: 9, maxFights: 0,
         dressing: { name: 'The Deep Fen',
           door: 'The old raised road goes on into the fog, one great flat stone after another. The fen closes in on both sides.',
           outside: 'The fog thins, and the cart-road back to {thornwick} runs firm under your boots.',
@@ -80,10 +89,11 @@ export const SUNKEN_BARROWS_MODULE: Module = withCanon({
     // the kings' guard, and the king, whose shaft drops to the Warden's door.
     undercrypt: {
       spec: {
-        level: 3, theme: 'graveyard', shape: 'spine', rooms: 8, fights: 'inhabitants', factions: ['restless-dead'], maxFights: 0,
+        level: 3, theme: 'graveyard', shape: 'ring', rooms: 8, fights: 'inhabitants', factions: ['restless-dead'], maxFights: 0,
         lore: [
           'A niche holds a lead tablet, half pried loose. On it, a reed-woman sits before a door, and a line of tiny figures bring her lambs.',
           'Names are scratched into the plaster here, hundreds of them, each in a different hand. The newest is still white.',
+          'A second tablet, older than the first: three reed-women at the door, not one, and the two behind her watching the one who sits.',
         ],
         dressing: { name: 'The {undercrypt}',
           door: 'Worked steps lead down into the cold. Your torch makes a small, brave circle, and the dark waits politely outside it.',
