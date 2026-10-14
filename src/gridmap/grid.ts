@@ -19,9 +19,18 @@ export const OPPOSITE: Record<Dir, Dir> = { n: 's', e: 'w', s: 'n', w: 'e' };
  */
 export type Edge = 'open' | 'wall' | 'door' | 'locked' | 'secret';
 
-/** Something on a square: where the party comes in, the stairs, or a square
- *  the game should put something on (an encounter, a trap, a message). */
-export type Feature = 'entrance' | 'stairs-up' | 'stairs-down' | 'special';
+/**
+ * Something on a square: where the party comes in, the stairs, a key, a
+ * fight (an `encounter`, a `sub-boss`, the `boss`), `treasure`, or a
+ * `special` square the game should put something on (a trap, a message).
+ */
+export type Feature = 'entrance' | 'stairs-up' | 'stairs-down' | 'special' | 'key' | 'encounter' | 'sub-boss' | 'boss' | 'treasure';
+
+/** A feature on a square. A `key` names the lock it opens. */
+export interface Marker { x: number; y: number; feature: Feature; key?: string }
+
+/** A locked door that a named key opens, on the east or south edge of (x, y). */
+export interface Lock { x: number; y: number; d: 'e' | 's'; key: string }
 
 export type AreaKind = 'room' | 'corridor' | 'street' | 'building';
 
@@ -38,6 +47,9 @@ export interface GridMap {
   kind: 'dungeon' | 'town';
   size: number;
   seed: number;
+  /** A dungeon's layout theme, and which level it is (0 at the top). */
+  theme?: string;
+  level?: number;
   /** Area id of each cell, by `y * size + x`; -1 is solid rock. */
   area: number[];
   /** The edge east of each cell (`y * size + x`); the east border is always wall. */
@@ -45,7 +57,10 @@ export interface GridMap {
   /** The edge south of each cell; the south border is always wall. */
   south: Edge[];
   areas: Area[];
-  features: Array<{ x: number; y: number; feature: Feature }>;
+  features: Marker[];
+  /** Locked doors with a key somewhere on the map. A `locked` edge with no
+   *  lock here has no key: it is picked or broken. */
+  locks: Lock[];
 }
 
 export const inside = (m: Pick<GridMap, 'size'>, x: number, y: number) => x >= 0 && y >= 0 && x < m.size && y < m.size;
@@ -54,7 +69,7 @@ export const at = (m: Pick<GridMap, 'size'>, x: number, y: number) => y * m.size
 /** A blank map: every cell rock, every edge wall. */
 export function blank(kind: GridMap['kind'], size: number, seed: number): GridMap {
   const n = size * size;
-  return { kind, size, seed, area: new Array(n).fill(-1), east: new Array(n).fill('wall'), south: new Array(n).fill('wall'), areas: [], features: [] };
+  return { kind, size, seed, area: new Array(n).fill(-1), east: new Array(n).fill('wall'), south: new Array(n).fill('wall'), areas: [], features: [], locks: [] };
 }
 
 /** The edge on side `d` of cell (x, y); off the map is wall. */
@@ -82,14 +97,19 @@ export type Passable = (e: Edge) => boolean;
 export const WALKABLE: Passable = (e) => e === 'open' || e === 'door';
 
 /** Steps from (x0, y0) to every cell a walk reaches; -1 where it does not. */
-export function distances(m: GridMap, x0: number, y0: number, pass: Passable = WALKABLE): number[] {
+export function distances(m: GridMap, x0: number, y0: number, pass: Passable = WALKABLE, keys: readonly string[] = []): number[] {
   const dist = new Array(m.size * m.size).fill(-1);
   dist[at(m, x0, y0)] = 0;
   const queue: Array<[number, number]> = [[x0, y0]];
   for (let i = 0; i < queue.length; i++) {
     const [x, y] = queue[i]!;
     for (const d of DIRS) {
-      if (!pass(edge(m, x, y, d))) continue;
+      const e = edge(m, x, y, d);
+      if (!pass(e)) {
+        // A locked door opens to the key that fits it.
+        const k = e === 'locked' ? lockAt(m, x, y, d) : undefined;
+        if (!k || !keys.includes(k)) continue;
+      }
       const nx = x + STEP[d][0], ny = y + STEP[d][1];
       if (!inside(m, nx, ny) || dist[at(m, nx, ny)] !== -1 || m.area[at(m, nx, ny)] === -1) continue;
       dist[at(m, nx, ny)] = dist[at(m, x, y)]! + 1;
@@ -97,6 +117,30 @@ export function distances(m: GridMap, x0: number, y0: number, pass: Passable = W
     }
   }
   return dist;
+}
+
+/** The key that opens the door on side `d` of (x, y), if it has one. */
+export function lockAt(m: GridMap, x: number, y: number, d: Dir): string | undefined {
+  const [ex, ey, ed] = d === 'w' ? [x - 1, y, 'e'] : d === 'n' ? [x, y - 1, 's'] : [x, y, d];
+  return m.locks.find((l) => l.x === ex && l.y === ey && l.d === ed)?.key;
+}
+
+/**
+ * Walk the map as a player would: from the way in, through open edges and
+ * plain doors, picking up every key reached and opening the locks it fits.
+ * Returns the keys in the order found and every square reached. A map is
+ * solvable when that is every open square.
+ */
+export function solve(m: GridMap, from?: { x: number; y: number }): { keys: string[]; reached: Set<number> } {
+  const start = from ?? m.features.find((f) => f.feature === 'entrance' || f.feature === 'stairs-up')!;
+  const held: string[] = [];
+  for (;;) {
+    const dist = distances(m, start.x, start.y, WALKABLE, held);
+    const reached = new Set(dist.flatMap((d, i) => (d >= 0 ? [i] : [])));
+    const found = m.features.filter((f) => f.feature === 'key' && f.key && !held.includes(f.key) && reached.has(at(m, f.x, f.y)));
+    if (!found.length) return { keys: held, reached };
+    held.push(...found.map((f) => f.key!));
+  }
 }
 
 /** The feature on a square, if any. */
@@ -120,14 +164,17 @@ export class Rand {
 
 /**
  * The map as text, two characters a cell. Walls `|` and `--`, doors `D`,
- * locked doors `L`, secret doors `S`, rock `##`. On a cell: `E` the entrance,
- * `>` stairs down, `<` stairs up, `*` a special square, and a town
+ * locked doors `L` (`K` where a key fits), secret doors `S`, rock `##`. On a
+ * cell: `E` the entrance, `>` stairs down, `<` stairs up, `*` a special
+ * square, `k` a key, `!` an encounter, `b` the sub-boss, `B` the boss, `$`
+ * treasure, and a town
  * building's door square shows its place's number (`placesLegend`).
  */
 export function toAscii(m: GridMap): string {
   const mark: Record<Edge, string> = { open: ' ', wall: '|', door: 'D', locked: 'L', secret: 'S' };
   const flat: Record<Edge, string> = { open: '  ', wall: '--', door: 'DD', locked: 'LL', secret: 'SS' };
-  const glyph: Record<Feature, string> = { entrance: 'E ', 'stairs-up': '< ', 'stairs-down': '> ', special: '* ' };
+  const glyph: Record<Feature, string> = { entrance: 'E ', 'stairs-up': '< ', 'stairs-down': '> ', special: '* ',
+    key: 'k ', encounter: '! ', 'sub-boss': 'b ', boss: 'B ', treasure: '$ ' };
   const doorOf = new Map<number, string>();
   m.areas.filter((a) => a.place).forEach((a, n) => {
     for (const [x, y] of a.cells) {
@@ -142,8 +189,8 @@ export function toAscii(m: GridMap): string {
       const i = at(m, x, y);
       const f = featureAt(m, x, y);
       row += m.area[i] === -1 ? '##' : f ? glyph[f] : doorOf.get(i) ?? '  ';
-      row += x === m.size - 1 ? '|' : mark[m.east[i]!];
-      under += (y === m.size - 1 ? '--' : flat[m.south[i]!]) + '+';
+      row += x === m.size - 1 ? '|' : lockAt(m, x, y, 'e') ? 'K' : mark[m.east[i]!];
+      under += (y === m.size - 1 ? '--' : lockAt(m, x, y, 's') ? 'KK' : flat[m.south[i]!]) + '+';
     }
     lines.push(row, under);
   }
