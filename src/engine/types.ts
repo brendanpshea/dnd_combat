@@ -513,6 +513,14 @@ export interface Combatant {
      */
     leveledSpellCast: boolean;
     quickenedThisTurn: boolean;
+    /**
+     * A spell slot has been spent on this turn. "On a turn, you can expend only
+     * one spell slot to cast a spell" (SRD 5.2.1, line 10718) — not one per
+     * action: a slot on the action's spell and another on the bonus action's
+     * is exactly what it forbids, and so is a Divine Smite after either.
+     * Cantrips, innate casts and scrolls spend no slot and are untouched.
+     */
+    slotSpent?: boolean;
     /** The weapons swung so far in this turn's Attack action, for `routines`. */
     routineMade?: Id[];
   };

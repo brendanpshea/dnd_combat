@@ -795,6 +795,8 @@ export function resolveAttack(
       target.hp > 0 &&
       attacker.featureIds.includes('divine-smite') &&
       !attacker.turn.bonusActionUsed &&
+      // One spell slot a turn: not after a spell has already spent one.
+      !attacker.turn.slotSpent &&
       // A bonus action is only spendable on your own turn; an opportunity
       // attack reads last turn's leftover flag, which startTurn resets anyway.
       isTurnOf(state, attackerId)
@@ -818,6 +820,7 @@ export function resolveAttack(
       if (slotIdx >= 0) {
         attacker.spellSlots[slotIdx]!.current -= 1;
         attacker.turn.bonusActionUsed = true;
+        attacker.turn.slotSpent = true;
         attacker.armedSmite = { spellId: 'divine-smite', slotLevel: slotIdx + 1 };
         events.push(...dischargeSmite(state, attackerId, targetId, crit));
       }
@@ -1417,10 +1420,14 @@ export function tryAutoShield(state: GameState, targetId: Id): boolean {
   const t = state.combatants[targetId];
   if (!t || !canReact(t) || !t.spellIds.includes('shield')) return false;
   if (t.conditions.some((c) => c.id === 'shielded')) return false;
+  // One slot a turn, and on its own turn this one may already be spent.
+  const ownTurn = isTurnOf(state, targetId);
+  if (ownTurn && t.turn.slotSpent) return false;
   const slot = t.spellSlots.find((s) => s.current > 0);
   if (!slot) return false;
   slot.current -= 1;
   t.turn.reactionUsed = true;
+  if (ownTurn) t.turn.slotSpent = true;
   applyCondition(state, targetId, { id: 'shielded', sourceId: targetId }, { magical: true, silent: true });
   return true;
 }

@@ -384,7 +384,7 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
     dmg += avgDice(smiteDice(actor.armedSmite.spellId, actor.armedSmite.slotLevel));
   } else if (
     actor.featureIds.includes('divine-smite') && isMelee && !actor.turn.bonusActionUsed &&
-    actor.spellSlots.some((s) => s.current > 0)
+    !actor.turn.slotSpent && actor.spellSlots.some((s) => s.current > 0)
   ) {
     // The auto-smite is no longer a given: it fires on a crit (~5%, doubled
     // dice) or when it would finish the target. Pricing it at a flat 2d8 badly

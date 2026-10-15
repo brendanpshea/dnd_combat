@@ -371,7 +371,10 @@ to do with one. Each of those was found the hard way:
   has no gradient toward the enemy still fighting and paces on the spot.
 
 **Action economy.** Action, bonus action, movement, one reaction (opportunity
-attacks only). Multiattack: `attacksPerAction` banked as `attacksLeft` when the
+attacks only). One spell slot a turn (SRD 5.2.1, line 10718): a slot spent on
+one spell rules out another slot spell, and the automatic Divine Smite, for the
+rest of that turn (`turn.slotSpent`); cantrips, innate casts and scrolls are
+untouched. Multiattack: `attacksPerAction` banked as `attacksLeft` when the
 Attack action is taken (composes with Action Surge). Off-hand attack requires
 two light weapons. Dash/Disengage/Dodge implemented; Dodge imposes disadvantage
 until the dodger's next turn. **Hide** is a DC 15 Dexterity (Stealth) action

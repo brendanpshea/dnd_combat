@@ -448,6 +448,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (!quickened && leveled && actor.turn.quickenedThisTurn) return false;
       const costsAction = spell.castingTime === 'action' && !quickened;
       if (costsAction && actor.turn.actionUsed) return false;
+      // One spell slot a turn (SRD 5.2.1, line 10718). A held spell's repeat
+      // spends none, and nor does an innate cast or a cantrip (slot level 0).
+      if (action.slotLevel >= 1 && actor.turn.slotSpent) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
       return spellAvailable(actor, spell, action.slotLevel) &&
         validSpellTargets(state, actorId, spell, action.targets, action.weaponId);
@@ -1103,7 +1106,10 @@ export function step(state: GameState, action: Action): { state: GameState; even
         actor.turn.leveledSpellCast = true;
         if (action.metamagic === 'quickened') actor.turn.quickenedThisTurn = true;
       }
-      if (action.slotLevel >= 1) actor.spellSlots[action.slotLevel - 1]!.current -= 1;
+      if (action.slotLevel >= 1) {
+        actor.spellSlots[action.slotLevel - 1]!.current -= 1;
+        actor.turn.slotSpent = true;
+      }
       else if (actor.innateSpells[action.spellId]) actor.innateSpells[action.spellId]!.current -= 1;
       if (spell.concentration) events.push(...breakConcentration(draft, actorId));
       // Sanctuary ends the moment you do something hostile. A spell aimed at an
