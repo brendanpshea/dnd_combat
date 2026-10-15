@@ -541,7 +541,11 @@ radiant.
 Other class tables read from the SRD rather than flat: Second Wind 2/3/4 uses
 by fighter level, Wild Shape 2/3/4 (and a CR 1 form, the brown bear, from 8th),
 the Bardic Inspiration die d6/d8/d10/d12 with Font of Inspiration's short-rest
-recovery from 5th (`uses.shortRestFrom`); Lay on Hands is a bonus action.
+recovery from 5th (`uses.shortRestFrom`); Lay on Hands is a bonus action. The
+Berserker's Frenzy is the 2024 feature — Rage Damage d6 extra on the first target
+hit with a Strength attack on a reckless, raging turn — not the 2014 bonus-action
+swing; Rage's damage applies to thrown Strength weapons; the monk has Unarmored
+Movement (+10 ft from 2nd, +15 from 6th).
 
 **Fighting styles** beyond Dueling exist as reusable passive features —
 Defense (+1 AC while armored), Archery (+2 ranged attack rolls), Great Weapon
@@ -567,7 +571,10 @@ persists on `PartyCharacter.choices` and clears when the slot's class changes.
 (shove 10 ft straight back on a hit), Topple (Con save or fall prone), and
 Graze (a miss still deals the attacker's ability modifier in damage). Weapons
 carry their RAW mastery in data; a mastery only fires for a wielder whose class
-trains that weapon (`weaponMasteries`). Cleave and Nick are deferred — they
+trains that weapon (`weaponMasteries`), and only as many kinds as the class
+table's Weapon Mastery column allows at its level (`masteriesByLevel`: fighter
+3/4/5, barbarian 2/3/4, paladin, ranger and rogue 2; the 2024 monk has none).
+Cleave and Nick are deferred — they
 need multi-target and off-hand action-economy changes the current single-target
 attack resolution doesn't support.
 

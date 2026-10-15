@@ -38,11 +38,11 @@ export type Action =
       /** The two-weapon bonus attack: off-hand weapon, no ability modifier. */
       offhand?: boolean;
       /**
-       * Berserker's Frenzy: a bonus-action attack with the MAIN hand while
-       * raging. Its own flag rather than reusing `offhand`, because the two
-       * differ in the thing that matters — a frenzy swing keeps its Strength
-       * modifier, and calling it an off-hand attack would quietly halve it and
-       * tag the log "Two-Weapon Fighting".
+       * A bonus-action swing that keeps its ability modifier — the monk's
+       * Martial Arts strike. (Named for the 2014 Berserker's Frenzy, which was
+       * one; the 2024 Frenzy is extra damage instead, in resolveAttack.) Its own
+       * flag rather than reusing `offhand`, because an off-hand attack drops the
+       * modifier and tags the log "Two-Weapon Fighting".
        */
       frenzy?: boolean;
     }
@@ -176,23 +176,6 @@ function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
     mainW.properties.includes('light') && offW.properties.includes('light') &&
     actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed
   );
-}
-
-/**
- * Berserker's Frenzy: one extra main-hand melee swing, as a bonus action.
- *
- * The SRD version costs a level of exhaustion, which this game does not model.
- * The cost here is the bonus action — which is what a barbarian would otherwise
- * spend entering the rage this requires, so it is a real one on the turn the
- * fight starts and free every turn after. That is the right shape: frenzy is
- * what rage is FOR.
- */
-function canFrenzy(actor: Combatant, weaponId: Id): boolean {
-  if (!actor.featureIds.includes('frenzy')) return false;
-  if (!isRaging(actor)) return false;
-  if (actor.equipped.mainHand !== weaponId) return false;
-  const w = WEAPONS[weaponId];
-  return !!w && w.melee && actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed;
 }
 
 /**
@@ -414,7 +397,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'attack':
       if (incap) return false;
       if (action.frenzy) {
-        return (canFrenzy(actor, action.weaponId) || canMartialArts(actor, action.weaponId)) &&
+        return canMartialArts(actor, action.weaponId) &&
           canAttackWith(state, actor, action.weaponId, action.targetId);
       }
       if (action.offhand) {
@@ -721,10 +704,9 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
       if (isLegalAction(state, actorId, off)) actions.push(off);
     }
   }
-  // Frenzy's bonus swing, with the main hand. Offered separately from the
-  // Attack action above so it survives `actionUsed` — it is the bonus action,
-  // not part of the action, and the two are spent independently.
-  // …and the monk's, which is always a fist rather than whatever is in hand.
+  // The monk's bonus-action strike. Offered separately from the Attack action
+  // above so it survives `actionUsed` — it is the bonus action, not part of the
+  // action, and the two are spent independently. Always a fist.
   for (const wid of new Set([actor.equipped.mainHand, 'unarmed-strike'])) {
     if (!wid) continue;
     for (const t of enemies) {

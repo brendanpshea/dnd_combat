@@ -14,8 +14,29 @@ import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
 import { ITEMS } from '../data/items.js';
-import { WEAPONS } from '../data/weapons.js';
+import { WEAPONS, baseWeaponId } from '../data/weapons.js';
 import { armorSpeedPenalty, armorClass } from '../data/armor.js';
+
+/**
+ * The masteries a class can use at a level: the first `count` kinds of weapon
+ * on the list, each with its magic variants (a +1 longsword is a longsword).
+ * No table means no limit — the list is the class's whole answer.
+ */
+/** The Monk table's Unarmored Movement column. */
+function unarmoredMovement(level: number): number {
+  return level >= 18 ? 30 : level >= 14 ? 25 : level >= 10 ? 20 : level >= 6 ? 15 : level >= 2 ? 10 : 0;
+}
+
+function masteriesAt(table: number[] | undefined, level: number, list: Id[]): Id[] {
+  if (!table) return [...list];
+  const count = table[Math.min(Math.max(level, 1), table.length) - 1] ?? 0;
+  const kinds: Id[] = [];
+  for (const id of list) {
+    const base = baseWeaponId(id);
+    if (!kinds.includes(base) && kinds.length < count) kinds.push(base);
+  }
+  return list.filter((id) => kinds.includes(baseWeaponId(id)));
+}
 
 /** Every spell a class's table grants at or below a character level, matching
  *  a predicate on the spell's own level. */
@@ -530,7 +551,11 @@ export function buildCharacter(opts: BuildOptions): Combatant {
     speed: species.speed + (featureIds.includes('roving') ? 10 : 0)
       // Fast Movement (Barbarian 5): +10 ft, on the same terms as Roving — the
       // heavy-armour penalty below applies to both.
-      + (featureIds.includes('fast-movement') ? 10 : 0) -
+      + (featureIds.includes('fast-movement') ? 10 : 0)
+      // Unarmored Movement (Monk 2, SRD line 4526): +10 ft, +15 at 6th, +20 at
+      // 10th, while wearing no armour and holding no shield.
+      + (featureIds.includes('unarmored-movement') && !wornArmor &&
+          (opts.equipped ?? kit.equipment).offHand !== 'shield' ? unarmoredMovement(level) : 0) -
       armorSpeedPenalty(wornArmor, abilities.str),
     position: opts.position,
     initiative: 0,
@@ -566,7 +591,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
       if (shedForWard) delete base.armor;
       return base;
     })(),
-    weaponMasteries: [...kit.weaponMasteries, ...grants.weaponMasteries],
+    weaponMasteries: [...masteriesAt(cls.masteriesByLevel, level, kit.weaponMasteries), ...grants.weaponMasteries],
     attacksPerAction: featureIds.includes('extra-attack') ? 2 : 1,
     resistances: [...new Set([
       ...(species.resistances ?? []), ...grants.resistances,

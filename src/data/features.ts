@@ -1528,14 +1528,16 @@ export const FEATURES: Record<Id, FeatureData> = {
   'fast-movement': {
     id: 'fast-movement', name: 'Fast Movement', trigger: 'passive',
   },
+  /** Unarmored Movement (Monk 2): +10 ft unarmoured — the builder adds it to Speed. */
+  'unarmored-movement': {
+    id: 'unarmored-movement', name: 'Unarmored Movement', trigger: 'passive',
+  },
   /**
-   * Berserker's Frenzy: one extra melee attack while raging, as a bonus action.
-   *
-   * The SRD version costs a level of exhaustion, which this game does not
-   * model — so the cost here is the bonus action itself, which is the same
-   * thing a barbarian would otherwise spend on Rage. Read by the attack rules
-   * as an extra-attack grant rather than applied, so it composes with the
-   * level-5 Extra Attack instead of racing it.
+   * Berserker's Frenzy, 2024 (SRD 5.2.1, line 1689): "If you use Reckless
+   * Attack while your Rage is active, you deal extra damage to the first target
+   * you hit on your turn with a Strength-based attack" — as many d6 as the Rage
+   * Damage bonus. Read by resolveAttack. It used to be the 2014 bonus-action
+   * extra swing.
    */
   frenzy: {
     id: 'frenzy', name: 'Frenzy', trigger: 'passive',

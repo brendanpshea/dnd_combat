@@ -201,25 +201,41 @@ describe('Barbarian: Reckless Attack', () => {
 });
 
 describe('Barbarian: Berserker', () => {
-  it('offers Frenzy only while raging, and only after the first swing', () => {
+  it('Frenzy (2024): Rage Damage d6 extra on the first reckless hit, and no bonus swing', () => {
+    // SRD 5.2.1, line 1689. The 2014 bonus-action swing is gone.
     const me = barb(3, { x: 1, y: 1 });
-    const foe = dummy({ x: 2, y: 1 });
+    const foe = dummy({ x: 2, y: 1 }, 'd1', 1);
     const c = new Combat({ combatants: [me, foe], seed: 11 });
-    const frenzy = { kind: 'attack' as const, weaponId: 'greataxe', targetId: 'd1', frenzy: true };
-    const live = () => c.state.combatants[me.id]!;
-
     for (let i = 0; i < 8 && c.activeId !== me.id; i++) c.apply({ kind: 'endTurn' });
-    expect(isLegalAction(c.state, me.id, frenzy), 'not raging, not attacked').toBe(false);
-
+    const live = () => c.state.combatants[me.id]!;
     live().conditions.push({ id: 'raging', sourceId: me.id });
-    expect(isLegalAction(c.state, me.id, frenzy), 'raging but has not swung yet').toBe(false);
+    expect(isLegalAction(c.state, me.id, { kind: 'attack', weaponId: 'greataxe', targetId: 'd1', frenzy: true })).toBe(false);
 
-    c.apply({ kind: 'attack', weaponId: 'greataxe', targetId: 'd1' });
-    expect(isLegalAction(c.state, me.id, frenzy), 'raging and has swung').toBe(true);
+    const tagsOf = (evs: ReturnType<typeof resolveAttack>) =>
+      evs.flatMap((e) => (e.type === 'damageDealt' && e.targetId === 'd1' ? e.tags ?? [] : []));
+    // Not reckless: no Frenzy.
+    expect(tagsOf(resolveAttack(c.state, me.id, 'd1', 'greataxe'))).not.toContain('Frenzy');
+    live().conditions.push({ id: 'reckless', sourceId: me.id });
+    let first: string[] = [];
+    for (let i = 0; i < 10 && first.length === 0; i++) first = tagsOf(resolveAttack(c.state, me.id, 'd1', 'greataxe'));
+    expect(first).toContain('Frenzy');
+    // Only the first target hit this turn.
+    let second: string[] = [];
+    for (let i = 0; i < 10 && second.length === 0; i++) second = tagsOf(resolveAttack(c.state, me.id, 'd1', 'greataxe'));
+    expect(second).not.toContain('Frenzy');
+  });
 
-    c.apply(frenzy);
-    expect(live().turn.bonusActionUsed, 'frenzy spends the bonus action').toBe(true);
-    expect(isLegalAction(c.state, me.id, frenzy), 'and only once').toBe(false);
+  it('Rage adds its damage to a thrown Strength weapon', () => {
+    const me = barb(1, { x: 1, y: 1 });
+    const foe = dummy({ x: 4, y: 1 }, 'd1', 1);
+    const c = new Combat({ combatants: [me, foe], seed: 3 });
+    c.state.combatants[me.id]!.conditions.push({ id: 'raging', sourceId: me.id });
+    let tags: string[] = [];
+    for (let i = 0; i < 10 && tags.length === 0; i++) {
+      tags = resolveAttack(c.state, me.id, 'd1', 'handaxe')
+        .flatMap((e) => (e.type === 'damageDealt' && e.targetId === 'd1' ? e.tags ?? [] : []));
+    }
+    expect(tags).toContain('Rage');
   });
 
   it('keeps its ability modifier, unlike an off-hand swing', () => {

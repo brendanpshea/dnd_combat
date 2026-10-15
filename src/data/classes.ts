@@ -199,6 +199,14 @@ export interface ClassData {
     learnableExtra?: Id[];
   };
   featuresByLevel: Record<number, Id[]>;
+  /**
+   * How many kinds of weapon this class can use the mastery of, by class level
+   * (index level - 1, clamped) — the Weapon Mastery column of the SRD class
+   * table. `weaponMasteries` (the class's or its kit's) is read in order and the
+   * first this many kinds kept, magic variants riding with their base. Absent
+   * for a class without Weapon Mastery.
+   */
+  masteriesByLevel?: number[];
   /** Build decisions this class offers (Fighting Style, later subclasses). */
   choices?: ChoicePoint[];
   weaponMasteries: Id[];
@@ -257,7 +265,11 @@ export const CLASSES: Record<Id, ClassData> = {
         { id: 'two-weapon-fighting', name: 'Two-Weapon Fighting', blurb: 'Add your ability modifier to off-hand damage.', grants: { featureIds: ['two-weapon-fighting'] } },
       ],
     }],
-    weaponMasteries: ['longsword', 'longsword-plus1', 'javelin'],
+    // SRD 5.2.1 Fighter table (line 4251): 3 kinds, 4 at 4th, 5 at 10th. Each
+    // list below names more kinds than a low-level fighter keeps, in the order
+    // they are taken.
+    masteriesByLevel: [3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6],
+    weaponMasteries: ['longsword', 'longsword-plus1', 'javelin', 'greatsword', 'greatsword-plus1', 'longbow', 'longbow-plus1', 'handaxe'],
     equipment: {
       mainHand: 'longsword', offHand: 'shield', armor: 'scale-mail',
       inventory: [
@@ -305,7 +317,7 @@ export const CLASSES: Record<Id, ClassData> = {
         id: 'duelist', name: 'Duelist',
         blurb: 'Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.',
         statPriority: ['dex', 'con', 'str', 'wis', 'int', 'cha'],
-        weaponMasteries: ['rapier', 'rapier-plus1', 'dagger'],
+        weaponMasteries: ['rapier', 'rapier-plus1', 'dagger', 'shortbow', 'longsword', 'longsword-plus1', 'javelin'],
         equipment: {
           mainHand: 'rapier', offHand: 'shield', armor: 'leather',
           inventory: [
@@ -329,7 +341,7 @@ export const CLASSES: Record<Id, ClassData> = {
         id: 'archer', name: 'Archer',
         blurb: 'Dexterity, longbow, studded leather. Hits hardest from across the board.',
         statPriority: ['dex', 'con', 'str', 'wis', 'int', 'cha'],
-        weaponMasteries: ['longbow', 'longbow-plus1', 'shortsword'],
+        weaponMasteries: ['longbow', 'longbow-plus1', 'shortsword', 'javelin', 'longsword', 'longsword-plus1', 'handaxe'],
         equipment: {
           mainHand: 'longbow', armor: 'studded-leather',
           inventory: [
@@ -351,7 +363,7 @@ export const CLASSES: Record<Id, ClassData> = {
          */
         id: 'greatweapon', name: 'Great Weapon',
         blurb: 'Strength, greatsword, scale mail. Two hands, no shield, more damage.',
-        weaponMasteries: ['greatsword', 'greatsword-plus1', 'javelin'],
+        weaponMasteries: ['greatsword', 'greatsword-plus1', 'javelin', 'greataxe', 'longbow', 'longbow-plus1', 'handaxe'],
         equipment: {
           mainHand: 'greatsword', armor: 'scale-mail',
           inventory: [
@@ -372,7 +384,7 @@ export const CLASSES: Record<Id, ClassData> = {
         id: 'twoblade', name: 'Two Blades',
         blurb: 'Dexterity, a shortsword in each hand, studded leather. More swings, less armour.',
         statPriority: ['dex', 'con', 'str', 'wis', 'int', 'cha'],
-        weaponMasteries: ['shortsword', 'shortsword-plus1', 'dagger'],
+        weaponMasteries: ['shortsword', 'shortsword-plus1', 'dagger', 'shortbow', 'longsword', 'longsword-plus1', 'javelin'],
         equipment: {
           mainHand: 'shortsword', offHand: 'shortsword', armor: 'studded-leather',
           inventory: [
@@ -522,6 +534,7 @@ export const CLASSES: Record<Id, ClassData> = {
       // automatically via its advantageDice(level) formula.
       5: ['uncanny-dodge'],
     },
+    masteriesByLevel: [2],   // two kinds, throughout (SRD class table)
     weaponMasteries: ['shortsword', 'shortsword-plus1', 'shortbow'],
     equipment: {
       mainHand: 'shortsword', offHand: 'shortsword', armor: 'studded-leather',
@@ -934,6 +947,7 @@ export const CLASSES: Record<Id, ClassData> = {
         { id: 'two-weapon-fighting', name: 'Two-Weapon Fighting', blurb: 'Add your ability modifier to off-hand damage.', grants: { featureIds: ['two-weapon-fighting'] } },
       ],
     }],
+    masteriesByLevel: [2],   // two kinds, throughout (SRD class table)
     weaponMasteries: ['longbow', 'longbow-plus1', 'shortsword', 'shortsword-plus1'],
     equipment: {
       mainHand: 'longbow', armor: 'studded-leather',
@@ -999,7 +1013,9 @@ export const CLASSES: Record<Id, ClassData> = {
       6: ['mindless-rage'],     // Berserker
       7: ['feral-instinct'],
     },
-    weaponMasteries: ['greataxe', 'handaxe', 'javelin'],
+    // SRD 5.2.1 Barbarian table (line 1622): 2 kinds, 3 at 4th, 4 at 10th.
+    masteriesByLevel: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4],
+    weaponMasteries: ['greataxe', 'handaxe', 'javelin', 'warhammer'],
     equipment: {
       mainHand: 'greataxe',
       inventory: [
@@ -1030,14 +1046,16 @@ export const CLASSES: Record<Id, ClassData> = {
     statPriority: ['dex', 'wis', 'con', 'str', 'int', 'cha'],
     featuresByLevel: {
       1: ['martial-arts', 'monk-defense'],
-      2: ['monks-focus', 'flurry-of-blows', 'patient-defense', 'step-of-the-wind'],
+      2: ['monks-focus', 'flurry-of-blows', 'patient-defense', 'step-of-the-wind', 'unarmored-movement'],
       3: ['deflect-attacks', 'open-hand-technique'],   // Warrior of the Open Hand
       // 4: Ability Score Increase (builder). Slow Fall has no cliff to fall off.
       5: ['extra-attack', 'stunning-strike'],
       6: ['empowered-strikes'],
       7: ['evasion'],
     },
-    weaponMasteries: ['quarterstaff'],
+    // No Weapon Mastery: the 2024 monk's weapons are Martial Arts, and its
+    // class table has no mastery column. It carried the quarterstaff's Topple.
+    weaponMasteries: [],
     equipment: {
       mainHand: 'quarterstaff',
       inventory: [
@@ -1089,6 +1107,7 @@ export const CLASSES: Record<Id, ClassData> = {
         { id: 'great-weapon-fighting', name: 'Great Weapon Fighting', blurb: 'Reroll 1s and 2s on two-handed weapon damage.', grants: { featureIds: ['great-weapon-fighting'] } },
       ],
     }],
+    masteriesByLevel: [2],   // two kinds, throughout (SRD class table)
     weaponMasteries: ['longsword', 'longsword-plus1', 'warhammer', 'warhammer-plus1'],
     equipment: {
       mainHand: 'longsword', offHand: 'shield', armor: 'chain-mail',

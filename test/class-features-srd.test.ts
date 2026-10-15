@@ -103,3 +103,26 @@ describe('Lay on Hands (line 4792)', () => {
     expect(FEATURES['lay-on-hands']!.trigger).toBe('bonus');
   });
 });
+
+describe('Weapon Mastery counts by class level (SRD class tables)', () => {
+  const kinds = (classId: string, level: number) =>
+    new Set(pc(classId, level).weaponMasteries.map((w) => w.replace(/-plus1$/, ''))).size;
+  it('fighter 3, 4 at 4th; barbarian 2, 3 at 4th; paladin, ranger and rogue 2; monk none', () => {
+    expect(kinds('fighter', 1)).toBe(3);
+    expect(kinds('fighter', 4)).toBe(4);
+    expect(kinds('barbarian', 1)).toBe(2);
+    expect(kinds('barbarian', 4)).toBe(3);
+    expect(kinds('paladin', 5)).toBe(2);
+    expect(kinds('ranger', 5)).toBe(2);
+    expect(kinds('rogue', 5)).toBe(2);
+    expect(kinds('monk', 5)).toBe(0);
+  });
+});
+
+describe('Unarmored Movement (Monk 2, line 4526)', () => {
+  it('+10 ft from 2nd and +15 from 6th, unarmoured', () => {
+    const one = pc('monk', 1).speed;
+    expect(pc('monk', 2).speed).toBe(one + 10);
+    expect(pc('monk', 6).speed).toBe(one + 15);
+  });
+});

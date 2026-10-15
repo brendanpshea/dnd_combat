@@ -543,14 +543,30 @@ export function resolveAttack(
     tags.push('Bracers of Archery');
   }
 
-  // Rage: bonus damage on Strength-based melee attacks. Flat rather than dice,
-  // which is the SRD shape and also the right feel — rage is a floor under
-  // every swing, not another thing to roll. A finesse weapon swung on Dex is
-  // deliberately excluded: the barbarian's whole bargain is Strength.
-  if (attacker.conditions.some((k) => k.id === 'raging') && isMeleeAttack &&
-      attackAbility(attacker, weapon) === 'str') {
+  // Rage: bonus damage on Strength-based attacks. Flat rather than dice, which
+  // is the SRD shape and also the right feel — rage is a floor under every
+  // swing, not another thing to roll. A finesse weapon swung on Dex is
+  // deliberately excluded: the barbarian's whole bargain is Strength. A
+  // THROWN handaxe or javelin is Strength too, and counts: "When you make an
+  // attack using Strength — with either a weapon or an Unarmed Strike" (SRD
+  // 5.2.1, Rage). It used to be melee only.
+  const raging = attacker.conditions.some((k) => k.id === 'raging');
+  const strengthBased = (ctx.abilityOverride ?? attackAbility(attacker, weapon)) === 'str';
+  if (raging && strengthBased) {
     amount += rageDamage(attacker.level);
     tags.push('Rage');
+  }
+  // Frenzy (Berserker 3): Reckless Attack while raging adds (Rage Damage)d6 to
+  // the first target hit with a Strength-based attack on the barbarian's turn.
+  if (raging && strengthBased && attacker.featureIds.includes('frenzy') &&
+      attacker.conditions.some((k) => k.id === 'reckless') &&
+      isTurnOf(state, attackerId) && !attacker.turn.frenzyUsed) {
+    attacker.turn.frenzyUsed = true;
+    const extra = rollDice(state.rng, `${rageDamage(attacker.level)}d6`, crit);
+    state.rng = extra.state;
+    amount += extra.total;
+    rolls = [...rolls, ...extra.rolls];
+    tags.push('Frenzy');
   }
 
   // Brute (Bugbear): a melee hit deals one extra weapon damage die.

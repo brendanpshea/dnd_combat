@@ -528,6 +528,8 @@ export interface Combatant {
     slotSpent?: boolean;
     /** The weapons swung so far in this turn's Attack action, for `routines`. */
     routineMade?: Id[];
+    /** Frenzy's extra dice have landed this turn (the first target hit only). */
+    frenzyUsed?: boolean;
   };
   alive: boolean;
   /**

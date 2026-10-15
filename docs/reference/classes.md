@@ -12,7 +12,7 @@
 - **Armor:** light, medium, shield
 - **Skills offered:** Athletics, Survival
 - **Ability priority:** STR > CON > DEX > WIS > CHA > INT
-- **Weapon masteries:** Greataxe, Handaxe, Javelin
+- **Weapon masteries:** Greataxe, Handaxe, Javelin, Warhammer
 - **Starting kit:** Greataxe, Handaxe ×2, Potion of Healing ×1
 
 ### Features by level
@@ -174,7 +174,7 @@ Spellcasting ability: **WIS**.
 - **Armor:** light, medium, heavy, shield
 - **Skills offered:** Athletics, Intimidation
 - **Ability priority:** STR > CON > DEX > WIS > INT > CHA
-- **Weapon masteries:** Longsword, Longsword +1, Javelin
+- **Weapon masteries:** Longsword, Longsword +1, Javelin, Greatsword, Greatsword +1, Longbow, Longbow +1, Handaxe
 - **Starting kit:** Longsword, shield, Scale Mail, Javelin ×2, Potion of Healing ×1, Alchemist's Fire ×1
 - **Fighting Style (default):** Dueling
 - **Additional Fighting Style (default):** Defense
@@ -184,7 +184,7 @@ Spellcasting ability: **WIS**.
 Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.
 
 - **Ability priority:** DEX > CON > STR > WIS > INT > CHA
-- **Weapon masteries:** Rapier, Rapier +1, Dagger
+- **Weapon masteries:** Rapier, Rapier +1, Dagger, Shortbow, Longsword, Longsword +1, Javelin
 - **Starting kit:** Rapier, shield, Leather, Dagger ×2, Potion of Healing ×1, Alchemist's Fire ×1
 - **Fighting Style (default):** Dueling
 - **Additional Fighting Style (default):** Defense
@@ -194,7 +194,7 @@ Dexterity, rapier and shield, leather. Quick, quiet, and lightly armoured.
 Dexterity, longbow, studded leather. Hits hardest from across the board.
 
 - **Ability priority:** DEX > CON > STR > WIS > INT > CHA
-- **Weapon masteries:** Longbow, Longbow +1, Shortsword
+- **Weapon masteries:** Longbow, Longbow +1, Shortsword, Javelin, Longsword, Longsword +1, Handaxe
 - **Starting kit:** Longbow, Studded Leather, Shortsword ×1, Potion of Healing ×1, Alchemist's Fire ×1
 - **Fighting Style (default):** Archery
 - **Additional Fighting Style (default):** Defense
@@ -204,7 +204,7 @@ Dexterity, longbow, studded leather. Hits hardest from across the board.
 Strength, greatsword, scale mail. Two hands, no shield, more damage.
 
 - **Ability priority:** STR > CON > DEX > WIS > INT > CHA
-- **Weapon masteries:** Greatsword, Greatsword +1, Javelin
+- **Weapon masteries:** Greatsword, Greatsword +1, Javelin, Greataxe, Longbow, Longbow +1, Handaxe
 - **Starting kit:** Greatsword, Scale Mail, Javelin ×2, Potion of Healing ×1, Alchemist's Fire ×1
 - **Fighting Style (default):** Great Weapon Fighting
 - **Additional Fighting Style (default):** Defense
@@ -214,7 +214,7 @@ Strength, greatsword, scale mail. Two hands, no shield, more damage.
 Dexterity, a shortsword in each hand, studded leather. More swings, less armour.
 
 - **Ability priority:** DEX > CON > STR > WIS > INT > CHA
-- **Weapon masteries:** Shortsword, Shortsword +1, Dagger
+- **Weapon masteries:** Shortsword, Shortsword +1, Dagger, Shortbow, Longsword, Longsword +1, Javelin
 - **Starting kit:** Shortsword, Shortsword, Studded Leather, Dagger ×2, Potion of Healing ×1, Alchemist's Fire ×1
 - **Fighting Style (default):** Two-Weapon Fighting
 - **Additional Fighting Style (default):** Defense
@@ -255,7 +255,7 @@ Dexterity, a shortsword in each hand, studded leather. More swings, less armour.
 - **Armor:** —
 - **Skills offered:** Acrobatics, Stealth
 - **Ability priority:** DEX > WIS > CON > STR > INT > CHA
-- **Weapon masteries:** Quarterstaff
+- **Weapon masteries:** —
 - **Starting kit:** Quarterstaff, Dagger ×2, Potion of Healing ×1
 
 ### Features by level
@@ -263,7 +263,7 @@ Dexterity, a shortsword in each hand, studded leather. More swings, less armour.
 | Level | Features |
 | --- | --- |
 | 1 | Martial Arts, Unarmored Defense |
-| 2 | Monk's Focus, Flurry of Blows, Patient Defense, Step of the Wind |
+| 2 | Monk's Focus, Flurry of Blows, Patient Defense, Step of the Wind, Unarmored Movement |
 | 3 | Deflect Attacks, Open Hand Technique |
 | 5 | Extra Attack, Stunning Strike |
 | 6 | Empowered Strikes |
