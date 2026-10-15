@@ -595,7 +595,12 @@ damage before HP and does not stack.
 ## 5. Monsters & encounters
 
 SRD 5.2.1 stat blocks, simplified; attack bonuses *derive* from abilities +
-proficiency and match the printed numbers.
+proficiency and match the printed numbers. Where a stat block attacks with an
+ability the weapon's properties would not pick — a ghost's touch is Charisma, a
+giant's thrown rock Strength, a priest's Radiant Flame Wisdom — the weapon says
+so (`WeaponData.attackAbility`, and `abilityDamage: false` for the attacks that
+add no modifier to damage). `test/srd-monsters.test.ts` holds every monster
+attack's to-hit and damage to the SRD print.
 
 | Monster | Signature mechanics |
 | --- | --- |

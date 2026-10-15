@@ -33,8 +33,8 @@ function avgDice(expr: string): number {
 }
 
 function weaponDamage(c: Combatant, w: WeaponData): number {
-  const ability = w.melee && !w.properties.includes('finesse') ? 'str' : 'dex';
-  return avgDice(w.damage) + abilityMod(c.abilities[ability]) + (w.damageBonus ?? 0);
+  const ability = w.attackAbility ?? (w.melee && !w.properties.includes('finesse') ? 'str' : 'dex');
+  return avgDice(w.damage) + (w.abilityDamage === false ? 0 : abilityMod(c.abilities[ability])) + (w.damageBonus ?? 0);
 }
 
 /**

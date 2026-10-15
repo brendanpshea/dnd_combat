@@ -201,7 +201,7 @@ function outputPerRound(c: Combatant): number {
   for (const id of attackableWeapons(c)) {
     const w = WEAPONS[id];
     if (!w) continue;
-    const mod = abilityMod(c.abilities[attackAbility(c, w)]);
+    const mod = w.abilityDamage === false ? 0 : abilityMod(c.abilities[attackAbility(c, w)]);
     best = Math.max(best, (avgDice(w.damage) + (w.damageBonus ?? 0) + mod) * c.attacksPerAction * 0.6);
   }
   // A caster's turn is a spell, not a swing, and its cantrip alone scales with
@@ -339,7 +339,7 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
     const finishes = (target.deathSaves?.failures ?? 0) + failures >= 3;
     return hitProb(bonus, acOf(target), mode) * (finishes ? 3 : 1.5);
   }
-  let dmg = avgDice(weapon.damage) + (a.offhand ? 0 : abilityMod(actor.abilities[ability])) +
+  let dmg = avgDice(weapon.damage) + (a.offhand || weapon.abilityDamage === false ? 0 : abilityMod(actor.abilities[ability])) +
     (weapon.damageBonus ?? 0);
   if (weapon.extraDamage) {
     // A save halves it, so price the average of both outcomes rather than the

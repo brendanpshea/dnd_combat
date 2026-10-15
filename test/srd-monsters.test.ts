@@ -216,6 +216,113 @@ describe('monster stat blocks against the SRD', () => {
   });
 });
 
+/**
+ * Each stat block's attacks, as printed: the name, the to-hit and the first
+ * damage roll. The block runs from its name to the next block's name.
+ */
+function srdAttacks(): Map<string, Array<{ name: string; bonus: number; dice?: string }>> {
+  const lines = readFileSync(SRD, 'utf8').split('\n');
+  const kind = /^(Tiny|Small|Medium|Large|Huge|Gargantuan)(?: or \w+)? ([A-Za-z]+)/;
+  const starts: Array<{ name: string; at: number }> = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (!statLine(lines[i]!.trim())) continue;
+    let k = i - 1;
+    while (k > i - 6 && k >= 0 && !kind.test(lines[k]!.trim())) k--;
+    if (k <= i - 6 || k < 0) continue;
+    let n = k - 1;
+    while (n >= 0 && lines[n]!.trim() === '') n--;
+    starts.push({ name: (lines[n] ?? '').trim().toLowerCase(), at: n });
+  }
+  const out = new Map<string, Array<{ name: string; bonus: number; dice?: string }>>();
+  for (let j = 0; j < starts.length; j++) {
+    const { name, at } = starts[j]!;
+    if (out.has(name)) continue;
+    const text = lines.slice(at, starts[j + 1]?.at ?? at + 80).join(' ').replace(/\s+/g, ' ');
+    const found: Array<{ name: string; bonus: number; dice?: string }> = [];
+    for (const m of text.matchAll(/([A-Z][^.]{0,70}?)\. (?:Melee or Ranged|Melee|Ranged) Attack Roll: \+(\d+)/g)) {
+      const after = text.slice(m.index! + m[0].length, m.index! + m[0].length + 200);
+      const hit = after.match(/^[^]*?Hit: (\d+) \(([^)]*)\)/);
+      const title = m[1]!.replace(/^.*\b(?:Actions|Reactions) /, '').replace(/\s*\(.*$/, '').trim().toLowerCase();
+      found.push({ name: title, bonus: Number(m[2]), ...(hit ? { dice: hit[2]!.replace(/\s/g, '') } : {}) });
+    }
+    out.set(name, found);
+  }
+  return out;
+}
+
+/** Engine attack name -> the SRD's, where the two differ. */
+const ATTACK_ALIASES: Record<string, string> = {
+  'sprite-shortbow': 'enchanting bow',
+  'roper-tendril': 'tentacle',
+  'ettercap-claws': 'claw',
+  'wyvern-sting': 'sting',
+};
+
+/**
+ * Engine weapons with no attack roll behind them in the SRD block, with why.
+ * Each is a 2024 saving-throw effect this engine delivers as an attack, since
+ * every monster weapon here is swung.
+ */
+const NO_ATTACK_ROLL: Record<string, string> = {
+  'snake-constrict': 'SRD Constrict is a Strength save (DC 14); delivered as an attack, keeping its grapple.',
+  'rust-monster-antennae': 'SRD Antennae is a Dexterity save against the armour; delivered as an attack that corrodes it.',
+  'spawn-bite': 'SRD Bite is a Constitution save (DC 14) against a grappled or incapacitated creature; delivered as an attack.',
+  'wight-drain': 'SRD Life Drain is a Constitution save (DC 13); delivered as an attack that drains the maximum.',
+};
+
+/** Attacks whose damage deliberately differs from the print, with why. */
+const DAMAGE_DIFFERS: Record<string, string> = {
+  'sprite-shortbow': 'SRD Enchanting Bow deals 1 damage and charms; here it is a sleep-poison shortbow (1d4, poisoned on a failed save).',
+  'roper-tendril': 'SRD Tentacle deals no damage and only grapples and poisons; here it deals 1d8 as it grapples.',
+};
+
+describe('monster attacks against the SRD', () => {
+  const srd = srdAttacks();
+
+  it('hit at the printed bonus and for the printed damage', async () => {
+    const { buildMonster } = await import('../src/data/monsters.js');
+    const { WEAPONS } = await import('../src/data/weapons.js');
+    const { attackAbility, weaponAttackBonus } = await import('../src/engine/rules/attack.js');
+    const { abilityMod } = await import('../src/engine/types.js');
+    expect(srd.get('ogre')?.find((a) => a.name === 'greatclub')).toEqual({ name: 'greatclub', bonus: 6, dice: '2d8+4' });
+
+    const wrong: string[] = [];
+    let checked = 0;
+    for (const m of Object.values(MONSTERS)) {
+      const attacks = srd.get(m.name.toLowerCase());
+      // No attack parsed: a summoned creature's block (Summon Dragon, Animate
+      // Objects) prints "Bonus equals your spell attack modifier", not a number.
+      if (!attacks?.length || NOT_IN_SRD[m.id]) continue;
+      const c = buildMonster(m.id, 'team2', { x: 0, y: 0 });
+      for (const wid of m.weaponIds) {
+        const w = WEAPONS[wid]!;
+        const want = ATTACK_ALIASES[wid] ?? w.name.toLowerCase();
+        const r = attacks.find((a) => a.name === want);
+        if (!r) {
+          if (!NO_ATTACK_ROLL[wid]) wrong.push(`${m.id} ${wid}: no SRD attack named "${want}" (${attacks.map((a) => a.name).join(', ')})`);
+          continue;
+        }
+        checked++;
+        const toHit = weaponAttackBonus(c, w);
+        if (toHit !== r.bonus) wrong.push(`${m.id} ${wid}: to-hit +${toHit}, SRD +${r.bonus}`);
+        if (!r.dice || DAMAGE_DIFFERS[wid]) continue;
+        const mod = (w.abilityDamage === false ? 0 : abilityMod(c.abilities[attackAbility(c, w)])) + (w.damageBonus ?? 0);
+        const dice = `${w.damage}${mod > 0 ? `+${mod}` : mod < 0 ? mod : ''}`;
+        if (dice !== r.dice) wrong.push(`${m.id} ${wid}: damage ${dice}, SRD ${r.dice}`);
+      }
+    }
+    expect(checked, 'the attack parser found almost nothing').toBeGreaterThan(150);
+    expect(wrong, `attacks that disagree with the SRD:\n${wrong.join('\n')}`).toEqual([]);
+  });
+
+  it('every declared exception still names a real weapon', async () => {
+    const { WEAPONS } = await import('../src/data/weapons.js');
+    for (const id of [...Object.keys(NO_ATTACK_ROLL), ...Object.keys(DAMAGE_DIFFERS), ...Object.keys(ATTACK_ALIASES)]) {
+      expect(WEAPONS[id], id).toBeDefined();
+    }
+  });
+});
+
 describe('damage breaks concentration', () => {
   /**
    * "A creature takes damage while concentrating: Constitution save, DC 10 or

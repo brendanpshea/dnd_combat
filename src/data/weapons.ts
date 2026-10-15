@@ -112,6 +112,20 @@ export interface WeaponData {
     /** Extra maximum hit points per character level (Berserker Axe). */
     hpPerLevel?: number;
   };
+  /**
+   * The ability a stat block's attack is rolled with, where it is not the one
+   * the weapon's properties would pick (Strength in melee, Dexterity at range,
+   * the better of the two for finesse). A ghost's Withering Touch is Charisma,
+   * a ghoul's bite and a wraith's touch are Dexterity, a hill giant's thrown
+   * rock is Strength, a priest's Radiant Flame is Wisdom. It is the damage
+   * modifier too, unless `abilityDamage` is false. Every monster attack's
+   * to-hit and damage are held to the SRD's printed numbers by
+   * test/srd-monsters.test.ts.
+   */
+  attackAbility?: Ability;
+  /** The stat block adds no ability modifier to this attack's damage — a
+   *  spell-like bolt (Radiant Flame, Force Bolt) or a specter's Life Drain. */
+  abilityDamage?: false;
   /** Magic weapon bonuses (+1 sword: both are 1). */
   attackBonus?: number;
   damageBonus?: number;
@@ -515,6 +529,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'ghoul-bite': {
     id: 'ghoul-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    attackAbility: 'dex',
     properties: [], melee: true, extraDamage: { dice: '1d6', type: 'necrotic' },
   },
   'ghoul-claws': {
@@ -604,6 +619,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'fire-touch': {
     id: 'fire-touch', name: 'Burn', damage: '2d6', damageType: 'fire',
+    attackAbility: 'dex',
     properties: [], melee: true,
   },
   'water-slam': {
@@ -616,6 +632,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'air-slam': {
     id: 'air-slam', name: 'Thunderous Slam', damage: '2d8', damageType: 'thunder',
+    attackAbility: 'dex',
     properties: [], melee: true,
   },
   'sprite-shortbow': {
@@ -669,6 +686,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'cockatrice-bite': {
     id: 'cockatrice-bite', name: 'Petrifying Bite', damage: '1d4', damageType: 'piercing',
+    attackAbility: 'dex',
     properties: [], melee: true,
     // Petrification, approximated as restrained (turning to stone) — Con save,
     // save-ends, so a hit isn't a permanent lockout.
@@ -696,16 +714,19 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'shadow-drain': {
     id: 'shadow-drain', name: 'Draining Swipe', damage: '1d6', damageType: 'necrotic',
+    attackAbility: 'dex',
     properties: [], melee: true,
     onHitSave: { dc: 10, ability: 'con', condition: 'sapped' },
   },
   'specter-drain': {
     id: 'specter-drain', name: 'Life Drain', damage: '2d6', damageType: 'necrotic',
+    attackAbility: 'dex', abilityDamage: false,
     properties: [], melee: true,
     drainsMaxHp: { ability: 'con', dc: 10 },
   },
   'wisp-shock': {
     id: 'wisp-shock', name: 'Shock', damage: '2d8', damageType: 'lightning',
+    attackAbility: 'wis',
     properties: [], melee: true,
   },
   'wight-longsword': {
@@ -755,6 +776,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'giant-rock': {
     id: 'giant-rock', name: 'Trash Lob', damage: '2d10', damageType: 'bludgeoning',
+    attackAbility: 'str',
     properties: [], melee: false, range: { normal: 60, long: 240 },
   },
   'stone-giant-club': {
@@ -763,16 +785,19 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'stone-giant-boulder': {
     id: 'stone-giant-boulder', name: 'Boulder', damage: '2d8', damageType: 'bludgeoning',
+    attackAbility: 'str',
     properties: [], melee: false, range: { normal: 60, long: 240 }, onHitCondition: 'prone',
   },
   // The frost giant's ranged attack is a bow, not a rock: ranged only.
   'frost-giant-great-bow': {
     id: 'frost-giant-great-bow', name: 'Great Bow', damage: '2d10', damageType: 'piercing',
+    attackAbility: 'str',
     properties: ['two-handed'], melee: false, range: { normal: 150, long: 600 },
     extraDamage: { dice: '2d6', type: 'cold' }, onHitCondition: 'slowed',
   },
   'fire-giant-hammer-throw': {
     id: 'fire-giant-hammer-throw', name: 'Hammer Throw', damage: '3d10', damageType: 'bludgeoning',
+    attackAbility: 'str',
     properties: [], melee: false, range: { normal: 60, long: 240 }, onHitCondition: 'sapped',
     extraDamage: { dice: '1d8', type: 'fire' },
   },
@@ -789,18 +814,22 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // damage type with legs.
   'mephit-claws-fire': {
     id: 'mephit-claws-fire', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    attackAbility: 'dex',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'fire' },
   },
   'magma-mephit-claws': {
     id: 'magma-mephit-claws', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    attackAbility: 'dex',
     properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },
   },
   'mephit-claws-cold': {
     id: 'mephit-claws-cold', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    attackAbility: 'dex',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
   },
   'mephit-claws-dust': {
     id: 'mephit-claws-dust', name: 'Claw', damage: '1d4', damageType: 'slashing',
+    attackAbility: 'dex',
     properties: [], melee: true,
   },
   'mephit-claws-mud': {
@@ -811,6 +840,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // ---- fiends, mid and top ----------------------------------------------
   'succubus-claws': {
     id: 'succubus-claws', name: 'Fiendish Touch', damage: '2d10', damageType: 'psychic',
+    attackAbility: 'cha',
     properties: ['finesse'], melee: true,
   },
   'bearded-devil-glaive': {
@@ -938,10 +968,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'ghost-touch': {
     id: 'ghost-touch', name: 'Withering Touch', damage: '3d10', damageType: 'necrotic',
+    attackAbility: 'cha',
     properties: [], melee: true,
   },
   'wraith-touch': {
     id: 'wraith-touch', name: 'Life Drain', damage: '4d8', damageType: 'necrotic',
+    attackAbility: 'dex',
     properties: [], melee: true, drainsMaxHp: { ability: 'con', dc: 14 },
   },
   'spawn-claws': {
@@ -998,6 +1030,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // ---- elemental spread -------------------------------------------------
   'magmin-touch': {
     id: 'magmin-touch', name: 'Touch', damage: '2d4', damageType: 'fire',
+    attackAbility: 'dex',
     properties: [], melee: true,
   },
   'azer-hammer': {
@@ -1016,6 +1049,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'stalker-slam': {
     id: 'stalker-slam', name: 'Wind Swipe', damage: '2d6', damageType: 'force',
+    attackAbility: 'dex',
     properties: [], melee: true,
   },
 
@@ -1076,6 +1110,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   // ---- constructs -------------------------------------------------------
   'flying-sword-blade': {
     id: 'flying-sword-blade', name: 'Slash', damage: '1d8', damageType: 'slashing',
+    attackAbility: 'dex',
     properties: [], melee: true,
   },
   // The rug wins by pinning someone and holding them there; the damage is
@@ -1133,10 +1168,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'acolyte-radiant-flame': {
     id: 'acolyte-radiant-flame', name: 'Radiant Flame', damage: '2d6', damageType: 'radiant',
+    attackAbility: 'wis', abilityDamage: false,
     properties: [], range: { normal: 60, long: 60 }, melee: false,
   },
   'priest-radiant-flame': {
     id: 'priest-radiant-flame', name: 'Radiant Flame', damage: '2d10', damageType: 'radiant',
+    attackAbility: 'wis', abilityDamage: false,
     properties: [], range: { normal: 60, long: 60 }, melee: false,
   },
   'cultist-pact-blade': {
@@ -1154,6 +1191,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'oni-nightmare-ray': {
     id: 'oni-nightmare-ray', name: 'Nightmare Ray', damage: '2d6', damageType: 'psychic',
+    attackAbility: 'cha',
     properties: [], range: { normal: 60, long: 60 }, melee: false,
   },
   'bugbear-grab': {
@@ -1186,6 +1224,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'earth-rock-launch': {
     id: 'earth-rock-launch', name: 'Rock Launch', damage: '1d6', damageType: 'bludgeoning',
+    attackAbility: 'str',
     properties: [], range: { normal: 60, long: 60 }, melee: false, onHitCondition: 'prone',
   },
   'sprite-needle-sword': {
@@ -1198,10 +1237,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'dryad-vine-lash': {
     id: 'dryad-vine-lash', name: 'Vine Lash', damage: '1d8', damageType: 'slashing',
+    attackAbility: 'cha',
     properties: ['finesse'], melee: true,
   },
   'dryad-thorn-burst': {
     id: 'dryad-thorn-burst', name: 'Thorn Burst', damage: '1d6', damageType: 'piercing',
+    attackAbility: 'cha',
     properties: [], range: { normal: 60, long: 60 }, melee: false,
   },
   'rust-monster-bite': {
@@ -1210,10 +1251,12 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'horned-devil-hurl-flame': {
     id: 'horned-devil-hurl-flame', name: 'Hurl Flame', damage: '5d8', damageType: 'fire',
+    attackAbility: 'cha',
     properties: [], range: { normal: 150, long: 150 }, melee: false,
   },
   'barbed-devil-hurl-flame': {
     id: 'barbed-devil-hurl-flame', name: 'Hurl Flame', damage: '5d6', damageType: 'fire',
+    attackAbility: 'cha', abilityDamage: false,
     properties: [], range: { normal: 150, long: 150 }, melee: false,
   },
   'crocodile-tail': {
@@ -1222,20 +1265,24 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   'druid-vine-staff': {
     id: 'druid-vine-staff', name: 'Vine Staff', damage: '1d8', damageType: 'bludgeoning',
+    attackAbility: 'wis',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'poison' },
   },
   'druid-verdant-wisp': {
     id: 'druid-verdant-wisp', name: 'Verdant Wisp', damage: '3d6', damageType: 'radiant',
+    attackAbility: 'wis', abilityDamage: false,
     properties: [], range: { normal: 90, long: 90 }, melee: false,
   },
   // "Melee or Ranged Attack Roll ... reach 5 ft. or range 120 ft." Finesse so it
   // runs off the mage's Dexterity rather than its Strength 9.
   'mage-arcane-burst': {
     id: 'mage-arcane-burst', name: 'Arcane Burst', damage: '3d8', damageType: 'force',
+    attackAbility: 'int',
     properties: ['finesse'], range: { normal: 120, long: 120 }, melee: true,
   },
   'stone-golem-force-bolt': {
     id: 'stone-golem-force-bolt', name: 'Force Bolt', damage: '4d10', damageType: 'force',
+    attackAbility: 'con', abilityDamage: false,
     properties: [], range: { normal: 120, long: 120 }, melee: false,
   },
   'wight-necrotic-bow': {

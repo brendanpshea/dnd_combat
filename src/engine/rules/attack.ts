@@ -20,12 +20,30 @@ import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 import { applyCondition, removeConditions, grapple, heldWith } from './conditions.js';
 
-/** Which ability powers an attack with this weapon. */
-export function attackAbility(attacker: Combatant, weapon: WeaponData): 'str' | 'dex' {
+/**
+ * Which ability powers an attack with this weapon: the stat block's own when
+ * it names one (`WeaponData.attackAbility` — a ghost's touch is Charisma),
+ * otherwise Strength in melee, Dexterity at range, the better for finesse.
+ */
+export function attackAbility(attacker: Combatant, weapon: WeaponData): Ability {
+  if (weapon.attackAbility) return weapon.attackAbility;
   const finesse = weapon.properties.includes('finesse');
   if (!weapon.melee) return 'dex';
   if (finesse) return attacker.abilities.dex >= attacker.abilities.str ? 'dex' : 'str';
   return 'str'; // thrown non-finesse weapons also use str
+}
+
+/**
+ * The flat part of a weapon attack roll: the ability modifier, proficiency if
+ * trained (2024: a wizard can swing a greatsword, it just adds no proficiency;
+ * natural and monster weapons are always proficient), and a magic weapon's
+ * bonus. Situational adders (Archery, Bless, Sacred Weapon) come on top in
+ * resolveAttack. For a monster this is the stat block's printed to-hit, which
+ * test/srd-monsters.test.ts holds it to.
+ */
+export function weaponAttackBonus(attacker: Combatant, weapon: WeaponData, ability: Ability = attackAbility(attacker, weapon)): number {
+  const prof = isWeaponProficient(attacker.weaponProfs, weapon.id) ? proficiencyBonus(attacker.level) : 0;
+  return abilityMod(attacker.abilities[ability]) + prof + (weapon.attackBonus ?? 0);
 }
 
 /**
@@ -286,11 +304,7 @@ export function resolveAttack(
   const ability = ctx.abilityOverride ??
     (shillelagh ? attacker.spellcastingAbility ?? 'wis' : attackAbility(attacker, weapon));
   const mod = abilityMod(attacker.abilities[ability]);
-  // Proficiency bonus only if trained with the weapon (2024: a wizard can swing
-  // a greatsword, they just don't add proficiency). Natural/monster weapons and
-  // un-migrated combatants are always proficient.
-  const prof = isWeaponProficient(attacker.weaponProfs, weapon.id) ? proficiencyBonus(attacker.level) : 0;
-  let total = d20.natural + mod + prof + (weapon.attackBonus ?? 0);
+  let total = d20.natural + weaponAttackBonus(attacker, weapon, ability);
   // Fighting Style: Archery — +2 to attack rolls with ranged weapons.
   if (attacker.featureIds.includes('archery') && !weapon.melee) total += 2;
   // Sacred Weapon (Devotion Channel Divinity): +Cha to the paladin's own
@@ -485,8 +499,10 @@ export function resolveAttack(
   }
 
   // Off-hand attacks add no ability modifier to damage (RAW default) — unless
-  // the Two-Weapon Fighting style restores it.
-  const offhandMod = ctx.offhand && !attacker.featureIds.includes('two-weapon-fighting') ? 0 : mod;
+  // the Two-Weapon Fighting style restores it. Some stat-block attacks add
+  // none at all (`abilityDamage: false`).
+  const offhandMod = weapon.abilityDamage === false ||
+    (ctx.offhand && !attacker.featureIds.includes('two-weapon-fighting')) ? 0 : mod;
   let amount = rolls.reduce((s, r) => s + r, 0) + offhandMod + (weapon.damageBonus ?? 0);
   if (ctx.offhand && offhandMod !== 0) tags.push('Two-Weapon Fighting');
 
