@@ -257,10 +257,16 @@ function stepDanger(state: GameState, mover: Combatant): StepDanger {
   };
 }
 
-/** A creature's first in-hand melee weapon, for opportunity attacks. */
+/**
+ * A creature's first in-hand melee weapon, for opportunity attacks — or its
+ * fist: "take a Reaction to make one melee attack with a weapon or an Unarmed
+ * Strike" (SRD 5.2.1). Characters only; a monster keeps to its stat block.
+ */
 function meleeWeaponOf(c: Combatant): Id | undefined {
   const hands = [c.equipped.mainHand, c.equipped.offHand];
-  return hands.find((w): w is Id => !!w && w !== 'shield' && (WEAPONS[w]?.melee ?? false));
+  const held = hands.find((w): w is Id => !!w && w !== 'shield' && (WEAPONS[w]?.melee ?? false));
+  if (held) return held;
+  return c.weaponProfs !== undefined || c.featureIds.includes('martial-arts') ? 'unarmed-strike' : undefined;
 }
 
 const canTakeReaction = canReact;

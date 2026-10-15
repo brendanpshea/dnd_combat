@@ -275,8 +275,12 @@ describe('Barbarian: Berserker', () => {
  * no class shipped with a graze or cleave weapon: the fighter masters the
  * longsword and javelin, the ranger a bow. The barbarian's greataxe is cleave.
  */
-describe('Graze and Cleave, on a miss', () => {
-  it('damages the target, not the wielder', () => {
+describe('Cleave, on a miss', () => {
+  // Cleave was once modelled as Graze — damage on a miss — and that miss
+  // damage once landed on the WIELDER. Cleave is its own rule now (a second
+  // swing after a hit, test/weapons-srd.test.ts), so a miss with the greataxe
+  // does nothing to anyone.
+  it('hurts neither the target nor the wielder', () => {
     const me = barb(1, { x: 1, y: 1 });
     // AC 30: every swing misses, so every damage event is the mastery's.
     const foe = dummy({ x: 2, y: 1 }, 'd1', 30);
@@ -293,7 +297,7 @@ describe('Graze and Cleave, on a miss', () => {
     }
     expect(misses, 'AC 30 should have missed every time').toBe(12);
     expect(c.state.combatants[me.id]!.hp, 'the wielder must not damage itself').toBe(hp0);
-    expect(c.state.combatants['d1']!.hp, 'a cleave miss still bites').toBeLessThan(foeHp0);
+    expect(c.state.combatants['d1']!.hp, 'a cleave miss bit: that is Graze, not Cleave').toBe(foeHp0);
   });
 });
 

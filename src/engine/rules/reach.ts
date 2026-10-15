@@ -33,6 +33,7 @@
  */
 import type { GameState, Combatant, Id, Position } from '../types.js';
 import { distanceCells } from '../grid.js';
+import { WEAPONS } from '../../data/weapons.js';
 
 /**
  * How many cells this creature threatens.
@@ -48,9 +49,13 @@ import { distanceCells } from '../grid.js';
  * SRD; so do most Large creatures. Size and reach are correlated, not equal, and
  * the line the SRD actually draws is above Large.
  */
-export function reachCells(c: Combatant): number {
-  if (c.featureIds.includes('long-limbed')) return 2;
-  return c.size === 'huge' || c.size === 'gargantuan' ? 2 : 1;
+export function reachCells(c: Combatant, weaponId?: Id): number {
+  const body = c.featureIds.includes('long-limbed') || c.size === 'huge' || c.size === 'gargantuan' ? 2 : 1;
+  // A Reach weapon adds 5 feet "when you attack with it, as well as when
+  // determining your reach for Opportunity Attacks with it" (SRD 5.2.1) — so
+  // the weapon swung, or for threatening, the one in hand.
+  const w = WEAPONS[weaponId ?? c.equipped.mainHand ?? ''];
+  return body + (w?.properties.includes('reach') ? 1 : 0);
 }
 
 /** Feet, for the log and anything that talks in the SRD's units. */
@@ -59,8 +64,8 @@ export function reachFeet(c: Combatant): number {
 }
 
 /** Can `attacker` reach `target` where they both stand? */
-export function withinReach(attacker: Combatant, target: Combatant): boolean {
-  return distanceCells(attacker.position, target.position) <= reachCells(attacker);
+export function withinReach(attacker: Combatant, target: Combatant, weaponId?: Id): boolean {
+  return distanceCells(attacker.position, target.position) <= reachCells(attacker, weaponId);
 }
 
 /** Can `attacker` reach a square, from where it stands? */

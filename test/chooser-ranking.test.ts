@@ -280,6 +280,10 @@ describe('something that works in melee is always on offer', () => {
     wz.spellIds = wz.spellIds.filter((id) => !['shocking-grasp', 'true-strike', 'magic-missile'].includes(id));
     wz.equipped = { armor: wz.equipped.armor } as typeof wz.equipped;
     wz.inventory = [];
+    // And no fist: every character can punch since the 2024 Unarmed Strike,
+    // which would be a (weak) real answer. Without a character's training the
+    // creature has none, and the fixture keeps meaning "nothing to promote".
+    delete (wz as { weaponProfs?: unknown }).weaponProfs;
     const c = new Combat({
       seed: 7,
       mapId: 'open',

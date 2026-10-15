@@ -530,6 +530,12 @@ export interface Combatant {
     routineMade?: Id[];
     /** Frenzy's extra dice have landed this turn (the first target hit only). */
     frenzyUsed?: boolean;
+    /** Cleave's second swing has been made this turn (once a turn). */
+    cleaveUsed?: boolean;
+    /** Nick has put the Light extra attack into the Attack action this turn. */
+    nickUsed?: boolean;
+    /** A Loading weapon has fired in this Attack action (one shot an action). */
+    loadingFired?: boolean;
   };
   alive: boolean;
   /**

@@ -57,9 +57,10 @@ describe('Monk: the build', () => {
 
   it('always has its fists, without drawing them', () => {
     expect(attackableWeapons(monk(1))).toContain('unarmed-strike');
-    // And nobody else does — an unarmed option on every bar is noise.
+    // So does every character since the 2024 Unarmed Strike (1 + Strength) —
+    // but a monster only has what its stat block prints.
     expect(attackableWeapons(buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 0 } })))
-      .not.toContain('unarmed-strike');
+      .toContain('unarmed-strike');
   });
 
   it('cannot be handed a silvered fist', () => {

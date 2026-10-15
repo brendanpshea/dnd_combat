@@ -136,7 +136,9 @@ function routineLeft(actor: Combatant): number | undefined {
 /** Weapons True Strike can guide: anything currently attackable (in hand or a
  *  stowed one the free interaction could draw). */
 function trueStrikeWeapons(c: Combatant): Id[] {
-  return attackableWeapons(c);
+  // "A weapon with which you have proficiency and that is worth 1+ CP": a fist
+  // is neither, now that every character has one.
+  return attackableWeapons(c).filter((w) => w !== 'unarmed-strike');
 }
 
 /** Can't take an *action* — the shared incapacitated set, plus Command (which
@@ -174,8 +176,24 @@ function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
   return (
     !!mainW && !!offW &&
     mainW.properties.includes('light') && offW.properties.includes('light') &&
-    actor.turn.attackedThisTurn && !actor.turn.bonusActionUsed
+    actor.turn.attackedThisTurn && (!actor.turn.bonusActionUsed || nicks(actor, weaponId))
   );
+}
+
+/**
+ * Nick (SRD 5.2.1): the Light extra attack, made with a Nick weapon the wielder
+ * has mastered, is part of the Attack action rather than a Bonus Action — once
+ * a turn. It used to be Vex under another name.
+ */
+function nicks(actor: Combatant, weaponId: Id): boolean {
+  return WEAPONS[weaponId]?.mastery === 'nick' && actor.weaponMasteries.includes(weaponId) &&
+    !actor.turn.nickUsed;
+}
+
+/** One shot of a Loading weapon an action (characters; a stat block prints its own count). */
+function loadingSpent(actor: Combatant, weaponId: Id): boolean {
+  return actor.weaponProfs !== undefined && WEAPONS[weaponId]?.properties.includes('loading') === true &&
+    actor.turn.loadingFired === true;
 }
 
 /**
@@ -405,6 +423,8 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       }
       return (!actor.turn.actionUsed || actor.turn.attacksLeft > 0) &&
         routineAllows(actor, action.weaponId) &&
+        // Loading: one shot per action, however many attacks it has.
+        !(actor.turn.actionUsed && loadingSpent(actor, action.weaponId)) &&
         canAttackWith(state, actor, action.weaponId, action.targetId);
     case 'castSpell': {
       if (incap) return false;
@@ -1035,7 +1055,10 @@ export function step(state: GameState, action: Action): { state: GameState; even
           !routineWeapon(actor, action.weaponId)) {
         events.push(...autoSwap(draft, actorId, action.weaponId));
       }
-      if (action.offhand || action.frenzy) {
+      if (action.offhand && nicks(actor, action.weaponId)) {
+        // Nick: part of the Attack action; the bonus action stays free.
+        actor.turn.nickUsed = true;
+      } else if (action.offhand || action.frenzy) {
         actor.turn.bonusActionUsed = true;
       } else if (!actor.turn.actionUsed) {
         // First attack of the Attack action: bank any multiattack follow-ups
@@ -1051,9 +1074,13 @@ export function step(state: GameState, action: Action): { state: GameState; even
           actor.turn.attacksLeft += actor.attacksPerAction - 1 + hasteBonus;
         }
         actor.turn.routineMade = [action.weaponId];
+        actor.turn.loadingFired = false;   // a new action, a new shot
       } else {
         actor.turn.attacksLeft -= 1;
         actor.turn.routineMade = [...(actor.turn.routineMade ?? []), action.weaponId];
+      }
+      if (!action.offhand && !action.frenzy && WEAPONS[action.weaponId]?.properties.includes('loading')) {
+        actor.turn.loadingFired = true;
       }
       // A named Multiattack decides how many swings are left, not just the
       // count: a ghoul that opened with its Claw has no second attack.

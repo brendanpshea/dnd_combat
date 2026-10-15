@@ -27,7 +27,9 @@ import { applyCondition, removeConditions, grapple, heldWith } from './condition
  */
 export function attackAbility(attacker: Combatant, weapon: WeaponData): Ability {
   if (weapon.attackAbility) return weapon.attackAbility;
-  const finesse = weapon.properties.includes('finesse');
+  // Martial Arts: Dexterity for a monk's Unarmed Strikes, if it is better.
+  const finesse = weapon.properties.includes('finesse') ||
+    (weapon.id === 'unarmed-strike' && attacker.featureIds.includes('martial-arts'));
   if (!weapon.melee) return 'dex';
   if (finesse) return attacker.abilities.dex >= attacker.abilities.str ? 'dex' : 'str';
   return 'str'; // thrown non-finesse weapons also use str
@@ -75,7 +77,7 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   }
   if (!attackableWeapons(actor).includes(weaponId)) return false;
   const dist = distanceFeet(actor.position, t.position);
-  const inMelee = w.melee && withinReach(actor, t);
+  const inMelee = w.melee && withinReach(actor, t, weaponId);
   const inRange =
     w.range !== undefined && dist <= w.range.long &&
     hasLineOfSight(state.grid, actor.position, t.position);
@@ -94,6 +96,8 @@ export interface AttackContext {
   abilityOverride?: Ability;
   /** Internal guard: a Rampage bonus attack must not itself trigger Rampage. */
   noRampage?: boolean;
+  /** Cleave's second swing: no ability modifier on its damage unless negative. */
+  cleave?: boolean;
   /** Deal this type instead of the weapon's (True Strike's radiant). */
   damageType?: DamageType;
   /** Extra radiant dice on a hit (True Strike's cantrip upgrade). */
@@ -155,6 +159,13 @@ export function collectAttackSources(
     dis.push('protection from evil and good');
   }
   if (attacker.conditions.some((c) => c.id === 'sapped')) dis.push('sapped');
+  // Heavy: "Disadvantage on attack rolls with a Heavy weapon if it's a Melee
+  // weapon and your Strength score isn't at least 13 or if it's a Ranged weapon
+  // and your Dexterity score isn't at least 13" (SRD 5.2.1).
+  if (weapon.properties.includes('heavy') &&
+      (isMeleeAttack ? attacker.abilities.str : attacker.abilities.dex) < 13) {
+    dis.push('heavy weapon');
+  }
   if (attacker.conditions.some((c) => c.id === 'poisoned')) dis.push('poisoned');
   if (attacker.conditions.some((c) => c.id === 'blinded')) dis.push('blinded');
   if (attacker.conditions.some((c) => c.id === 'inspired')) adv.push('heroic inspiration');
@@ -279,7 +290,7 @@ export function resolveAttack(
   const weapon = WEAPONS[weaponId]!;
   // Reach: Long-Limbed, or simply being Huge. See rules/reach.ts — one answer,
   // so hitting at reach and threatening at reach can never disagree again.
-  const isMeleeAttack = withinReach(attacker, target) && weapon.melee;
+  const isMeleeAttack = withinReach(attacker, target, weaponId) && weapon.melee;
 
   // Sanctuary: before anything else, the attacker must steel itself. A failed
   // Wisdom save means it cannot bring itself to strike this target at all and
@@ -447,7 +458,7 @@ export function resolveAttack(
     // because no player class carried a graze or cleave weapon until the
     // barbarian's greataxe — and the first thing rage did was halve the
     // self-damage, which is what made it visible.
-    if ((weapon.mastery === 'graze' || weapon.mastery === 'cleave') &&
+    if (weapon.mastery === 'graze' &&
         attacker.weaponMasteries.includes(weaponId) &&
         target.alive && mod > 0) {
       events.push(...applyDamage(state, targetId, attackerId, mod, weapon.damageType, [], { magical: isMagicWeapon(weapon) }));
@@ -457,9 +468,13 @@ export function resolveAttack(
 
   const dmg = rollDice(state.rng,
     shillelagh ? shillelaghDamage(attacker.level)
-      : martialArtsDie(attacker, weapon) ?? weapon.damage, crit);
+      : martialArtsDie(attacker, weapon) ?? weaponDice(attacker, weapon, isMeleeAttack), crit);
   state.rng = dmg.state;
   let rolls = dmg.rolls;
+  // A flat part of the damage expression — the Unarmed Strike's "1 +
+  // Strength" is '0d4+1' — which the dice-rerolling features below must not
+  // touch but the total must keep.
+  const diceBonus = dmg.total - dmg.rolls.reduce((s, r) => s + r, 0);
   // Which named bonuses actually fired — surfaced in the log and as toasts so
   // players can see (and debug) that Sneak Attack, Dueling, etc. are working.
   const tags: string[] = [];
@@ -521,16 +536,22 @@ export function resolveAttack(
   // Off-hand attacks add no ability modifier to damage (RAW default) — unless
   // the Two-Weapon Fighting style restores it. Some stat-block attacks add
   // none at all (`abilityDamage: false`).
-  const offhandMod = weapon.abilityDamage === false ||
-    (ctx.offhand && !attacker.featureIds.includes('two-weapon-fighting')) ? 0 : mod;
-  let amount = rolls.reduce((s, r) => s + r, 0) + offhandMod + (weapon.damageBonus ?? 0);
-  if (ctx.offhand && offhandMod !== 0) tags.push('Two-Weapon Fighting');
+  //
+  // "Don't add your ability modifier to the extra attack's damage unless that
+  // modifier is negative" — the Light property's extra attack and Cleave's
+  // second swing alike. A negative modifier used to be dropped too.
+  const noMod = (ctx.offhand && !attacker.featureIds.includes('two-weapon-fighting')) || ctx.cleave === true;
+  const offhandMod = weapon.abilityDamage === false ? 0 : noMod ? Math.min(0, mod) : mod;
+  let amount = rolls.reduce((s, r) => s + r, 0) + diceBonus + offhandMod + (weapon.damageBonus ?? 0);
+  if (ctx.offhand && !noMod && offhandMod !== 0) tags.push('Two-Weapon Fighting');
 
   // Fighting Style: Dueling — one-handed melee weapon, no weapon in the
   // other hand (a shield is fine): +2.
   if (
     attacker.featureIds.includes('dueling') &&
     isMeleeAttack &&
+    // A fist is not "a Melee weapon in one hand".
+    weapon.id !== 'unarmed-strike' &&
     !weapon.properties.includes('two-handed') &&
     (attacker.equipped.offHand === undefined || isShield(attacker.equipped.offHand))
   ) {
@@ -897,8 +918,7 @@ export function resolveAttack(
       events.push(...applyCondition(state, targetId, {
         id: 'sapped', sourceId: attackerId, endsAtTurnStartOf: attackerId,
       }, { magical: false }));
-    } else if (weapon.mastery === 'vex' || weapon.mastery === 'nick') {
-      // Nick is modeled with Vex's mechanic (a quick nick opens the follow-up).
+    } else if (weapon.mastery === 'vex') {
       if (!attacker.conditions.some((c) => c.id === 'vexed' && c.sourceId === targetId)) {
         // "Before the end of your next turn."
         events.push(...applyCondition(state, attackerId, {
@@ -908,8 +928,10 @@ export function resolveAttack(
       }
     } else if (weapon.mastery === 'slow' && !target.conditions.some((c) => c.id === 'slowed')) {
       events.push(...applyCondition(state, targetId, { id: 'slowed', sourceId: attackerId }, { magical: false }));
-    } else if (weapon.mastery === 'push') {
-      // Shove the target 10 ft (2 cells) straight away from the attacker.
+    } else if (weapon.mastery === 'push' &&
+        !['huge', 'gargantuan'].includes(target.size ?? 'medium')) {
+      // Shove the target 10 ft (2 cells) straight away from the attacker —
+      // "if it is Large or smaller".
       const dir = {
         x: Math.sign(target.position.x - attacker.position.x),
         y: Math.sign(target.position.y - attacker.position.y),
@@ -923,6 +945,22 @@ export function resolveAttack(
       if (!save.success) {
         events.push(...applyCondition(state, targetId, { id: 'prone', sourceId: attackerId }, { magical: false }));
       }
+    }
+  }
+
+  // Cleave (SRD 5.2.1): a melee hit lets the wielder swing again at a second
+  // creature within 5 feet of the first and within reach, once a turn, without
+  // the ability modifier on its damage. It used to deal the modifier on a miss
+  // — Graze's rule, borrowed. The second creature is the most wounded in reach.
+  if (weapon.mastery === 'cleave' && attacker.weaponMasteries.includes(weapon.id) && isMeleeAttack &&
+      !ctx.cleave && !ctx.opportunity && isTurnOf(state, attackerId) && !attacker.turn.cleaveUsed && attacker.alive) {
+    const second = Object.values(state.combatants)
+      .filter((c) => c.alive && !isDown(c) && c.team !== attacker.team && c.id !== targetId &&
+        adjacent(c.position, target.position) && withinReach(attacker, c, weapon.id) && !isHidden(c))
+      .sort((a, b) => a.hp - b.hp || a.id.localeCompare(b.id))[0];
+    if (second) {
+      attacker.turn.cleaveUsed = true;
+      events.push(...resolveAttack(state, attackerId, second.id, weapon.id, { cleave: true, noRampage: true }));
     }
   }
 
@@ -1119,6 +1157,19 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
       abilityMod(attacker.abilities[attacker.spellcastingAbility ?? 'cha']), armed.slotLevel));
   }
   return events;
+}
+
+/**
+ * A weapon's damage dice for this swing: the Versatile die when it is a melee
+ * attack with the other hand free ("The weapon deals that damage when used
+ * with two hands to make a melee attack"), else the printed one.
+ */
+export function weaponDice(attacker: Combatant, weapon: WeaponData, melee: boolean): string {
+  if (weapon.versatile && melee && attacker.equipped.offHand === undefined &&
+      attacker.equipped.mainHand === weapon.id) {
+    return weapon.versatile;
+  }
+  return weapon.damage;
 }
 
 /** Weapons Shillelagh can imbue, per the SRD: a club or a quarterstaff. */

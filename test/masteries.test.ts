@@ -58,25 +58,45 @@ describe('Weapon mastery: Topple', () => {
   });
 });
 
-describe('Weapon mastery: Nick (modeled as Vex)', () => {
-  it('a dagger hit grants the wielder advantage on the next attack vs that target', () => {
-    const atk = wielder({ x: 3, y: 3 }, 'a', 'dagger');
-    const t = target({ x: 4, y: 3 }, 't', 1); // AC 1 → always hit
+describe('Weapon mastery: Nick (SRD 5.2.1)', () => {
+  it('makes the Light extra attack part of the Attack action, once a turn', () => {
+    const atk = { ...wielder({ x: 3, y: 3 }, 'a', 'dagger'), equipped: { mainHand: 'shortsword', offHand: 'dagger', armor: 'leather' } };
+    const t = target({ x: 4, y: 3 }, 't', 1);
     const c = new Combat({ seed: 3, mapId: 'open', combatants: [atk, t] });
-    resolveAttack(c.state, 'a', 't', 'dagger');
-    expect(c.state.combatants['a']!.conditions.some((k) => k.id === 'vexed' && k.sourceId === 't')).toBe(true);
+    let guard = 0;
+    while (c.activeId !== 'a' && guard++ < 10) c.apply({ kind: 'endTurn' });
+    c.apply({ kind: 'attack', weaponId: 'shortsword', targetId: 't' });
+    c.apply({ kind: 'attack', weaponId: 'dagger', targetId: 't', offhand: true });
+    // The bonus action is still there.
+    expect(c.state.combatants['a']!.turn.bonusActionUsed).toBe(false);
+    expect(c.state.combatants['a']!.turn.nickUsed).toBe(true);
   });
 });
 
-describe('Weapon mastery: Cleave (modeled as Graze)', () => {
-  it('a greataxe deals the wielder ability modifier in damage even on a miss', () => {
+describe('Weapon mastery: Cleave (SRD 5.2.1)', () => {
+  it('a hit swings on at a second creature beside the first, without the modifier', () => {
     const atk = wielder({ x: 3, y: 3 }, 'a', 'greataxe');
-    const t = target({ x: 4, y: 3 }, 't', 99); // AC 99 → always miss
+    const t = target({ x: 4, y: 3 }, 't', 1);
+    const u = target({ x: 4, y: 4 }, 'u', 1);
+    const c = new Combat({ seed: 2, mapId: 'open', combatants: [atk, t, u] });
+    let guard = 0;
+    while (c.activeId !== 'a' && guard++ < 10) c.apply({ kind: 'endTurn' });
+    const evs = resolveAttack(c.state, 'a', 't', 'greataxe');
+    const second = evs.filter((e) => e.type === 'damageDealt' && e.targetId === 'u');
+    expect(second.length).toBe(1);
+    const d = second[0]!;
+    if (d.type === 'damageDealt') expect(d.amount).toBe(d.rolls.reduce((s, r) => s + r, 0));
+    // Once a turn.
+    const again = resolveAttack(c.state, 'a', 't', 'greataxe');
+    expect(again.some((e) => e.type === 'damageDealt' && e.targetId === 'u')).toBe(false);
+  });
+
+  it('a miss does nothing — that was Graze', () => {
+    const atk = wielder({ x: 3, y: 3 }, 'a', 'greataxe');
+    const t = target({ x: 4, y: 3 }, 't', 99);
     const c = new Combat({ seed: 2, mapId: 'open', combatants: [atk, t] });
     const evs = resolveAttack(c.state, 'a', 't', 'greataxe');
-    expect(evs.find((e) => e.type === 'attackRolled' && !(e as { hit: boolean }).hit)).toBeDefined();
-    const dmg = evs.find((e) => e.type === 'damageDealt');
-    expect((dmg as { amount: number }).amount).toBe(abilityMod(atk.abilities.str));
+    expect(evs.some((e) => e.type === 'damageDealt')).toBe(false);
   });
 });
 

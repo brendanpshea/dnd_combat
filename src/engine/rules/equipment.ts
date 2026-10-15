@@ -34,7 +34,12 @@ export function attackableWeapons(c: Combatant): Id[] {
   // A monk's fists are always available and never need drawing. Everyone else
   // is left alone: an unarmed option on every character's bar would be nine
   // classes of noise for the one that wants it.
-  if (c.featureIds.includes('martial-arts')) ids.add('unarmed-strike');
+  //
+  // Every CHARACTER can punch, though (SRD 5.2.1, Unarmed Strike): a hero with
+  // a bow in hand still has a fist for the goblin beside it. Monsters keep
+  // to their stat blocks — "a monster is proficient with any weapon in its
+  // stat block", and a fist is in very few.
+  if (c.featureIds.includes('martial-arts') || c.weaponProfs !== undefined) ids.add('unarmed-strike');
   // Nor are the attacks a stat block's Multiattack names: a wyvern does not
   // draw its sting after biting. Without this the free interaction went on the
   // first swap and a bite-then-sting routine could never be finished.

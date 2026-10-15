@@ -572,17 +572,28 @@ disclosure, never new builder code. In the campaign forge, applicable choice
 points render under a collapsed **Advanced** control per party member; the pick
 persists on `PartyCharacter.choices` and clears when the slot's class changes.
 
-**Weapon masteries** now cover six of the eight 2024 masteries: Sap and Vex
-(as before), plus Slow (−10 ft to speed until the target's next turn), Push
-(shove 10 ft straight back on a hit), Topple (Con save or fall prone), and
-Graze (a miss still deals the attacker's ability modifier in damage). Weapons
+**Weapon masteries** cover all eight 2024 masteries: Sap and Vex, Slow (−10
+ft to speed until the target's next turn), Push (shove 10 ft straight back on
+a hit, Large or smaller), Topple (Con save or fall prone), Graze (a miss still
+deals the attacker's ability modifier in damage), Cleave (a hit swings on at a
+second creature within 5 ft of the first, once a turn, without the modifier —
+the most wounded one is picked) and Nick (the Light extra attack as part of
+the Attack action, once a turn, leaving the bonus action free). Weapons
 carry their RAW mastery in data; a mastery only fires for a wielder whose class
 trains that weapon (`weaponMasteries`), and only as many kinds as the class
 table's Weapon Mastery column allows at its level (`masteriesByLevel`: fighter
 3/4/5, barbarian 2/3/4, paladin, ranger and rogue 2; the 2024 monk has none).
-Cleave and Nick are deferred — they
-need multi-target and off-hand action-economy changes the current single-target
-attack resolution doesn't support.
+
+**Weapon properties** follow the SRD table: Versatile weapons roll their
+two-handed die (`WeaponData.versatile`) in melee with the other hand empty;
+Heavy imposes disadvantage below 13 Strength (melee) or Dexterity (ranged);
+Loading allows one shot an action for a character whatever Extra Attack says
+(a stat block's own attack count stands for a monster); Reach adds 5 ft to the
+wielder's reach, attacking and threatening (`reachCells(c, weaponId)`); the
+Light extra attack keeps a negative modifier. Every character has an Unarmed
+Strike (1 + Strength bludgeoning, no Dueling bonus) and it is their
+opportunity attack when nothing melee is in hand; monsters have only what
+their stat block prints.
 
 **Ranger (Hunter) and Paladin (Devotion)**, the fifth and sixth classes,
 follow the 2024 half-caster progression — spellcasting from 1st level, slots

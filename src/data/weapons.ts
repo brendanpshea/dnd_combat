@@ -3,7 +3,13 @@
  */
 import type { Id, DamageType, Ability, ConditionId, WeaponProfs, CreatureType, CreatureSize } from '../engine/types.js';
 
-export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile';
+/**
+ * The SRD 5.2.1 weapon properties the grid uses (line 9071 on). `heavy`:
+ * disadvantage below 13 Strength (melee) or Dexterity (ranged). `loading`: one
+ * shot per action, bonus action or reaction whatever the number of attacks.
+ * `reach`: 5 feet more reach, attacking and threatening alike.
+ */
+export type WeaponProperty = 'finesse' | 'light' | 'thrown' | 'two-handed' | 'versatile' | 'heavy' | 'loading' | 'reach';
 export type MasteryId = 'sap' | 'vex' | 'slow' | 'push' | 'topple' | 'graze' | 'nick' | 'cleave';
 
 export interface WeaponData {
@@ -14,6 +20,8 @@ export interface WeaponData {
   properties: WeaponProperty[];
   /** Present for ranged/thrown weapons; feet. Absent = melee only, reach 5. */
   range?: { normal: number; long: number };
+  /** Versatile: the damage with both hands on it, when the other hand is free. */
+  versatile?: string;
   /** Thrown weapons and pure melee weapons can attack in melee. */
   melee: boolean;
   mastery?: MasteryId;
@@ -146,6 +154,9 @@ const SIMPLE_WEAPONS = new Set<Id>([
 const MARTIAL_WEAPONS = new Set<Id>([
   'longsword', 'shortsword', 'greatsword', 'greataxe', 'longbow', 'warhammer',
   'battleaxe', 'morningstar', 'rapier', 'hand-crossbow',
+  // Martial in the SRD table. Missing here, it read as a natural weapon — and
+  // a natural weapon is proficient in anyone's hands.
+  'scimitar',
 ]);
 
 /**
@@ -206,7 +217,7 @@ export function isWeaponProficient(profs: WeaponProfs | undefined, weaponId: Id)
 export const WEAPONS: Record<Id, WeaponData> = {
   longsword: {
     id: 'longsword', name: 'Longsword', damage: '1d8', damageType: 'slashing',
-    properties: ['versatile'], melee: true, mastery: 'sap', cost: 15,
+    properties: ['versatile'], versatile: '1d10', melee: true, mastery: 'sap', cost: 15,
   },
   javelin: {
     id: 'javelin', name: 'Javelin', damage: '1d6', damageType: 'piercing',
@@ -218,7 +229,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   quarterstaff: {
     id: 'quarterstaff', name: 'Quarterstaff', damage: '1d6', damageType: 'bludgeoning',
-    properties: ['versatile'], melee: true, mastery: 'topple', cost: 1,
+    properties: ['versatile'], versatile: '1d8', melee: true, mastery: 'topple', cost: 1,
   },
   shortsword: {
     id: 'shortsword', name: 'Shortsword', damage: '1d6', damageType: 'piercing',
@@ -234,11 +245,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   greatsword: {
     id: 'greatsword', name: 'Greatsword', damage: '2d6', damageType: 'slashing',
-    properties: ['two-handed'], melee: true, mastery: 'graze', cost: 50,
+    properties: ['heavy', 'two-handed'], melee: true, mastery: 'graze', cost: 50,
   },
   longbow: {
     id: 'longbow', name: 'Longbow', damage: '1d8', damageType: 'piercing',
-    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false, mastery: 'slow', cost: 50,
+    properties: ['heavy', 'two-handed'], range: { normal: 150, long: 600 }, melee: false, mastery: 'slow', cost: 50,
   },
 
 
@@ -320,7 +331,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   spear: {
     id: 'spear', name: 'Spear', damage: '1d6', damageType: 'piercing',
-    properties: ['thrown', 'versatile'], range: { normal: 20, long: 60 }, melee: true, mastery: 'sap', cost: 1,
+    properties: ['thrown', 'versatile'], versatile: '1d8', range: { normal: 20, long: 60 }, melee: true, mastery: 'sap', cost: 1,
   },
   rapier: {
     id: 'rapier', name: 'Rapier', damage: '1d8', damageType: 'piercing',
@@ -328,11 +339,11 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   warhammer: {
     id: 'warhammer', name: 'Warhammer', damage: '1d8', damageType: 'bludgeoning',
-    properties: ['versatile'], melee: true, mastery: 'push', cost: 15,
+    properties: ['versatile'], versatile: '1d10', melee: true, mastery: 'push', cost: 15,
   },
   battleaxe: {
     id: 'battleaxe', name: 'Battleaxe', damage: '1d8', damageType: 'slashing',
-    properties: ['versatile'], melee: true, mastery: 'topple', cost: 10,
+    properties: ['versatile'], versatile: '1d10', melee: true, mastery: 'topple', cost: 10,
   },
   morningstar: {
     id: 'morningstar', name: 'Morningstar', damage: '1d8', damageType: 'piercing',
@@ -472,15 +483,15 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   scimitar: {
     id: 'scimitar', name: 'Scimitar', damage: '1d6', damageType: 'slashing',
-    properties: ['finesse', 'light'], melee: true, mastery: 'nick',
+    properties: ['finesse', 'light'], melee: true, mastery: 'nick', cost: 25,
   },
   'light-crossbow': {
     id: 'light-crossbow', name: 'Light Crossbow', damage: '1d8', damageType: 'piercing',
-    properties: ['two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'slow',
+    properties: ['loading', 'two-handed'], range: { normal: 80, long: 320 }, melee: false, mastery: 'slow',
   },
   'hand-crossbow': {
     id: 'hand-crossbow', name: 'Hand Crossbow', damage: '1d6', damageType: 'piercing',
-    properties: ['light'], range: { normal: 30, long: 120 }, melee: false, mastery: 'vex', cost: 75, // 2024: Vex
+    properties: ['light', 'loading'], range: { normal: 30, long: 120 }, melee: false, mastery: 'vex', cost: 75, // 2024: Vex
   },
   // Monster copies of player weapons, for the stat blocks whose version carries
   // a rider (or bigger dice) the equipment-table weapon must not. Nothing buys
@@ -544,7 +555,7 @@ export const WEAPONS: Record<Id, WeaponData> = {
   },
   sling: {
     id: 'sling', name: 'Sling', damage: '1d4', damageType: 'bludgeoning',
-    properties: [], range: { normal: 30, long: 120 }, melee: false,
+    properties: [], range: { normal: 30, long: 120 }, melee: false, mastery: 'slow',
   },
   /**
    * The monk's fist.
@@ -559,12 +570,16 @@ export const WEAPONS: Record<Id, WeaponData> = {
    * grows with the wielder cannot live on the weapon.
    */
   'unarmed-strike': {
-    id: 'unarmed-strike', name: 'Unarmed Strike', damage: '1d6', damageType: 'bludgeoning',
-    properties: ['finesse', 'light'], melee: true, cost: 0,
+    // SRD 5.2.1 (line 14124): 1 + Strength bludgeoning — no die. A monk's
+    // Martial Arts die and Dexterity replace both (martialArtsDie,
+    // attackAbility). It was a finesse, light 1d6, which only ever mattered for
+    // monks while nobody else could punch.
+    id: 'unarmed-strike', name: 'Unarmed Strike', damage: '0d4+1', damageType: 'bludgeoning',
+    properties: [], melee: true, cost: 0,
   },
   greataxe: {
     id: 'greataxe', name: 'Greataxe', damage: '1d12', damageType: 'slashing',
-    properties: ['two-handed'], melee: true, mastery: 'cleave', cost: 30,
+    properties: ['heavy', 'two-handed'], melee: true, mastery: 'cleave', cost: 30,
   },
   'bear-bite': {
     id: 'bear-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',

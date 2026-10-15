@@ -25,7 +25,7 @@ import { FEATURES } from '../data/features.js';
 import { blocksMovement, distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
-import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith, shillelaghDamage } from '../engine/rules/attack.js';
+import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith, shillelaghDamage, weaponDice } from '../engine/rules/attack.js';
 import { resolveRollMode } from '../engine/dice.js';
 import { legalActions, type Action } from '../engine/actions.js';
 
@@ -346,7 +346,7 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
     const finishes = (target.deathSaves?.failures ?? 0) + failures >= 3;
     return hitProb(bonus, acOf(target), mode) * (finishes ? 3 : 1.5);
   }
-  let dmg = avgDice(weapon.damage) + (a.offhand || weapon.abilityDamage === false ? 0 : abilityMod(actor.abilities[ability])) +
+  let dmg = avgDice(weaponDice(actor, weapon, isMelee)) + (a.offhand || weapon.abilityDamage === false ? 0 : abilityMod(actor.abilities[ability])) +
     (weapon.damageBonus ?? 0);
   if (weapon.extraDamage) {
     // A save halves it, so price the average of both outcomes rather than the
