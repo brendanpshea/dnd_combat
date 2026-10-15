@@ -3,7 +3,7 @@
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
 import { abilityMod, proficiencyBonus } from '../engine/types.js';
-import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
+import { CLASSES, kitFor, chosenOption, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
 import { ORIGIN_FEATS, skilledSkills } from '../data/feats.js';
 import { backgroundSkills } from '../data/backgrounds.js';
 import type { SkillId } from '../data/classes.js';
@@ -103,17 +103,18 @@ function resolveChoiceGrants(
   points: ChoicePoint[] | undefined,
   level: number,
   picks: Record<Id, Id> | undefined,
+  classId?: Id,
 ): Required<ChoiceGrant> {
-  const merged: Required<ChoiceGrant> = { featureIds: [], spellIds: [], weaponMasteries: [], resistances: [] };
+  const merged: Required<ChoiceGrant> = { featureIds: [], spellIds: [], weaponMasteries: [], resistances: [], skillProfs: [] };
   for (const cp of points ?? []) {
     if (cp.atLevel > level) continue;
-    const chosen = picks?.[cp.id] ?? cp.default;
-    const opt = cp.options.find((o) => o.id === chosen) ?? cp.options.find((o) => o.id === cp.default);
+    const opt = chosenOption(cp, picks, classId);
     if (!opt) continue;
     merged.featureIds.push(...(opt.grants.featureIds ?? []));
     merged.spellIds.push(...(opt.grants.spellIds ?? []));
     merged.weaponMasteries.push(...(opt.grants.weaponMasteries ?? []));
     merged.resistances.push(...(opt.grants.resistances ?? []));
+    merged.skillProfs.push(...(opt.grants.skillProfs ?? []));
   }
   return merged;
 }
@@ -372,8 +373,8 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   // comes from the kit that has to live with it, and anything explicitly picked
   // in the forge still wins.
   const picks = { ...kit.choices, ...opts.choices };
-  const grants = resolveChoiceGrants(cls.choices, level, picks);
-  const speciesGrants = resolveChoiceGrants(species.choices, level, picks);
+  const grants = resolveChoiceGrants(cls.choices, level, picks, opts.classId);
+  const speciesGrants = resolveChoiceGrants(species.choices, level, picks, opts.classId);
   grants.featureIds.push(...speciesGrants.featureIds);
   grants.spellIds.push(...speciesGrants.spellIds);
   grants.weaponMasteries.push(...speciesGrants.weaponMasteries);
@@ -511,17 +512,17 @@ export function buildCharacter(opts: BuildOptions): Combatant {
    * Every skill this character is trained in, folded once.
    *
    * Four sources, and the engine must not have to know about any of them: the
-   * class table, a species' class-specific grant, a species feature that hands
-   * one over (a wood elf's Keen Senses), the background's pair, and the Skilled
-   * origin feat filling gaps in whatever is left.
+   * class table, a choice that grants one (a human's Skillful), a species
+   * feature that hands one over (a wood elf's Keen Senses), the background's
+   * pair, and the Skilled origin feat filling gaps in whatever is left.
    *
    * Order matters for Skilled: it has to see everything else first, or it would
    * cheerfully grant a proficiency the character already has.
    */
   const baseSkills: SkillId[] = [...new Set<SkillId>([
     ...cls.skillProfs,
-    ...(species.skillProficienciesByClass?.[opts.classId]
-      ? [species.skillProficienciesByClass[opts.classId]!] : []),
+    ...grants.skillProfs,
+    ...speciesGrants.skillProfs,
     ...featureIds.map((f) => FEATURES[f]?.grantsSkill).filter((x): x is SkillId => x !== undefined),
     ...backgroundSkills(opts.backgroundId),
   ])];

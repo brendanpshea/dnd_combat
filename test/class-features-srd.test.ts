@@ -4,7 +4,8 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { FEATURES, bardicDie } from '../src/data/features.js';
 import { CLASSES } from '../src/data/classes.js';
-import { newCampaign, buildCampaignParty, readBackSurvivors, shortRest, setPartyClass } from '../src/campaign/campaign.js';
+import { newCampaign, buildCampaignParty, readBackSurvivors, shortRest, setPartyClass, characterSkillProficient } from '../src/campaign/campaign.js';
+import { speciesSkills } from '../src/data/species.js';
 import { legalActions, step } from '../src/engine/actions.js';
 import { savingThrow } from '../src/engine/rules/saves.js';
 import { rollSkill, skillMod } from '../src/engine/rules/skills.js';
@@ -224,4 +225,37 @@ describe('spellcasting tables (SRD 5.2.1 class tables)', () => {
       if (want.cantrips) expect(sc.cantripsKnownByLevel?.slice(0, 9)).toEqual(want.cantrips);
     });
   }
+});
+
+describe('Skillful (Human, SRD 5.2.1): one skill of your choice, any class', () => {
+  const human = (classId: string, choices?: Record<string, string>) =>
+    buildCharacter({ classId, team: 'team1', position: { x: 0, y: 0 }, speciesId: 'human', level: 1, ...(choices ? { choices } : {}) });
+
+  it('every class gets a skill its own table lacks when nobody chooses', () => {
+    for (const id of Object.keys(CLASSES)) {
+      const extra = speciesSkills('human', id);
+      expect(extra, id).toHaveLength(1);
+      expect(CLASSES[id]!.skillProfs, `${id}'s default Skillful pick is a class skill already`).not.toContain(extra[0]);
+      expect(human(id).skillProfs, id).toContain(extra[0]);
+    }
+  });
+
+  it('takes the player\'s pick, whatever the class', () => {
+    expect(human('barbarian', { skillful: 'arcana' }).skillProfs).toContain('arcana');
+    expect(human('wizard', { skillful: 'athletics' }).skillProfs).toContain('athletics');
+    expect(human('wizard', { skillful: 'athletics' }).skillProfs).not.toContain('deception');
+  });
+
+  it('is the human\'s alone', () => {
+    expect(speciesSkills('dwarf', 'barbarian', { skillful: 'arcana' })).toEqual([]);
+  });
+
+  it('the campaign\'s skill checks read the same pick', () => {
+    const c = newCampaign(7);
+    const i = c.characters.findIndex((ch) => ch.speciesId === 'human');
+    const ch = c.characters[i >= 0 ? i : 0]!;
+    ch.speciesId = 'human';
+    ch.choices = { ...ch.choices, skillful: 'medicine' };
+    expect(characterSkillProficient(c, c.characters.indexOf(ch), 'medicine')).toBe(true);
+  });
 });

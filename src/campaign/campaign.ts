@@ -26,10 +26,10 @@ import { TRINKETS, trinketSlot, RARE_WONDROUS } from '../data/trinkets.js';
 import { FEATURES } from '../data/features.js';
 import { missingRoles } from './roles.js';
 import { actsOnItsOwn } from '../engine/rules/summon.js';
-import { CLASSES, type SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool, kitFor, defaultKitId } from '../data/classes.js';
+import { CLASSES, type SkillId, SKILL_ABILITY, SKILL_LABEL, classScrollPool, kitFor, defaultKitId, choiceDefault } from '../data/classes.js';
 import { backgroundSkills, defaultBackgroundFor, BACKGROUNDS } from '../data/backgrounds.js';
 import { ORIGIN_FEATS, defaultFeatFor, skilledSkills } from '../data/feats.js';
-import { SPECIES } from '../data/species.js';
+import { SPECIES, speciesSkills } from '../data/species.js';
 import { encounterXP, encounterCoinXP } from '../data/encounters.js';
 import type { Rarity } from '../data/armor.js';
 import { rollDice } from '../engine/dice.js';
@@ -1388,8 +1388,7 @@ export function featSkills(ch: PartyCharacter): SkillId[] {
   const already = [
     ...(cls?.skillProfs ?? []),
     ...backgroundSkills(ch.backgroundId),
-    ...(SPECIES[ch.speciesId]?.skillProficienciesByClass?.[ch.classId]
-      ? [SPECIES[ch.speciesId]!.skillProficienciesByClass![ch.classId]!] : []),
+    ...speciesSkills(ch.speciesId, ch.classId, ch.choices),
     ...(SPECIES[ch.speciesId]?.featureIds ?? [])
       .map((f) => FEATURES[f]?.grantsSkill).filter((x): x is SkillId => x !== undefined),
   ];
@@ -1525,7 +1524,7 @@ export function levelUpSummary(c: CampaignState, fromLevel: number, toLevel: num
       .filter((p) => p.atLevel > fromLevel && p.atLevel <= toLevel)
       .map((p) => ({
         pointId: p.id, label: p.label, atLevel: p.atLevel,
-        current: ch.choices?.[p.id] ?? p.default,
+        current: ch.choices?.[p.id] ?? choiceDefault(p, ch.classId),
         options: p.options.map((o) => ({ id: o.id, name: o.name, blurb: o.blurb })),
       }));
 
@@ -2612,10 +2611,12 @@ export function skillBonus(
   abilitiesOverride?: AbilityScores,
   /** Proficiencies from origin feats (Skilled), which no class table knows about. */
   extraSkills: readonly SkillId[] = [],
+  /** The character's build choices, for a human's Skillful pick. Missing = the defaults. */
+  choices?: Record<Id, Id>,
 ): number {
   const cls = CLASSES[classId]!;
   const abilities = abilitiesOverride ?? assignStats(cls.statPriority);
-  const speciesProficiency = SPECIES[speciesId]?.skillProficienciesByClass?.[classId] === skill;
+  const speciesProficiency = speciesSkills(speciesId, classId, choices).includes(skill);
   // A species feature can grant a skill outright (a wood elf's Keen Senses),
   // regardless of class — the same fact the engine reads to spot hidden foes.
   const featureProficiency = (SPECIES[speciesId]?.featureIds ?? [])
@@ -2647,7 +2648,7 @@ export function characterSkillProficient(c: CampaignState, idx: number, skill: S
   if (!ch) return false;
   const cls = CLASSES[ch.classId];
   if (!cls) return false;
-  const speciesProf = SPECIES[ch.speciesId]?.skillProficienciesByClass?.[ch.classId] === skill;
+  const speciesProf = speciesSkills(ch.speciesId, ch.classId, ch.choices).includes(skill);
   const featureProf = (SPECIES[ch.speciesId]?.featureIds ?? []).some((f) => FEATURES[f]?.grantsSkill === skill);
   const bgProf = backgroundSkills(ch.backgroundId).includes(skill);
   // Skilled, too. Without this the sheet shows the higher bonus and no
@@ -2676,7 +2677,7 @@ export function characterSkillBonus(c: CampaignState, idx: number, skill: SkillI
   const ch = c.characters[idx];
   if (!ch) return -Infinity;
   let bonus = skillBonus(ch.classId, partyLevelOf(c), skill, ch.speciesId, ch.backgroundId,
-    abilitiesOf(ch), featSkills(ch));
+    abilitiesOf(ch), featSkills(ch), ch.choices);
   // Gloves of Thievery: +5 to Sleight of Hand (helps shop theft).
   if (skill === 'sleight-of-hand' && ch.equipped.trinket === 'gloves-thievery') bonus += 5;
   // Pass without Trace, drunk in camp: +10 to the whole party until the next

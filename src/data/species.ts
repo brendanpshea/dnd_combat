@@ -4,7 +4,7 @@
  * the headless combat engine until those systems exist.
  */
 import type { DamageType, Id , CreatureSize, Ability } from '../engine/types.js';
-import type { SkillId, ChoicePoint } from './classes.js';
+import { SKILL_LABEL, chosenOption, type SkillId, type ChoicePoint } from './classes.js';
 
 export interface SpeciesData {
   id: Id;
@@ -41,10 +41,36 @@ export interface SpeciesData {
    * rather than in one fallback that has to be wrong for somebody.
    */
   innateSpellAbility?: Ability;
-  /** Deterministic Skillful choice for the campaign's limited skill list. */
-  skillProficienciesByClass?: Partial<Record<Id, SkillId>>;
-  /** Build decisions this species offers (e.g. a future draconic ancestry). */
+  /** Build decisions this species offers (a human's Skillful skill). */
   choices?: ChoicePoint[];
+}
+
+/**
+ * Skillful (Human, SRD 5.2.1): "You gain proficiency in one skill of your
+ * choice." A choice point offering every skill. It used to be a fixed skill
+ * for four classes and nothing at all for the other eight.
+ *
+ * The unchosen default fills a gap in the class's own skills: the four the
+ * table always had (a human fighter's Persuasion…), and for the rest the most
+ * useful skill that class lacks, Perception where it can.
+ */
+const SKILLFUL: ChoicePoint = {
+  id: 'skillful', label: 'Skillful', atLevel: 1, default: 'perception',
+  defaultByClass: {
+    fighter: 'persuasion', wizard: 'deception', cleric: 'stealth', rogue: 'persuasion',
+    ranger: 'insight', paladin: 'persuasion', warlock: 'insight', sorcerer: 'insight',
+  },
+  options: (Object.keys(SKILL_LABEL) as SkillId[]).map((skill) => ({
+    id: skill, name: SKILL_LABEL[skill], blurb: `Proficiency in ${SKILL_LABEL[skill]}.`,
+    grants: { skillProfs: [skill] },
+  })),
+};
+
+/** The skills a species' choices grant this character (a human's Skillful). */
+export function speciesSkills(speciesId: Id, classId: Id, picks?: Record<Id, Id>, level = 1): SkillId[] {
+  return (SPECIES[speciesId]?.choices ?? [])
+    .filter((cp) => cp.atLevel <= level)
+    .flatMap((cp) => chosenOption(cp, picks, classId)?.grants.skillProfs ?? []);
 }
 
 export const SPECIES: Record<Id, SpeciesData> = {
@@ -56,9 +82,7 @@ export const SPECIES: Record<Id, SpeciesData> = {
      * only species-level exception to one-feat-per-character.
      */
     originFeats: 2,
-    skillProficienciesByClass: {
-      fighter: 'persuasion', wizard: 'deception', cleric: 'stealth', rogue: 'persuasion',
-    },
+    choices: [SKILLFUL],
   },
   dwarf: {
     id: 'dwarf', name: 'Dwarf', speed: 30,

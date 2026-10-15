@@ -547,7 +547,7 @@ describe('the forge panel shows what the character actually has', () => {
     const { readFileSync } = await import('node:fs');
     const { fileURLToPath } = await import('node:url');
     const src = readFileSync(fileURLToPath(new URL('../web/src/ForgeMember.tsx', import.meta.url)), 'utf8');
-    expect(src).toContain('partyChoice(ch, cp.id, cp.default)');
+    expect(src).toContain('partyChoice(ch, cp.id, choiceDefault(cp, ch.classId))');
     expect(src, 'the panel computes its own selection again')
       .not.toMatch(/selected\s*=\s*ch\.choices\?\.\[cp\.id\]/);
   });

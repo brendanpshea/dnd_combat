@@ -16,7 +16,7 @@ import {
   rerollPartyName, partyLevelOf, cantripLimit, partyChoice,
   featSlots, featsOf, featSkills, setPartyFeat,
 } from '../../src/campaign/campaign.js';
-import { CLASSES, defaultKitId } from '../../src/data/classes.js';
+import { CLASSES, defaultKitId, choiceDefault } from '../../src/data/classes.js';
 import { SPECIES } from '../../src/data/species.js';
 import { BACKGROUNDS, defaultBackgroundFor } from '../../src/data/backgrounds.js';
 import { ORIGIN_FEATS } from '../../src/data/feats.js';
@@ -204,7 +204,7 @@ export function ForgeMemberEditor(
       <AbilityEditor campaign={c} idx={idx} mutate={mutate} />
 
       {choicePoints.map((cp) => {
-        const selected = partyChoice(ch, cp.id, cp.default);
+        const selected = partyChoice(ch, cp.id, choiceDefault(cp, ch.classId));
         return (
           <div className="forge-field" key={cp.id}>
             <span>{cp.label}</span>

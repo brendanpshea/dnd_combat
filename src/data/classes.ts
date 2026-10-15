@@ -17,6 +17,8 @@ export interface ChoiceGrant {
   spellIds?: Id[];
   weaponMasteries?: Id[];
   resistances?: DamageType[];
+  /** Skill proficiencies (a human's Skillful). */
+  skillProfs?: SkillId[];
 }
 export interface ChoiceOption {
   id: Id;
@@ -32,7 +34,26 @@ export interface ChoicePoint {
   atLevel: number;
   /** Option used when the player hasn't chosen (beginners, legacy saves, skirmish). */
   default: Id;
+  /**
+   * A different unchosen default for some classes — for a choice whose best
+   * answer depends on the class it is made for (a human's Skillful skill
+   * should be one the class table did not already give). `default` covers the
+   * rest.
+   */
+  defaultByClass?: Partial<Record<Id, Id>>;
   options: ChoiceOption[];
+}
+
+/** The option a choice point falls back to when nobody chose, for this class. */
+export function choiceDefault(cp: ChoicePoint, classId?: Id): Id {
+  return (classId !== undefined ? cp.defaultByClass?.[classId] : undefined) ?? cp.default;
+}
+
+/** The option in force at a choice point: the pick if it is one, else the default. */
+export function chosenOption(cp: ChoicePoint, picks: Record<Id, Id> | undefined, classId?: Id): ChoiceOption | undefined {
+  const fallback = choiceDefault(cp, classId);
+  const chosen = picks?.[cp.id] ?? fallback;
+  return cp.options.find((o) => o.id === chosen) ?? cp.options.find((o) => o.id === fallback);
 }
 
 export type SkillId =
