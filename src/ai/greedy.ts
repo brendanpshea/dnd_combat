@@ -381,7 +381,7 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
   }
   // An armed smite is already paid for and discharges on this hit — full value.
   if (actor.armedSmite && isMelee) {
-    dmg += avgDice(smiteDice(actor.armedSmite.spellId, actor.armedSmite.slotLevel));
+    dmg += avgDice(smiteDice(actor.armedSmite.spellId, actor.armedSmite.slotLevel, target));
   } else if (
     actor.featureIds.includes('divine-smite') && isMelee && !actor.turn.bonusActionUsed &&
     !actor.turn.slotSpent && actor.spellSlots.some((s) => s.current > 0)
@@ -662,7 +662,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       const canStillAttack = !actor.turn.actionUsed || actor.turn.attacksLeft > 0;
       if (!foe || !canStillAttack) return 0;
       // The dice are hit points; the riders below are priced against them.
-      let v = damageValue(avgDice(smiteDice(a.spellId, a.slotLevel)), foe);
+      let v = damageValue(avgDice(smiteDice(a.spellId, a.slotLevel, foe)), foe);
       // Riders are worth about a slot's cost again on a target that will live
       // long enough to suffer them; on something nearly dead, raw damage wins.
       const durable = foe.hp > avgDice('2d8') * 1.5;

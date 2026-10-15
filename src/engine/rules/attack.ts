@@ -814,8 +814,10 @@ export function resolveAttack(
       // exactly "would this kill them". Takes the smallest slot that qualifies;
       // on a crit that is simply the smallest slot available.
       const critMult = crit ? 2 : 1;
+      // A die more against a Fiend or an Undead, as the spell has it.
+      const more = target.creatureType === 'fiend' || target.creatureType === 'undead' ? 1 : 0;
       const slotIdx = attacker.spellSlots.findIndex(
-        (s, i) => s.current > 0 && (crit || (2 + i) * 4.5 * critMult >= target.hp),
+        (s, i) => s.current > 0 && (crit || (2 + i + more) * 4.5 * critMult >= target.hp),
       );
       if (slotIdx >= 0) {
         attacker.spellSlots[slotIdx]!.current -= 1;
@@ -946,11 +948,16 @@ export function resolveAttack(
  */
 export const SMITE_SPECS: Record<string, {
   name: string;
+  /** The spell's own level: `perLevel` is added per slot level above it. */
+  level: number;
   dice: string;
   perLevel: string;
   damageType: DamageType;
+  /** One more `perLevel` die against these creature types (Divine Smite:
+   *  "increases by 1d8 if the target is a Fiend or an Undead"). */
+  moreAgainst?: CreatureType[];
   /** Extra effect on the target after the damage lands. */
-  rider?: (state: GameState, attackerId: Id, targetId: Id, dc: number) => GameEvent[];
+  rider?: (state: GameState, attackerId: Id, targetId: Id, dc: number, slotLevel: number) => GameEvent[];
   riderText?: string;
   /** The strike itself adds no damage — all of its effect is in the rider
    *  (Ensnaring Strike). */
@@ -959,11 +966,14 @@ export const SMITE_SPECS: Record<string, {
    *  The paladin's smites are melee-only and leave this unset. */
   anyWeapon?: boolean;
 }> = {
+  // SRD 5.2.1, line 11473: 2d8, +1d8 a slot level above 1st, +1d8 more
+  // against a Fiend or an Undead.
   'divine-smite': {
-    name: 'Divine Smite', dice: '2d8', perLevel: '1d8', damageType: 'radiant',
+    name: 'Divine Smite', level: 1, dice: '2d8', perLevel: '1d8', damageType: 'radiant',
+    moreAgainst: ['fiend', 'undead'],
   },
   'searing-smite': {
-    name: 'Searing Smite', dice: '1d6', perLevel: '1d6', damageType: 'fire',
+    name: 'Searing Smite', level: 1, dice: '1d6', perLevel: '1d6', damageType: 'fire',
     riderText: 'and sets them alight',
     rider(state, attackerId, targetId, dc) {
       const t = state.combatants[targetId]!;
@@ -979,12 +989,17 @@ export const SMITE_SPECS: Record<string, {
    * `outlined` already means exactly that, so the rider is one push.
    */
   'shining-smite': {
-    name: 'Shining Smite', dice: '2d6', perLevel: '1d6', damageType: 'radiant',
+    // A 2nd-level spell: 2d6 at a 2nd-level slot, +1d6 each level above. Its
+    // steps were counted from 1st, so every Shining Smite rolled a die extra.
+    name: 'Shining Smite', level: 2, dice: '2d6', perLevel: '1d6', damageType: 'radiant',
     riderText: 'and leaves them glowing',
     rider(state, attackerId, targetId) {
       const t = state.combatants[targetId]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'outlined')) return [];
-      return applyCondition(state, targetId, { id: 'outlined', sourceId: attackerId }, { magical: true });
+      // "Until the spell ends": held by the concentration armSmite took, so
+      // the light goes out when that does.
+      holdOn(state, attackerId, 'shining-smite', targetId);
+      return applyCondition(state, targetId, { id: 'outlined', sourceId: attackerId, concentration: true }, { magical: true });
     },
   },
   /**
@@ -994,31 +1009,51 @@ export const SMITE_SPECS: Record<string, {
    * have restrained and stops the moment the restraint does.
    */
   'ensnaring-strike': {
-    name: 'Ensnaring Strike', dice: '0d6', perLevel: '1d6', damageType: 'piercing',
+    name: 'Ensnaring Strike', level: 1, dice: '0d6', perLevel: '1d6', damageType: 'piercing',
     damageless: true, anyWeapon: true,
     riderText: 'and vines drag them down',
-    rider(state, attackerId, targetId, dc) {
+    rider(state, attackerId, targetId, dc, slotLevel) {
       const t = state.combatants[targetId]!;
       if (!t.alive || t.conditions.some((k) => k.id === 'restrained')) return [];
       const events: GameEvent[] = [];
-      const save = savingThrow(state, targetId, 'str', dc, { magical: true });
+      // "A Large or larger creature has Advantage on this save."
+      const big = t.size === 'large' || t.size === 'huge' || t.size === 'gargantuan';
+      const save = savingThrow(state, targetId, 'str', dc, { magical: true, ...(big ? { advantage: true } : {}) });
       events.push(save.event);
-      if (save.success) return events;
-      events.push(...applyCondition(state, targetId, { id: 'restrained', sourceId: attackerId, escape: { dc, skills: ['athletics'] } }, { magical: true }));
-      state.combatants[attackerId]!.holdDamage = { dice: '1d6', type: 'piercing' };
+      // "On a successful save, the vines shrivel away, and the spell ends."
+      if (save.success) return [...events, ...breakConcentration(state, attackerId)];
+      holdOn(state, attackerId, 'ensnaring-strike', targetId);
+      events.push(...applyCondition(state, targetId, {
+        id: 'restrained', sourceId: attackerId, concentration: true, escape: { dc, skills: ['athletics'] },
+      }, { magical: true }));
+      // 1d6 a turn, +1d6 a slot level above 1st.
+      state.combatants[attackerId]!.holdDamage = { dice: `${slotLevel}d6`, type: 'piercing' };
       return events;
     },
   },
 };
 
-/** Dice for a smite at a given slot level: base, plus `perLevel` per step up. */
-export function smiteDice(spellId: string, slotLevel: number): string {
+/**
+ * Dice for a smite at a given slot level: base, plus `perLevel` for each slot
+ * level above the spell's own, plus one more against the types it is worse for
+ * when the target is given.
+ */
+export function smiteDice(spellId: string, slotLevel: number, target?: Combatant): string {
   const spec = SMITE_SPECS[spellId];
   if (!spec) return '0d6';
   const base = parseDice(spec.dice);
   const up = parseDice(spec.perLevel);
-  const steps = Math.max(0, slotLevel - 1);
-  return `${base.count + up.count * steps}d${base.sides}`;
+  const steps = Math.max(0, slotLevel - spec.level);
+  const more = target?.creatureType !== undefined && spec.moreAgainst?.includes(target.creatureType) ? 1 : 0;
+  return `${base.count + up.count * (steps + more)}d${base.sides}`;
+}
+
+/** Add `targetId` to what the caster's concentration on `spellId` holds, so the
+ *  effect ends with it (breakConcentration sweeps its targets). */
+function holdOn(state: GameState, casterId: Id, spellId: Id, targetId: Id): void {
+  const c = state.combatants[casterId]!;
+  if (c.concentratingOn?.spellId !== spellId) return;
+  if (!c.concentratingOn.targetIds.includes(targetId)) c.concentratingOn.targetIds.push(targetId);
 }
 
 /**
@@ -1037,7 +1072,7 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
 
   const roll = spec.damageless
     ? { total: 0, rolls: [] as number[], state: state.rng }
-    : rollDice(state.rng, smiteDice(armed.spellId, armed.slotLevel), crit);
+    : rollDice(state.rng, smiteDice(armed.spellId, armed.slotLevel, state.combatants[targetId]), crit);
   state.rng = roll.state;
   // Shout first: "X is no longer smiting" ahead of the smite itself reads like
   // the spell fizzled.
@@ -1052,7 +1087,7 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   }
   if (spec.rider) {
     events.push(...spec.rider(state, attackerId, targetId, 8 + proficiencyBonus(attacker.level) +
-      abilityMod(attacker.abilities[attacker.spellcastingAbility ?? 'cha'])));
+      abilityMod(attacker.abilities[attacker.spellcastingAbility ?? 'cha']), armed.slotLevel));
   }
   return events;
 }

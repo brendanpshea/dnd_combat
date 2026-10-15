@@ -580,7 +580,11 @@ resource — `FeatureData.manualUses` lets a feature own its own
 damage) whenever a melee hit lands with a spell slot and the bonus action
 both still free — that pairing is the real balancing lever in the 2024
 rules, and it's also what makes the smite need no explicit player choice
-the AI has to model. **Sacred Weapon** is a 1/encounter Channel Divinity
+the AI has to model. Its dice are the SRD's: 2d8, +1d8 a slot level above
+1st and +1d8 against a Fiend or an Undead; every smite counts its upcast steps
+from its own level (`SMITE_SPECS.level` — Shining Smite is 2nd), and Shining
+Smite's light and Ensnaring Strike's vines are held by the concentration the
+smite took, ending with it. **Sacred Weapon** is a 1/encounter Channel Divinity
 that adds Charisma to the paladin's own attack rolls for the rest of the
 encounter, via a `sacredWeapon` condition.
 
