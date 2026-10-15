@@ -2,7 +2,7 @@
  * Character construction: class + species + level → Combatant.
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
-import { abilityMod } from '../engine/types.js';
+import { abilityMod, proficiencyBonus } from '../engine/types.js';
 import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
 import { ORIGIN_FEATS, skilledSkills } from '../data/feats.js';
 import { backgroundSkills } from '../data/backgrounds.js';
@@ -433,7 +433,9 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   // encounter use pools — a fighter's only route to a levelled spell.
   const innateSpells: Record<Id, { current: number; max: number }> = {};
   for (const s of species?.innateSpells ?? []) {
-    if (s.atLevel <= level) innateSpells[s.spellId] = { current: s.uses, max: s.uses };
+    if (s.atLevel > level) continue;
+    const uses = s.uses === 'proficiency' ? proficiencyBonus(level) : s.uses;
+    innateSpells[s.spellId] = { current: uses, max: uses };
   }
   // Magic Initiate's one-a-day spell rides the same pool the species use, which
   // is the whole reason the feat needed no new machinery.

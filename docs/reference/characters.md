@@ -10,7 +10,7 @@
 | Name | ID | Speed | HP/level | Resistances | Features | Cantrips | Innate spells |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Abyssal Tiefling | `tiefling` | 30 ft | — | poison | — | Poison Spray (from char. level 1) | Ray of Sickness ×1/encounter (from char. level 3) |
-| Dragonborn | `dragonborn` | 30 ft | — | fire | — | — | Breath Weapon ×2/encounter (from char. level 1) |
+| Dragonborn | `dragonborn` | 30 ft | — | fire | — | — | Breath Weapon ×proficiency/encounter (from char. level 1) |
 | Dwarf | `dwarf` | 30 ft | 1 | poison | — | — | — |
 | Gnome | `gnome` | 30 ft | — | — | Gnomish Cunning | Minor Illusion (from char. level 1) | Animal Friendship ×2/encounter (from char. level 1) |
 | Halfling | `halfling` | 30 ft | — | — | Lucky, Naturally Stealthy | — | — |

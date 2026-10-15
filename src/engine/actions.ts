@@ -430,7 +430,11 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (quickened && leveled && actor.turn.leveledSpellCast) return false;
       if (!quickened && leveled && actor.turn.quickenedThisTurn) return false;
       const costsAction = spell.castingTime === 'action' && !quickened;
-      if (costsAction && actor.turn.actionUsed) return false;
+      // One attack of the Attack action (Breath Weapon): open while the action
+      // is unspent or the action still has an attack in it.
+      if (spell.replacesAttack && costsAction) {
+        if (actor.turn.actionUsed && actor.turn.attacksLeft <= 0) return false;
+      } else if (costsAction && actor.turn.actionUsed) return false;
       // One spell slot a turn (SRD 5.2.1, line 10718). A held spell's repeat
       // spends none, and nor does an innate cast or a cantrip (slot level 0).
       if (action.slotLevel >= 1 && actor.turn.slotSpent) return false;
@@ -1070,7 +1074,20 @@ export function step(state: GameState, action: Action): { state: GameState; even
         if (pool) pool.current -= meta.cost;
         events.push({ type: 'metamagic', casterId: actorId, metamagicId: meta.id, spellId: action.spellId, cost: meta.cost });
       }
-      if (spell.castingTime === 'action' && action.metamagic !== 'quickened') actor.turn.actionUsed = true;
+      if (spell.replacesAttack && spell.castingTime === 'action' && action.metamagic !== 'quickened') {
+        // In place of one attack: the first opens the Attack action, banking
+        // the rest; a later one spends one of those.
+        if (!actor.turn.actionUsed) {
+          actor.turn.actionUsed = true;
+          actor.turn.attackedThisTurn = true;
+          const haste = actor.conditions.some((c) => c.id === 'hasted') ? 1 : 0;
+          if (!actor.conditions.some((c) => c.id === 'lethargic')) {
+            actor.turn.attacksLeft += actor.attacksPerAction - 1 + haste;
+          }
+        } else {
+          actor.turn.attacksLeft -= 1;
+        }
+      } else if (spell.castingTime === 'action' && action.metamagic !== 'quickened') actor.turn.actionUsed = true;
       else actor.turn.bonusActionUsed = true;
       // A held spell's repeat is an action, not a casting — nothing below it
       // applies: no slot, no concentration dropped, nothing to counter.

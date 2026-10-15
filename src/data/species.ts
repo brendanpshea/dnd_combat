@@ -26,7 +26,8 @@ export interface SpeciesData {
    * encounter. This is what a non-caster needs — a fighter has no slots, so
    * without this a racial Faerie Fire would silently be a caster-only perk.
    */
-  innateSpells?: Array<{ spellId: Id; atLevel: number; uses: number }>;
+  /** `uses: 'proficiency'` is the Proficiency Bonus (a dragonborn's breath). */
+  innateSpells?: Array<{ spellId: Id; atLevel: number; uses: number | 'proficiency' }>;
   /** How many origin feats this species gets. Absent = one (everybody else). */
   originFeats?: number;
   /**
@@ -86,7 +87,9 @@ export const SPECIES: Record<Id, SpeciesData> = {
     // Draconic Ancestry (red): shrug off fire, and breathe it back — a cone a
     // couple of times a fight, the innate-spell path's damage shape.
     resistances: ['fire'],
-    innateSpells: [{ spellId: 'breath-weapon', atLevel: 1, uses: 2 }],
+    // "A number of times equal to your Proficiency Bonus" (SRD 5.2.1, line
+    // 8803); it was a flat two.
+    innateSpells: [{ spellId: 'breath-weapon', atLevel: 1, uses: 'proficiency' }],
     // The breath weapon sets its own Constitution DC (see spells.ts), so this
     // is only here for completeness if the dragonborn ever gains a second spell.
     innateSpellAbility: 'cha',

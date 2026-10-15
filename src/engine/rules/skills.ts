@@ -48,9 +48,12 @@ export function rollSkill(
   const c = state.combatants[combatantId]!;
   const d20 = applyLuck(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
+  // Reliable Talent (Rogue 7): a proficient check's d20 is never below 10.
+  const reliable = c.featureIds.includes('reliable-talent') && (c.skillProfs ?? []).includes(skill);
+  const die = reliable ? Math.max(10, d20.natural) : d20.natural;
   return {
     natural: d20.natural,
-    total: d20.natural + skillMod(c, skill),
+    total: die + skillMod(c, skill),
     skill,
     ...(d20.luck ? { luck: d20.luck } : {}),
   };

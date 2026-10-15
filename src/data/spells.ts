@@ -189,6 +189,13 @@ export interface SpellData {
    * each of your turns as a Magic action". `cast` is handed slot 0 for those.
    */
   repeatWhileHeld?: boolean;
+  /**
+   * Taken in place of one attack of the Attack action rather than as an action
+   * of its own: the dragonborn's Breath Weapon ("When you take the Attack
+   * action on your turn, you can replace one of your attacks with an
+   * exhalation"). A fighter with Extra Attack swings once and breathes once.
+   */
+  replacesAttack?: boolean;
   cast(ctx: CastContext): GameEvent[];
 }
 
@@ -464,9 +471,13 @@ export function spellDice(spellId: Id, slotLevel: number, casterLevel: number): 
 }
 
 /**
- * Enhanced Cantrip (Evoker, level 3): a simplified model of the 2024 Evocation
- * line — the evoker adds its Intelligence modifier to the damage of its
- * damaging cantrips. Returns 0 for casters without the feature.
+ * Potent Spellcasting (Cleric 7 Blessed Strikes, Druid 7 Elemental Fury): the
+ * caster's spellcasting modifier on its cantrips' damage. Returns 0 for anyone
+ * without it.
+ *
+ * It used to carry the Evoker's "Enhanced Cantrip" too, as +Intelligence. The
+ * SRD's Evoker has Potent Cantrip instead, which is a different rule
+ * altogether — see `potentCantrip`.
  */
 function enhancedCantripBonus(state: GameState, casterId: Id): number {
   const c = state.combatants[casterId]!;
@@ -477,8 +488,22 @@ function enhancedCantripBonus(state: GameState, casterId: Id): number {
   if (c.featureIds.includes('potent-spellcasting')) {
     return Math.max(0, abilityMod(c.abilities[c.spellcastingAbility ?? 'wis']));
   }
-  if (!c.featureIds.includes('enhanced-cantrip')) return 0;
-  return Math.max(0, abilityMod(c.abilities.int));
+  return 0;
+}
+
+/**
+ * Potent Cantrip (Evoker 3, SRD 5.2.1 line 8726): "Whenever you cast a cantrip
+ * at a creature and you miss with the attack roll or the target succeeds on a
+ * saving throw against the cantrip, the target takes half the cantrip's damage
+ * (if any) but suffers no additional effect from the cantrip." The events for
+ * that half, or nothing for a caster without the feature.
+ */
+function potentCantrip(state: GameState, casterId: Id, targetId: Id, dice: string, type: DamageType): GameEvent[] {
+  if (!state.combatants[casterId]?.featureIds.includes('enhanced-cantrip')) return [];
+  if (!state.combatants[targetId]?.alive) return [];
+  const dmg = rollSpellDice(state, casterId, dice, false, type);
+  const half = Math.floor(dmg.total / 2);
+  return half > 0 ? applyDamage(state, targetId, casterId, half, type, dmg.rolls, { tags: ['Potent Cantrip'] }) : [];
 }
 
 /** Spell attack roll: shares the adv/dis machinery with weapon attacks. */
@@ -925,6 +950,8 @@ export const SPELLS: Record<Id, SpellData> = {
         const dmg = rollSpellDice(state, casterId, spellDice('fire-bolt', 0, state.combatants[casterId]!.level), atk.crit, 'fire');
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'fire', dmg.rolls));
+      } else {
+        events.push(...potentCantrip(state, casterId, targetId, spellDice('fire-bolt', 0, state.combatants[casterId]!.level), 'fire'));
       }
       return events;
     },
@@ -987,6 +1014,8 @@ export const SPELLS: Record<Id, SpellData> = {
         if (target.alive) {
           events.push(...applyCondition(state, targetId, { id: 'noReactions', sourceId: casterId }, { magical: true }));
         }
+      } else {
+        events.push(...potentCantrip(state, casterId, targetId, spellDice('shocking-grasp', 0, state.combatants[casterId]!.level), 'lightning'));
       }
       return events;
     },
@@ -1006,6 +1035,8 @@ export const SPELLS: Record<Id, SpellData> = {
         const dmg = rollDice(state.rng, cantripDice('1d12', state.combatants[casterId]!.level), atk.crit);
         state.rng = dmg.state;
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'poison', dmg.rolls));
+      } else {
+        events.push(...potentCantrip(state, casterId, targetId, cantripDice('1d12', state.combatants[casterId]!.level), 'poison'));
       }
       return events;
     },
@@ -1031,7 +1062,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const atk = spellAttack(state, casterId, targetId, { melee: false });
       const events: GameEvent[] = [atk.event];
-      if (!atk.hit) return events;
+      if (!atk.hit) return [...events, ...potentCantrip(state, casterId, targetId, cantripDice('1d8', state.combatants[casterId]!.level), 'radiant')];
       const dmg = rollDice(state.rng, cantripDice('1d8', state.combatants[casterId]!.level), atk.crit);
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'radiant', dmg.rolls));
@@ -1088,7 +1119,7 @@ export const SPELLS: Record<Id, SpellData> = {
       const target = state.combatants[targetId]!;
       const { success, event } = savingThrow(state, targetId, 'wis', spellDc(state, casterId));
       const events: GameEvent[] = [event];
-      if (success) return events;
+      if (success) return [...events, ...potentCantrip(state, casterId, targetId, cantripDice('1d6', state.combatants[casterId]!.level), 'psychic')];
       const dmg = rollDice(state.rng, cantripDice('1d6', state.combatants[casterId]!.level));
       state.rng = dmg.state;
       events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'psychic', dmg.rolls));
@@ -1227,6 +1258,8 @@ export const SPELLS: Record<Id, SpellData> = {
         // for the class it was added for. Save-based rather than an attack roll,
         // which is why it was missed; the 2024 feature does not care which it is.
         events.push(...applyDamage(state, targetId, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'radiant', dmg.rolls));
+      } else {
+        events.push(...potentCantrip(state, casterId, targetId, spellDice('sacred-flame', 0, state.combatants[casterId]!.level), 'radiant'));
       }
       return events;
     },
@@ -1963,6 +1996,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'breath-weapon', name: 'Breath Weapon', level: 1, castingTime: 'action',
     targeting: { kind: 'cone15' },
     concentration: false,
+    replacesAttack: true,
     icon: '🐲',
     cast({ state, casterId, positions }) {
       const caster = state.combatants[casterId]!;
@@ -2261,6 +2295,8 @@ export const SPELLS: Record<Id, SpellData> = {
         if (target.alive && !target.conditions.some((c) => c.id === 'slowed')) {
           events.push(...applyCondition(state, targetId, { id: 'slowed', sourceId: casterId }, { magical: true }));
         }
+      } else {
+        events.push(...potentCantrip(state, casterId, targetId, spellDice('ray-of-frost', 0, state.combatants[casterId]!.level), 'cold'));
       }
       return events;
     },
@@ -2294,6 +2330,8 @@ export const SPELLS: Record<Id, SpellData> = {
           const dmg = rollDice(state.rng, spellDice('acid-splash', 0, caster.level));
           state.rng = dmg.state;
           events.push(...applyDamage(state, tid, casterId, dmg.total + enhancedCantripBonus(state, casterId), 'acid', dmg.rolls));
+        } else {
+          events.push(...potentCantrip(state, casterId, tid, spellDice('acid-splash', 0, caster.level), 'acid'));
         }
       }
       return events;

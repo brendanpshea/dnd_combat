@@ -239,6 +239,7 @@ export const CLASSES: Record<Id, ClassData> = {
       3: ['improved-critical', 'remarkable-athlete'],   // Champion, both at 3rd in the SRD // Champion
       // 4: Ability Score Increase (applied in the builder, not a feature).
       5: ['extra-attack'],
+      9: ['indomitable'],
     },
     choices: [{
       id: 'fighting-style', label: 'Fighting Style', atLevel: 1, default: 'dueling',
@@ -492,8 +493,8 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     featuresByLevel: {
       1: ['arcane-recovery'],
-      // Evoker subclass at level 3: a simplified Enhanced Cantrip (adds the
-      // evoker's Int modifier to its damaging cantrips). Sculpt Spells is a
+      // Evoker subclass at level 3: Potent Cantrip (half a cantrip's damage on a
+      // miss or a made save; the id is the old Enhanced Cantrip's). Sculpt Spells is a
       // level-6 feature in the 2024 PHB and lands there for when the campaign
       // eventually reaches that level.
       3: ['enhanced-cantrip'],
@@ -522,7 +523,7 @@ export const CLASSES: Record<Id, ClassData> = {
     skillProfs: ['stealth', 'sleight-of-hand', 'deception', 'perception'],
     statPriority: ['dex', 'con', 'int', 'wis', 'cha', 'str'],
     featuresByLevel: {
-      7: ['evasion'],
+      7: ['evasion', 'reliable-talent'],
       1: ['sneak-attack'],
       2: ['cunning-dash', 'cunning-disengage', 'cunning-hide'],
       // Thief, not Assassin. Assassinate is in neither the 2014 nor the 2024
@@ -754,7 +755,8 @@ export const CLASSES: Record<Id, ClassData> = {
     },
     featuresByLevel: {
       1: ['innate-sorcery'],
-      2: ['font-of-magic', 'metamagic-quickened', 'metamagic-heightened', 'metamagic-empowered'],
+      // Metamagic: two options at 2nd (SRD line 6109), chosen — see `choices`.
+      2: ['font-of-magic'],
       // Draconic Sorcery, the SRD's only sorcerer subclass. Scales for armour
       // and a hit point a level, which is what makes a d6 caster survivable
       // enough to spend its points instead of hiding.
@@ -770,6 +772,18 @@ export const CLASSES: Record<Id, ClassData> = {
       7: ['sorcery-incarnate'],
       // 8: Ability Score Increase (builder).
     },
+    // Metamagic: "you gain two Metamagic options of your choice" at 2nd (SRD
+    // 5.2.1, line 6109), two more at 10th. Three were granted. The default pair
+    // is the two the AI can spend: Heightened is a player's option (see the
+    // note in legalActions on why it is never enumerated).
+    choices: [{
+      id: 'metamagic', label: 'Metamagic', atLevel: 2, default: 'quickened-empowered',
+      options: [
+        { id: 'quickened-empowered', name: 'Quickened and Empowered', blurb: 'A spell as a bonus action; reroll the low damage dice.', grants: { featureIds: ['metamagic-quickened', 'metamagic-empowered'] } },
+        { id: 'quickened-heightened', name: 'Quickened and Heightened', blurb: 'A spell as a bonus action; one target saves at disadvantage.', grants: { featureIds: ['metamagic-quickened', 'metamagic-heightened'] } },
+        { id: 'heightened-empowered', name: 'Heightened and Empowered', blurb: 'One target saves at disadvantage; reroll low damage dice.', grants: { featureIds: ['metamagic-heightened', 'metamagic-empowered'] } },
+      ],
+    }],
     weaponMasteries: [],
     equipment: {
       // Spear and daggers, per the SRD's option A. The daggers are what

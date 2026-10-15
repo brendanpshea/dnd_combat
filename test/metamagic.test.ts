@@ -299,6 +299,9 @@ describe('Heightened Spell', () => {
   function caster(spellIds: string[]) {
     const me = buildCharacter({ classId: 'sorcerer', team: 'team1', position: { x: 0, y: 3 }, level: 8 });
     me.spellIds = spellIds;
+    // All three options, so each can be tested: the SRD sorcerer knows two
+    // (a build choice), which would leave one of them out of any fixture.
+    me.featureIds = [...new Set([...me.featureIds, 'metamagic-quickened', 'metamagic-heightened', 'metamagic-empowered'])];
     const c = new Combat({
       seed: 4,
       combatants: [me, { ...buildMonster('orc', 'team2', { x: 4, y: 3 }), id: 'e0', hp: 60, maxHp: 60 }],

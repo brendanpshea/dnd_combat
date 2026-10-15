@@ -164,7 +164,8 @@ describe('level 9 exists and is reached', () => {
    * the list is empty.
    */
   it('records which classes still gain nothing at level 9', () => {
-    const KNOWN_GAP = ['barbarian', 'fighter', 'monk', 'rogue'];
+    // The fighter left the list with Indomitable at 9th.
+    const KNOWN_GAP = ['barbarian', 'monk', 'rogue'];
     const empty: string[] = [];
     for (const cls of Object.values(CLASSES)) {
       const fromTable = cls.featuresByLevel[9] ?? [];

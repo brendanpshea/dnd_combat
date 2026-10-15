@@ -389,7 +389,9 @@ describe('levels 4-5', () => {
     throw new Error('never hit across 60 seeds');
   });
 
-  it('Enhanced Cantrip: an evoker adds its Int modifier to cantrip damage', () => {
+  // SRD 5.2.1's Evoker has Potent Cantrip (half on a miss — class-features-srd
+  // .test.ts), not +Int on a hit: a hit deals the dice and nothing more.
+  it('Potent Cantrip: an evoker\'s hit is the dice alone, no Int modifier', () => {
     for (let seed = 1; seed <= 60; seed++) {
       const wiz = place('wizard', 'team1', { x: 3, y: 3 }, 3, { id: 'wiz' }); // Int 16 (+3)
       expect(wiz.featureIds).toContain('enhanced-cantrip');
@@ -402,10 +404,10 @@ describe('levels 4-5', () => {
       });
       until(c, 'wiz');
       const events = c.apply({ kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'foe' }] });
-      const dmg = events.find((e) => e.type === 'damageDealt');
+      const dmg = events.find((e) => e.type === 'damageDealt' && !e.tags?.includes('Potent Cantrip'));
       if (!dmg || dmg.type !== 'damageDealt') continue;
       const diceSum = dmg.rolls.reduce((a, b) => a + b, 0);
-      expect(dmg.amount).toBe(diceSum + 3); // + Int modifier
+      expect(dmg.amount).toBe(diceSum);
       return;
     }
     throw new Error('never hit across 60 seeds');

@@ -235,6 +235,19 @@ export function savingThrow(
       success = total >= dc;
     }
   }
+  // Indomitable: one reroll of a failed save, plus the fighter's level, and
+  // the new roll stands. Before the Ring of Evasion's charges, and before
+  // Legendary Resistance — the cheaper rescue goes first.
+  if (!success) {
+    const pool = c.featureUses['indomitable'];
+    if (pool && pool.current > 0) {
+      pool.current -= 1;
+      const again = applyLucky(state, combatantId, rollD20(state.rng, mode), mode);
+      state.rng = again.state;
+      total = total - d20.natural + again.natural + c.level;
+      success = total >= dc;
+    }
+  }
   if (!success && ability === 'dex' && canReact(c)) {
     const pool = c.featureUses['ring-evasion'];
     if (pool && pool.current > 0) {

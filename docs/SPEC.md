@@ -541,7 +541,13 @@ radiant.
 Other class tables read from the SRD rather than flat: Second Wind 2/3/4 uses
 by fighter level, Wild Shape 2/3/4 (and a CR 1 form, the brown bear, from 8th),
 the Bardic Inspiration die d6/d8/d10/d12 with Font of Inspiration's short-rest
-recovery from 5th (`uses.shortRestFrom`); Lay on Hands is a bonus action. The
+recovery from 5th (`uses.shortRestFrom`); Lay on Hands is a bonus action. A
+sorcerer chooses two Metamagic options at 2nd (a choice point, default Quickened
+and Empowered — it had all three); the Evoker's Potent Cantrip deals half a
+cantrip's damage on a miss or a made save (it was +Int on a hit); the
+dragonborn's Breath Weapon has Proficiency Bonus uses and takes the place of
+one attack of the Attack action (`SpellData.replacesAttack`); the fighter has
+Indomitable at 9th and the rogue Reliable Talent at 7th. The
 Berserker's Frenzy is the 2024 feature — Rage Damage d6 extra on the first target
 hit with a Strength attack on a reckless, raging turn — not the 2014 bonus-action
 swing; Rage's damage applies to thrown Strength weapons; the monk has Unarmored

@@ -414,6 +414,21 @@ export const FEATURES: Record<Id, FeatureData> = {
   'naturally-stealthy': { id: 'naturally-stealthy', name: 'Naturally Stealthy', trigger: 'passive', grantsSkill: 'stealth' },
   // Twice, three times from 4th, four from 10th (the Fighter table's column);
   // one back on a Short Rest, all on a Long one.
+  /**
+   * Indomitable (Fighter 9, SRD 5.2.1 line 4279): reroll a failed save with a
+   * bonus equal to the fighter level, once per long rest (twice from 13th,
+   * three times from 17th). Spent automatically by savingThrow on a failure,
+   * the way Dark One's Own Luck is.
+   */
+  indomitable: {
+    id: 'indomitable', name: 'Indomitable', trigger: 'passive',
+    uses: { count: [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3], per: 'longRest' },
+  },
+  /**
+   * Reliable Talent (Rogue 7, line 5655): a d20 of 9 or lower counts as a 10 on
+   * an ability check with a skill the rogue is proficient in. Read by rollSkill.
+   */
+  'reliable-talent': { id: 'reliable-talent', name: 'Reliable Talent', trigger: 'passive' },
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
     uses: { count: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4], per: 'longRest', shortRestRegain: 1 },
@@ -547,6 +562,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   'potent-spellcasting': { id: 'potent-spellcasting', name: 'Potent Spellcasting', trigger: 'passive' },
   countercharm: { id: 'countercharm', name: 'Countercharm', trigger: 'passive' },
   'sculpt-spells': { id: 'sculpt-spells', name: 'Sculpt Spells (Evoker)', trigger: 'passive' },
+  // Potent Cantrip (Evoker 3): half a cantrip's damage on a miss or a made
+  // save — `potentCantrip` in spells.ts. (The id is the old name.)
   'enhanced-cantrip': { id: 'enhanced-cantrip', name: 'Potent Cantrip (Evoker)', trigger: 'passive' },
   /**
    * Fast Hands (Thief, level 3). The SRD's version is three things: pick a

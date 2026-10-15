@@ -4,7 +4,9 @@ import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { FEATURES, bardicDie } from '../src/data/features.js';
 import { newCampaign, buildCampaignParty, readBackSurvivors, shortRest, setPartyClass } from '../src/campaign/campaign.js';
-import { legalActions } from '../src/engine/actions.js';
+import { legalActions, step } from '../src/engine/actions.js';
+import { savingThrow } from '../src/engine/rules/saves.js';
+import { rollSkill, skillMod } from '../src/engine/rules/skills.js';
 import { seedRng } from '../src/engine/rng.js';
 import type { Combatant, GameState } from '../src/engine/types.js';
 
@@ -124,5 +126,79 @@ describe('Unarmored Movement (Monk 2, line 4526)', () => {
     const one = pc('monk', 1).speed;
     expect(pc('monk', 2).speed).toBe(one + 10);
     expect(pc('monk', 6).speed).toBe(one + 15);
+  });
+});
+
+describe('Metamagic (Sorcerer 2, line 6109)', () => {
+  it('two options, not three — Quickened and Empowered unless chosen otherwise', () => {
+    const s = pc('sorcerer', 2);
+    expect(s.featureIds.filter((f) => f.startsWith('metamagic-')).sort()).toEqual(['metamagic-empowered', 'metamagic-quickened']);
+    const h = { ...buildCharacter({ classId: 'sorcerer', team: 'team1', position: { x: 0, y: 0 }, level: 2, choices: { metamagic: 'quickened-heightened' } }) };
+    expect(h.featureIds.filter((f) => f.startsWith('metamagic-')).sort()).toEqual(['metamagic-heightened', 'metamagic-quickened']);
+  });
+});
+
+describe('Potent Cantrip (Evoker 3, line 8726)', () => {
+  it('a missed Fire Bolt still deals half', () => {
+    let missed = false;
+    for (let seed = 1; seed < 80 && !missed; seed++) {
+      const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [pc('wizard', 3, 'w', 0, 0), { ...buildMonster('ogre', 'team2', { x: 5, y: 5 }), id: 'o', acOverride: 25 }] });
+      let guard = 0;
+      while (c.activeId !== 'w' && guard++ < 10) c.apply({ kind: 'endTurn' });
+      const s: GameState = structuredClone(c.state);
+      s.rng = seedRng(seed);
+      const r = step(s, { kind: 'castSpell', spellId: 'fire-bolt', slotLevel: 0, targets: [{ combatantId: 'o' }] });
+      const roll = r.events.find((e) => e.type === 'attackRolled');
+      if (roll?.type !== 'attackRolled' || roll.hit) continue;
+      missed = true;
+      expect(r.events.some((e) => e.type === 'damageDealt' && e.tags?.includes('Potent Cantrip'))).toBe(true);
+    }
+    expect(missed).toBe(true);
+  });
+});
+
+describe('Dragonborn Breath Weapon (line 8803)', () => {
+  it('as many uses as the Proficiency Bonus, in place of one attack', () => {
+    const d = { ...buildCharacter({ classId: 'fighter', speciesId: 'dragonborn', team: 'team1', position: { x: 3, y: 3 }, level: 5 }), id: 'd' };
+    expect(d.innateSpells['breath-weapon']).toEqual({ current: 3, max: 3 });
+    const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [d, { ...buildMonster('ogre', 'team2', { x: 3, y: 4 }), id: 'o', hp: 500, maxHp: 500 }] });
+    let guard = 0;
+    while (c.activeId !== 'd' && guard++ < 10) c.apply({ kind: 'endTurn' });
+    const breath = () => legalActions(c.state, 'd').find((a) => a.kind === 'castSpell' && a.spellId === 'breath-weapon');
+    const swing = () => legalActions(c.state, 'd').find((a) => a.kind === 'attack' && !a.offhand && !a.frenzy);
+    c.apply(swing()!);
+    expect(breath(), 'the second of two attacks can be the breath').toBeDefined();
+    c.apply(breath()!);
+    expect(c.state.combatants['d']!.turn.attacksLeft).toBe(0);
+    expect(swing()).toBeUndefined();
+    expect(breath()).toBeUndefined();
+  });
+});
+
+describe('Indomitable (Fighter 9) and Reliable Talent (Rogue 7)', () => {
+  it('Indomitable rerolls a failed save with the fighter level', () => {
+    const rate = (level: number) => {
+      let ok = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [pc('fighter', level, 'f'), { ...buildMonster('ogre', 'team2', { x: 7, y: 7 }), id: 'o' }] });
+        c.state.rng = seedRng(seed);
+        if (savingThrow(c.state, 'f', 'wis', 20, { magical: false }).success) ok++;
+      }
+      return ok / 200;
+    };
+    expect(pc('fighter', 9).featureUses['indomitable']).toEqual({ current: 1, max: 1 });
+    expect(rate(9)).toBeGreaterThan(rate(8) + 0.2);
+  });
+
+  it('Reliable Talent: a proficient check never rolls below 10', () => {
+    const r = pc('rogue', 7, 'r');
+    expect(r.featureIds).toContain('reliable-talent');
+    const skill = (r.skillProfs ?? [])[0]!;
+    const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [r, { ...buildMonster('ogre', 'team2', { x: 7, y: 7 }), id: 'o' }] });
+    for (let seed = 1; seed <= 60; seed++) {
+      c.state.rng = seedRng(seed);
+      const roll = rollSkill(c.state, 'r', skill);
+      expect(roll.total).toBeGreaterThanOrEqual(10 + skillMod(r, skill));
+    }
   });
 });
