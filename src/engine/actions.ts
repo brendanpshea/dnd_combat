@@ -1287,6 +1287,8 @@ export function step(state: GameState, action: Action): { state: GameState; even
   // Grapples the rules say have ended — a grappler that walked off, fell or
   // was stunned. After every action, so no path has to remember to check.
   events.push(...releaseBrokenGrapples(draft));
+  // Concentration the rules say has ended, the same way.
+  events.push(...dropIncapacitatedConcentration(draft));
 
   // If the current actor died to an opportunity attack, hand the turn on.
   if (!draft.winner && !draft.combatants[currentCombatant(draft).id]!.alive) {
@@ -1294,6 +1296,28 @@ export function step(state: GameState, action: Action): { state: GameState; even
   }
 
   return { state: draft, events };
+}
+
+/**
+ * "Your Concentration ends if you have the Incapacitated condition" (SRD 5.2.1,
+ * Concentration, line 13567) — and Stunned, Paralyzed and Unconscious all carry
+ * it, as do Sleep's first stage, Hypnotic Pattern's stupor and a harpy's lure.
+ *
+ * A sweep after every action rather than a check where each condition goes on:
+ * those are applied from some forty places, including the spell layer, which
+ * cannot import breakConcentration back without a cycle — and a sweep cannot be
+ * forgotten by the next condition to be added. Dropping to 0 already breaks it
+ * (dropToZero); this is everything short of that.
+ */
+function dropIncapacitatedConcentration(state: GameState): GameEvent[] {
+  const events: GameEvent[] = [];
+  for (const c of Object.values(state.combatants)) {
+    if (!c.alive || !c.concentratingOn) continue;
+    if (isIncapacitated(c) || c.conditions.some((k) => k.id === 'lured')) {
+      events.push(...breakConcentration(state, c.id));
+    }
+  }
+  return events;
 }
 
 /**

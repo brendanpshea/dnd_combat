@@ -52,7 +52,7 @@ fix the file.
 | Death | Monsters: 0 HP = dead and removed. **Player characters: 0 HP = unconscious**, still on the board, revived by any healing. Death saves are an opt-in rule (`rules.deathSaves`, §3), off in the arena and the story modules |
 | Win | Last team still *standing* wins — a party whose members are all down has lost (they are alive, but out) |
 | Board | 8 wide; 8×8 for the fixed maps, 12 or 16 deep in the arena. Parties deploy on rank 0; enemies use one of four seeded patterns (see §7d) |
-| Concentration | Implemented, including the Con save (DC max(10, ⌊damage/2⌋)) when the concentrator takes damage |
+| Concentration | Implemented, including the Con save (DC max(10, ⌊damage/2⌋)) when the concentrator takes damage, and ending it when the concentrator is Incapacitated (Stunned, Paralyzed, Unconscious, Sleep, Hypnotic Pattern — a sweep after every action) |
 
 ## 2. Architecture
 
