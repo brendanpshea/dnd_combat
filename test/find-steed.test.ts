@@ -153,6 +153,7 @@ describe('it is a real combatant the AI drives', () => {
     cast(c);
     expect(steedOf(c)!.maxHp).toBe(25);
     c.state.combatants['pal']!.turn.bonusActionUsed = false;
+    c.state.combatants['pal']!.turn.slotSpent = false;   // a later turn's slot
     cast(c, 3);
     const all = Object.values(c.state.combatants).filter((x) => x.classId === 'otherworldly-steed');
     expect(all.length, 'a second steed joined the first').toBe(1);

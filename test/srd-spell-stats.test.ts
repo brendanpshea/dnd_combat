@@ -265,8 +265,10 @@ describe('concentration is actually load-bearing', () => {
     expect(c.state.combatants[cleric.id]!.summons?.length).toBe(1);
 
     // Spirit Guardians is an action, Spiritual Weapon a bonus action, so both
-    // are castable on the same turn — which is exactly the stacking the
-    // concentration rule exists to stop.
+    // would be castable on the same turn but for the one-slot rule — so the
+    // second comes a turn later, which is the stacking the concentration rule
+    // exists to stop all the same.
+    c.state.combatants[cleric.id]!.turn.slotSpent = false;
     const guardians = c.legalActions(cleric.id)
       .find((a) => a.kind === 'castSpell' && a.spellId === 'spiritual-guardians');
     expect(guardians, 'Spirit Guardians not offered').toBeDefined();

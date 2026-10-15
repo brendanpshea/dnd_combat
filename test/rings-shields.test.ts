@@ -106,6 +106,7 @@ describe('Ring of Free Action', () => {
     // condition never lands even when it fails.
     for (let i = 0; i < 12; i++) {
       c.state.combatants['cast']!.turn.actionUsed = false;
+      c.state.combatants['cast']!.turn.slotSpent = false;
       c.state.combatants['cast']!.spellSlots.forEach((p) => { p.current = p.max; });
       c.apply({ kind: 'castSpell', spellId: 'hold-person', slotLevel: 2, targets: [{ combatantId: 'w' }] });
     }
