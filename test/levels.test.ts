@@ -167,7 +167,8 @@ describe('subclass features', () => {
     expect(healed.length).toBeGreaterThan(0);
     const ftr = c.state.combatants['ftr']!;
     expect(ftr.hp).toBe(Math.floor(ftr.maxHp / 2)); // capped at half max
-    expect(c.state.combatants['clr']!.featureUses['preserve-life']!.current).toBe(0);
+    // One of the cleric's two Channel Divinity uses.
+    expect(c.state.combatants['clr']!.featureUses['channel-divinity']!.current).toBe(1);
   });
 });
 

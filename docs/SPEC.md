@@ -531,7 +531,17 @@ nothing else — attack, spell, feature, dash — cleared the normal bar either.
 every undead within 30 ft that fails a Wisdom save; with no "must flee" AI, a
 turned undead is instead removed from the fight (`charmAway`, the same
 not-a-death exit Animal Friendship uses), scoped by the `creatureType: 'undead'`
-tag. One use per encounter.
+tag. It spends the cleric's **Channel Divinity** pool (`channel-divinity`, which
+Preserve Life and the paladin's Sacred Weapon share — a feature's `pool`): twice
+from 2nd, three times from 6th, one use back on a short rest and all on a long
+one (`uses.shortRestRegain`, which Second Wind and Wild Shape also use). From
+5th, **Sear Undead** burns each undead that fails the save for (Wis mod)d8
+radiant.
+
+Other class tables read from the SRD rather than flat: Second Wind 2/3/4 uses
+by fighter level, Wild Shape 2/3/4 (and a CR 1 form, the brown bear, from 8th),
+the Bardic Inspiration die d6/d8/d10/d12 with Font of Inspiration's short-rest
+recovery from 5th (`uses.shortRestFrom`); Lay on Hands is a bonus action.
 
 **Fighting styles** beyond Dueling exist as reusable passive features —
 Defense (+1 AC while armored), Archery (+2 ranged attack rolls), Great Weapon
@@ -584,7 +594,7 @@ the AI has to model. Its dice are the SRD's: 2d8, +1d8 a slot level above
 1st and +1d8 against a Fiend or an Undead; every smite counts its upcast steps
 from its own level (`SMITE_SPECS.level` — Shining Smite is 2nd), and Shining
 Smite's light and Ensnaring Strike's vines are held by the concentration the
-smite took, ending with it. **Sacred Weapon** is a 1/encounter Channel Divinity
+smite took, ending with it. **Sacred Weapon** is a Channel Divinity
 that adds Charisma to the paladin's own attack rolls for the rest of the
 encounter, via a `sacredWeapon` condition.
 

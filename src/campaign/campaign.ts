@@ -1860,12 +1860,21 @@ function restoreSorceryPoints(ch: PartyCharacter, caster: Combatant): number {
   return back;
 }
 
-function refillShortRestFeatures(ch: PartyCharacter): void {
+function refillShortRestFeatures(ch: PartyCharacter, combatant: Combatant): void {
   const left = ch.resources?.featureUses;
   if (!left) return;
-  const kept = Object.fromEntries(
-    Object.entries(left).filter(([id]) => FEATURES[id]?.uses?.per === 'longRest'),
-  );
+  const kept: Record<string, number> = {};
+  for (const [id, current] of Object.entries(left)) {
+    const uses = FEATURES[id]?.uses;
+    if (uses?.per !== 'longRest') continue;                    // short-rest pools: all back
+    // From this level the whole pool returns on a short rest (Font of Inspiration).
+    if (uses.shortRestFrom !== undefined && combatant.level >= uses.shortRestFrom) continue;
+    // "You regain one expended use when you finish a Short Rest" — Second
+    // Wind, Channel Divinity, Wild Shape. Absent in the record means full.
+    const max = combatant.featureUses[id]?.max ?? current;
+    const after = Math.min(max, current + (uses.shortRestRegain ?? 0));
+    if (after < max) kept[id] = after;
+  }
   patchResources(ch, { featureUses: kept });
 }
 
@@ -1893,9 +1902,10 @@ export function shortRest(c: CampaignState): RestResult {
     }
     totalHealed += hp - combatant.hp;
     patchResources(ch, { hp, hitDice: left });
-    // Second Wind, Action Surge, Channel Divinity and Wild Shape come back
-    // here; Lay on Hands and Bardic Inspiration are the day's budget and do not.
-    refillShortRestFeatures(ch);
+    // Action Surge and the short-rest pools come back here whole; Second Wind,
+    // Channel Divinity and Wild Shape one use; Bardic Inspiration from 5th
+    // (Font of Inspiration); Lay on Hands is the day's budget and does not.
+    refillShortRestFeatures(ch, combatant);
     // …and the casters get some slots back, once between long rests.
     const slots = recoverSlotsOnShortRest(c, index, combatant);
     if (slots.length > 0) recovered.push({ name: ch.name, slots });

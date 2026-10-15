@@ -424,7 +424,8 @@ export const CLASSES: Record<Id, ClassData> = {
     featuresByLevel: {
       6: ['blessed-healer'],
       7: ['potent-spellcasting'],   // Blessed Strikes, taken as Potent Spellcasting
-      2: ['turn-undead'], // Channel Divinity every cleric gets
+      2: ['channel-divinity', 'turn-undead'], // Channel Divinity every cleric gets
+      5: ['sear-undead'],
       // Both Life Domain, and the SRD gives both at 3 — Disciple of Life was
       // being handed out at 1, two levels before a cleric picks a domain.
       3: ['preserve-life', 'disciple-of-life'],
@@ -808,9 +809,8 @@ export const CLASSES: Record<Id, ClassData> = {
       3: ['cutting-words'], // College of Lore
       6: ['magical-discoveries'], // College of Lore: two spells from any list
       // 4: Ability Score Increase (builder).
-      // 5: Font of Inspiration — regaining uses on a short rest, which this
-      //    engine already does for every per-encounter pool. Left off rather
-      //    than invented into something it isn't.
+      // 5: Font of Inspiration — the dice come back on a short rest from here
+      //    (`uses.shortRestFrom` on Bardic Inspiration), and the die is a d8.
     },
     weaponMasteries: [],
     equipment: {
@@ -1077,7 +1077,7 @@ export const CLASSES: Record<Id, ClassData> = {
       6: ['aura-of-protection'],
       1: ['lay-on-hands'],
       2: ['divine-smite'],
-      3: ['sacred-weapon'], // Devotion: Channel Divinity
+      3: ['channel-divinity', 'sacred-weapon'], // Devotion: Channel Divinity
       // 4: Ability Score Increase (builder).
       5: ['extra-attack'],
     },

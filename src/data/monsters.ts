@@ -10,8 +10,7 @@
  * coat — and the bestiary is the half that keeps growing.
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura } from '../engine/types.js';
-import { proficiencyBonus, abilityMod } from '../engine/types.js';
-import { FEATURES, ragesAt } from './features.js';
+import { FEATURES, useCount } from './features.js';
 import { WEAPONS } from './weapons.js';
 
 export interface MonsterData {
@@ -1995,18 +1994,9 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
   for (const fid of m.featureIds ?? []) {
     const f = FEATURES[fid];
     if (f?.uses) {
-      const count =
-        f.uses.count === 'proficiency' ? proficiencyBonus(level) :
-        f.uses.count === 'fiveTimesLevel' ? 5 * level :
-        // No monster carries Bardic Inspiration; if one ever does, its
-        // Charisma decides the pool the same way a bard's does.
-        f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(m.abilities.cha)) :
-        // Nor does any monster carry Focus Points, but the same rule applies:
-        // one per level, so the two builders cannot disagree about a feature
-        // that ends up on both.
-        f.uses.count === 'level' ? level :
-        f.uses.count === 'rages' ? ragesAt(level) :
-        f.uses.count;
+      // The character builder's reading, so the two cannot disagree about a
+      // feature that ends up on both.
+      const count = useCount(f, level, m.abilities);
       featureUses[fid] = { current: count, max: count };
     } else if (f?.recharge) {
       featureUses[fid] = { current: 1, max: 1 }; // starts charged; the d6 recharge roll lives in startTurn

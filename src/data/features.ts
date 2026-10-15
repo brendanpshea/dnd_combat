@@ -3,7 +3,7 @@
  * consulted by the rules (Dueling, Sneak Attack, Disciple of Life) via their
  * presence in combatant.featureIds.
  */
-import type { GameState, Id, Ability, DamageType, Combatant, Position } from '../engine/types.js';
+import type { GameState, Id, Ability, AbilityScores, DamageType, Combatant, Position } from '../engine/types.js';
 import { proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 import { MONSTERS } from './monsters.js';
@@ -52,9 +52,30 @@ export interface FeatureData {
    * even from an old save.
    */
   uses?: {
-    count: number | 'proficiency' | 'fiveTimesLevel' | 'charismaMod' | 'level' | 'rages';
+    /**
+     * How many. A number[] is a class table column read by character level
+     * (index level - 1, clamped) — Second Wind's 2/3/4, Wild Shape's 2/3/4 —
+     * and a record of them is one column per class, for the one pool two
+     * classes share under one name (Channel Divinity).
+     */
+    count: number | number[] | Record<Id, number[]> | 'proficiency' | 'fiveTimesLevel' | 'charismaMod' | 'level' | 'rages';
     per: 'encounter' | 'shortRest' | 'longRest';
+    /**
+     * A long-rest pool a Short Rest gives part of back: "You regain one
+     * expended use when you finish a Short Rest, and you regain all expended
+     * uses when you finish a Long Rest" (Second Wind, Channel Divinity, Wild
+     * Shape).
+     */
+    shortRestRegain?: number;
+    /** From this class level the whole pool comes back on a Short Rest
+     *  (Font of Inspiration: the bard's dice, from 5th). */
+    shortRestFrom?: number;
   };
+  /**
+   * Spends another feature's pool rather than one of its own: every Channel
+   * Divinity effect draws on the class's one Channel Divinity pool.
+   */
+  pool?: Id;
   /**
    * A recharge ability (dragon breath): starts available, is spent on use, and
    * at the start of the owner's turn rolls a d6 — on a result at or above this
@@ -283,6 +304,9 @@ function revertWildShape(me: Combatant): GameEvent[] {
 }
 
 export const WILD_SHAPE_FORMS: Array<{ monsterId: Id; minLevel: number }> = [
+  // The Beast Shapes table: CR 1 from 8th (no Fly Speed needed for a bear).
+  // Strongest first — the first form a druid's level allows is the one taken.
+  { monsterId: 'brown-bear', minLevel: 8 },    // CR 1: two attacks, 22 HP
   { monsterId: 'wolf', minLevel: 2 },          // CR 1/4: speed 40, Pack Tactics
   { monsterId: 'giant-badger', minLevel: 2 },  // CR 1/4: AC 13, two attacks
 ];
@@ -315,6 +339,33 @@ function bestAdjacentFoe(state: GameState, me: Combatant): Combatant | undefined
 
 /** The Barbarian's Rages column (SRD 5.2.1), indexed by level - 1. */
 const RAGES_BY_LEVEL = [2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6];
+/**
+ * The size of a feature's pool for a creature at `level` — the one reading of
+ * `uses.count`, shared by the character and monster builders.
+ */
+export function useCount(f: FeatureData, level: number, abilities: AbilityScores, classId?: Id): number {
+  const c = f.uses?.count;
+  if (c === undefined) return 0;
+  const column = (t: number[]) => t[Math.min(Math.max(level, 1), t.length) - 1] ?? 0;
+  if (Array.isArray(c)) return column(c);
+  if (typeof c === 'object') return column(c[classId ?? ''] ?? []);
+  return c === 'proficiency' ? proficiencyBonus(level) :
+    c === 'fiveTimesLevel' ? 5 * level :
+    // Bardic Inspiration: the Charisma modifier, minimum one — the pool must
+    // never be zero or the feature simply isn't there.
+    c === 'charismaMod' ? Math.max(1, abilityMod(abilities.cha)) :
+    // The monk's Focus Points: one per level, the only pool that scales
+    // one-for-one with the character rather than with proficiency.
+    c === 'level' ? level :
+    c === 'rages' ? ragesAt(level) :
+    c;
+}
+
+/** The Bardic Inspiration die at a bard's level: d6, d8 at 5th, d10 at 10th, d12 at 15th. */
+export function bardicDie(level: number): string {
+  return level >= 15 ? '1d12' : level >= 10 ? '1d10' : level >= 5 ? '1d8' : '1d6';
+}
+
 export function ragesAt(level: number): number {
   return RAGES_BY_LEVEL[Math.min(Math.max(level, 1), 20) - 1]!;
 }
@@ -361,9 +412,11 @@ export const FEATURES: Record<Id, FeatureData> = {
   // a halfling's own Hide check is simply better (stealthBonus in hide.ts),
   // which is the part of the trait that actually matters at the table.
   'naturally-stealthy': { id: 'naturally-stealthy', name: 'Naturally Stealthy', trigger: 'passive', grantsSkill: 'stealth' },
+  // Twice, three times from 4th, four from 10th (the Fighter table's column);
+  // one back on a Short Rest, all on a Long one.
   'second-wind': {
     id: 'second-wind', name: 'Second Wind', trigger: 'bonus',
-    uses: { count: 2, per: 'shortRest' },
+    uses: { count: [2, 2, 2, 3, 3, 3, 3, 3, 3, 4], per: 'longRest', shortRestRegain: 1 },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       const roll = rollDice(state.rng, `1d10+${c.level}`);
@@ -714,7 +767,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   },
   'preserve-life': {
     id: 'preserve-life', name: 'Channel Divinity: Preserve Life', trigger: 'action',
-    uses: { count: 1, per: 'shortRest' },
+    pool: 'channel-divinity',
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       const events: GameEvent[] = [];
@@ -735,9 +788,29 @@ export const FEATURES: Record<Id, FeatureData> = {
       return events;
     },
   },
+  /**
+   * Channel Divinity: one pool every effect of the class draws on (SRD 5.2.1,
+   * cleric line 2640, paladin line 4812), one use back on a Short Rest and all
+   * on a Long Rest. A cleric has it twice from 2nd, three times from 6th, four
+   * from 18th; a paladin twice from 3rd, three times from 11th. Turn Undead,
+   * Preserve Life and Sacred Weapon each had a pool of one of their own,
+   * refilled whole on a short rest.
+   */
+  'channel-divinity': {
+    id: 'channel-divinity', name: 'Channel Divinity', trigger: 'passive',
+    uses: {
+      count: {
+        cleric: [0, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4],
+        paladin: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 3],
+      },
+      per: 'longRest', shortRestRegain: 1,
+    },
+  },
+  /** Sear Undead (Cleric 5): Turn Undead burns those it turns — see turn-undead. */
+  'sear-undead': { id: 'sear-undead', name: 'Sear Undead', trigger: 'passive' },
   'turn-undead': {
     id: 'turn-undead', name: 'Channel Divinity: Turn Undead', trigger: 'action',
-    uses: { count: 1, per: 'shortRest' },
+    pool: 'channel-divinity',
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       // Base Channel Divinity every cleric gets, not the Life Domain's
@@ -754,11 +827,23 @@ export const FEATURES: Record<Id, FeatureData> = {
           distanceFeet(me.position, c.position) <= 30,
       );
       const events: GameEvent[] = [{ type: 'turnedUndead', combatantId: actorId, dc }];
+      // Sear Undead (Cleric 5, SRD line 2652): one roll of d8s, as many as the
+      // Wisdom modifier (at least one), dealt as radiant to each undead that
+      // fails the save. "This damage doesn't end the turn effect."
+      let sear: { total: number; rolls: number[] } | undefined;
+      if (me.featureIds.includes('sear-undead')) {
+        const roll = rollDice(state.rng, `${Math.max(1, abilityMod(me.abilities.wis))}d8`);
+        state.rng = roll.state;
+        sear = { total: roll.total, rolls: roll.rolls };
+      }
       for (const t of targets) {
         const { success, event } = savingThrow(state, t.id, 'wis', dc, { magical: true });
         events.push(event);
         if (!success) {
           events.push(...applyCondition(state, t.id, { id: 'fleeing', sourceId: actorId }, { magical: true }));
+          if (sear && t.alive) {
+            events.push(...applyDamage(state, t.id, actorId, sear.total, 'radiant', sear.rolls, { magical: true, tags: ['Sear Undead'] }));
+          }
         }
         if (state.winner) break;
       }
@@ -1164,9 +1249,10 @@ export const FEATURES: Record<Id, FeatureData> = {
    * actions.ts). Reverting costs a use of nothing -- only assuming a shape
    * spends one -- which is why this manages its own pool.
    */
+  // Twice, three times from 6th, four from 17th; one back on a Short Rest.
   'wild-shape': {
     id: 'wild-shape', name: 'Wild Shape', trigger: 'bonus',
-    uses: { count: 2, per: 'shortRest' }, manualUses: true,
+    uses: { count: [0, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4], per: 'longRest', shortRestRegain: 1 }, manualUses: true,
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       if (me.wildShape) return revertWildShape(me);
@@ -1219,9 +1305,11 @@ export const FEATURES: Record<Id, FeatureData> = {
    * attack rolls and saves, because those are the d20 tests a fight contains;
    * an ability check on the battle grid does not exist.
    */
+  // Font of Inspiration (Bard 5, SRD line 1885): from 5th, all the dice come
+  // back on a Short Rest too. The die itself grows — `bardicDie`.
   'bardic-inspiration': {
     id: 'bardic-inspiration', name: 'Bardic Inspiration', trigger: 'bonus',
-    uses: { count: 'charismaMod', per: 'longRest' },
+    uses: { count: 'charismaMod', per: 'longRest', shortRestFrom: 5 },
     apply({ state, actorId }) {
       const me = state.combatants[actorId]!;
       // The ally most likely to use it: whoever is in the fight and has not
@@ -1325,8 +1413,9 @@ export const FEATURES: Record<Id, FeatureData> = {
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.
   'colossus-slayer': { id: 'colossus-slayer', name: "Hunter's Prey: Colossus Slayer", trigger: 'passive' },
+  // A Bonus Action in the 2024 rules (SRD line 4792), not an action.
   'lay-on-hands': {
-    id: 'lay-on-hands', name: 'Lay on Hands', trigger: 'action',
+    id: 'lay-on-hands', name: 'Lay on Hands', trigger: 'bonus',
     uses: { count: 'fiveTimesLevel', per: 'longRest' },
     manualUses: true,
     apply({ state, actorId }) {
@@ -1356,7 +1445,7 @@ export const FEATURES: Record<Id, FeatureData> = {
   // it just marks the `sacredWeapon` condition; resolveAttack reads it.
   'sacred-weapon': {
     id: 'sacred-weapon', name: 'Channel Divinity: Sacred Weapon', trigger: 'bonus',
-    uses: { count: 1, per: 'shortRest' },
+    pool: 'channel-divinity',
     apply({ state, actorId }) {
       return applyCondition(state, actorId, { id: 'sacredWeapon', sourceId: actorId }, { magical: true });
     },

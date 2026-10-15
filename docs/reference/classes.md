@@ -87,8 +87,9 @@ Spellcasting ability: **CHA**.
 
 | Level | Features |
 | --- | --- |
-| 2 | Channel Divinity: Turn Undead |
+| 2 | Channel Divinity, Channel Divinity: Turn Undead |
 | 3 | Channel Divinity: Preserve Life, Disciple of Life |
+| 5 | Sear Undead |
 | 6 | Blessed Healer |
 | 7 | Potent Spellcasting |
 
@@ -294,7 +295,7 @@ Greatsword and chain mail. Trades the shield for something to smite with.
 | --- | --- |
 | 1 | Lay on Hands |
 | 2 | Divine Smite |
-| 3 | Channel Divinity: Sacred Weapon |
+| 3 | Channel Divinity, Channel Divinity: Sacred Weapon |
 | 5 | Extra Attack |
 | 6 | Aura of Protection |
 | 7 | Aura of Devotion |

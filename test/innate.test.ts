@@ -572,10 +572,11 @@ describe('Turn Undead', () => {
   const skeleton = (position: Position, id: string): Combatant =>
     ({ ...buildMonster('skeleton', 'team2', position), id });
 
-  it('a level-2 cleric knows Turn Undead as an encounter-limited action feature', () => {
+  it('a level-2 cleric knows Turn Undead, spending the Channel Divinity pool', () => {
     const cl = cleric({ x: 3, y: 3 }, 'cl');
     expect(cl.featureIds).toContain('turn-undead');
-    expect(cl.featureUses['turn-undead']).toEqual({ current: 1, max: 1 });
+    expect(FEATURES['turn-undead']!.pool).toBe('channel-divinity');
+    expect(cl.featureUses['channel-divinity']).toEqual({ current: 2, max: 2 });
     expect(FEATURES['turn-undead']!.trigger).toBe('action');
   });
 
@@ -617,8 +618,8 @@ describe('Turn Undead', () => {
         left += c.apply({ kind: 'endTurn' }).filter((e) => e.type === 'fled').length;
       }
       expect(left, 'the turned undead never left the board').toBe(turned.length);
-      // The Channel Divinity use is spent.
-      expect(c.state.combatants['cl']!.featureUses['turn-undead']!.current).toBe(0);
+      // One of the two Channel Divinity uses is spent.
+      expect(c.state.combatants['cl']!.featureUses['channel-divinity']!.current).toBe(1);
       return;
     }
     throw new Error('no skeleton ever failed the save across 40 seeds');

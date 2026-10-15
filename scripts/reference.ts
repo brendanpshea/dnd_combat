@@ -521,7 +521,13 @@ function featuresDoc(): string {
     // person deciding whether a feature is a per-fight trick or the day's
     // budget, and `1/shortRest` makes them stop and parse an identifier.
     const clock = { encounter: 'fight', shortRest: 'short rest', longRest: 'long rest' }[f.uses.per];
-    return `${f.uses.count}/${clock}`;
+    const c = f.uses.count;
+    const table = Array.isArray(c) ? c : typeof c === 'object' ? Object.values(c).flat() : undefined;
+    const count = table
+      ? `${Math.min(...table.filter((n) => n > 0))}–${Math.max(...table)} by level`
+      : c;
+    const regain = f.uses.shortRestRegain ? ` (${f.uses.shortRestRegain} back on a short rest)` : '';
+    return `${count}/${clock}${regain}`;
   };
   return [
     preamble('Features', [

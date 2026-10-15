@@ -565,7 +565,9 @@ describe('the combat status box', () => {
     // `short` must survive: the multi-hero row is what it was built for, and
     // deleting it would trade one unreadable screen for another.
     expect(pips).toContain('p.short');
-    expect(shortLabel('second-wind'), 'the camp label changed shape').toBe('SeW');
+    // Second Wind's "SW" no longer collides: Sacred Weapon spends the shared
+    // Channel Divinity pool and has no meter of its own.
+    expect(shortLabel('second-wind'), 'the camp label changed shape').toBe('SW');
   });
 
   it('offers a real name to spell out', () => {
@@ -573,7 +575,7 @@ describe('the combat status box', () => {
     // actual name or "full" would print an id.
     const pools = restPools({ 'second-wind': { current: 1, max: 2 } });
     expect(pools[0]?.name).toBe('Second Wind');
-    expect(pools[0]?.short).toBe('SeW');
+    expect(pools[0]?.short).toBe('SW');
   });
 
   it('sets the text beside the portrait instead of below it', () => {

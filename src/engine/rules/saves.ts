@@ -5,7 +5,7 @@ import type { GameState, Id, Ability, Combatant } from '../types.js';
 import { abilityMod, proficiencyBonus, isDown, isIncapacitated, canReact, heldInPlace } from '../types.js';
 import { distanceFeet } from '../grid.js';
 import { rollD20, rollDice } from '../dice.js';
-import { FEATURES } from '../../data/features.js';
+import { FEATURES, bardicDie } from '../../data/features.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 import { removeConditions } from './conditions.js';
@@ -196,8 +196,10 @@ export function savingThrow(
     total -= d4.total;
   }
   // Bardic Inspiration, spent on whichever roll reaches for it first.
-  if (c.conditions.some((k) => k.id === 'inspiring')) {
-    const d6 = rollDice(state.rng, '1d6');
+  const inspiration = c.conditions.find((k) => k.id === 'inspiring');
+  if (inspiration) {
+    const bard = inspiration.sourceId !== undefined ? state.combatants[inspiration.sourceId] : undefined;
+    const d6 = rollDice(state.rng, bardicDie(bard?.level ?? 1));
     state.rng = d6.state;
     total += d6.total;
     // Silent: a save returns one event, and the roll it modified is that event.

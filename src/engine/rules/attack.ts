@@ -5,7 +5,7 @@
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
 import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover, risesAgain } from '../types.js';
 import { WEAPONS, type WeaponData, isWeaponProficient } from '../../data/weapons.js';
-import { FEATURES, revertShape } from '../../data/features.js';
+import { FEATURES, revertShape, bardicDie } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
@@ -342,10 +342,13 @@ export function resolveAttack(
   // Bardic Inspiration: one d6, on the first attack roll or save that wants it,
   // and then it is gone. Unlike Bless it is not an aura the bard sustains — it
   // is a single gift, which is why it is consumed here rather than merely read.
-  if (attacker.conditions.some((c) => c.id === 'inspiring')) {
-    const d6 = rollDice(state.rng, '1d6');
-    state.rng = d6.state;
-    total += d6.total;
+  const inspiration = attacker.conditions.find((c) => c.id === 'inspiring');
+  if (inspiration) {
+    // The bard's die, which grows with the bard: a d8 from 5th.
+    const bard = inspiration.sourceId !== undefined ? state.combatants[inspiration.sourceId] : undefined;
+    const die = rollDice(state.rng, bardicDie(bard?.level ?? 1));
+    state.rng = die.state;
+    total += die.total;
     events.push(...removeConditions(attacker, 'inspiring'));
   }
 
@@ -407,7 +410,7 @@ export function resolveAttack(
   //
   // Only tried on a hit that a d6 could plausibly undo, so the die is never
   // burned turning a hit into a slightly smaller hit.
-  if (hit && d20.natural !== 20 && total - targetAc < 6) {
+  if (hit && d20.natural !== 20 && total - targetAc < 12) {
     const cut = tryCuttingWords(state, target, total - targetAc);
     if (cut) {
       total -= cut.amount;
@@ -1443,7 +1446,6 @@ export function rollDeathSave(state: GameState, combatantId: Id): GameEvent[] {
 export function tryCuttingWords(
   state: GameState, target: Combatant, margin: number,
 ): { amount: number; event: GameEvent } | undefined {
-  if (margin > 5) return undefined;
   const bard = Object.values(state.combatants).find(
     (c) => canReact(c) && c.team === target.team &&
       c.featureIds.includes('cutting-words') &&
@@ -1451,9 +1453,12 @@ export function tryCuttingWords(
       distanceFeet(c.position, target.position) <= 60,
   );
   if (!bard) return undefined;
+  // Not a die that cannot reach: the bard's die is its Bardic Inspiration die.
+  const die = bardicDie(bard.level);
+  if (margin >= Number(die.slice(2))) return undefined;
   bard.featureUses['bardic-inspiration']!.current -= 1;
   bard.turn.reactionUsed = true;
-  const d6 = rollDice(state.rng, '1d6');
+  const d6 = rollDice(state.rng, die);
   state.rng = d6.state;
   return {
     amount: d6.total,

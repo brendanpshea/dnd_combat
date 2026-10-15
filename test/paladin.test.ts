@@ -47,7 +47,8 @@ describe('Paladin: character builder', () => {
   it('L3: Sacred Weapon (Devotion Channel Divinity) arrives', () => {
     const p = buildCharacter({ classId: 'paladin', team: 'team1', position: { x: 0, y: 0 }, level: 3 });
     expect(p.featureIds).toContain('sacred-weapon');
-    expect(p.featureUses['sacred-weapon']).toEqual({ current: 1, max: 1 });
+    // It spends the paladin's Channel Divinity: two uses from 3rd level.
+    expect(p.featureUses['channel-divinity']).toEqual({ current: 2, max: 2 });
   });
 
   it('L5: Extra Attack, second-level slots, Aid known', () => {
@@ -72,7 +73,9 @@ describe('Paladin: Lay on Hands', () => {
     expect((healed as { amount: number }).amount).toBe(15); // missing HP, not the whole pool
     expect(c.state.combatants['ally']!.hp).toBe(20);
     expect(c.state.combatants['pal']!.featureUses['lay-on-hands']!.current).toBe(before - 15);
-    expect(c.state.combatants['pal']!.turn.actionUsed).toBe(true);
+    // A Bonus Action in the 2024 rules (SRD line 4792): the action is free.
+    expect(c.state.combatants['pal']!.turn.bonusActionUsed).toBe(true);
+    expect(c.state.combatants['pal']!.turn.actionUsed).toBe(false);
   });
 
   it('revives a downed ally', () => {

@@ -81,8 +81,9 @@ describe('feature pools and rests', () => {
   it('hands Action Surge back at the lunch break', () => {
     const c = partyOf('fighter');
     const fought = buildCampaignParty(c)[0]!;
+    const winds = fought.featureUses['second-wind']!.max;   // 3 at 5th level
     fought.featureUses['action-surge'] = { current: 0, max: 1 };
-    fought.featureUses['second-wind'] = { current: 0, max: 2 };
+    fought.featureUses['second-wind'] = { current: winds - 1, max: winds };
     readBackSurvivors(c, [fought]);
     // Still spent going into the next wave of the same half-day.
     expect(buildCampaignParty(c)[0]!.featureUses['action-surge']!.current).toBe(0);
@@ -90,10 +91,24 @@ describe('feature pools and rests', () => {
     shortRest(c);
     const rested = buildCampaignParty(c)[0]!;
     expect(rested.featureUses['action-surge']!.current).toBe(1);
-    expect(rested.featureUses['second-wind']!.current).toBe(2);
+    // Second Wind: "You regain one expended use when you finish a Short Rest".
+    expect(rested.featureUses['second-wind']!.current).toBe(winds);
     // And the field is gone entirely rather than left as a full-looking record —
     // "absent means full" is the convention every other resource here uses.
     expect(c.characters[0]!.resources?.featureUses).toBeUndefined();
+  });
+
+  it('gives back one Second Wind on a short rest, not all of them', () => {
+    const c = partyOf('fighter');
+    const fought = buildCampaignParty(c)[0]!;
+    const winds = fought.featureUses['second-wind']!.max;
+    expect(winds, 'Second Wind is three uses from 4th level').toBe(3);
+    fought.featureUses['second-wind'] = { current: 0, max: winds };
+    readBackSurvivors(c, [fought]);
+    shortRest(c);
+    expect(buildCampaignParty(c)[0]!.featureUses['second-wind']!.current).toBe(1);
+    longRest(c);
+    expect(buildCampaignParty(c)[0]!.featureUses['second-wind']!.current).toBe(winds);
   });
 
   it('keeps the daily pool while giving back the short-rest one', () => {
@@ -102,11 +117,11 @@ describe('feature pools and rests', () => {
     const c = partyOf('paladin');
     const fought = buildCampaignParty(c)[0]!;
     fought.featureUses['lay-on-hands'] = { current: 1, max: 5 * fought.level };
-    fought.featureUses['sacred-weapon'] = { current: 0, max: 1 };
+    fought.featureUses['channel-divinity'] = { current: 0, max: 2 };
     readBackSurvivors(c, [fought]);
     shortRest(c);
     const rested = buildCampaignParty(c)[0]!;
-    expect(rested.featureUses['sacred-weapon']!.current, 'Channel Divinity is a short rest').toBe(1);
+    expect(rested.featureUses['channel-divinity']!.current, 'Channel Divinity gives one back on a short rest').toBe(1);
     expect(rested.featureUses['lay-on-hands']!.current, 'Lay on Hands is the day').toBe(1);
   });
 
@@ -165,7 +180,7 @@ describe('the feature-pool meter', () => {
     const m = buildCampaignParty(c)[0]!;
     const shown = restPools(m.featureUses).map((p) => p.id);
     expect(shown).toContain('lay-on-hands');
-    expect(shown).toContain('sacred-weapon');
+    expect(shown).toContain('channel-divinity');
     // Heroic Inspiration refills every fight; a meter that cannot go down
     // teaches a player to ignore the meters that can.
     expect(shown).not.toContain('heroic-inspiration');
@@ -185,13 +200,13 @@ describe('the feature-pool meter', () => {
     const loh = pools.find((p) => p.id === 'lay-on-hands')!;
     expect(loh.max).toBe(25);
     expect(loh.style).toBe('count');
-    expect(pools.find((p) => p.id === 'sacred-weapon')!.style).toBe('pips');
+    expect(pools.find((p) => p.id === 'channel-divinity')!.style).toBe('pips');
   });
 
-  it('labels Channel Divinity options apart from each other', () => {
-    // Initialling the whole name would render every one of them as "CD".
-    expect(shortLabel('turn-undead')).toBe('TU');
-    expect(shortLabel('preserve-life')).toBe('PL');
+  it('labels the one Channel Divinity pool, and the rest by their own names', () => {
+    // The options (Turn Undead, Preserve Life, Sacred Weapon) share the class's
+    // pool and have no meter of their own; the pool does.
+    expect(shortLabel('channel-divinity')).toBe('CD');
     expect(shortLabel('action-surge')).toBe('AS');
   });
 

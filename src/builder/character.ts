@@ -2,14 +2,14 @@
  * Character construction: class + species + level → Combatant.
  */
 import type { Combatant, TeamId, Position, AbilityScores, Ability, Id, ResourcePool } from '../engine/types.js';
-import { abilityMod, proficiencyBonus } from '../engine/types.js';
+import { abilityMod } from '../engine/types.js';
 import { CLASSES, kitFor, type ChoiceGrant, type ChoicePoint } from '../data/classes.js';
 import { ORIGIN_FEATS, skilledSkills } from '../data/feats.js';
 import { backgroundSkills } from '../data/backgrounds.js';
 import type { SkillId } from '../data/classes.js';
 import { ABILITIES, defaultStatBuild, resolveStatBuild, isLegalStatBuild, type StatBuild } from './stats.js';
 import { defaultNameFor } from './names.js';
-import { FEATURES, ragesAt } from '../data/features.js';
+import { FEATURES, useCount } from '../data/features.js';
 import { SPECIES } from '../data/species.js';
 import { TRINKETS } from '../data/trinkets.js';
 import { SPELLS } from '../data/spells.js';
@@ -383,20 +383,7 @@ export function buildCharacter(opts: BuildOptions): Combatant {
   for (const fid of featureIds) {
     const f = FEATURES[fid];
     if (f?.uses) {
-      const count =
-        f.uses.count === 'proficiency' ? proficiencyBonus(level) :
-        f.uses.count === 'fiveTimesLevel' ? 5 * level :
-        // Bardic Inspiration: uses equal to the bard's Charisma modifier,
-        // minimum one — a bard with no Charisma is not a bard, but the pool
-        // must never be zero or the feature simply isn't there.
-        f.uses.count === 'charismaMod' ? Math.max(1, abilityMod(abilities.cha)) :
-        // The monk's Focus Points: one per level, which is the only pool in the
-        // game that scales one-for-one with the character rather than with
-        // proficiency. It is the class's whole economy, so it gets its own kind
-        // rather than an approximation.
-        f.uses.count === 'level' ? level :
-        f.uses.count === 'rages' ? ragesAt(level) :
-        f.uses.count;
+      const count = useCount(f, level, abilities, opts.classId);
       // Absent means full, the same convention HP, slots and wand charges use.
       const left = f.uses.per === 'encounter' ? undefined : opts.featureUsesOverride?.[fid];
       featureUses[fid] = { current: Math.max(0, Math.min(left ?? count, count)), max: count };

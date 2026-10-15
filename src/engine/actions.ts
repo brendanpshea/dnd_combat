@@ -495,8 +495,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (incap) return false;
       const f = FEATURES[action.featureId];
       if (!f || !f.apply || !actor.featureIds.includes(action.featureId)) return false;
-      const uses = actor.featureUses[action.featureId];
-      if ((f.uses || f.recharge) && (!uses || uses.current <= 0)) return false;
+      // A Channel Divinity effect spends the class's shared pool (`pool`).
+      const uses = actor.featureUses[f.pool ?? action.featureId];
+      if ((f.uses || f.recharge || f.pool) && (!uses || uses.current <= 0)) return false;
       if (f.trigger === 'bonus' && actor.turn.bonusActionUsed) return false;
       if (f.trigger === 'action' && actor.turn.actionUsed) return false;
       if ((action.featureId === 'cunning-hide' || action.featureId === 'nimble-hide') && !canHide(state, actor)) return false;
@@ -1235,7 +1236,7 @@ export function step(state: GameState, action: Action): { state: GameState; even
       const f = FEATURES[action.featureId]!;
       if (f.trigger === 'bonus') actor.turn.bonusActionUsed = true;
       if (f.trigger === 'action') actor.turn.actionUsed = true;
-      const uses = actor.featureUses[action.featureId];
+      const uses = actor.featureUses[f.pool ?? action.featureId];
       if (uses && !f.manualUses) uses.current -= 1;
       events.push(...(f.apply?.({ state: draft, actorId }) ?? []));
       break;
