@@ -63,7 +63,7 @@ see `src/data/spells.ts`.
 | ✝️ Protection from Evil and Good | `protection-from-evil-and-good` | action | 1 ally you can touch | yes | — | — | Cleric 1, Warlock 1, Druid 1, Paladin 2 |
 | 🤢 Ray of Sickness | `ray-of-sickness` | action | 1 enemy within 60 ft | — | yes | — | Wizard (scroll), Sorcerer 1, Abyssal Tiefling |
 | ⛪ Sanctuary | `sanctuary` | bonus | 1 ally within 30 ft | — | — | — | Cleric 1, Priest Acolyte |
-| 🔥 Searing Smite | `searing-smite` | bonus | self (offered when it would reach someone) | — | — | — | Paladin 2 |
+| 🔥 Searing Smite | `searing-smite` | bonus | self (offered when it would reach someone) | — | — | — | Paladin 1 |
 | 🛡️ Shield | `shield` | reaction | self (offered when it would reach someone) | — | — | — | Wizard 1, Sorcerer 1, Mage |
 | 🛡️ Shield of Faith | `shield-of-faith` | bonus | 1 ally within 60 ft | yes | — | — | Cleric 1, Paladin 2 |
 | 😴 Sleep | `sleep` | action | 2×2 burst within 60 ft | yes | — | — | Wizard 1, Sorcerer 1, Bard 1, Oni |

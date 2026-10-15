@@ -411,13 +411,10 @@ export const CLASSES: Record<Id, ClassData> = {
       // The SRD's column (3, rising to 4 at 4th). It was 2 while the cleric had
       // only two cantrips to know; Spare the Dying is the third.
       cantripsKnownByLevel: [3, 3, 3, 4, 4, 4, 4, 4, 4],
-      // Cleric knows its whole leveled list (no spellbook); it prepares a subset.
-      // Widened alongside the list: the point of the new spells is a choice, and
-      // preparing 4 of 9 was already most of the 1st-level list.
-      // 12 and 13 continue this class's own slope; its column already runs
-      // ahead of the SRD's (11 at 5th where the table has 9) because the list is
-      // wider here. The SRD's own increment over 6 and 7 is +1 a level either way.
-      preparedByLevel: [4, 5, 7, 8, 11, 12, 13, 14, 15],
+      // Cleric knows its whole leveled list (no spellbook); it prepares a subset —
+      // the SRD Cleric table's Prepared Spells column (line 2620). It ran ahead
+      // of the table (7 at 3rd, 11 at 5th) because the list here is wider.
+      preparedByLevel: [4, 5, 6, 7, 9, 10, 11, 12, 14],
       spellsByLevel: {
         1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good',
                // Last, so no default loadout changes for it: it only does
@@ -934,8 +931,13 @@ export const CLASSES: Record<Id, ClassData> = {
     spellcasting: {
       ability: 'wis',
       slotsByLevel: [[2], [2], [3], [3], [4, 2], [4, 2], [4, 3], [4, 3], [4, 3, 2]],
+      // The SRD table's Prepared Spells column; it knew its whole list. (Only
+      // limits a caster whose prepared list is supplied — the campaign's.)
+      preparedByLevel: [2, 3, 4, 5, 6, 6, 7, 7, 9],
       spellsByLevel: {
-        1: ['hunters-mark', 'cure-wounds', 'animal-friendship', 'ensnaring-strike'],
+        // Strongest first: with six prepared at 5th, the auto-loadout takes the
+        // first three of these.
+        1: ['hunters-mark', 'ensnaring-strike', 'cure-wounds', 'animal-friendship'],
         // Misty Step used to sit here. It is a wizard spell — it has never been
         // on the ranger's list, in the SRD or anywhere else — so it is gone,
         // and Ensnaring Strike (which is on the list, and is the ranger's own
@@ -1090,14 +1092,19 @@ export const CLASSES: Record<Id, ClassData> = {
     spellcasting: {
       ability: 'cha',
       slotsByLevel: [[2], [2], [3], [3], [4, 2], [4, 2], [4, 3], [4, 3], [4, 3, 2]],
+      // The SRD table's Prepared Spells column; it knew its whole list. (Only
+      // limits a caster whose prepared list is supplied — the campaign's.)
+      preparedByLevel: [2, 3, 4, 5, 6, 6, 7, 7, 9],
       spellsByLevel: {
-        1: ['bless', 'cure-wounds', 'command'],
-        // The smite arrives with Divine Smite itself, alongside the wards that
-        // make a paladin the party's shield rather than a second fighter.
-        // Thunderous and Wrathful Smite used to be here; both are 2014 spells
-        // that the SRD 5.2 paladin list does not carry, so Shining Smite (which
-        // it does) is the second smite instead.
-        2: ['searing-smite', 'shield-of-faith', 'protection-from-evil-and-good'],
+        // Searing Smite second: with the SRD's prepared counts (six at 5th) the
+        // auto-loadout takes the first few of each spell level, and the smite
+        // is the paladin's signature. A 2024 paladin casts from 1st level.
+        1: ['bless', 'searing-smite', 'cure-wounds', 'command'],
+        // The wards that make a paladin the party's shield rather than a second
+        // fighter. Thunderous and Wrathful Smite used to be here; both are 2014
+        // spells that the SRD 5.2 paladin list does not carry, so Shining Smite
+        // (which it does) is the second smite instead.
+        2: ['shield-of-faith', 'protection-from-evil-and-good'],
         // 2nd-level slot arrives here. Find Steed leads it: a second body on
         // the board for a bonus action outvalues any single 2nd-level effect a
         // paladin can buy, and it is the only one that keeps paying every round.

@@ -99,13 +99,13 @@ Spellcasting ability: **CHA**.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 2 | — | — | — | — | 3 | 4 |
 | 2 | 3 | — | — | — | — | 3 | 5 |
-| 3 | 4 | 2 | — | — | — | 3 | 7 |
-| 4 | 4 | 3 | — | — | — | 4 | 8 |
-| 5 | 4 | 3 | 2 | — | — | 4 | 11 |
-| 6 | 4 | 3 | 3 | — | — | 4 | 12 |
-| 7 | 4 | 3 | 3 | 1 | — | 4 | 13 |
-| 8 | 4 | 3 | 3 | 2 | — | 4 | 14 |
-| 9 | 4 | 3 | 3 | 3 | 1 | 4 | 15 |
+| 3 | 4 | 2 | — | — | — | 3 | 6 |
+| 4 | 4 | 3 | — | — | — | 4 | 7 |
+| 5 | 4 | 3 | 2 | — | — | 4 | 9 |
+| 6 | 4 | 3 | 3 | — | — | 4 | 10 |
+| 7 | 4 | 3 | 3 | 1 | — | 4 | 11 |
+| 8 | 4 | 3 | 3 | 2 | — | 4 | 12 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 4 | 14 |
 
 Spellcasting ability: **WIS**.
 
@@ -303,17 +303,17 @@ Greatsword and chain mail. Trades the shield for something to smite with.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd |
-| --- | --- | --- | --- |
-| 1 | 2 | — | — |
-| 2 | 2 | — | — |
-| 3 | 3 | — | — |
-| 4 | 3 | — | — |
-| 5 | 4 | 2 | — |
-| 6 | 4 | 2 | — |
-| 7 | 4 | 3 | — |
-| 8 | 4 | 3 | — |
-| 9 | 4 | 3 | 2 |
+| Level | 1st | 2nd | 3rd | Prepared |
+| --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | 2 |
+| 2 | 2 | — | — | 3 |
+| 3 | 3 | — | — | 4 |
+| 4 | 3 | — | — | 5 |
+| 5 | 4 | 2 | — | 6 |
+| 6 | 4 | 2 | — | 6 |
+| 7 | 4 | 3 | — | 7 |
+| 8 | 4 | 3 | — | 7 |
+| 9 | 4 | 3 | 2 | 9 |
 
 Spellcasting ability: **CHA**.
 
@@ -321,8 +321,8 @@ Spellcasting ability: **CHA**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Bless, Cure Wounds, Command |
-| 2 | Searing Smite, Shield of Faith, Protection from Evil and Good |
+| 1 | Bless, Searing Smite, Cure Wounds, Command |
+| 2 | Shield of Faith, Protection from Evil and Good |
 | 5 | Find Steed, Aid, Shining Smite, Warding Bond, Lesser Restoration |
 
 ### Choice: Fighting Style (level 2)
@@ -365,17 +365,17 @@ A shortsword in each hand. Fights up close instead of across the board.
 
 ### Spell slots
 
-| Level | 1st | 2nd | 3rd |
-| --- | --- | --- | --- |
-| 1 | 2 | — | — |
-| 2 | 2 | — | — |
-| 3 | 3 | — | — |
-| 4 | 3 | — | — |
-| 5 | 4 | 2 | — |
-| 6 | 4 | 2 | — |
-| 7 | 4 | 3 | — |
-| 8 | 4 | 3 | — |
-| 9 | 4 | 3 | 2 |
+| Level | 1st | 2nd | 3rd | Prepared |
+| --- | --- | --- | --- | --- |
+| 1 | 2 | — | — | 2 |
+| 2 | 2 | — | — | 3 |
+| 3 | 3 | — | — | 4 |
+| 4 | 3 | — | — | 5 |
+| 5 | 4 | 2 | — | 6 |
+| 6 | 4 | 2 | — | 6 |
+| 7 | 4 | 3 | — | 7 |
+| 8 | 4 | 3 | — | 7 |
+| 9 | 4 | 3 | 2 | 9 |
 
 Spellcasting ability: **WIS**.
 
@@ -383,7 +383,7 @@ Spellcasting ability: **WIS**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Hunter's Mark, Cure Wounds, Animal Friendship, Ensnaring Strike |
+| 1 | Hunter's Mark, Ensnaring Strike, Cure Wounds, Animal Friendship |
 | 5 | Spike Growth, Aid, Lesser Restoration |
 
 ### Choice: Fighting Style (level 2)

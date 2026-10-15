@@ -3,6 +3,7 @@ import { Combat } from '../src/engine/combat.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { buildMonster } from '../src/data/monsters.js';
 import { FEATURES, bardicDie } from '../src/data/features.js';
+import { CLASSES } from '../src/data/classes.js';
 import { newCampaign, buildCampaignParty, readBackSurvivors, shortRest, setPartyClass } from '../src/campaign/campaign.js';
 import { legalActions, step } from '../src/engine/actions.js';
 import { savingThrow } from '../src/engine/rules/saves.js';
@@ -201,4 +202,26 @@ describe('Indomitable (Fighter 9) and Reliable Talent (Rogue 7)', () => {
       expect(roll.total).toBeGreaterThanOrEqual(10 + skillMod(r, skill));
     }
   });
+});
+
+describe('spellcasting tables (SRD 5.2.1 class tables)', () => {
+  // Cantrips and Prepared Spells columns, levels 1-9 (cleric line 2618, bard
+  // 1841, warlock 6999; the druid, sorcerer and wizard tables print by row).
+  const SRD: Record<string, { cantrips?: number[]; prepared: number[] }> = {
+    bard: { cantrips: [2, 2, 2, 3, 3, 3, 3, 3, 3], prepared: [4, 5, 6, 7, 9, 10, 11, 12, 14] },
+    cleric: { cantrips: [3, 3, 3, 4, 4, 4, 4, 4, 4], prepared: [4, 5, 6, 7, 9, 10, 11, 12, 14] },
+    druid: { cantrips: [2, 2, 2, 3, 3, 3, 3, 3, 3], prepared: [4, 5, 6, 7, 9, 10, 11, 12, 14] },
+    paladin: { prepared: [2, 3, 4, 5, 6, 6, 7, 7, 9] },
+    ranger: { prepared: [2, 3, 4, 5, 6, 6, 7, 7, 9] },
+    sorcerer: { cantrips: [4, 4, 4, 5, 5, 5, 5, 5, 5], prepared: [2, 4, 6, 7, 9, 10, 11, 12, 14] },
+    warlock: { cantrips: [2, 2, 2, 3, 3, 3, 3, 3, 3], prepared: [2, 3, 4, 5, 6, 7, 8, 9, 10] },
+    wizard: { cantrips: [3, 3, 3, 4, 4, 4, 4, 4, 4], prepared: [4, 5, 6, 7, 9, 10, 11, 12, 14] },
+  };
+  for (const [id, want] of Object.entries(SRD)) {
+    it(`${id} prepares and knows as many as its table says`, () => {
+      const sc = CLASSES[id]!.spellcasting!;
+      expect(sc.preparedByLevel?.slice(0, 9)).toEqual(want.prepared);
+      if (want.cantrips) expect(sc.cantripsKnownByLevel?.slice(0, 9)).toEqual(want.cantrips);
+    });
+  }
 });
