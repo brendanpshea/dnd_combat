@@ -167,10 +167,12 @@ describe('enchanted weapons count as magical', () => {
     }
   });
 
-  it('a +1 longsword gets full damage through a wight; a plain one does not', () => {
+  // A wraith rather than a wight: SRD 5.2.1 dropped the wight's physical
+  // resistance, and kept the wraith's.
+  it('a +1 longsword gets full damage through a wraith; a plain one does not', () => {
     const build = (weaponId: string) => {
       const attacker = pc('fighter', 3, { x: 3, y: 3 }, 'f', { equipped: { mainHand: weaponId } });
-      const wight = buildMonster('wight', 'team2', { x: 4, y: 3 });
+      const wight = buildMonster('wraith', 'team2', { x: 4, y: 3 });
       wight.acOverride = 1;                    // take the roll out of it
       wight.hp = 200; wight.maxHp = 200;
       const c = new Combat({ seed: 4, mapId: 'open', combatants: [attacker, wight] });

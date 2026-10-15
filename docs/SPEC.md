@@ -710,9 +710,33 @@ roster's only "bring the right damage type" monster, which is a decision
 rather than a bigger number.
 
 5e also says a regenerating creature dies only if it starts its turn at 0 HP
-without regenerating. There are no monster death saves here — a monster at 0
-is dead — so that clause has nothing to attach to, and regeneration only ever
-matters above 0.
+without regenerating (SRD 5.2.1, Troll). So a troll dropped to 0 is **down,
+not dead** (`risesAgain`): it lies there until its turn, when it regains its 15
+and stands up from prone. Acid or fire — the blow that drops it, or any that
+lands while it is down — means it will not regenerate, and it dies on the spot
+(the same outcome a turn early). It can be attacked and targeted while down,
+which is how a party finishes it; the AIs value burning one. A down troll does
+not hold a fight open: if it is the last enemy, the party has won and burns it
+at leisure.
+
+### Multiattack and fly speeds
+
+A stat block's Multiattack that names its attacks is data
+(`MonsterData.multiattack`, one list per way to spend the action): a wyvern
+bites once and stings once, a giant scorpion claws twice and stings, a vampire
+spawn claws twice and bites, a ghoul bites twice or claws once. The attacks of
+an Attack action must fit inside one routine (`routineAllows`), and the weapons
+it names are always to hand. "Any combination" stat blocks carry none.
+
+A flier (`fly`) carries its printed `flySpeed` and crosses the board at it
+(`moveSpeed`): a wyvern at 80, a ghost at 40. `speed` stays the walking figure
+so the stat-block test checks both.
+
+Physical resistance is carried only where SRD 5.2.1 prints it: the wight,
+mummy, vampire spawn, shadow, gargoyle, salamander and the earth and water
+elementals lost the 2014 "nonmagical B/P/S" resistance the 2024 blocks dropped.
+Where the SRD does print B/P/S resistance it is still read as nonmagical
+(`resistNonmagical`), this engine's standing choice.
 
 ## 6. Grid, terrain, maps
 

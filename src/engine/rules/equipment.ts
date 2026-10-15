@@ -35,7 +35,16 @@ export function attackableWeapons(c: Combatant): Id[] {
   // is left alone: an unarmed option on every character's bar would be nine
   // classes of noise for the one that wants it.
   if (c.featureIds.includes('martial-arts')) ids.add('unarmed-strike');
+  // Nor are the attacks a stat block's Multiattack names: a wyvern does not
+  // draw its sting after biting. Without this the free interaction went on the
+  // first swap and a bite-then-sting routine could never be finished.
+  for (const r of c.routines ?? []) for (const w of r) ids.add(w);
   return [...ids];
+}
+
+/** A weapon the stat block's Multiattack names — always to hand, never drawn. */
+export function routineWeapon(c: Combatant, weaponId: Id): boolean {
+  return (c.routines ?? []).some((r) => r.includes(weaponId));
 }
 
 /** Draw `weaponId` into the main hand, stowing what was there. Costs the interaction. */

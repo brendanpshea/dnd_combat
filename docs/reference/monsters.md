@@ -15,7 +15,7 @@
 | Bandit | `bandit` | humanoid | 25 | ≤4 | 12 | 11 | 30 ft | 1 | yes | — |
 | Guard | `guard` | humanoid | 25 | ≤4 | 16 | 11 | 30 ft | 1 | yes | — |
 | Kobold Warrior | `kobold` | dragon | 25 | ≤4 | 14 | 7 | 30 ft | 1 | yes | — |
-| Animated Flying Sword | `flying-sword` | construct | 50 | ≤4 | 17 | 14 | 30 ft | 1 | — | — |
+| Animated Flying Sword | `flying-sword` | construct | 50 | ≤4 | 17 | 14 | 5 ft | 1 | — | — |
 | Dretch | `dretch` | fiend | 50 | ≤4 | 11 | 18 | 20 ft | 1 | — | — |
 | Giant Badger | `giant-badger` | beast | 50 | ≤4 | 13 | 15 | 30 ft | 1 | — | — |
 | Goblin Warrior | `goblin-warrior` | fey | 50 | ≤4 | 15 | 10 | 30 ft | 1 | yes | — |
@@ -58,7 +58,7 @@
 | Quasit | `quasit` | fiend | 200 | 1 | 13 | 25 | 40 ft | 1 | — | — |
 | Scarecrow | `scarecrow` | construct | 200 | 1 | 11 | 36 | 30 ft | 2 | — | — |
 | Skeleton Bonechanter | `skeleton-bonechanter` | undead | 200 | ≤4 | 13 | 13 | 30 ft | 1 | yes | — |
-| Specter | `specter` | undead | 200 | ≤4 | 12 | 22 | 50 ft | 1 | — | — |
+| Specter | `specter` | undead | 200 | ≤4 | 12 | 22 | 30 ft | 1 | — | — |
 | Spy | `spy` | humanoid | 200 | ≤4 | 12 | 27 | 30 ft | 1 | yes | — |
 | Animated Rug of Smothering | `rug-of-smothering` | construct | 450 | 2 | 12 | 27 | 10 ft | 1 | — | — |
 | Azer Sentinel | `azer` | elemental | 450 | 2 | 17 | 39 | 30 ft | 1 | — | — |
@@ -80,7 +80,7 @@
 | Priest | `priest` | humanoid | 450 | ≤4 | 13 | 38 | 30 ft | 2 | yes | — |
 | Wererat | `wererat` | monstrosity | 450 | 2 | 13 | 60 | 30 ft | 2 | yes | — |
 | White Dragon Wyrmling | `white-wyrmling` | dragon | 450 | 2 | 16 | 32 | 30 ft | 2 | — | — |
-| Will-o'-Wisp | `will-o-wisp` | undead | 450 | ≤4 | 19 | 27 | 50 ft | 1 | — | — |
+| Will-o'-Wisp | `will-o-wisp` | undead | 450 | ≤4 | 19 | 27 | 5 ft | 1 | — | — |
 | Basilisk | `basilisk` | monstrosity | 700 | 3 | 15 | 52 | 20 ft | 1 | — | — |
 | Bearded Devil | `bearded-devil` | fiend | 700 | 3 | 13 | 58 | 30 ft | 2 | — | — |
 | Blue Dragon Wyrmling | `blue-wyrmling` | dragon | 700 | 3 | 17 | 65 | 30 ft | 2 | — | — |
@@ -103,12 +103,12 @@
 | Druid | `druid` | humanoid | 1100 | 4 | 13 | 44 | 30 ft | 2 | yes | — |
 | Elephant | `elephant` | beast | 1100 | 4 | 12 | 76 | 40 ft | 2 | — | — |
 | Ettin | `ettin` | giant | 1100 | ≤4 | 12 | 85 | 40 ft | 2 | — | — |
-| Ghost | `ghost` | undead | 1100 | 4 | 11 | 45 | 30 ft | 2 | — | — |
+| Ghost | `ghost` | undead | 1100 | 4 | 11 | 45 | 5 ft | 2 | — | — |
 | Red Dragon Wyrmling | `red-wyrmling` | dragon | 1100 | 4 | 17 | 75 | 30 ft | 2 | — | — |
 | Succubus | `succubus` | fiend | 1100 | 4 | 15 | 71 | 30 ft | 1 | — | — |
 | Wereboar | `wereboar` | monstrosity | 1100 | 4 | 15 | 97 | 30 ft | 2 | yes | — |
 | Weretiger | `weretiger` | monstrosity | 1100 | 4 | 12 | 120 | 30 ft | 2 | yes | — |
-| Air Elemental | `air-elemental` | elemental | 1800 | 5 | 15 | 90 | 30 ft | 2 | — | — |
+| Air Elemental | `air-elemental` | elemental | 1800 | 5 | 15 | 90 | 10 ft | 2 | — | — |
 | Barbed Devil | `barbed-devil` | fiend | 1800 | 5 | 15 | 110 | 30 ft | 2 | yes | — |
 | Bulette | `bulette` | monstrosity | 1800 | 5 | 17 | 94 | 40 ft | 2 | — | — |
 | Earth Elemental | `earth-elemental` | elemental | 1800 | 5 | 17 | 147 | 30 ft | 2 | yes | — |
@@ -127,7 +127,7 @@
 | Vampire Spawn | `vampire-spawn` | undead | 1800 | 5 | 16 | 90 | 30 ft | 3 | — | — |
 | Water Elemental | `water-elemental` | elemental | 1800 | 5 | 14 | 114 | 30 ft | 2 | — | — |
 | Werebear | `werebear` | monstrosity | 1800 | 5 | 15 | 135 | 30 ft | 2 | yes | — |
-| Wraith | `wraith` | undead | 1800 | 5 | 13 | 67 | 30 ft | 1 | — | — |
+| Wraith | `wraith` | undead | 1800 | 5 | 13 | 67 | 5 ft | 1 | — | — |
 | Chimera | `chimera` | monstrosity | 2300 | 6 | 14 | 114 | 30 ft | 3 | — | — |
 | Invisible Stalker | `invisible-stalker` | elemental | 2300 | 6 | 14 | 97 | 50 ft | 3 | — | — |
 | Mage | `mage` | humanoid | 2300 | 6 | 15 | 81 | 30 ft | 3 | yes | — |
@@ -214,7 +214,7 @@ STR 7 (-2), DEX 15 (+2), CON 9 (-1), INT 8 (-1), WIS 7 (-2), CHA 8 (-1)
 
 ### Animated Flying Sword
 
-`flying-sword` · construct · 50 XP · AC 17 · 14 HP · 30 ft · PB +2
+`flying-sword` · construct · 50 XP · AC 17 · 14 HP · 5 ft · PB +2
 
 STR 12 (+1), DEX 15 (+2), CON 11 (+0), INT 1 (-5), WIS 5 (-3), CHA 1 (-5)
 
@@ -455,7 +455,6 @@ STR 6 (-2), DEX 14 (+2), CON 13 (+1), INT 6 (-2), WIS 10 (+0), CHA 8 (-1)
 
 - **Attacks:** Draining Swipe 1d6 necrotic, CON DC 10 or sapped
 - **Resistances:** acid, cold, fire, lightning, thunder
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
 - **Vulnerabilities:** radiant
 
@@ -632,7 +631,7 @@ STR 10 (+0), DEX 14 (+2), CON 15 (+2), INT 6 (-2), WIS 14 (+2), CHA 8 (-1)
 
 ### Specter
 
-`specter` · undead · 200 XP · AC 12 · 22 HP · 50 ft · PB +2
+`specter` · undead · 200 XP · AC 12 · 22 HP · 30 ft · PB +2
 
 STR 1 (-5), DEX 14 (+2), CON 11 (+0), INT 10 (+0), WIS 10 (+0), CHA 11 (+0)
 
@@ -724,7 +723,6 @@ STR 14 (+2), DEX 15 (+2), CON 13 (+1), INT 7 (-2), WIS 12 (+1), CHA 8 (-1)
 STR 15 (+2), DEX 11 (+0), CON 16 (+3), INT 6 (-2), WIS 11 (+0), CHA 7 (-2)
 
 - **Attacks:** Claw 2d4 slashing
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
 
 ### Gelatinous Cube
@@ -845,7 +843,7 @@ STR 14 (+2), DEX 10 (+0), CON 14 (+2), INT 5 (-3), WIS 10 (+0), CHA 11 (+0)
 
 ### Will-o'-Wisp
 
-`will-o-wisp` · undead · 450 XP · AC 19 · 27 HP · 50 ft · PB +2
+`will-o-wisp` · undead · 450 XP · AC 19 · 27 HP · 5 ft · PB +2
 
 STR 1 (-5), DEX 28 (+9), CON 10 (+0), INT 13 (+1), WIS 14 (+2), CHA 11 (+0)
 
@@ -958,7 +956,6 @@ STR 16 (+3), DEX 8 (-1), CON 15 (+2), INT 6 (-2), WIS 12 (+1), CHA 12 (+1)
 
 - **Attacks:** Rotting Fist 1d10 bludgeoning, on hit: wounded, +3d6 necrotic
 - **Features:** Dreadful Glare
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** necrotic, poison
 - **Vulnerabilities:** fire
 
@@ -996,7 +993,6 @@ STR 15 (+2), DEX 14 (+2), CON 16 (+3), INT 10 (+0), WIS 13 (+1), CHA 15 (+2)
 
 - **Attacks:** Necrotic Sword 1d8 slashing, +1d8 necrotic; Necrotic Bow 1d8 piercing, 150/600 ft, +1d8 necrotic; Life Drain 1d8 necrotic
 - **Resistances:** necrotic
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
 
 ### Winter Wolf
@@ -1074,7 +1070,7 @@ STR 21 (+5), DEX 8 (-1), CON 17 (+3), INT 6 (-2), WIS 10 (+0), CHA 8 (-1)
 
 ### Ghost
 
-`ghost` · undead · 1100 XP · AC 11 · 45 HP · 30 ft · PB +2
+`ghost` · undead · 1100 XP · AC 11 · 45 HP · 5 ft · PB +2
 
 STR 7 (-2), DEX 13 (+1), CON 10 (+0), INT 10 (+0), WIS 12 (+1), CHA 17 (+3)
 
@@ -1122,7 +1118,7 @@ STR 17 (+3), DEX 15 (+2), CON 16 (+3), INT 10 (+0), WIS 13 (+1), CHA 11 (+0)
 
 ### Air Elemental
 
-`air-elemental` · elemental · 1800 XP · AC 15 · 90 HP · 30 ft · PB +3
+`air-elemental` · elemental · 1800 XP · AC 15 · 90 HP · 10 ft · PB +3
 
 STR 14 (+2), DEX 20 (+5), CON 14 (+2), INT 6 (-2), WIS 10 (+0), CHA 6 (-2)
 
@@ -1161,7 +1157,6 @@ STR 20 (+5), DEX 8 (-1), CON 20 (+5), INT 5 (-3), WIS 10 (+0), CHA 5 (-3)
 
 - **Attacks:** Slam 2d8 bludgeoning; Rock Launch 1d6 bludgeoning, 60/60 ft, on hit: prone
 - **Features:** Earth Glide, Long-Limbed
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
 - **Vulnerabilities:** thunder
 
@@ -1258,7 +1253,6 @@ STR 18 (+4), DEX 8 (-1), CON 17 (+3), INT 7 (-2), WIS 16 (+3), CHA 6 (-2)
 STR 18 (+4), DEX 14 (+2), CON 15 (+2), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 
 - **Attacks:** Flame Spear 2d8 piercing, 20/60 ft, +2d6 fire
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** fire
 - **Vulnerabilities:** cold
 - **Auras:** Fire Aura 5 ft, end of its turn, 2d6 fire, enemies only
@@ -1293,7 +1287,6 @@ STR 16 (+3), DEX 16 (+3), CON 16 (+3), INT 11 (+0), WIS 10 (+0), CHA 12 (+1)
 - **Attacks:** Claw 2d4 slashing; Bite 1d4 piercing, +3d6 necrotic
 - **Features:** Cunning Action: Dash, Cunning Action: Disengage
 - **Resistances:** necrotic
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 
 ### Water Elemental
 
@@ -1304,7 +1297,6 @@ STR 18 (+4), DEX 14 (+2), CON 18 (+4), INT 5 (-3), WIS 10 (+0), CHA 8 (-1)
 - **Attacks:** Slam 2d8 bludgeoning, on hit: prone
 - **Features:** Whelm
 - **Resistances:** acid, fire
-- **Resists nonmagical:** bludgeoning, piercing, slashing
 - **Immunities:** poison
 - **Hold damage:** 2d8 bludgeoning to whoever it has restrained
 
@@ -1318,7 +1310,7 @@ STR 19 (+4), DEX 10 (+0), CON 17 (+3), INT 11 (+0), WIS 12 (+1), CHA 12 (+1)
 
 ### Wraith
 
-`wraith` · undead · 1800 XP · AC 13 · 67 HP · 30 ft · PB +3
+`wraith` · undead · 1800 XP · AC 13 · 67 HP · 5 ft · PB +3
 
 STR 6 (-2), DEX 16 (+3), CON 16 (+3), INT 12 (+1), WIS 14 (+2), CHA 15 (+2)
 

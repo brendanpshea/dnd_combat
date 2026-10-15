@@ -4,7 +4,7 @@
  * state — no engine backdoors, exactly the Action API the CLI uses.
  */
 import type { GameState, Id, Combatant, Position } from '../engine/types.js';
-import { isDown, isDying, isIncapacitated } from '../engine/types.js';
+import { isDown, isDying, risesAgain, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { next } from '../engine/rng.js';
@@ -330,6 +330,13 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
   // is what a monster with nothing better to do would do. The damage maths
   // below would read the 0 HP as a guaranteed kill every swing — the exact
   // trap that once deadlocked the game (types.ts, isDown).
+  if (isDown(target) && risesAgain(target)) {
+    // A troll down at 0 gets up on its turn unless acid or fire lands on it
+    // first, and then it is dead for good. Anything else is a wasted swing.
+    const burns = [weapon.damageType, weapon.extraDamage?.type]
+      .some((t) => t !== undefined && target.regeneration!.stoppedBy.includes(t));
+    return burns ? hitProb(bonus, acOf(target), mode) * (4 + target.maxHp / 4) : 0;
+  }
   if (isDown(target)) {
     const standingInReach = Object.values(state.combatants).some((e) =>
       e.alive && !isDown(e) && e.team !== actor.team &&
@@ -397,7 +404,16 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
   return damageValue(hit * dmg, target);
 }
 
+/**
+ * The aimed spells that burn: what finishes a troll lying at 0 (see
+ * `risesAgain`). Nothing else aimed at one does anything at all.
+ */
+const BURNING_SPELLS = new Set<Id>(['fire-bolt', 'scorching-ray']);
+
 function scoreSpell(state: GameState, actor: Combatant, a: Action & { kind: 'castSpell' }): number {
+  const downed = a.targets.flatMap((t) => ('combatantId' in t ? [state.combatants[t.combatantId]] : []))
+    .find((t) => t !== undefined && risesAgain(t));
+  if (downed) return BURNING_SPELLS.has(a.spellId) ? damageValue(0, downed) : 0;
   heightenedVictim = a.metamagic === 'heightened'
     ? heightenedTarget(a.targets as Array<{ combatantId?: Id }>)
     : undefined;

@@ -380,6 +380,13 @@ export interface Combatant {
   weaponMasteries: Id[];            // weapon ids whose mastery property applies
   /** Attacks per Attack action (Multiattack / Extra Attack). Default 1. */
   attacksPerAction: number;
+  /**
+   * A stat block's Multiattack, when it names its attacks: each list is one way
+   * to spend the Attack action, by weapon id — a wyvern's one Bite and one
+   * Sting, a ghoul's two Bites or one Claw. See `routineAllows` (actions.ts).
+   * Absent: any weapon, `attacksPerAction` times.
+   */
+  routines?: Id[][];
   resistances: DamageType[];
   /**
    * Resisted only when the damage isn't magical — the SRD's "bludgeoning,
@@ -506,6 +513,8 @@ export interface Combatant {
      */
     leveledSpellCast: boolean;
     quickenedThisTurn: boolean;
+    /** The weapons swung so far in this turn's Attack action, for `routines`. */
+    routineMade?: Id[];
   };
   alive: boolean;
   /**
@@ -586,10 +595,14 @@ export interface Combatant {
    * race. `suppressed` is set by applyDamage and cleared once it has cost the
    * creature a turn of healing.
    *
-   * 5e also says a regenerating creature only dies if it starts its turn at 0
-   * HP without regenerating. There are no monster death saves here — a monster
-   * at 0 is dead — so that clause has nothing to attach to, and regeneration
-   * only ever matters above 0.
+   * And the trait's last clause (SRD 5.2.1, Troll, line 24328): "The troll
+   * dies only if it starts its turn with 0 Hit Points and doesn't regenerate."
+   * So a regenerating monster dropped to 0 is down, not dead (`risesAgain`):
+   * on its turn it regains its hit points and gets up. Acid or fire landing on
+   * it while it is down — or the blow that drops it — means it will not
+   * regenerate, and it dies on the spot, which is the same outcome a turn early.
+   * A down one does not hold up the end of the fight: when it is the last enemy
+   * on its feet... it is not on its feet, and the party burns it at leisure.
    */
   regeneration?: { amount: number; stoppedBy: DamageType[]; suppressed?: boolean };
   /**
@@ -837,7 +850,16 @@ export interface CombatRules {
  * not yet Stable.
  */
 export function isDying(state: GameState, c: Combatant): boolean {
-  return state.rules?.deathSaves === true && isDown(c) && !c.deathSaves?.stable;
+  return state.rules?.deathSaves === true && c.unconsciousAtZero === true && isDown(c) && !c.deathSaves?.stable;
+}
+
+/**
+ * Down at 0 HP, and getting back up on its own turn: a troll whose
+ * regeneration nothing has stopped (see `Combatant.regeneration`). It can be
+ * attacked and targeted while it lies there — that is how the party burns it.
+ */
+export function risesAgain(c: Combatant): boolean {
+  return isDown(c) && !c.unconsciousAtZero && !!c.regeneration && !c.regeneration.suppressed;
 }
 
 /**

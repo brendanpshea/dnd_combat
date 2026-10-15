@@ -31,6 +31,8 @@ const SRD = fileURLToPath(new URL('../SRD_CC_v5.2.1.txt', import.meta.url));
 
 interface Block {
   name: string; type: string; size: string;
+  /** Damage types only, sorted; the condition half of "Immunities" is dropped. */
+  resist: string[]; vuln: string[]; immune: string[];
   ac: number; hp: number; speed: number; speedFull: string;
   abilities: Record<string, number>;
   cr?: number; xp?: number;
@@ -42,7 +44,7 @@ interface Block {
  * n ft." — so match the three fields independently rather than assuming an
  * order or a single space.
  */
-function statLine(l: string): Omit<Block, 'name' | 'type' | 'size' | 'abilities' | 'cr' | 'xp'> | null {
+function statLine(l: string): Omit<Block, 'name' | 'type' | 'size' | 'abilities' | 'cr' | 'xp' | 'resist' | 'vuln' | 'immune'> | null {
   if (!l.startsWith('AC ')) return null;
   const ac = l.match(/\bAC (\d+)/), hp = l.match(/\bHP (\d+)/), sp = l.match(/\bSpeed (\d+) ft/);
   if (!ac || !hp || !sp) return null;
@@ -88,12 +90,24 @@ function parseSrd(): Map<string, Block> {
         break;
       }
     }
+    // The defence lines sit between the abilities and "Actions"/"Traits".
+    let defence = '';
+    for (let j = i; j < i + 30 && j < lines.length; j++) {
+      if (/^(?:Actions|Traits)$/.test(lines[j]!.trim())) break;
+      defence += ' ' + lines[j]!.trim();
+    }
+    const TYPES = ['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'];
+    const listed = (label: string): string[] => {
+      const m = defence.match(new RegExp(`${label} ([A-Z][A-Za-z, ]*?)(?=;| Senses| Gear| Immunities| Resistances| Vulnerabilities| Languages|$)`));
+      return m ? m[1]!.toLowerCase().split(/,\s*/).map((x) => x.trim()).filter((x) => TYPES.includes(x)).sort() : [];
+    };
     const key = name.toLowerCase();
     if (out.has(key)) continue;   // first block wins
     out.set(key, {
       name, type: kindLine.match(kind)![2]!.toLowerCase(),
       size: kindLine.match(kind)![1]!.toLowerCase(),
       ...stat, abilities,
+      resist: listed('Resistances'), vuln: listed('Vulnerabilities'), immune: listed('Immunities'),
       // Optional in `Block`, so write them only when the SRD actually gave one.
       // Assigning `undefined` would leave the keys present, which reads as "the
       // SRD says this monster has no CR" rather than "we could not find one".
@@ -132,10 +146,9 @@ const NOT_IN_SRD: Record<string, string> = {
 };
 
 /**
- * Fields that deliberately differ, with the reason. The big class is flight:
- * this engine has no third dimension, so a hovering creature with a 5 ft walk
- * and a 40 ft fly would shuffle one cell a turn. Those get one speed that
- * stands for how fast the thing actually moves around a battlefield.
+ * Fields that deliberately differ, with the reason. (Flight used to be the big
+ * class: a hovering creature with a 5 ft walk got one compromise speed. A flier
+ * now carries its printed Fly speed and moves at it — see `moveSpeed`.)
  */
 const DELIBERATE: Record<string, string> = {
   'draconic-spirit': [
@@ -154,12 +167,6 @@ const DELIBERATE: Record<string, string> = {
     'and four bodies soak four attacks. The stat block is therefore the',
     'Medium-or-smaller row: AC 15, 10 hit points, 1d4 + 3.',
   ].join(' '),
-  'air-elemental': 'Flier: SRD walks 10 and flies 90 (hover). No flight here, so one speed stands for both.',
-  'ghost': 'Flier: SRD walks 5 and flies 40 (hover). No flight here, so one speed stands for both.',
-  'wraith': 'Flier: SRD walks 5 and flies 60 (hover). No flight here, so one speed stands for both.',
-  'flying-sword': 'Flier: SRD walks 5 and flies 50 (hover). No flight here, so one speed stands for both.',
-  'specter': 'Flier: SRD walks 30 and flies 50 (hover). No flight here, so it moves at its fly speed.',
-  'will-o-wisp': 'Flier: SRD walks 5 and flies 50 (hover). No flight here, so it moves at its fly speed.',
   'druid': 'Priced by what it plays like, not by its CR: 3rd-level slots on spells that re-fire every round for free are worth a great deal more than a CR 2 body. See the note on the stat block.',
 };
 
@@ -197,6 +204,10 @@ describe('monster stat blocks against the SRD', () => {
       if (r.ac !== m.ac) say(`AC ${m.ac}, SRD ${r.ac}`);
       if (r.hp !== m.hp) say(`HP ${m.hp}, SRD ${r.hp}`);
       if (r.speed !== m.speed) say(`speed ${m.speed}, SRD "${r.speedFull}"`);
+      // A flier crosses the board at its Fly speed (moveSpeed), so that is
+      // checked against the print too.
+      const fly = r.speedFull.match(/Fly (\d+) ft/);
+      if (m.fly && (fly ? Number(fly[1]) : undefined) !== m.flySpeed) say(`fly ${m.flySpeed}, SRD "${r.speedFull}"`);
       if (r.type !== m.creatureType) say(`type ${m.creatureType}, SRD ${r.type}`);
       // Size gates cover, so a wrong one is a silent rules change: an ogre
       // typed Medium would start ducking behind barricades.
@@ -211,6 +222,16 @@ describe('monster stat blocks against the SRD', () => {
         say(`CR ${m.cr ?? '(omitted)'}, SRD ${r.cr}`);
       }
       if (r.xp !== undefined && MONSTER_XP[m.id] !== r.xp) say(`XP ${MONSTER_XP[m.id]}, SRD ${r.xp}`);
+      // Damage resistances, vulnerabilities and immunities. The SRD's physical
+      // resistance is carried as `resistNonmagical` (a magic weapon gets
+      // through) — this engine's one standing reading of it — so the two lists
+      // are compared together.
+      const res = [...new Set([...(m.resistances ?? []), ...(m.resistNonmagical ?? [])])].sort().join(',');
+      if (res !== r.resist.join(',')) say(`resistances ${res || '(none)'}, SRD ${r.resist.join(',') || '(none)'}`);
+      const vul = [...(m.vulnerabilities ?? [])].sort().join(',');
+      if (vul !== r.vuln.join(',')) say(`vulnerabilities ${vul || '(none)'}, SRD ${r.vuln.join(',') || '(none)'}`);
+      const imm = [...(m.immunities ?? [])].sort().join(',');
+      if (imm !== r.immune.join(',')) say(`immunities ${imm || '(none)'}, SRD ${r.immune.join(',') || '(none)'}`);
     }
     expect(wrong, `stat blocks that disagree with the SRD:\n${wrong.join('\n')}`).toEqual([]);
   });

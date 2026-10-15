@@ -8,13 +8,13 @@
  * spells; drivers may customize targets and step() re-validates.
  */
 import type { GameState, Id, Position, Combatant, ConditionId } from './types.js';
-import { posEq, cellAt, isDown, isDying, isIncapacitated, heldInPlace } from './types.js';
+import { posEq, cellAt, isDown, isDying, risesAgain, isIncapacitated, heldInPlace } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, type SpellData, validTarget, directionFromDelta, spellShots, damageReactions } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS, isCharged, chargesLeft } from '../data/items.js';
 import { classScrollPool } from '../data/classes.js';
-import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
+import { attackableWeapons, equippedWeapons, autoSwap, routineWeapon } from './rules/equipment.js';
 import { blocksMovement, distanceFeet, distanceCells, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, type Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
 import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell, stabilize } from './rules/attack.js';
@@ -89,6 +89,49 @@ export type Action =
    */
   | { kind: 'escape'; condition: ConditionId; fromId?: Id }
   | { kind: 'endTurn' };
+
+/** Every attack in `attacks` can be taken out of `routine`, one entry each. */
+function fitsInRoutine(routine: readonly Id[], attacks: readonly Id[]): boolean {
+  const left = [...routine];
+  for (const a of attacks) {
+    const i = left.indexOf(a);
+    if (i < 0) return false;
+    left.splice(i, 1);
+  }
+  return true;
+}
+
+/**
+ * Whether `weaponId` may be the next swing of this turn's Attack action under
+ * the stat block's Multiattack (`Combatant.routines`): what has been swung so
+ * far plus this one must still fit inside one of its routines. A wyvern that
+ * has bitten must sting next; a ghoul that clawed has made its one attack.
+ *
+ * Once a routine is complete, anything goes — the only attack that can still be
+ * left is Haste's extra one, which is a weapon attack of the creature's choice.
+ * `step` trims `attacksLeft` to what the routine allows, so this never opens a
+ * swing the stat block does not give.
+ */
+export function routineAllows(actor: Combatant, weaponId: Id): boolean {
+  const routines = actor.routines;
+  if (!routines?.length) return true;
+  const made = actor.turn.actionUsed ? actor.turn.routineMade ?? [] : [];
+  const open = routines.filter((r) => fitsInRoutine(r, made) && r.length > made.length);
+  if (open.length === 0) return true;
+  return open.some((r) => fitsInRoutine(r, [...made, weaponId]));
+}
+
+/** Swings the routine still allows after what has been made; undefined for a
+ *  creature with no named routine. */
+function routineLeft(actor: Combatant): number | undefined {
+  if (!actor.routines?.length) return undefined;
+  const made = actor.turn.routineMade ?? [];
+  let left = 0;
+  for (const r of actor.routines) {
+    if (fitsInRoutine(r, made)) left = Math.max(left, r.length - made.length);
+  }
+  return left;
+}
 
 /** Weapons True Strike can guide: anything currently attackable (in hand or a
  *  stowed one the free interaction could draw). */
@@ -365,6 +408,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
         return canUseOffhand(actor, action.weaponId) && canAttackWith(state, actor, action.weaponId, action.targetId);
       }
       return (!actor.turn.actionUsed || actor.turn.attacksLeft > 0) &&
+        routineAllows(actor, action.weaponId) &&
         canAttackWith(state, actor, action.weaponId, action.targetId);
     case 'castSpell': {
       if (incap) return false;
@@ -498,7 +542,8 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
 export function spellTargetSets(
   state: GameState, actor: Combatant, spell: SpellData,
 ): Array<{ targets: Target[]; weaponId?: Id }> {
-  const enemies = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
+  // A troll lying at 0 is a target too (see `risesAgain`).
+  const enemies = Object.values(state.combatants).filter((c) => c.alive && (!isDown(c) || risesAgain(c)) && c.team !== actor.team);
   const allies = Object.values(state.combatants).filter((c) => c.alive && c.team === actor.team);
   const out: Array<{ targets: Target[]; weaponId?: Id }> = [];
   const t = spell.targeting;
@@ -643,9 +688,9 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   // Who a weapon may be turned on. The standing enemies, and — only when the
   // fight runs death saves — the dying ones too, which `canAttackWith` allows
   // there and nowhere else.
-  const attackable = state.rules?.deathSaves
-    ? Object.values(state.combatants).filter((c) => c.alive && c.team !== actor.team)
-    : enemies;
+  // A troll at 0 can always be hit: burning it is how it stays down.
+  const attackable = Object.values(state.combatants).filter((c) =>
+    c.alive && c.team !== actor.team && (!isDown(c) || state.rules?.deathSaves || risesAgain(c)));
   for (const wid of attackableWeapons(actor)) {
     for (const t of attackable) {
       const main: Action = { kind: 'attack', weaponId: wid, targetId: t.id };
@@ -983,7 +1028,8 @@ export function step(state: GameState, action: Action): { state: GameState; even
     case 'attack':
       // Attacking with a stowed weapon draws it via the free interaction.
       // A fist is never stowed and never drawn.
-      if (action.weaponId !== 'unarmed-strike' && !equippedWeapons(actor).includes(action.weaponId)) {
+      if (action.weaponId !== 'unarmed-strike' && !equippedWeapons(actor).includes(action.weaponId) &&
+          !routineWeapon(actor, action.weaponId)) {
         events.push(...autoSwap(draft, actorId, action.weaponId));
       }
       if (action.offhand || action.frenzy) {
@@ -1001,8 +1047,17 @@ export function step(state: GameState, action: Action): { state: GameState; even
         if (!actor.conditions.some((c) => c.id === 'lethargic')) {
           actor.turn.attacksLeft += actor.attacksPerAction - 1 + hasteBonus;
         }
+        actor.turn.routineMade = [action.weaponId];
       } else {
         actor.turn.attacksLeft -= 1;
+        actor.turn.routineMade = [...(actor.turn.routineMade ?? []), action.weaponId];
+      }
+      // A named Multiattack decides how many swings are left, not just the
+      // count: a ghoul that opened with its Claw has no second attack.
+      if (!action.offhand && !action.frenzy) {
+        const left = routineLeft(actor);
+        const haste = actor.conditions.some((c) => c.id === 'hasted') ? 1 : 0;
+        if (left !== undefined) actor.turn.attacksLeft = Math.min(actor.turn.attacksLeft, left + haste);
       }
       events.push(...resolveAttack(draft, actorId, action.targetId, action.weaponId, {
         offhand: action.offhand ?? false,

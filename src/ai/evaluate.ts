@@ -7,7 +7,7 @@
  * generalizes to content that didn't exist when this file was written.
  */
 import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
-import { abilityMod, isDown, ignoresHalfCover } from '../engine/types.js';
+import { abilityMod, isDown, risesAgain, ignoresHalfCover } from '../engine/types.js';
 import { WEAPONS, type WeaponData } from '../data/weapons.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
@@ -284,6 +284,15 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
       continue;
     }
     const worth = unitWorth(c);
+    // A troll down at 0 is coming back up on its turn (see `risesAgain`), so it
+    // is worth most of a creature on its feet — and finishing it with acid or
+    // fire, which removes it for good, is worth exactly that much. Read the
+    // ordinary way it scored below a corpse (it carries the unconscious and
+    // prone weights), and the party would never have burned one.
+    if (risesAgain(c)) {
+      score += worth * 0.3;
+      continue;
+    }
 
     // Alive matters a lot; remaining HP matters proportionally.
     let unit = worth * (0.35 + 0.65 * (c.hp / c.maxHp));

@@ -83,6 +83,22 @@ export interface MonsterData {
   size: CreatureSize;
   /** Flies: ignores difficult ground, hazards and barricades. See Combatant.flying. */
   fly?: boolean;
+  /**
+   * The stat block's Fly speed, when it has one. A flier moves at the better of
+   * this and `speed` — the board has no third dimension, so a creature in the
+   * air simply crosses it at the speed it flies. `speed` stays the SRD's walking
+   * figure so the stat-block test can hold both to the print.
+   */
+  flySpeed?: number;
+  /**
+   * The Multiattack as the stat block writes it, when it names its attacks:
+   * each inner list is one way to spend the Attack action, by weapon id ("one
+   * Bite attack and one Sting attack"; "two Bite attacks, or one Claw"). The
+   * attacks made in an action must fit inside one of them, in any order.
+   * Absent means any of the monster's weapons, `attacksPerAction` times ("two
+   * attacks, using Scimitar or Shortbow in any combination").
+   */
+  multiattack?: Id[][];
   /** Regeneration (troll): heals at the start of its turn unless it has taken
    *  one of `stoppedBy` damage types since the last one. */
   regeneration?: { amount: number; stoppedBy: DamageType[] };
@@ -247,6 +263,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     // stowed second weapon: drawing it costs the turn's free swap.
     weaponIds: ['ghoul-bite', 'ghoul-claws'],
     attacksPerAction: 2,
+    multiattack: [['ghoul-bite', 'ghoul-bite'], ['ghoul-claws']],
     immunities: ['poison'],
   },
   'giant-spider': {
@@ -314,6 +331,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 17, dex: 12, con: 15, int: 2, wis: 13, cha: 7 },
     weaponIds: ['bear-bite', 'bear-claws'],
     attacksPerAction: 2, // bite + claws
+    multiattack: [['bear-bite', 'bear-claws']],
   },
   /**
    * SRD CR 1. Fragile (22 HP) and fast (50 ft), with Pack Tactics — which is
@@ -383,6 +401,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     conditionImmunities: ['blinded', 'charmed', 'frightened', 'stunned', 'unconscious'],
     weaponIds: ['ettin-battleaxe', 'ettin-morningstar'],
     attacksPerAction: 2, // two heads, two weapons
+    multiattack: [['ettin-battleaxe', 'ettin-morningstar']],
   },
 
   // Spellcaster stat blocks that exercise the wider spell list.
@@ -401,7 +420,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'ogre-mage': {
     id: 'ogre-mage', fly: true, name: 'Oni',
-    ac: 17, cr: 7, hp: 119, speed: 30, // natural armor
+    ac: 17, cr: 7, hp: 119, speed: 30, flySpeed: 30, // natural armor
     creatureType: 'fiend',
     size: 'large',
     abilities: { str: 19, dex: 11, con: 16, int: 14, wis: 12, cha: 15 },
@@ -603,18 +622,18 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 19, dex: 14, con: 12, int: 1, wis: 10, cha: 3 },
     weaponIds: ['constrictor-bite', 'snake-constrict'],
     attacksPerAction: 2,
+    multiattack: [['constrictor-bite', 'snake-constrict']],
   },
 
   gargoyle: {
     id: 'gargoyle', fly: true, name: 'Gargoyle',
-    ac: 15, hp: 67, speed: 30,
+    ac: 15, hp: 67, speed: 30, flySpeed: 60,
     creatureType: 'elemental',
     size: 'medium',
     abilities: { str: 15, dex: 11, con: 16, int: 6, wis: 11, cha: 7 },
     conditionImmunities: ['poisoned'],
     weaponIds: ['gargoyle-claws'],
     attacksPerAction: 2,
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['poison'],
   },
   'fire-elemental': {
@@ -647,7 +666,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['poison'],
     resistances: ['acid', 'fire'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'earth-elemental': {
     id: 'earth-elemental', name: 'Earth Elemental',
@@ -661,11 +679,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['poison'],
     vulnerabilities: ['thunder'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   'air-elemental': {
     id: 'air-elemental', fly: true, name: 'Air Elemental',
-    ac: 15, cr: 5, hp: 90, speed: 30,
+    ac: 15, cr: 5, hp: 90, speed: 10, flySpeed: 90,
     creatureType: 'elemental',
     size: 'large',
     abilities: { str: 14, dex: 20, con: 14, int: 6, wis: 10, cha: 6 },
@@ -680,7 +697,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
 
   sprite: {
     id: 'sprite', fly: true, name: 'Sprite',
-    ac: 15, hp: 10, speed: 10,
+    ac: 15, hp: 10, speed: 10, flySpeed: 40,
     creatureType: 'fey',
     size: 'tiny',
     abilities: { str: 3, dex: 18, con: 10, int: 14, wis: 13, cha: 11 },
@@ -792,12 +809,13 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['magic-resistance', 'legendary-resistance'],
     weaponIds: ['unicorn-horn', 'unicorn-hooves'],
     attacksPerAction: 2,
+    multiattack: [['unicorn-hooves', 'unicorn-horn']],
     immunities: ['poison'],
   },
 
   cockatrice: {
     id: 'cockatrice', fly: true, name: 'Cockatrice',
-    ac: 11, hp: 22, speed: 20,
+    ac: 11, hp: 22, speed: 20, flySpeed: 40,
     creatureType: 'monstrosity',
     size: 'small',
     abilities: { str: 6, dex: 12, con: 12, int: 2, wis: 13, cha: 5 },
@@ -805,7 +823,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   harpy: {
     id: 'harpy', fly: true, name: 'Harpy',
-    ac: 11, hp: 38, speed: 20,
+    ac: 11, hp: 38, speed: 20, flySpeed: 40,
     creatureType: 'monstrosity',
     size: 'medium',
     abilities: { str: 12, dex: 13, con: 12, int: 7, wis: 10, cha: 13 },
@@ -867,7 +885,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'dust-mephit': {
     id: 'dust-mephit', fly: true, name: 'Dust Mephit',
     deathBurst: { dice: '2d4', type: 'bludgeoning', save: { ability: 'dex', dc: 10 }, radius: 5 },
-    ac: 12, hp: 17, speed: 30,
+    ac: 12, hp: 17, speed: 30, flySpeed: 30,
     creatureType: 'elemental',
     size: 'small',
     abilities: { str: 5, dex: 14, con: 10, int: 9, wis: 11, cha: 10 },
@@ -879,7 +897,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'ice-mephit': {
     id: 'ice-mephit', fly: true, name: 'Ice Mephit',
     deathBurst: { dice: '2d4', type: 'cold', save: { ability: 'con', dc: 10 }, radius: 5 },
-    ac: 11, hp: 21, speed: 30,
+    ac: 11, hp: 21, speed: 30, flySpeed: 30,
     creatureType: 'elemental',
     size: 'small',
     abilities: { str: 7, dex: 13, con: 10, int: 9, wis: 11, cha: 12 },
@@ -892,7 +910,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'magma-mephit': {
     id: 'magma-mephit', fly: true, name: 'Magma Mephit',
     deathBurst: { dice: '2d6', type: 'fire', save: { ability: 'dex', dc: 11 }, radius: 5 },
-    ac: 11, hp: 18, speed: 30,
+    ac: 11, hp: 18, speed: 30, flySpeed: 30,
     creatureType: 'elemental',
     size: 'small',
     abilities: { str: 8, dex: 12, con: 12, int: 7, wis: 10, cha: 10 },
@@ -905,7 +923,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'steam-mephit': {
     id: 'steam-mephit', fly: true, name: 'Steam Mephit',
     deathBurst: { dice: '2d4', type: 'fire', save: { ability: 'dex', dc: 10 }, radius: 5 },
-    ac: 10, hp: 17, speed: 30,
+    ac: 10, hp: 17, speed: 30, flySpeed: 30,
     creatureType: 'elemental',
     size: 'small',
     abilities: { str: 5, dex: 11, con: 10, int: 11, wis: 10, cha: 12 },
@@ -920,7 +938,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // 2,300 -- the shallowest well-supported type in the SRD.
   succubus: {
     id: 'succubus', fly: true, name: 'Succubus',
-    ac: 15, cr: 4, hp: 71, speed: 30,
+    ac: 15, cr: 4, hp: 71, speed: 30, flySpeed: 60,
     creatureType: 'fiend',
     size: 'medium',
     abilities: { str: 8, dex: 17, con: 13, int: 15, wis: 12, cha: 20 },
@@ -939,6 +957,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['magic-resistance', 'long-limbed'],
     weaponIds: ['bearded-devil-glaive', 'bearded-devil-beard'],
     attacksPerAction: 2,
+    multiattack: [['bearded-devil-beard', 'bearded-devil-glaive']],
     resistances: ['cold'],
     immunities: ['fire', 'poison'],
   },
@@ -1004,7 +1023,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'horned-devil': {
     id: 'horned-devil', fly: true, name: 'Horned Devil',
-    ac: 18, cr: 11, hp: 199, speed: 30,
+    ac: 18, cr: 11, hp: 199, speed: 30, flySpeed: 60,
     creatureType: 'fiend',
     size: 'large',
     abilities: { str: 22, dex: 17, con: 21, int: 12, wis: 16, cha: 18 },
@@ -1038,10 +1057,11 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 13, dex: 12, con: 13, int: 2, wis: 13, cha: 6 },
     weaponIds: ['rust-monster-antennae', 'rust-monster-bite'],
     attacksPerAction: 2,
+    multiattack: [['rust-monster-bite', 'rust-monster-antennae']],
   },
   griffon: {
     id: 'griffon', fly: true, name: 'Griffon',
-    ac: 12, cr: 2, hp: 59, speed: 30,
+    ac: 12, cr: 2, hp: 59, speed: 30, flySpeed: 80,
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 18, dex: 15, con: 16, int: 2, wis: 13, cha: 8 },
@@ -1056,6 +1076,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 14, dex: 15, con: 13, int: 7, wis: 12, cha: 8 },
     weaponIds: ['ettercap-bite', 'ettercap-claws'],
     attacksPerAction: 2,
+    multiattack: [['ettercap-bite', 'ettercap-claws']],
   },
   'ettercap-snarecaller': {
     id: 'ettercap-snarecaller', name: 'Ettercap Snarecaller',
@@ -1141,6 +1162,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     savingThrowProfs: ['con'],
     weaponIds: ['otyugh-tentacle', 'otyugh-bite'],
     attacksPerAction: 3,
+    multiattack: [['otyugh-bite', 'otyugh-tentacle', 'otyugh-tentacle']],
     featureIds: ['long-limbed'],
   },
   aboleth: {
@@ -1169,6 +1191,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 25, dex: 10, con: 19, int: 2, wis: 12, cha: 9 },
     weaponIds: ['trex-bite', 'trex-tail'],
     attacksPerAction: 2,
+    multiattack: [['trex-bite', 'trex-tail']],
   },
 
   // ---- type ceilings ----------------------------------------------------
@@ -1209,7 +1232,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   ghost: {
     id: 'ghost', fly: true, name: 'Ghost',
-    ac: 11, cr: 4, hp: 45, speed: 30,
+    ac: 11, cr: 4, hp: 45, speed: 5, flySpeed: 40,
     creatureType: 'undead',
     size: 'medium',
     abilities: { str: 7, dex: 13, con: 10, int: 10, wis: 12, cha: 17 },
@@ -1223,7 +1246,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   wraith: {
     id: 'wraith', fly: true, name: 'Wraith',
-    ac: 13, cr: 5, hp: 67, speed: 30,
+    ac: 13, cr: 5, hp: 67, speed: 5, flySpeed: 60,
     creatureType: 'undead',
     size: 'medium',
     abilities: { str: 6, dex: 16, con: 16, int: 12, wis: 14, cha: 15 },
@@ -1242,8 +1265,8 @@ export const MONSTERS: Record<Id, MonsterData> = {
     savingThrowProfs: ['dex', 'wis'],
     weaponIds: ['spawn-claws', 'spawn-bite'],
     attacksPerAction: 3,
+    multiattack: [['spawn-claws', 'spawn-claws', 'spawn-bite']],
     resistances: ['necrotic'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     featureIds: ['cunning-dash', 'cunning-disengage'],
   },
 
@@ -1257,6 +1280,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 16, dex: 13, con: 15, int: 1, wis: 9, cha: 3 },
     weaponIds: ['scorpion-sting', 'scorpion-claw'],
     attacksPerAction: 3,
+    multiattack: [['scorpion-claw', 'scorpion-claw', 'scorpion-sting']],
   },
   elephant: {
     id: 'elephant', name: 'Elephant',
@@ -1276,6 +1300,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 21, dex: 9, con: 17, int: 2, wis: 10, cha: 7 },
     weaponIds: ['crocodile-bite', 'crocodile-tail'],
     attacksPerAction: 2,
+    multiattack: [['crocodile-bite', 'crocodile-tail']],
   },
   mammoth: {
     id: 'mammoth', name: 'Mammoth',
@@ -1497,13 +1522,12 @@ export const MONSTERS: Record<Id, MonsterData> = {
       name: 'Fire Aura', radius: 5, when: 'ownerTurnEnd', choice: true,
       damage: { dice: '2d6', type: 'fire' },
     }],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['fire'],
     vulnerabilities: ['cold'],
   },
   'invisible-stalker': {
     id: 'invisible-stalker', fly: true, name: 'Invisible Stalker',
-    ac: 14, cr: 6, hp: 97, speed: 50,
+    ac: 14, cr: 6, hp: 97, speed: 50, flySpeed: 50,
     creatureType: 'elemental',
     size: 'large',
     abilities: { str: 16, dex: 19, con: 14, int: 10, wis: 15, cha: 11 },
@@ -1522,7 +1546,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // fight with save-or-suck spells has to find another answer.
   imp: {
     id: 'imp', fly: true, name: 'Imp',
-    ac: 13, cr: 1, hp: 21, speed: 20,
+    ac: 13, cr: 1, hp: 21, speed: 20, flySpeed: 40,
     creatureType: 'fiend',
     size: 'tiny',
     abilities: { str: 6, dex: 17, con: 13, int: 11, wis: 12, cha: 14 },
@@ -1577,12 +1601,13 @@ export const MONSTERS: Record<Id, MonsterData> = {
     featureIds: ['magic-resistance'],
     weaponIds: ['barbed-devil-claw', 'barbed-devil-tail', 'barbed-devil-hurl-flame'],
     attacksPerAction: 2,
+    multiattack: [['barbed-devil-claw', 'barbed-devil-tail'], ['barbed-devil-hurl-flame', 'barbed-devil-hurl-flame']],
     resistances: ['cold'],
     immunities: ['fire', 'poison'],
   },
   vrock: {
     id: 'vrock', fly: true, name: 'Vrock',
-    ac: 15, cr: 6, hp: 152, speed: 40,
+    ac: 15, cr: 6, hp: 152, speed: 40, flySpeed: 60,
     creatureType: 'fiend',
     size: 'large',
     abilities: { str: 17, dex: 15, con: 18, int: 8, wis: 13, cha: 8 },
@@ -1648,7 +1673,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // One animated armor was the whole type.
   'flying-sword': {
     id: 'flying-sword', fly: true, name: 'Animated Flying Sword',
-    ac: 17, hp: 14, speed: 30,
+    ac: 17, hp: 14, speed: 5, flySpeed: 50,
     creatureType: 'construct',
     size: 'small',
     abilities: { str: 12, dex: 15, con: 11, int: 1, wis: 5, cha: 1 },
@@ -1698,22 +1723,24 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   chimera: {
     id: 'chimera', fly: true, name: 'Chimera',
-    ac: 14, cr: 6, hp: 114, speed: 30,
+    ac: 14, cr: 6, hp: 114, speed: 30, flySpeed: 60,
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 19, dex: 11, con: 19, int: 3, wis: 14, cha: 10 },
     featureIds: ['breath-fire-chimera'],
     weaponIds: ['chimera-bite', 'chimera-horns', 'chimera-claws'],
     attacksPerAction: 3,
+    multiattack: [['chimera-horns', 'chimera-bite', 'chimera-claws']],
   },
   wyvern: {
     id: 'wyvern', fly: true, name: 'Wyvern',
-    ac: 14, cr: 6, hp: 127, speed: 30,
+    ac: 14, cr: 6, hp: 127, speed: 30, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 19, dex: 10, con: 16, int: 5, wis: 12, cha: 6 },
     weaponIds: ['wyvern-sting', 'wyvern-bite'],
     attacksPerAction: 2,
+    multiattack: [['wyvern-bite', 'wyvern-sting']],
   },
   // Five heads, five bites: the hydra is the action-economy monster, a wall of
   // attacks on one body rather than the reverse.
@@ -1732,7 +1759,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // wyrmling blocks, with the heavier breath spec and three Rends a turn.
   'young-white': {
     id: 'young-white', fly: true, name: 'Young White Dragon',
-    ac: 17, cr: 6, hp: 123, speed: 40,
+    ac: 17, cr: 6, hp: 123, speed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 18, dex: 10, con: 18, int: 6, wis: 11, cha: 12 },
@@ -1744,7 +1771,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'young-black': {
     id: 'young-black', fly: true, name: 'Young Black Dragon',
-    ac: 18, cr: 7, hp: 127, speed: 40,
+    ac: 18, cr: 7, hp: 127, speed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 19, dex: 14, con: 17, int: 12, wis: 11, cha: 15 },
@@ -1756,7 +1783,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'young-green': {
     id: 'young-green', fly: true, name: 'Young Green Dragon',
-    ac: 18, cr: 8, hp: 136, speed: 40,
+    ac: 18, cr: 8, hp: 136, speed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 19, dex: 12, con: 17, int: 16, wis: 13, cha: 15 },
@@ -1769,7 +1796,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'young-blue': {
     id: 'young-blue', fly: true, name: 'Young Blue Dragon',
-    ac: 18, cr: 9, hp: 152, speed: 40,
+    ac: 18, cr: 9, hp: 152, speed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 21, dex: 10, con: 19, int: 14, wis: 13, cha: 17 },
@@ -1781,7 +1808,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'young-red': {
     id: 'young-red', fly: true, name: 'Young Red Dragon',
-    ac: 18, cr: 10, hp: 178, speed: 40,
+    ac: 18, cr: 10, hp: 178, speed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 23, dex: 10, con: 21, int: 14, wis: 11, cha: 19 },
@@ -1793,7 +1820,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   manticore: {
     id: 'manticore', fly: true, name: 'Manticore',
-    ac: 14, hp: 68, speed: 30,
+    ac: 14, hp: 68, speed: 30, flySpeed: 50,
     creatureType: 'monstrosity',
     size: 'large',
     abilities: { str: 17, dex: 16, con: 17, int: 7, wis: 12, cha: 8 },
@@ -1830,11 +1857,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     vulnerabilities: ['radiant'],
     immunities: ['necrotic', 'poison'],
     resistances: ['acid', 'cold', 'fire', 'lightning', 'thunder'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   specter: {
     id: 'specter', fly: true, name: 'Specter',
-    ac: 12, hp: 22, speed: 50,
+    ac: 12, hp: 22, speed: 30, flySpeed: 50,
     creatureType: 'undead',
     size: 'medium',
     abilities: { str: 1, dex: 14, con: 11, int: 10, wis: 10, cha: 11 },
@@ -1846,7 +1872,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'will-o-wisp': {
     id: 'will-o-wisp', fly: true, name: "Will-o'-Wisp",
-    ac: 19, hp: 27, speed: 50,
+    ac: 19, hp: 27, speed: 5, flySpeed: 50,
     creatureType: 'undead',
     size: 'tiny',
     abilities: { str: 1, dex: 28, con: 10, int: 13, wis: 14, cha: 11 },
@@ -1868,7 +1894,6 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['poison'],
     resistances: ['necrotic'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
   mummy: {
     id: 'mummy', name: 'Mummy',
@@ -1882,16 +1907,15 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     vulnerabilities: ['fire'],
     immunities: ['necrotic', 'poison'],
-    resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
 
   // Chromatic dragon wyrmlings. Two Rends + a Recharge-5–6 elemental breath (shape,
-  // save, and dice per BREATH_WEAPONS); each is immune to its own element. Fly
-  // speed isn't modelled, so they keep a ground speed. PB +2 (all wyrmlings are
+  // save, and dice per BREATH_WEAPONS); each is immune to its own element. They
+  // fly at 60 (moveSpeed). PB +2 (all wyrmlings are
   // CR 2–4) makes their breath DCs land at the SRD's 11–13.
   'black-wyrmling': {
     id: 'black-wyrmling', fly: true, name: 'Black Dragon Wyrmling',
-    ac: 17, hp: 33, speed: 30, cr: 2,
+    ac: 17, hp: 33, speed: 30, flySpeed: 60, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 15, dex: 14, con: 13, int: 10, wis: 11, cha: 13 },
@@ -1902,7 +1926,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'blue-wyrmling': {
     id: 'blue-wyrmling', fly: true, name: 'Blue Dragon Wyrmling',
-    ac: 17, hp: 65, speed: 30, cr: 3,
+    ac: 17, hp: 65, speed: 30, flySpeed: 60, cr: 3,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 17, dex: 10, con: 15, int: 12, wis: 11, cha: 15 },
@@ -1913,7 +1937,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'green-wyrmling': {
     id: 'green-wyrmling', fly: true, name: 'Green Dragon Wyrmling',
-    ac: 17, hp: 38, speed: 30, cr: 2,
+    ac: 17, hp: 38, speed: 30, flySpeed: 60, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 15, dex: 12, con: 13, int: 14, wis: 11, cha: 13 },
@@ -1925,7 +1949,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'red-wyrmling': {
     id: 'red-wyrmling', fly: true, name: 'Red Dragon Wyrmling',
-    ac: 17, hp: 75, speed: 30, cr: 4,
+    ac: 17, hp: 75, speed: 30, flySpeed: 60, cr: 4,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 19, dex: 10, con: 17, int: 12, wis: 11, cha: 15 },
@@ -1936,7 +1960,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'white-wyrmling': {
     id: 'white-wyrmling', fly: true, name: 'White Dragon Wyrmling',
-    ac: 16, hp: 32, speed: 30, cr: 2,
+    ac: 16, hp: 32, speed: 30, flySpeed: 60, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 14, dex: 10, con: 14, int: 5, wis: 10, cha: 11 },
@@ -1955,6 +1979,11 @@ export const MONSTERS: Record<Id, MonsterData> = {
  */
 export function monsterLevel(cr?: number): number {
   return cr !== undefined ? Math.max(1, Math.round(cr)) : 1;
+}
+
+/** How fast a monster crosses the board: its fly speed when it flies, else its walk. */
+export function moveSpeed(m: MonsterData): number {
+  return m.fly && m.flySpeed !== undefined ? Math.max(m.speed, m.flySpeed) : m.speed;
 }
 
 export function buildMonster(monsterId: Id, team: TeamId, position: Position, suffix = ''): Combatant {
@@ -1994,7 +2023,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     maxHp: m.hp,
     hp: m.hp,
     acOverride: m.ac,
-    speed: m.speed,
+    speed: moveSpeed(m),
     position,
     initiative: 0,
     savingThrowProfs: [...(m.savingThrowProfs ?? [])],
@@ -2044,7 +2073,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     hasActed: false,
     turn: {
       actionUsed: false, bonusActionUsed: false, reactionUsed: false,
-      movementUsed: 0, movementMax: m.speed, dashSpeed: m.speed, disengaged: false,
+      movementUsed: 0, movementMax: moveSpeed(m), dashSpeed: moveSpeed(m), disengaged: false,
       attackedThisTurn: false, attacksLeft: 0, interacted: false, sneakAttackUsed: false,
       colossusUsed: false, savageUsed: false,
       leveledSpellCast: false,
@@ -2055,6 +2084,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     ...(m.artId ? { portraitId: m.artId } : {}),
     size: m.size,
     ...(m.fly ? { flying: true as const } : {}),
+    ...(m.multiattack ? { routines: m.multiattack.map((r) => [...r]) } : {}),
     // Copied, not shared: `suppressed` is per-combatant turn state, and three
     // trolls from one stat block must not share one flag.
     ...(m.regeneration

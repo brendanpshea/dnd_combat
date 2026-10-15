@@ -8,7 +8,7 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isDying, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isDying, risesAgain, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
@@ -4036,7 +4036,8 @@ export function validTarget(
   const { range, who, creatureType, creatureTypes } = spell.targeting;
   if (who === 'enemy' && t.team === caster.team) return false;
   // A downed creature can't be attacked — but healing it is the whole point.
-  if (who === 'enemy' && isDown(t)) return false;
+  // …except a troll down at 0, which a fire or acid spell is how you finish.
+  if (who === 'enemy' && isDown(t) && !risesAgain(t)) return false;
   if (who === 'ally' && t.team !== caster.team) return false;
   if (spell.targeting.dying && !isDying(state, t)) return false;
   if (creatureType && t.creatureType !== creatureType) return false;

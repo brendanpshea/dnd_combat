@@ -4,7 +4,7 @@
  */
 import type { GameState, Combatant, Id, TeamId, GridState } from './types.js';
 import { cellAt } from './types.js';
-import { abilityMod, proficiencyBonus, isDown, isDying, heldInPlace } from './types.js';
+import { abilityMod, proficiencyBonus, isDown, isDying, risesAgain, heldInPlace } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollD20 } from './dice.js';
 import { rollDice } from './dice.js';
@@ -210,6 +210,16 @@ export function startTurn(state: GameState): GameEvent[] {
   // by now; so has one pushed out of range. Settled before speed is priced,
   // since a grapple is one of the things that zeroes it.
   events.push(...releaseBrokenGrapples(state));
+
+  // Regeneration at 0 HP: the troll gets back up — before anything below
+  // prices this turn's speed, so it stands from prone like anyone else. (One
+  // whose regeneration was stopped never lies here: it died when the acid or
+  // fire landed. See `Combatant.regeneration`.)
+  let regenerated = false;
+  if (risesAgain(c)) {
+    events.push(...applyHealing(state, c.id, c.id, c.regeneration!.amount));
+    regenerated = true;
+  }
 
   c.hasActed = true;
 
@@ -467,7 +477,7 @@ export function startTurn(state: GameState): GameEvent[] {
   // has landed since the last one. A suppressed trait costs exactly one turn of
   // healing and then re-arms, so burning a troll is something the party has to
   // keep doing rather than do once.
-  if (c.regeneration && c.hp > 0) {
+  if (c.regeneration && c.hp > 0 && !regenerated) {
     if (c.regeneration.suppressed) {
       c.regeneration.suppressed = false;
     } else if (c.hp < c.maxHp) {
@@ -615,7 +625,8 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
         events.push(...rollDeathSave(state, next.id));
         if (state.winner) return events;
       }
-      if (!next.alive || isDown(next)) continue;
+      // Down is skipped — except a troll, whose turn is when it gets up.
+      if (!next.alive || (isDown(next) && !risesAgain(next))) continue;
       if (idx <= state.turnIndex && !wrapped) {
         wrapped = true;
         if (advanceRound(state, events)) return events;

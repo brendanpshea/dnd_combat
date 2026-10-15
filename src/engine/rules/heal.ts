@@ -71,6 +71,6 @@ export function downCombatant(state: GameState, combatantId: Id): GameEvent[] {
   ];
   c.turn.attacksLeft = 0;
   // Dying, under the death-save rule: a fresh tally.
-  if (state.rules?.deathSaves) c.deathSaves = { successes: 0, failures: 0 };
+  if (state.rules?.deathSaves && c.unconsciousAtZero) c.deathSaves = { successes: 0, failures: 0 };
   return [{ type: 'downed', combatantId }];
 }

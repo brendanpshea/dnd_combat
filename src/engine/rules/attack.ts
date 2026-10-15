@@ -3,7 +3,7 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover, risesAgain } from '../types.js';
 import { WEAPONS, type WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
@@ -60,7 +60,8 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   if (!w || !t || !t.alive || t.team === actor.team) return false;
   // Already out of the fight; nothing to gain — unless the fight runs death
   // saves, where each hit on a body is a failed save and three end it.
-  if (isDown(t) && !state.rules?.deathSaves) return false;
+  // A troll lying at 0 can be hit too: burning it is how it is finished.
+  if (isDown(t) && !state.rules?.deathSaves && !risesAgain(t)) return false;
   if (isHidden(t)) return false;
   // "Whatever part a grappler uses, it can grapple only one creature at a time
   // with that part, and can't use that part to target another creature."
@@ -1287,6 +1288,12 @@ export function applyDamage(
         events.push(...failDeathSaves(state, targetId,
           amount >= target.maxHp ? 3 : opts.crit ? 2 : 1));
       }
+    } else if (target.alive && target.regeneration && !target.regeneration.suppressed) {
+      // Regeneration's last clause: it dies only if it starts its turn at 0
+      // and doesn't regenerate. Nothing has stopped it, so it is down until
+      // its turn, when startTurn stands it back up. (Acid or fire, this blow
+      // or a later one, sets `suppressed` above and lands in the branch below.)
+      if (!wasDown) events.push(...dropToZero(state, targetId));
     } else {
       events.push(...kill(state, targetId));
     }

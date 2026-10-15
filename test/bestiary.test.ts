@@ -571,9 +571,11 @@ describe('troll regeneration', () => {
     expect(hp(c, a), 'burned troll, still suppressed on its one turn').toBe(35);
   });
 
-  it('does not resurrect a dead troll', () => {
+  it('does not resurrect a troll that fire finished', () => {
+    // A blade only drops it until its turn (test/monster-fidelity.test.ts);
+    // fire on the killing blow means it does not regenerate, so it is dead.
     const { c, id } = trollFight();
-    applyDamage(c.state, id, id, 999, 'slashing', [], { magical: false });
+    applyDamage(c.state, id, id, 999, 'fire', [], { magical: false });
     expect(c.state.combatants[id]!.alive).toBe(false);
     expect(hp(c, id)).toBe(0);
   });
