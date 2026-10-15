@@ -18,8 +18,14 @@
  * would re-tune every character's stat line and combat balance — worth doing
  * deliberately, not as a side effect of adding flavour. `toolNote` keeps the
  * tool as text so the forge can still say what you trained at.
+ *
+ * The SRD's four (Acolyte, Criminal, Sage, Soldier) do carry their three
+ * abilities (`abilities`), and `backgroundIncreaseProblem` checks a proposed
+ * increase against them — so a game that builds characters by the 2024 rules
+ * can hold a player to "+2 and +1, or +1 to all three". The arena's builder
+ * still applies none; that is the re-tune above.
  */
-import type { Id } from '../engine/types.js';
+import type { Id, Ability } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 
 export interface BackgroundData {
@@ -30,12 +36,19 @@ export interface BackgroundData {
   skills: [SkillId, SkillId];
   /** The SRD's tool proficiency, flavour only — see the note above. */
   toolNote: string;
+  /**
+   * The three abilities the background may raise ("Ability Scores: ..."),
+   * given for the SRD 5.2.1's four (lines 8758-8768). The others are the 2024
+   * Player's Handbook's and carry none here.
+   */
+  abilities?: readonly [Ability, Ability, Ability];
 }
 
 export const BACKGROUNDS: Record<Id, BackgroundData> = {
   acolyte: {
     id: 'acolyte', name: 'Acolyte', blurb: 'Raised in a temple; versed in lore and hearts.',
     skills: ['insight', 'religion'], toolNote: 'Calligrapher’s Supplies',
+    abilities: ['int', 'wis', 'cha'],
   },
   artisan: {
     id: 'artisan', name: 'Artisan', blurb: 'Trained at a workbench; you can make it and sell it.',
@@ -48,6 +61,7 @@ export const BACKGROUNDS: Record<Id, BackgroundData> = {
   criminal: {
     id: 'criminal', name: 'Criminal', blurb: 'A past in the shadows; quick hands, quiet feet.',
     skills: ['sleight-of-hand', 'stealth'], toolNote: 'Thieves’ Tools',
+    abilities: ['dex', 'con', 'int'],
   },
   entertainer: {
     id: 'entertainer', name: 'Entertainer', blurb: 'A crowd-pleaser who can tumble as well as sing.',
@@ -80,6 +94,7 @@ export const BACKGROUNDS: Record<Id, BackgroundData> = {
   sage: {
     id: 'sage', name: 'Sage', blurb: 'A scholar of the arcane and the ages.',
     skills: ['arcana', 'history'], toolNote: 'Calligrapher’s Supplies',
+    abilities: ['con', 'int', 'wis'],
   },
   sailor: {
     id: 'sailor', name: 'Sailor', blurb: 'You kept your feet on a deck that would not keep still.',
@@ -92,6 +107,7 @@ export const BACKGROUNDS: Record<Id, BackgroundData> = {
   soldier: {
     id: 'soldier', name: 'Soldier', blurb: 'Drilled in arms and the reading of foes.',
     skills: ['athletics', 'intimidation'], toolNote: 'Gaming Set',
+    abilities: ['str', 'dex', 'con'],
   },
   wayfarer: {
     id: 'wayfarer', name: 'Wayfarer', blurb: 'You grew up on the road, and learned to read people fast.',
@@ -100,6 +116,37 @@ export const BACKGROUNDS: Record<Id, BackgroundData> = {
 };
 
 export const BACKGROUND_IDS = Object.keys(BACKGROUNDS);
+
+/** The three abilities a background may raise, or undefined where none are given. */
+export function backgroundAbilities(backgroundId: Id | undefined): readonly [Ability, Ability, Ability] | undefined {
+  return backgroundId ? BACKGROUNDS[backgroundId]?.abilities : undefined;
+}
+
+/**
+ * What is wrong with a proposed background increase, or undefined if it is
+ * legal: "Increase one of these scores by 2 and a different one by 1, or
+ * increase all three by 1. None of these increases can raise a score above
+ * 20" (SRD 5.2.1, Background Parts, Ability Scores). `scores` are the ones
+ * before the increase, for the cap; leave them out to check only the shape.
+ * A background with no list given accepts nothing but an empty increase.
+ */
+export function backgroundIncreaseProblem(
+  backgroundId: Id | undefined,
+  increase: Partial<Record<Ability, number>>,
+  scores?: Partial<Record<Ability, number>>,
+): string | undefined {
+  const raised = (Object.entries(increase) as Array<[Ability, number]>).filter(([, n]) => n !== 0);
+  if (raised.length === 0) return undefined;
+  const allowed = backgroundAbilities(backgroundId);
+  if (!allowed) return `${backgroundId ?? 'no background'} names no abilities to raise`;
+  const off = raised.find(([a]) => !allowed.includes(a));
+  if (off) return `${off[0]} is not one of ${allowed.join('/')}`;
+  const amounts = raised.map(([, n]) => n).sort((a, b) => b - a).join(',');
+  if (amounts !== '2,1' && amounts !== '1,1,1') return 'raise one by 2 and another by 1, or all three by 1';
+  const over = raised.find(([a, n]) => (scores?.[a] ?? 0) + n > 20);
+  if (over) return `${over[0]} would pass 20`;
+  return undefined;
+}
 
 /** The two skills a background grants, or [] for none/unknown. */
 export function backgroundSkills(backgroundId: Id | undefined): SkillId[] {

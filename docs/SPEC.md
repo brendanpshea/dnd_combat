@@ -644,7 +644,10 @@ matter in combat. Humans gain one Heroic Inspiration use (free action: next
 attack has advantage) and Skillful: proficiency in one skill of the player's
 choice, any class (a species choice point, `skillful`; unchosen, a skill the
 class table lacks). It was a fixed skill for four classes and none for the
-other eight. Dwarves gain poison resistance and $+1$ maximum HP per
+other eight. Backgrounds grant their two skills; the SRD's four also list the
+three abilities they may raise (`BackgroundData.abilities`), and
+`backgroundIncreaseProblem` checks a "+2/+1 or +1/+1/+1" increase against them
+for a game that applies it — the arena's builder applies none. Dwarves gain poison resistance and $+1$ maximum HP per
 level. Wood Elves move 35 feet and are immune to Sleep. Orcs gain Adrenaline
 Rush (bonus Dash, proficiency-bonus temporary HP, proficiency-bonus uses) and
 Relentless Endurance (drop to 1 HP once per encounter). Temporary HP absorbs

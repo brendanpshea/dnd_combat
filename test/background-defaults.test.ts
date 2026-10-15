@@ -19,7 +19,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { CLASSES } from '../src/data/classes.js';
-import { BACKGROUNDS, defaultBackgroundFor } from '../src/data/backgrounds.js';
+import { BACKGROUNDS, defaultBackgroundFor, backgroundAbilities, backgroundIncreaseProblem } from '../src/data/backgrounds.js';
 import { ORIGIN_FEATS, defaultFeatFor } from '../src/data/feats.js';
 import { buildCharacter } from '../src/builder/character.js';
 import { readFileSync } from 'node:fs';
@@ -121,5 +121,30 @@ describe('the default actually reaches the character', () => {
       featIds: [featOf('cleric')!],
     });
     expect(cle.spellIds.length, 'a cleric got nothing from Magic Initiate').toBeGreaterThan(0);
+  });
+});
+
+describe('background ability scores (SRD 5.2.1, lines 8758-8768)', () => {
+  it('the SRD four list the three abilities they may raise', () => {
+    expect(backgroundAbilities('acolyte')).toEqual(['int', 'wis', 'cha']);
+    expect(backgroundAbilities('criminal')).toEqual(['dex', 'con', 'int']);
+    expect(backgroundAbilities('sage')).toEqual(['con', 'int', 'wis']);
+    expect(backgroundAbilities('soldier')).toEqual(['str', 'dex', 'con']);
+  });
+
+  it('takes +2 and +1, or +1 to all three, from the list and up to 20', () => {
+    expect(backgroundIncreaseProblem('soldier', { str: 2, con: 1 })).toBeUndefined();
+    expect(backgroundIncreaseProblem('soldier', { str: 1, dex: 1, con: 1 })).toBeUndefined();
+    expect(backgroundIncreaseProblem('soldier', {})).toBeUndefined();
+    expect(backgroundIncreaseProblem('soldier', { str: 2, wis: 1 }), 'wisdom is not a soldier\'s').toBeDefined();
+    expect(backgroundIncreaseProblem('soldier', { str: 3 }), 'three to one').toBeDefined();
+    expect(backgroundIncreaseProblem('soldier', { str: 2, dex: 2 }), 'two twos').toBeDefined();
+    expect(backgroundIncreaseProblem('soldier', { str: 2 }), 'only the two').toBeDefined();
+    expect(backgroundIncreaseProblem('sage', { int: 2, wis: 1 }, { int: 19, wis: 14 }), 'past 20').toBeDefined();
+    expect(backgroundIncreaseProblem('sage', { int: 1, wis: 2 }, { int: 19, wis: 14 })).toBeUndefined();
+  });
+
+  it('a background with no list raises nothing', () => {
+    expect(backgroundIncreaseProblem('wayfarer', { dex: 2, wis: 1 })).toBeDefined();
   });
 });
