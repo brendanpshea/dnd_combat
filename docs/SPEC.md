@@ -43,7 +43,7 @@ fix the file.
 | Question | Decision |
 | --- | --- |
 | Interface | Headless engine; three drivers — terminal CLI, React web app, and the AIs — all through one action API |
-| Rules depth | Faithful core; simplified edges (no readied actions, no components, no flanking). Cover IS implemented — half cover from barricades, +2 AC, applied to weapon and spell attacks alike, and read back to the player as a badge (`engine/rules/cover.ts`) |
+| Rules depth | Faithful core; simplified edges (no readied actions, no components, no flanking). Cover IS implemented — half (+2) from barricades and creatures on the line, three-quarters (+5) from high cover, total from walls; on ranged weapon and spell attacks and on Dexterity saves; read back to the player as a badge (`engine/rules/cover.ts`) |
 | Grid | Square, 5 ft cells, Chebyshev distance (diagonal costs 5 ft) |
 | Data | Data-driven: classes, weapons, armor, spells, monsters, maps are typed data |
 | Initiative | Rolled: d20 + Dex mod, individual turns, teams interleaved. Ties: higher Dex, then seeded coin flip |
@@ -479,7 +479,7 @@ Giant's Stronghold finale).
 `commanded` condition), Suggestion (Wis save → leave the fight via `charmAway`),
 Web (Dex save → `restrained`, save-ends, concentration), Fear (cone, Wis save →
 `frightened`, which now imposes disadvantage on attacks), Lightning Bolt (a
-`line15` bolt, Dex save for half, ignores cover), Spiritual Weapon (a bonus-
+`line15` bolt, Dex save for half), Spiritual Weapon (a bonus-
 action force attack that re-attacks free each turn while it lasts), Spiritual
 Guardians (a 15-ft radiant aura resolved in `startTurn`, held by concentration),
 and Shield (a reaction the engine **autocasts** for a defender when +5 AC would
@@ -843,6 +843,29 @@ Where the SRD does print B/P/S resistance it is still read as nonmagical
   Close Combat — a ten-foot reach does not count).
 - Movement can't cut a wall's corner on a diagonal (SRD 5.2.1, Corners:
   `stepNeighbors`); a barricade, being chest-high, is not a corner.
+- Cover (SRD 5.2.1, line 713; `rules/cover.ts`): half (+2 to AC and Dexterity
+  saves) from a barricade (`+`) or a creature — friend or foe, standing, not
+  down — in a square the line passes through; three-quarters (+5) from high
+  cover (`=`, terrain `high-cover`: an arrow slit or portcullis, impassable even
+  to fliers, see-through); total from a wall, which is no line of sight, so
+  nothing can be aimed at the target. The best one counts. It applies to ranged
+  weapon and spell attacks (a melee swing, even at reach, goes over it — the
+  engine's one deviation) and to a Dexterity save against an effect with an
+  origin (a spell's point or its caster, a breath, a death burst, an aura),
+  where only terrain counts: an area catches everyone in it, so the front rank
+  does not shelter the back. Sacred Flame ignores cover, as printed; the Wand of
+  the War Mage ignores half cover on a spell attack. `coverOf(state, attacker,
+  target)` answers none / half / three-quarters / total for a front end. There
+  was a size gate — nothing Large or bigger took cover — which the SRD does not
+  have, and it is gone (from hiding too).
+- Deep water (`w`; `Cell.water` on difficult terrain): difficult to walk, and
+  ordinary ground to a creature with a Swim Speed (`swimSpeed`, the stat
+  blocks' Swim, held to the print by the stat-block test). Heavily obscured
+  ground — walk through, not see through — is not modelled: it would need a
+  cell overlay that blocks sight across it and makes whoever stands in it unseen
+  (attacks against it at disadvantage, its own with advantage, a place to
+  Hide); the gnome's Minor Illusion blocks sight across a cell but pops when
+  entered.
 - LoS: Bresenham center-to-center trace, blocked by walls. Deliberately not
   supercover — a perfect diagonal squeezes between two orthogonal walls. Feet
   no longer take that diagonal, so a creature can see through a crack it

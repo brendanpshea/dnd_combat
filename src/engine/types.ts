@@ -45,8 +45,12 @@ export interface Position {
  * removing squares, which mostly means everyone walks around them; a barricade
  * shapes it by making the *angle* of a shot matter, which is a decision rather
  * than a detour. It is also where a rogue can hide — see canHide.
+ *
+ * `high-cover` is the SRD's Three-Quarters Cover as terrain: an arrow slit, a
+ * portcullis, a thick tree trunk. Nothing walks or flies through it, sight and
+ * shots pass, and a target behind it has +5 to AC and Dexterity saves.
  */
-export type TerrainId = 'open' | 'difficult' | 'wall' | 'hazard' | 'cover';
+export type TerrainId = 'open' | 'difficult' | 'wall' | 'hazard' | 'cover' | 'high-cover';
 
 export interface Cell {
   terrain: TerrainId;
@@ -71,6 +75,14 @@ export interface Cell {
    * cast it three times and a third of the map was difficult ground forever.
    */
   chilled?: { expiresAtRound: number };
+  /**
+   * Deep water. The cell is difficult terrain to anything that walks it (SRD
+   * 5.2.1: swimming without a Swim Speed costs an extra foot per foot), and
+   * ordinary ground to a creature with a Swim Speed (`Combatant.swimSpeed`).
+   * An overlay on `difficult`, so a board that knows nothing about water still
+   * reads it as rough ground. Sight and shots pass over it.
+   */
+  water?: true;
   /**
    * Wall of Fire: this cell burns until the caster stops concentrating.
    *
@@ -766,6 +778,8 @@ export interface Combatant {
    * cover and line of sight, which are computed from the same terrain.
    */
   flying?: boolean;
+  /** A Swim Speed: deep water (`Cell.water`) costs it no extra movement. */
+  swimSpeed?: number;
 }
 
 /**
@@ -794,9 +808,6 @@ export function wardedAgainstMagicalBinding(c: Combatant, condition: ConditionId
     (c.featureIds.includes('free-action') || c.conditions.some((k) => k.id === 'unbound'));
 }
 
-export function ignoresHalfCover(size: CreatureSize): boolean {
-  return size === 'large' || size === 'huge' || size === 'gargantuan';
-}
 
 export type CreatureType =
   | 'humanoid' | 'beast' | 'undead' | 'giant' | 'construct' | 'fiend' | 'dragon' | 'elemental' | 'fey' | 'monstrosity'

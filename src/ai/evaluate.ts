@@ -7,12 +7,12 @@
  * generalizes to content that didn't exist when this file was written.
  */
 import type { GameState, Combatant, TeamId, ConditionId } from '../engine/types.js';
-import { abilityMod, isDown, risesAgain, ignoresHalfCover } from '../engine/types.js';
+import { abilityMod, isDown, risesAgain } from '../engine/types.js';
 import { WEAPONS, type WeaponData } from '../data/weapons.js';
 import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { parseDice } from '../engine/dice.js';
-import { distanceCells, hasLineOfSight, coverBetween } from '../engine/grid.js';
+import { distanceCells, hasLineOfSight, terrainCoverBetween } from '../engine/grid.js';
 import { cellAt } from '../engine/types.js';
 import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -435,16 +435,16 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Priced deliberately: without a term here the AI would walk past every
     // barricade in the game, and cover would join the list of mechanics that
     // are implemented, correct, and never once used.
+    // Terrain only: a creature in the way is cover too, but it will have moved
+    // by the time anyone shoots. Three-quarters is worth two and a half halves
+    // (+5 AC against +2).
     let coveredFrom = 0;
-    // A Large creature gets nothing from a chest-high barricade, so it should
-    // not walk across the board to stand behind one.
-    const canUseCover = !ignoresHalfCover(c.size ?? 'medium');
     for (const e of Object.values(state.combatants)) {
-      if (!canUseCover) break;
       if (!e.alive || isDown(e) || e.team === team) continue;
       if (prefersMelee(e)) continue;   // a sword reaches over a barricade
       if (!hasLineOfSight(state.grid, e.position, c.position)) continue;
-      if (coverBetween(state.grid, e.position, c.position)) coveredFrom++;
+      const level = terrainCoverBetween(state.grid, e.position, c.position);
+      coveredFrom += level === 'three-quarters' ? 2.5 : level === 'half' ? 1 : 0;
     }
     // +2 AC is worth about a tenth of a hit; the hiding is worth more to a kit
     // that gets something for it (a rogue's Sneak Attack rides on advantage).

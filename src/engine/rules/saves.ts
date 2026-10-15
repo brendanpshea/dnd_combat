@@ -1,7 +1,8 @@
 /**
  * Saving throws, including the Bless d4. Mutates draft state (rng).
  */
-import type { GameState, Id, Ability, Combatant } from '../types.js';
+import type { GameState, Id, Ability, Combatant, Position } from '../types.js';
+import { coverLevel, COVER_BONUS } from './cover.js';
 import { abilityMod, proficiencyBonus, isDown, isIncapacitated, canReact, heldInPlace } from '../types.js';
 import { distanceFeet } from '../grid.js';
 import { rollD20, rollDice } from '../dice.js';
@@ -135,6 +136,13 @@ export function savingThrow(
     magical: boolean;
     /** The effect itself grants advantage (Hideous Laughter's save on being hurt). */
     advantage?: boolean;
+    /**
+     * Where the effect comes from — a breath's mouth, a Fireball's burst — for
+     * cover: "+2 bonus to AC and Dexterity saving throws" at half, +5 at
+     * three-quarters (SRD 5.2.1, line 713). Read only for a Dexterity save,
+     * and only the terrain's cover (a barricade, high cover), not creatures'.
+     */
+    coverFrom?: Position;
   },
 ): { success: boolean; event: GameEvent } {
   const c = state.combatants[combatantId]!;
@@ -186,6 +194,12 @@ export function savingThrow(
     (c.conditions.some((k) => k.id === 'bonded') ? 1 : 0) + // Warding Bond
     (ability === 'dex' && c.conditions.some((k) => k.id === 'lethargic') ? -2 : 0) + // Slow
     auraOfProtection(state, c);
+  // Cover from the effect's origin, on a Dexterity save.
+  // Terrain only: see `coverLevel` on why creatures shelter nobody from an area.
+  const cover = ability === 'dex' && opts.coverFrom
+    ? coverLevel(state, opts.coverFrom, c.position, [combatantId], { creatures: false }) : 'none';
+  const covered = cover === 'half' || cover === 'three-quarters';
+  total += COVER_BONUS[cover];
   if (c.conditions.some((k) => k.id === 'blessed')) {
     const d4 = rollDice(state.rng, '1d4');
     state.rng = d4.state;
@@ -285,6 +299,7 @@ export function savingThrow(
       // Halfling Luck or Fated rerolled this, or Legendary Resistance turned it.
       // Reported so a saved life is attributable to what saved it.
       ...(luck ? { luck } : {}),
+      ...(covered ? { cover } : {}),
     },
   };
 }

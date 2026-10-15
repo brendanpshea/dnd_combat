@@ -5,9 +5,10 @@
  * has to agree. A marker that promises protection the dice do not deliver is
  * worse than no marker, because a player will plan around it.
  *
- * The three conditions the real rule has — ranged only, not for Large and up,
- * worth exactly 2 — are checked here against `resolveAttack` itself rather than
- * against a copy of the numbers, so the two cannot drift apart quietly.
+ * The conditions the real rule has — ranged only, worth exactly 2 (or 5) — are
+ * checked here against `resolveAttack` itself rather than against a copy of the
+ * numbers, so the two cannot drift apart quietly. (A third, "not for Large and
+ * up", went with the size gate: SRD 5.2.1 has none.)
  */
 import { describe, it, expect } from 'vitest';
 import { Combat } from '../src/engine/combat.js';
@@ -137,22 +138,39 @@ describe('the promise matches the dice', () => {
     expect(roll.targetAc, 'a reaching melee attack goes over the barricade').toBe(bare);
   });
 
-  it('gives an ogre nothing, and says which reason applies', () => {
-    // A barricade is chest-high to a person and knee-high to a giant. Reported
-    // as `tooBig` rather than plain `covered: false`, because "you are standing
-    // in the wrong place" and "you are too large to duck" are different facts
-    // and a player can only act on one of them.
+  it('covers a Large creature too — the SRD has no size gate', () => {
     const c = board({ x: 3, y: 2 }, { x: 3, y: 6 }, 'large');
     const read = coverReadFor(c.state, 'hero');
-    expect(read.covered).toBe(false);
-    expect(read.tooBig).toBe(true);
+    expect(read.covered).toBe(true);
+    expect(read.level).toBe('half');
 
     const target = c.state.combatants['hero']!;
     const bare = acOf(target);
     const events = resolveAttack(c.state, 'foe', 'hero', 'shortbow');
     const roll = events.find((e) => e.type === 'attackRolled');
     if (roll?.type !== 'attackRolled') throw new Error();
-    expect(roll.targetAc, 'the engine agrees the ogre gets nothing').toBe(bare);
+    expect(roll.targetAc - bare, 'the engine agrees').toBe(read.ac);
+  });
+
+  it('counts a creature on the line, and says three-quarters behind high cover', () => {
+    const c = board({ x: 3, y: 1 }, { x: 3, y: 3 });
+    // No barricade between y=1 and y=3; a bystander at y=2 is the cover.
+    c.state.combatants['ally'] = makeCombatant({ id: 'ally', team: 'team1', position: { x: 3, y: 2 } });
+    c.state.grid.cells[2 * 8 + 3]!.occupantId = 'ally';
+    const read = coverReadAt(c.state, { x: 3, y: 1 }, 'team1');
+    expect(read.level).toBe('half');
+    // A mover asking about where it is going ignores the square it stands on.
+    expect(coverReadAt(c.state, { x: 3, y: 1 }, 'team1', 'ally').covered).toBe(false);
+
+    const high = board({ x: 3, y: 2 }, { x: 3, y: 6 });
+    high.state.grid.cells[4 * 8 + 3]!.terrain = 'high-cover';
+    const r = coverReadAt(high.state, { x: 3, y: 2 }, 'team1');
+    expect(r.level).toBe('three-quarters');
+    expect(r.ac).toBe(5);
+    const roll = resolveAttack(high.state, 'foe', 'hero', 'shortbow').find((e) => e.type === 'attackRolled');
+    if (roll?.type !== 'attackRolled') throw new Error();
+    expect(roll.targetAc - acOf(high.state.combatants['hero']!)).toBe(5);
+    expect(roll.coverLevel).toBe('three-quarters');
   });
 });
 

@@ -26,9 +26,10 @@ export type GameEvent =
       luck?: string;
       hit: boolean; crit: boolean;
       opportunity: boolean;
-      /** A barricade on the line of the shot: `targetAc` already includes the
-       *  +2, and this is what lets the log say why. */
+      /** Cover on the line of the shot: `targetAc` already includes its +2
+       *  (half) or +5 (three-quarters), and this is what lets the log say why. */
       cover?: boolean;
+      coverLevel?: 'half' | 'three-quarters';
       /** A conjuration swung this, not the caster's own arm — the summon's kind
        *  ('spiritual-weapon'). Everything mechanical still hangs off
        *  `attackerId` (it is the caster's spell attack); this only re-labels who
@@ -95,6 +96,8 @@ export type GameEvent =
       natural: number; total: number; success: boolean;
       /** "Fated (4 → 17)" when a reroll changed the die — see rules/luck.ts. */
       luck?: string;
+      /** A Dexterity save made behind cover; `total` includes its +2 or +5. */
+      cover?: 'half' | 'three-quarters';
     }
   | { type: 'hideCheck'; combatantId: Id; natural: number; total: number; success: boolean }
   | { type: 'hiddenRevealed'; combatantId: Id; observerId: Id; passivePerception: number; hideCheck: number }

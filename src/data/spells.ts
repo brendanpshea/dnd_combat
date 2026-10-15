@@ -8,12 +8,13 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isDying, risesAgain, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isDying, risesAgain, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
+import { coverLevel, COVER_BONUS } from '../engine/rules/cover.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
-import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, type Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
+import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, type Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { applyDamage as rawApplyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration, stabilize } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
@@ -27,8 +28,21 @@ import { savingThrow as rawSavingThrow, saveForHalf, immuneToCharmAndFear } from
 // to opt in. (It said so for a long time while passing nothing, which is why
 // `magical` is now required on the engine's side.)
 function savingThrow(state: GameState, combatantId: Id, ability: Ability, dc: number) {
-  return rawSavingThrow(state, combatantId, ability, dc, { magical: true });
+  const from = CASTING !== undefined && CASTING.state === state ? CASTING.from : undefined;
+  return rawSavingThrow(state, combatantId, ability, dc, { magical: true, ...(from ? { coverFrom: from } : {}) });
 }
+
+/**
+ * Where the spell resolving right now comes from, for cover on its Dexterity
+ * saves ("+2 bonus to AC and Dexterity saving throws" at half cover, +5 at
+ * three-quarters — SRD 5.2.1, line 713): a Fireball's point, or the caster for
+ * a cone, a line or anything aimed at a creature. Set around every spell's
+ * `cast` (see the wrapping after SPELLS), so seventy implementations need not
+ * pass it down, and restored after, so a reaction cast inside a cast (Hellish
+ * Rebuke) leaves the outer one's origin as it found it. Absent for a spell that
+ * ignores cover (Sacred Flame).
+ */
+let CASTING: { state: GameState; from?: Position } | undefined;
 
 // And every blow a spell lands is magical, so "resistant to nonmagical
 // bludgeoning, piercing and slashing" does not halve a conjured wolf's bite or
@@ -196,6 +210,11 @@ export interface SpellData {
    * exhalation"). A fighter with Extra Attack swings once and breathes once.
    */
   replacesAttack?: boolean;
+  /**
+   * Its save ignores Half and Three-Quarters Cover (Sacred Flame: "The target
+   * gains no benefit from Half Cover or Three-Quarters Cover for this save").
+   */
+  ignoresCover?: true;
   cast(ctx: CastContext): GameEvent[];
 }
 
@@ -553,11 +572,10 @@ function spellAttack(
    * Wand of the War Mage is the exception the SRD writes into the item: "you
    * ignore Half Cover when making a spell attack roll".
    */
-  const behindCover = !opts.melee &&
-    warMage === 0 &&
-    !ignoresHalfCover(target.size ?? 'medium') &&
-    coverBetween(state.grid, caster.position, target.position);
-  const targetAc = acOf(target) + (behindCover ? 2 : 0);
+  const level = opts.melee ? 'none' : coverLevel(state, caster.position, target.position);
+  const cover = warMage > 0 && level === 'half' ? 'none' : level;
+  const behindCover = cover === 'half' || cover === 'three-quarters';
+  const targetAc = acOf(target) + COVER_BONUS[cover];
   const hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
   return {
     hit,
@@ -570,7 +588,7 @@ function spellAttack(
       hit, crit: hit && crit, opportunity: false,
       // Same flag a weapon attack sets, so the log can say why the AC was two
       // points higher rather than leaving the player to guess.
-      ...(behindCover ? { cover: true } : {}),
+      ...(behindCover ? { cover: true, coverLevel: cover } : {}),
       ...(opts.via ? { via: opts.via } : {}),
     },
   };
@@ -1245,6 +1263,7 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'sacred-flame', name: 'Sacred Flame', level: 0, castingTime: 'action',
     targeting: { kind: 'creature', range: 60, who: 'enemy', count: 1 },
     concentration: false,
+    ignoresCover: true,
     icon: '🔆',
     cast({ state, casterId, targetIds }) {
       const targetId = targetIds[0]!;
@@ -4042,6 +4061,29 @@ export const SPELLS: Record<Id, SpellData> = {
   },
 
 };
+
+/** The point a spell's effect comes from: a sphere's centre, else the caster. */
+function castOrigin(spell: SpellData, ctx: CastContext): Position | undefined {
+  const k = spell.targeting.kind;
+  if ((k === 'sphere2x2' || k === 'sphere5x5') && ctx.positions[0]) return ctx.positions[0];
+  return ctx.state.combatants[ctx.casterId]?.position;
+}
+
+// Every spell's `cast`, wrapped once: the origin its Dexterity saves take cover
+// from (see CASTING).
+for (const spell of Object.values(SPELLS)) {
+  const cast = spell.cast.bind(spell);
+  spell.cast = (ctx: CastContext): GameEvent[] => {
+    const outer = CASTING;
+    const from = spell.ignoresCover ? undefined : castOrigin(spell, ctx);
+    CASTING = { state: ctx.state, ...(from ? { from: { ...from } } : {}) };
+    try {
+      return cast(ctx);
+    } finally {
+      CASTING = outer;
+    }
+  };
+}
 
 /**
  * Reactions to being hurt, cast after the action that did the hurting has

@@ -223,6 +223,10 @@ describe('monster stat blocks against the SRD', () => {
       // checked against the print too.
       const fly = r.speedFull.match(/Fly (\d+) ft/);
       if (m.fly && (fly ? Number(fly[1]) : undefined) !== m.flySpeed) say(`fly ${m.flySpeed}, SRD "${r.speedFull}"`);
+      // A Swim Speed crosses deep water at no extra cost, so it is held to the
+      // print too — present exactly when the block has one.
+      const swim = r.speedFull.match(/Swim (\d+) ft/);
+      if ((swim ? Number(swim[1]) : undefined) !== m.swimSpeed) say(`swim ${m.swimSpeed}, SRD "${r.speedFull}"`);
       if (r.type !== m.creatureType) say(`type ${m.creatureType}, SRD ${r.type}`);
       // Size gates cover, so a wrong one is a silent rules change: an ogre
       // typed Medium would start ducking behind barricades.

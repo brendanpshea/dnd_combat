@@ -73,8 +73,11 @@ export function stepNeighbors(grid: GridState, p: Position): Position[] {
  * shooting through a wall. That is a design question, not plumbing, and this
  * deliberately does not open it.
  */
-function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number, flying = false): number {
+function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number, flying = false, swimming = false): number {
   if (flying && cell.terrain === 'cover') return CELL_FEET;
+  // A Swim Speed crosses deep water at its ordinary cost (SRD 5.2.1, Swim
+  // Speed); without one, the water's `difficult` terrain charges double.
+  if (swimming && cell.water && cell.terrain === 'difficult') return CELL_FEET;
   // Ice underfoot costs what difficult ground costs, without being it.
   // So do Spike Growth's thorns.
   const iced = (cell.chilled !== undefined && (round === undefined || round <= cell.chilled.expiresAtRound)) ||
@@ -85,13 +88,15 @@ function terrainMoveCost(cell: Cell, ignoreDifficult = false, round?: number, fl
     case 'hazard': return iced && !ignoreDifficult ? CELL_FEET * 2 : CELL_FEET;
     // A barricade is chest-high: you can see over it, not walk through it.
     case 'cover': return Infinity;
+    // An arrow slit or a portcullis goes all the way up: fliers do not cross it.
+    case 'high-cover': return Infinity;
     case 'wall': return Infinity;
   }
 }
 
 /** Terrain you cannot enter. Sight is a separate question — see coverBetween. */
 export function blocksMovement(t: TerrainId): boolean {
-  return t === 'wall' || t === 'cover';
+  return t === 'wall' || t === 'cover' || t === 'high-cover';
 }
 
 /**
@@ -107,11 +112,24 @@ export function blocksMovement(t: TerrainId): boolean {
  * is what makes moving round the flank worth doing.
  */
 export function coverBetween(grid: GridState, from: Position, to: Position): boolean {
+  return terrainCoverBetween(grid, from, to) !== 'none';
+}
+
+/**
+ * The cover the TERRAIN between two cells gives: a barricade is half cover, a
+ * high one (`high-cover`) three-quarters; the better one on the line counts.
+ * Creatures in the way are cover too, but they move — rules/cover.ts adds
+ * them (`coverLevel`); this is the part that is a fact about the board.
+ */
+export function terrainCoverBetween(grid: GridState, from: Position, to: Position): 'none' | 'half' | 'three-quarters' {
+  let best: 'none' | 'half' | 'three-quarters' = 'none';
   for (const p of lineTrace(from, to)) {
     if (posEq(p, from) || posEq(p, to)) continue;
-    if (cellAt(grid, p)?.terrain === 'cover') return true;
+    const t = cellAt(grid, p)?.terrain;
+    if (t === 'high-cover') return 'three-quarters';
+    if (t === 'cover') best = 'half';
   }
-  return false;
+  return best;
 }
 
 /** Ice that has outlasted its round, swept the way illusions are. */
@@ -355,6 +373,8 @@ export function reachable(
   flying = false,
   /** Extra feet a route may spend to avoid damage. 0 keeps the old tiebreak. */
   dangerSlack = 0,
+  /** Has a Swim Speed: deep water costs it nothing extra. */
+  swimming = false,
 ): ReachResult {
   const costs = new Map<string, number>([[key(start), 0]]);
   const prev = new Map<string, Position>();
@@ -386,7 +406,7 @@ export function reachable(
     for (const n of stepNeighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
-      const stepCost = terrainMoveCost(cell, ignoreDifficult, undefined, flying);
+      const stepCost = terrainMoveCost(cell, ignoreDifficult, undefined, flying, swimming);
       const total = curCost + stepCost;
       if (total > budgetFeet) continue;
       const totalRisk = curRisk + (danger ? danger(cur, n) : 0);
@@ -406,7 +426,7 @@ export function reachable(
   if (!danger || dangerSlack <= 0) return { costs, prev };
   return withDetours(grid, start, budgetFeet, blockedBy, danger, ignoreDifficult, flying, dangerSlack, {
     costs, prev, minCost: cost, at,
-  });
+  }, swimming);
 }
 
 /**
@@ -458,6 +478,7 @@ function withDetours(
   flying: boolean,
   dangerSlack: number,
   plain: { costs: Map<string, number>; prev: Map<string, Position>; minCost: Float64Array; at: (p: Position) => number },
+  swimming = false,
 ): ReachResult {
   const { minCost, at } = plain;
   const fronts: Label[][] = Array.from({ length: grid.width * grid.height }, () => []);
@@ -473,7 +494,7 @@ function withDetours(
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
       const i = at(n);
-      const cost = cur.cost + terrainMoveCost(cell, ignoreDifficult, undefined, flying);
+      const cost = cur.cost + terrainMoveCost(cell, ignoreDifficult, undefined, flying, swimming);
       if (cost > budgetFeet || cost > minCost[i]! + dangerSlack) continue;
       const risk = cur.risk + danger(cur.pos, n);
       const front = fronts[i]!;

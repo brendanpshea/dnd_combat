@@ -54,7 +54,7 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
     combatants[c.id] = c;
     const cell = cellAt(grid, c.position);
     if (!cell) throw new Error(`${c.id} placed out of bounds`);
-    if (blocksMovement(cell.terrain)) throw new Error(`${c.id} placed inside ${cell.terrain === 'cover' ? 'a barricade' : 'a wall'}`);
+    if (blocksMovement(cell.terrain)) throw new Error(`${c.id} placed inside ${cell.terrain === 'wall' ? 'a wall' : 'a barricade'}`);
     if (cell.occupantId) throw new Error(`${c.id} placed on occupied cell`);
     cell.occupantId = c.id;
   }

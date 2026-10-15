@@ -127,6 +127,11 @@ export function enterHazard(state: GameState, victimId: Id): GameEvent[] {
  * Winterlands and the Ring of Free Action, and burrowers/earth-gliders that
  * move through it.
  */
+/** Has a Swim Speed, so deep water (`Cell.water`) is ordinary ground to it. */
+function swims(mover: Combatant): boolean {
+  return (mover.swimSpeed ?? 0) > 0;
+}
+
 function ignoresDifficult(mover: Combatant): boolean {
   return (
     // A flier is not walking on it. The cheapest and least surprising half of
@@ -161,7 +166,7 @@ export function hostileIds(state: GameState, mover: Combatant): Set<Id> {
 export function moveDestinations(state: GameState, mover: Combatant): Position[] {
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   if (budget <= 0) return [];
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, ignoresDifficult(mover), mover.flying === true);
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, ignoresDifficult(mover), mover.flying === true, 0, swims(mover));
   // Frightened: "You can't willingly move closer to the source of fear" (SRD
   // 5.2.1, Frightened). Judged on where the walk ends, which is all a `move`
   // names; the route there is the engine's to pick.
@@ -329,7 +334,7 @@ export function walkReads(state: GameState, mover: Combatant): Map<string, WalkR
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   if (budget <= 0) return out;
   const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover),
-    stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET);
+    stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET, swims(mover));
 
   const hazardMax = hazardMaxFor(mover, state.grid);
   const threats = mover.turn.disengaged ? [] : [...hostileIds(state, mover)]
@@ -377,7 +382,7 @@ export function walkReads(state: GameState, mover: Combatant): Map<string, WalkR
 export function readWalk(state: GameState, mover: Combatant, to: Position): WalkRead {
   const empty: WalkRead = { provokers: [], hazardDamage: 0 };
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET);
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET, swims(mover));
   const path = pathTo(r, mover.position, to);
   if (!path) return empty;
 
@@ -420,7 +425,7 @@ export function executeMove(state: GameState, moverId: Id, to: Position): GameEv
   const events: GameEvent[] = [];
   const mover = state.combatants[moverId]!;
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
-  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET);
+  const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), stepDanger(state, mover), ignoresDifficult(mover), mover.flying === true, DANGER_SLACK_FEET, swims(mover));
   const path = pathTo(r, mover.position, to);
   if (!path) throw new Error(`Illegal move for ${moverId} to ${to.x},${to.y}`);
   // Reachable is not the same as free to stand on: `reachable` deliberately

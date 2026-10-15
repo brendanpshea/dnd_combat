@@ -1,6 +1,6 @@
 /** Hide, direct-target visibility, and turn-start passive discovery. */
 import type { Combatant, GameState, Id } from '../types.js';
-import { abilityMod, proficiencyBonus, isDown, ignoresHalfCover } from '../types.js';
+import { abilityMod, proficiencyBonus, isDown } from '../types.js';
 import { rollD20 } from '../dice.js';
 import { hasLineOfSight, coverBetween } from '../grid.js';
 import { armorStealthDisadvantage } from '../../data/armor.js';
@@ -38,10 +38,9 @@ export function canHide(state: GameState, actor: Combatant): boolean {
     (other) => other.alive && !isDown(other) && other.team !== actor.team &&
       !other.conditions.some((c) => c.id === 'blinded' || c.id === 'unconscious') &&
       hasLineOfSight(state.grid, other.position, actor.position) &&
-      // Big things do not hide behind barricades either. An ogre with a low
-      // wall in front of it is an ogre, in plain view.
-      !(!ignoresHalfCover(actor.size ?? 'medium') &&
-        coverBetween(state.grid, other.position, actor.position)),
+      // A barricade (or high cover) between: the size gate that kept an ogre
+      // from it went with the one on cover itself — the SRD has none.
+      !coverBetween(state.grid, other.position, actor.position),
   );
 }
 

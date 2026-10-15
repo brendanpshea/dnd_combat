@@ -3,12 +3,13 @@
  * state they are given — step() owns cloning, these own the rules.
  */
 import type { GameState, Combatant, Id, DamageType, Ability, CreatureType } from '../types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, ignoresHalfCover, risesAgain } from '../types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isIncapacitated, canReact, immuneToCondition, isTurnOf, risesAgain } from '../types.js';
+import { coverLevel, COVER_BONUS } from './cover.js';
 import { WEAPONS, type WeaponData, isWeaponProficient } from '../../data/weapons.js';
 import { FEATURES, revertShape, bardicDie } from '../../data/features.js';
 import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
-import { distanceFeet, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
+import { distanceFeet, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource } from '../grid.js';
 import { dismissSummonedBy, dismissSummonsOfSpell, actsOnItsOwn } from './summon.js';
 import { withinReach, reachFeet } from './reach.js';
 import { attackableWeapons } from './equipment.js';
@@ -385,18 +386,16 @@ export function resolveAttack(
   // attacker is within 5 feet" (SRD 5.2.1) — not from a reach weapon's ten.
   let crit = !targetNoCrit && (natCrit ||
     (isHelpless(target) && distanceFeet(attacker.position, target.position) <= 5));
-  // Half cover: +2 AC when a barricade sits on the line of the shot. The
-  // barricade does not block sight, so this is the whole of its effect on an
-  // attack — and it is why *where* you shoot from is now a question. Melee
-  // reaches over it, so only a ranged attack is affected.
-  // Size gates it: a barricade is chest-high to a person, so a kobold ducks
-  // behind it and an ogre just stands there. Same terrain, different board,
-  // depending on what is standing on it — which is most of the point of having
-  // terrain at all.
-  const behindCover = !isMeleeAttack &&
-    !ignoresHalfCover(target.size ?? 'medium') &&
-    coverBetween(state.grid, attacker.position, target.position);
-  const targetAc = acOf(target) + (behindCover ? 2 : 0) +
+  // Cover (SRD 5.2.1, line 713): +2 AC at half — a barricade, or a creature,
+  // friend or foe, standing on the line of the shot — and +5 at three-quarters
+  // (high cover). The barricade does not block sight, so this is the whole of
+  // its effect on an attack, and it is why *where* you shoot from is a
+  // question. Melee reaches over it, so only a ranged attack is affected. It
+  // used to be barricades only, and nothing at all for a Large or bigger
+  // target; the SRD has creatures as cover and no size gate.
+  const cover = isMeleeAttack ? 'none' : coverLevel(state, attacker.position, target.position);
+  const behindCover = cover === 'half' || cover === 'three-quarters';
+  const targetAc = acOf(target) + COVER_BONUS[cover] +
     (isMeleeAttack ? 0 : shieldRangedBonus(target.equipped.offHand));
   // Only a natural 20 hits regardless of AC; a Champion's 19 still needs to hit.
   let hit = d20.natural !== 1 && (d20.natural === 20 || total >= targetAc);
@@ -459,7 +458,7 @@ export function resolveAttack(
     ...(d20.luck ? { luck: d20.luck } : {}),
     hit, crit: hit && crit,
     opportunity: ctx.opportunity ?? false,
-    ...(behindCover ? { cover: true } : {}),
+    ...(behindCover ? { cover: true, coverLevel: cover } : {}),
   });
   events.push(...endHide(attacker));
 
@@ -1951,7 +1950,7 @@ export function deathBurst(state: GameState, c: Combatant): GameEvent[] {
   const roll = rollDice(state.rng, burst.dice);
   state.rng = roll.state;
   for (const t of caught) {
-    const save = savingThrow(state, t.id, burst.save.ability, burst.save.dc, { magical: false });
+    const save = savingThrow(state, t.id, burst.save.ability, burst.save.dc, { magical: false, coverFrom: c.position });
     events.push(save.event);
     const amount = save.success ? Math.floor(roll.total / 2) : roll.total;
     if (amount > 0) events.push(...applyDamage(state, t.id, c.id, amount, burst.type, roll.rolls, { magical: false, tags: ['Death Burst'] }));

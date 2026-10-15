@@ -169,7 +169,7 @@ describe('generated boards have shape', () => {
  * creature was only catching cover on a handful of shots a fight. This is
  * differentiation, not balance.
  */
-describe('size gates cover', () => {
+describe('cover does not ask a creature its size (SRD 5.2.1, line 713)', () => {
   const rows = ['........', '........', '...+....', '........', '........'];
 
   /** One ranged attack across the barricade, at whatever is standing behind it. */
@@ -185,11 +185,15 @@ describe('size gates cover', () => {
     return { targetAc: roll.targetAc, ...(roll.cover ? { cover: true } : {}) };
   }
 
-  it('covers a Small or Medium creature and not a Large one', () => {
+  it('covers a Large creature as it covers a Small one', () => {
+    // It used to cover neither a Large nor anything bigger — a house rule, "a
+    // barricade is chest-high to a person". The SRD gives half cover to "an
+    // obstacle [that] blocks at least half of" the target and gates nothing on
+    // size, so the gate is gone.
     expect(MONSTERS['kobold']!.size).toBe('small');
     expect(MONSTERS['ogre']!.size).toBe('large');
     expect(shootAcross('kobold').cover, 'a kobold is behind the barricade').toBe(true);
-    expect(shootAcross('ogre').cover, 'an ogre is standing over it').toBeUndefined();
+    expect(shootAcross('ogre').cover, 'so is an ogre').toBe(true);
   });
 
   it('is the AC, not just the flag', () => {
@@ -205,15 +209,15 @@ describe('size gates cover', () => {
     expect(withCover - roll.targetAc).toBe(2);
   });
 
-  it('stops a big creature hiding behind one too', () => {
+  it('lets a big creature hide behind one too', () => {
     const hider = (monsterId: string) => {
       const m = { ...buildMonster(monsterId, 'team1', { x: 3, y: 1 }), id: 'h' };
       const foes = [0, 1].map((i) => ({ ...buildMonster('scout', 'team2', { x: 2 + i, y: 4 }), id: `f${i}` }));
       const c = new Combat({ seed: 1, map: board(['........', '........', '++++++++', '........', '........']), combatants: [m, ...foes] });
       return canHide(c.state, c.state.combatants['h']!);
     };
-    expect(hider('kobold'), 'small enough to duck').toBe(true);
-    expect(hider('ogre'), 'an ogre behind a low wall is an ogre, in plain view').toBe(false);
+    expect(hider('kobold')).toBe(true);
+    expect(hider('ogre')).toBe(true);
   });
 
   it('gives every monster and species a size', () => {

@@ -718,6 +718,16 @@ button.endturn { background: #4a3a1f; border-color: var(--gold); color: var(--go
   box-shadow: inset 0 3px 0 -1px #a68d68, inset 0 -8px 8px -8px #000a;
 }
 .cell.terrain-cover.needs-badge::after { content: '🧱'; }
+/* High cover (three-quarters): the barricade's slab, taller, with a slit of
+   floor showing through — solid to walk, open to an arrow. */
+.board .cell.terrain-high-cover {
+  background:
+    linear-gradient(90deg, #0000 0 44%, #2a2740 44% 56%, #0000 56%),
+    linear-gradient(#0000 0 8%, #6b5a45 8% 92%, #0000 92%),
+    linear-gradient(150deg, #33304a, #2a2740);
+  box-shadow: inset 0 3px 0 -1px #a68d68, inset 0 -8px 8px -8px #000a;
+}
+.cell.terrain-high-cover.needs-badge::after { content: '🏯'; }
 .cell.terrain-difficult.needs-badge::after { content: '💧'; }
 .cell.terrain-hazard.needs-badge::after { content: '🔥'; }
 
@@ -3886,6 +3896,8 @@ button.category .count {
 /* The flat fills these terrains used are the prop's job now. */
 .board .cell.art-prop.terrain-cover { background: var(--floor, var(--cell)); box-shadow: inset 0 0 0 1px #14101f; }
 .board .cell.art-prop.terrain-cover.dark { background: var(--floor-dark, var(--cell-dark)); }
+.board .cell.art-prop.terrain-high-cover { background: var(--floor, var(--cell)); box-shadow: inset 0 0 0 1px #14101f; }
+.board .cell.art-prop.terrain-high-cover.dark { background: var(--floor-dark, var(--cell-dark)); }
 
 /* ---- cover markers -------------------------------------------------------
    XCOM's shield. Barricades have granted +2 AC since they were added and the

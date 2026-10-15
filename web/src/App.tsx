@@ -1014,7 +1014,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
     if (!grouped || !active || targeting || !isHumanTurn) return m;
     for (const k of grouped.moves.keys()) {
       const [x, y] = k.split(',').map(Number);
-      const read = coverReadAt(state, { x: x!, y: y! }, active.team, active.size ?? 'medium');
+      const read = coverReadAt(state, { x: x!, y: y! }, active.team, active.id);
       if (read.covered) m.set(k, read);
     }
     return m;

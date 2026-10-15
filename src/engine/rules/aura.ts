@@ -37,7 +37,7 @@ function suffer(state: GameState, owner: Combatant, aura: MonsterAura, target: C
   const events: GameEvent[] = [];
   let failed = true;
   if (aura.save) {
-    const save = savingThrow(state, target.id, aura.save.ability, aura.save.dc, { magical: false });
+    const save = savingThrow(state, target.id, aura.save.ability, aura.save.dc, { magical: false, coverFrom: owner.position });
     events.push(save.event);
     failed = !save.success;
     if (save.success && aura.immuneOnSuccess) {

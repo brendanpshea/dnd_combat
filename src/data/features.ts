@@ -274,7 +274,7 @@ function breathApply(featureId: Id) {
       if (!tid) continue;
       const t = state.combatants[tid]!;
       if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
-      const { success, event } = savingThrow(state, t.id, spec.save, dc, { magical: false });
+      const { success, event } = savingThrow(state, t.id, spec.save, dc, { magical: false, coverFrom: me.position });
       events.push(event);
       const roll = rollDice(state.rng, spec.dice);
       state.rng = roll.state;

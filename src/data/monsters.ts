@@ -89,6 +89,8 @@ export interface MonsterData {
    * figure so the stat-block test can hold both to the print.
    */
   flySpeed?: number;
+  /** The stat block's Swim Speed: deep water (`Cell.water`) is no slower for it. */
+  swimSpeed?: number;
   /**
    * The Multiattack as the stat block writes it, when it names its attacks:
    * each inner list is one way to spend the Attack action, by weapon id ("one
@@ -588,7 +590,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'giant-toad': {
     id: 'giant-toad', name: 'Giant Toad',
-    ac: 11, hp: 39, speed: 30,
+    ac: 11, hp: 39, speed: 30, swimSpeed: 30,
     creatureType: 'beast',
     size: 'large',
     abilities: { str: 15, dex: 13, con: 13, int: 2, wis: 10, cha: 3 },
@@ -615,7 +617,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'giant-constrictor-snake': {
     id: 'giant-constrictor-snake', name: 'Giant Constrictor Snake',
-    ac: 12, hp: 60, speed: 30,
+    ac: 12, hp: 60, speed: 30, swimSpeed: 30,
     creatureType: 'beast',
     size: 'huge',
     abilities: { str: 19, dex: 14, con: 12, int: 1, wis: 10, cha: 3 },
@@ -652,7 +654,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'water-elemental': {
     id: 'water-elemental', name: 'Water Elemental',
-    ac: 14, cr: 5, hp: 114, speed: 30,
+    ac: 14, cr: 5, hp: 114, speed: 30, swimSpeed: 90,
     creatureType: 'elemental',
     size: 'large',
     abilities: { str: 18, dex: 14, con: 18, int: 5, wis: 10, cha: 8 },
@@ -728,7 +730,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'green-hag': {
     id: 'green-hag', name: 'Green Hag',
-    ac: 17, hp: 82, speed: 30,
+    ac: 17, hp: 82, speed: 30, swimSpeed: 30,
     creatureType: 'fey',
     size: 'medium',
     abilities: { str: 18, dex: 12, con: 16, int: 13, wis: 14, cha: 14 },
@@ -760,7 +762,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   'draconic-spirit': {
     id: 'draconic-spirit', name: 'Draconic Spirit',
     artId: 'young-red',
-    ac: 19, hp: 50, speed: 60,
+    ac: 19, hp: 50, speed: 60, swimSpeed: 30,
     creatureType: 'dragon',
     size: 'large',
     fly: true,
@@ -1166,7 +1168,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   aboleth: {
     id: 'aboleth', name: 'Aboleth',
-    ac: 17, cr: 10, hp: 150, speed: 10,
+    ac: 17, cr: 10, hp: 150, speed: 10, swimSpeed: 40,
     creatureType: 'aberration',
     size: 'large',
     abilities: { str: 21, dex: 9, con: 15, int: 18, wis: 15, cha: 18 },
@@ -1293,7 +1295,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'giant-crocodile': {
     id: 'giant-crocodile', name: 'Giant Crocodile',
-    ac: 14, cr: 5, hp: 85, speed: 30,
+    ac: 14, cr: 5, hp: 85, speed: 30, swimSpeed: 50,
     creatureType: 'beast',
     size: 'huge',
     abilities: { str: 21, dex: 9, con: 17, int: 2, wis: 10, cha: 7 },
@@ -1845,10 +1847,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['pike', 'longbow'],
     attacksPerAction: 2,
   },
-  // Giant Frog: Swallow, Standing Leap, its swim speed.
+  // Giant Frog: Swallow, Standing Leap.
   'giant-frog': {
     id: 'giant-frog', name: 'Giant Frog',
-    ac: 11, hp: 18, speed: 30,
+    ac: 11, hp: 18, speed: 30, swimSpeed: 30,
     creatureType: 'beast',
     size: 'medium',
     abilities: { str: 12, dex: 13, con: 11, int: 2, wis: 10, cha: 3 },
@@ -1885,10 +1887,10 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['giant-lizard-bite'],
   },
   // Young Bronze Dragon: Repulsion Breath (and replacing a Rend with it),
-  // its swim speed, Amphibious.
+  // Amphibious.
   'young-bronze': {
     id: 'young-bronze', fly: true, name: 'Young Bronze Dragon',
-    ac: 17, cr: 8, hp: 142, speed: 40, flySpeed: 80,
+    ac: 17, cr: 8, hp: 142, speed: 40, swimSpeed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 21, dex: 10, con: 19, int: 14, wis: 13, cha: 17 },
@@ -1903,7 +1905,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // attacks on one body rather than the reverse.
   hydra: {
     id: 'hydra', name: 'Hydra',
-    ac: 15, cr: 8, hp: 184, speed: 40,
+    ac: 15, cr: 8, hp: 184, speed: 40, swimSpeed: 40,
     creatureType: 'monstrosity',
     size: 'huge',
     abilities: { str: 20, dex: 12, con: 20, int: 2, wis: 10, cha: 7 },
@@ -1916,7 +1918,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // wyrmling blocks, with the heavier breath spec and three Rends a turn.
   'young-white': {
     id: 'young-white', fly: true, name: 'Young White Dragon',
-    ac: 17, cr: 6, hp: 123, speed: 40, flySpeed: 80,
+    ac: 17, cr: 6, hp: 123, speed: 40, swimSpeed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 18, dex: 10, con: 18, int: 6, wis: 11, cha: 12 },
@@ -1928,7 +1930,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'young-black': {
     id: 'young-black', fly: true, name: 'Young Black Dragon',
-    ac: 18, cr: 7, hp: 127, speed: 40, flySpeed: 80,
+    ac: 18, cr: 7, hp: 127, speed: 40, swimSpeed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 19, dex: 14, con: 17, int: 12, wis: 11, cha: 15 },
@@ -1940,7 +1942,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'young-green': {
     id: 'young-green', fly: true, name: 'Young Green Dragon',
-    ac: 18, cr: 8, hp: 136, speed: 40, flySpeed: 80,
+    ac: 18, cr: 8, hp: 136, speed: 40, swimSpeed: 40, flySpeed: 80,
     creatureType: 'dragon',
     size: 'large',
     abilities: { str: 19, dex: 12, con: 17, int: 16, wis: 13, cha: 15 },
@@ -2072,7 +2074,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   // CR 2–4) makes their breath DCs land at the SRD's 11–13.
   'black-wyrmling': {
     id: 'black-wyrmling', fly: true, name: 'Black Dragon Wyrmling',
-    ac: 17, hp: 33, speed: 30, flySpeed: 60, cr: 2,
+    ac: 17, hp: 33, speed: 30, swimSpeed: 30, flySpeed: 60, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 15, dex: 14, con: 13, int: 10, wis: 11, cha: 13 },
@@ -2094,7 +2096,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'green-wyrmling': {
     id: 'green-wyrmling', fly: true, name: 'Green Dragon Wyrmling',
-    ac: 17, hp: 38, speed: 30, flySpeed: 60, cr: 2,
+    ac: 17, hp: 38, speed: 30, swimSpeed: 30, flySpeed: 60, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 15, dex: 12, con: 13, int: 14, wis: 11, cha: 13 },
@@ -2117,7 +2119,7 @@ export const MONSTERS: Record<Id, MonsterData> = {
   },
   'white-wyrmling': {
     id: 'white-wyrmling', fly: true, name: 'White Dragon Wyrmling',
-    ac: 16, hp: 32, speed: 30, flySpeed: 60, cr: 2,
+    ac: 16, hp: 32, speed: 30, swimSpeed: 30, flySpeed: 60, cr: 2,
     creatureType: 'dragon',
     size: 'medium',
     abilities: { str: 14, dex: 10, con: 14, int: 5, wis: 10, cha: 11 },
@@ -2232,6 +2234,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
     ...(m.artId ? { portraitId: m.artId } : {}),
     size: m.size,
     ...(m.fly ? { flying: true as const } : {}),
+    ...(m.swimSpeed ? { swimSpeed: m.swimSpeed } : {}),
     ...(m.multiattack ? { routines: m.multiattack.map((r) => [...r]) } : {}),
     // Copied, not shared: `suppressed` is per-combatant turn state, and three
     // trolls from one stat block must not share one flag.

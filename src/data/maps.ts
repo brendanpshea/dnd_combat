@@ -29,6 +29,11 @@ const CHAR_TERRAIN: Record<string, TerrainId> = {
   // A barricade: chest-high, so you cannot walk through it but you can see and
   // shoot over it, at +2 AC to whoever is behind it.
   '+': 'cover',
+  // High cover: an arrow slit, a portcullis, a thick trunk. Shots pass, at +5
+  // AC (Three-Quarters Cover) to whoever is behind it; nothing passes.
+  '=': 'high-cover',
+  // Deep water: difficult ground, except to a swimmer (Cell.water).
+  'w': 'difficult',
 };
 
 export function parseMap(map: MapData): GridState {
@@ -41,7 +46,7 @@ export function parseMap(map: MapData): GridState {
     for (let x = 0; x < width; x++) {
       const t = CHAR_TERRAIN[row[x]!];
       if (!t) throw new Error(`Map ${map.id}: unknown terrain char '${row[x]}'`);
-      cells[y * width + x] = { terrain: t };
+      cells[y * width + x] = row[x] === 'w' ? { terrain: t, water: true } : { terrain: t };
     }
   });
   return { width, height, cells, theme: map.theme };

@@ -336,14 +336,14 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
       // whose terrain differs from any orthogonal neighbour, or sits on the
       // grid edge. Keeps a large lava pool or marsh from being stamped on
       // every interior tile while still flagging what the terrain is.
-      if (cell.terrain === 'difficult' || cell.terrain === 'hazard' || cell.terrain === 'cover') {
+      if (cell.terrain === 'difficult' || cell.terrain === 'hazard' || cell.terrain === 'cover' || cell.terrain === 'high-cover') {
         const edge = ([[1, 0], [-1, 0], [0, 1], [0, -1]] as const).some(([dx, dy]) => {
           const n = cellAt(state.grid, { x: x + dx, y: y + dy });
           return !n || n.terrain !== cell.terrain;
         });
         // A drawn prop carries its own meaning; stamping an emoji on top of it
         // would be the placeholder showing through the thing that replaced it.
-        if (edge && !(cell.terrain === 'cover' && drawnProps)) {
+        if (edge && !((cell.terrain === 'cover' || cell.terrain === 'high-cover') && drawnProps)) {
           classes.push('needs-badge');
         }
       }
@@ -355,7 +355,7 @@ export function Board({ state, activeId, highlights, coverCells, coverUnits, ris
       // Mixing two variants is the whole reason there are two — a run of one
       // sprite down a map edge reads as wallpaper rather than as a wall.
       let propUrl: string | undefined;
-      if ((cell.terrain === 'wall' || cell.terrain === 'cover') && drawnProps) {
+      if ((cell.terrain === 'wall' || cell.terrain === 'cover' || cell.terrain === 'high-cover') && drawnProps) {
         propUrl = terrainUrl(cell.terrain === 'wall' ? 'wall' : 'cover', boardTheme,
           (x * 3 + y * 5) % 2 === 0 ? 'a' : 'b');
         classes.push('art-prop');
