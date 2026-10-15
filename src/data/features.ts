@@ -1533,8 +1533,9 @@ export const FEATURES: Record<Id, FeatureData> = {
   rage: {
     id: 'rage', name: 'Rage', trigger: 'bonus',
     // The class table's Rages column, not proficiency: the two part at levels
-    // 3-4 and 6-8, where proficiency ran a rage short.
-    uses: { count: 'rages', per: 'longRest' },
+    // 3-4 and 6-8, where proficiency ran a rage short. "You regain one
+    // expended use when you finish a Short Rest."
+    uses: { count: 'rages', per: 'longRest', shortRestRegain: 1 },
     apply({ state, actorId }) {
       const c = state.combatants[actorId]!;
       if (c.conditions.some((k) => k.id === 'raging')) return [];

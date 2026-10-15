@@ -111,6 +111,21 @@ describe('feature pools and rests', () => {
     expect(buildCampaignParty(c)[0]!.featureUses['second-wind']!.current).toBe(winds);
   });
 
+  it('gives back one Rage on a short rest, and the rest on a long one', () => {
+    // "You regain one expended use when you finish a Short Rest, and you
+    // regain all expended uses when you finish a Long Rest."
+    const c = partyOf('barbarian');
+    const fought = buildCampaignParty(c)[0]!;
+    const rages = fought.featureUses['rage']!.max;
+    expect(rages, 'three Rages at 5th level').toBe(3);
+    fought.featureUses['rage'] = { current: 0, max: rages };
+    readBackSurvivors(c, [fought]);
+    shortRest(c);
+    expect(buildCampaignParty(c)[0]!.featureUses['rage']!.current).toBe(1);
+    longRest(c);
+    expect(buildCampaignParty(c)[0]!.featureUses['rage']!.current).toBe(rages);
+  });
+
   it('keeps the daily pool while giving back the short-rest one', () => {
     // The mixed case, which is where a naive "clear it all" would pass the two
     // tests above and still be wrong.

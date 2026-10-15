@@ -1869,7 +1869,7 @@ function refillShortRestFeatures(ch: PartyCharacter, combatant: Combatant): void
     // From this level the whole pool returns on a short rest (Font of Inspiration).
     if (uses.shortRestFrom !== undefined && combatant.level >= uses.shortRestFrom) continue;
     // "You regain one expended use when you finish a Short Rest" — Second
-    // Wind, Channel Divinity, Wild Shape. Absent in the record means full.
+    // Wind, Channel Divinity, Wild Shape, Rage. Absent in the record means full.
     const max = combatant.featureUses[id]?.max ?? current;
     const after = Math.min(max, current + (uses.shortRestRegain ?? 0));
     if (after < max) kept[id] = after;
