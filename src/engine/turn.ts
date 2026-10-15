@@ -226,8 +226,12 @@ export function startTurn(state: GameState): GameEvent[] {
   // Stand up from prone automatically for half speed — unless you're in no
   // condition to: a downed hero standing itself up every turn is nonsense, and
   // it would strip the prone that marks it as a body on the floor.
-  const helpless = c.conditions.some(
-    (k) => k.id === 'unconscious' || k.id === 'paralyzed' || k.id === 'stunned');
+  //
+  // Speed 0 is Paralyzed's and Unconscious's own clause. Stunned and
+  // Incapacitated carry none in the 2024 rules — a stunned creature cannot act
+  // but can still walk — so they no longer zero it (see below for Hypnotic
+  // Pattern, which says Speed 0 itself).
+  const helpless = c.conditions.some((k) => k.id === 'unconscious' || k.id === 'paralyzed');
   let speed = helpless ? 0 : c.speed;
   /*
    * What a Dash is worth this turn, tracked in parallel.
@@ -267,15 +271,20 @@ export function startTurn(state: GameState): GameEvent[] {
     // `speed` only: standing is a movement cost, and `dashSpeed` is a Speed.
     speed = Math.floor(speed / 2);
     events.push({ type: 'conditionRemoved', combatantId: c.id, condition: 'prone' });
+  } else if (c.conditions.some((k) => k.id === 'prone')) {
+    // Still on the floor and not getting up: it can only crawl, at a foot of
+    // extra movement for every foot.
+    speed = Math.floor(speed / 10) * 5;
+    dashSpeed = Math.floor(dashSpeed / 10) * 5;
   }
   // Web: a restrained creature can't move at all this turn — and cannot Dash
   // its way out either, which is exactly what it used to do. A grappled one
   // likewise: "Speed 0 and can't increase".
   if (heldInPlace(c)) { speed = 0; dashSpeed = 0; }
-  // Incapacitated (e.g. the first stage of Sleep): takes no actions and no
-  // movement — it just stands there until its end-of-turn save. Without this it
-  // kept full speed and the AI would walk it around before rolling to wake.
-  if (c.conditions.some((k) => k.id === 'incapacitated')) { speed = 0; dashSpeed = 0; }
+  // Hypnotic Pattern: "the Incapacitated condition and a Speed of 0". Plain
+  // Incapacitated (Sleep's first stage, Hideous Laughter) takes the actions,
+  // not the legs — SRD 5.2.1 gives that condition no Speed clause.
+  if (c.conditions.some((k) => k.id === 'incapacitated' && k.endsOnDamage)) { speed = 0; dashSpeed = 0; }
   // Spirit Guardians halves the Speed of anyone else standing in it — half
   // of what the spell does, and it was missing entirely. Applied here rather
   // than as a condition because the aura is a place, not a status: walking out

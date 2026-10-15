@@ -150,6 +150,19 @@ function cannotAct(c: Combatant): boolean {
     c.conditions.some((k) => k.id === 'commanded' || k.id === 'lured' || k.id === 'fleeing');
 }
 
+/**
+ * Can't move on its own. Not the same set as `cannotAct`: in the 2024 rules
+ * Incapacitated and Stunned take the actions and leave the legs, so a stunned
+ * creature may walk. Paralyzed and Unconscious are Speed 0 by their own text —
+ * named here as well as zeroed in startTurn, because a creature dropped by an
+ * opportunity attack mid-walk still holds that turn's stale budget. The rest
+ * spend the turn's movement themselves (Command's grovel, Luring Song, flight).
+ */
+function cannotMove(c: Combatant): boolean {
+  return c.conditions.some((k) => k.id === 'paralyzed' || k.id === 'unconscious' ||
+    k.id === 'commanded' || k.id === 'lured' || k.id === 'fleeing');
+}
+
 function canUseOffhand(actor: Combatant, weaponId: Id): boolean {
   // Two-weapon fighting: a light weapon in each actual hand, off-hand attack
   // made with the off-hand weapon.
@@ -394,9 +407,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
     case 'endTurn':
       return true;
     case 'move':
-      // Incapacitated/paralyzed/etc. take no movement either (their turn grants
-      // zero speed, but gate here too so no stale budget slips a step through).
-      if (incap) return false;
+      // Paralyzed/unconscious/etc. take no movement (their turn grants zero
+      // speed, but gate here too so no stale budget slips a step through).
+      if (cannotMove(actor)) return false;
       return moveDestinations(state, actor).some((p) => posEq(p, action.to));
     case 'attack':
       if (incap) return false;
@@ -675,11 +688,11 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   const enemies = Object.values(state.combatants).filter((c) => c.alive && !isDown(c) && c.team !== actor.team);
   const allies = Object.values(state.combatants).filter((c) => c.alive && c.team === actor.team);
 
-  // No movement while incapacitated — mirrors the `move` gate in isLegalAction.
+  // No movement when it cannot move — mirrors the `move` gate in isLegalAction.
   // This matters mid-turn too: a creature dropped to 0 HP by an opportunity
   // attack while moving is now unconscious but still the active turn, and its
   // stale movement budget must not offer (illegal) further steps.
-  if (!cannotAct(actor)) {
+  if (!cannotMove(actor)) {
     for (const to of moveDestinations(state, actor)) {
       actions.push({ kind: 'move', to });
     }

@@ -2,7 +2,7 @@
  * Saving throws, including the Bless d4. Mutates draft state (rng).
  */
 import type { GameState, Id, Ability, Combatant } from '../types.js';
-import { abilityMod, proficiencyBonus, isDown, isIncapacitated, canReact } from '../types.js';
+import { abilityMod, proficiencyBonus, isDown, isIncapacitated, canReact, heldInPlace } from '../types.js';
 import { distanceFeet } from '../grid.js';
 import { rollD20, rollDice } from '../dice.js';
 import { FEATURES } from '../../data/features.js';
@@ -52,6 +52,14 @@ function countercharmed(state: GameState, c: Combatant, ability: Ability): boole
  * exported predicate is honest; a sixth should call this too, which is why it
  * is named for the rule rather than for the barbarian.
  */
+/**
+ * The Dodge action's benefits are in force: "You lose these benefits if you
+ * have the Incapacitated condition or if your Speed is 0" (SRD 5.2.1, Dodge).
+ */
+export function dodgeHolds(c: Combatant): boolean {
+  return c.conditions.some((k) => k.id === 'dodging') && !isIncapacitated(c) && !heldInPlace(c);
+}
+
 export function immuneToCharmAndFear(c: Combatant): boolean {
   return c.featureIds.includes('mindless-rage') &&
     c.conditions.some((k) => k.id === 'raging');
@@ -131,10 +139,11 @@ export function savingThrow(
 ): { success: boolean; event: GameEvent } {
   const c = state.combatants[combatantId]!;
 
-  // 2024: the Paralyzed and Unconscious conditions auto-fail Strength and
-  // Dexterity saving throws outright — no roll.
+  // 2024: the Paralyzed, Stunned and Unconscious conditions auto-fail
+  // Strength and Dexterity saving throws outright — no roll (SRD 5.2.1,
+  // Stunned, line 14084, and the same clause on the other two).
   if ((ability === 'str' || ability === 'dex') &&
-      c.conditions.some((k) => k.id === 'paralyzed' || k.id === 'unconscious')) {
+      c.conditions.some((k) => k.id === 'paralyzed' || k.id === 'unconscious' || k.id === 'stunned')) {
     return {
       success: false,
       event: { type: 'savingThrow', combatantId, ability, dc, natural: 1, total: 1, success: false },
@@ -153,7 +162,9 @@ export function savingThrow(
     // the party's version of the same thing, so it reads the same flag.
     (opts.magical === true &&
       (c.featureIds.includes('magic-resistance') || c.featureIds.includes('mantle-spell-resistance'))) ||
-    countercharmed(state, c, ability);
+    countercharmed(state, c, ability) ||
+    // Dodge: "you make Dexterity saving throws with Advantage" (SRD line 13728).
+    (ability === 'dex' && dodgeHolds(c));
   // 2024: Restrained imposes disadvantage on Dexterity saving throws.
   // Bestow Curse: disadvantage on every saving throw the cursed creature makes.
   const hasDisadvantage =

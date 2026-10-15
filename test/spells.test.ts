@@ -222,16 +222,15 @@ describe('leveled spells', () => {
       const ftr = () => c.state.combatants['ftr']!;
       if (!ftr().conditions.some((k) => k.id === 'incapacitated')) continue;
 
-      // Incapacitated: no actions AND no movement on the fighter's turn — it just
-      // stands there until its end-of-turn save (only endTurn is offered).
+      // Incapacitated: no actions on the fighter's turn — but, the 2024
+      // condition having no Speed clause, it can still stumble about until its
+      // end-of-turn save (SRD 5.2.1, Incapacitated).
       c.apply({ kind: 'endTurn' });
       expect(c.activeId).toBe('ftr');
       const kinds = new Set(c.legalActions().map((a) => a.kind));
       expect(kinds.has('attack')).toBe(false);
       expect(kinds.has('dash')).toBe(false);
-      expect(kinds.has('move')).toBe(false);
-      expect([...kinds]).toEqual(['endTurn']);
-      expect(c.state.combatants['ftr']!.turn.movementMax).toBe(0);
+      expect([...kinds].sort()).toEqual(['endTurn', 'move']);
       c.apply({ kind: 'endTurn' }); // repeat save happens here
       if (!ftr().conditions.some((k) => k.id === 'unconscious')) continue;
 

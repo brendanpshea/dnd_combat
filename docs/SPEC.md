@@ -409,6 +409,14 @@ save at end of turns), Blinded, Poisoned, Frightened, plus transient markers:
 vexed, sapped, guided (one attack), dodging, blessed, noReactions. Conditions
 carry `sourceId`, optional `concentration` flag, `expiresAtRound`, and
 `repeatSave` (Sleep escalates Incapacitated → Unconscious on a failed repeat).
+Per SRD 5.2.1: Incapacitated and Stunned take actions, not Speed (a stunned
+creature can walk; Paralyzed, Unconscious, Grappled, Restrained and Hypnotic
+Pattern are Speed 0 by their own text, and a prone creature that cannot stand
+crawls at half); Stunned fails Strength and Dexterity saves like Paralyzed and
+Unconscious; Dodge also gives advantage on Dexterity saves, and both its
+benefits lapse while Incapacitated or held at Speed 0; Frightened imposes
+disadvantage only while its source is in line of sight, and the frightened
+creature cannot move closer to it.
 
 **Saves.** d20 + mod + proficiency (class save list) + Bless d4.
 Spell DC = 8 + proficiency + casting mod.

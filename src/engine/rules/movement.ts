@@ -162,6 +162,13 @@ export function moveDestinations(state: GameState, mover: Combatant): Position[]
   const budget = mover.turn.movementMax - mover.turn.movementUsed;
   if (budget <= 0) return [];
   const r = reachable(state.grid, mover.position, budget, hostileIds(state, mover), undefined, ignoresDifficult(mover), mover.flying === true);
+  // Frightened: "You can't willingly move closer to the source of fear" (SRD
+  // 5.2.1, Frightened). Judged on where the walk ends, which is all a `move`
+  // names; the route there is the engine's to pick.
+  const fears = mover.conditions
+    .filter((k) => k.id === 'frightened' && k.sourceId !== undefined && k.sourceId !== mover.id)
+    .map((k) => state.combatants[k.sourceId!])
+    .filter((s): s is Combatant => !!s && s.alive);
   const out: Position[] = [];
   for (const k of r.costs.keys()) {
     const [x, y] = k.split(',').map(Number) as [number, number];
@@ -169,9 +176,14 @@ export function moveDestinations(state: GameState, mover: Combatant): Position[]
     if (x === mover.position.x && y === mover.position.y) continue;
     const cell = cellAt(state.grid, pos)!;
     if (cell.occupantId !== undefined) continue; // can pass allies, not end on them
+    if (fears.some((s) => chebyshev(pos, s.position) < chebyshev(mover.position, s.position))) continue;
     out.push(pos);
   }
   return out;
+}
+
+function chebyshev(a: Position, b: Position): number {
+  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 }
 
 /**

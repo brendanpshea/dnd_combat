@@ -12,7 +12,7 @@ import { distanceFeet, adjacent, hasLineOfSight, clearWebBySource, clearFireBySo
 import { dismissSummonedBy, dismissSummonsOfSpell, actsOnItsOwn } from './summon.js';
 import { withinReach, reachesCell, reachFeet } from './reach.js';
 import { attackableWeapons } from './equipment.js';
-import { savingThrow } from './saves.js';
+import { savingThrow, dodgeHolds } from './saves.js';
 import { endHide, isHidden } from './hide.js';
 import { pushCreature } from './movement.js';
 import { downCombatant, applyHealing } from './heal.js';
@@ -128,7 +128,7 @@ export function collectAttackSources(
     }
   }
 
-  if (target.conditions.some((c) => c.id === 'dodging')) dis.push('target dodging');
+  if (dodgeHolds(target)) dis.push('target dodging');
   // Cloak of Displacement: the wearer never seems to be quite where it is —
   // until something connects, which switches the illusion off until its next
   // turn. Suppressed at Speed 0 per the SRD: an illusion of being a step to the
@@ -212,9 +212,21 @@ export function collectAttackSources(
   if (attacker.conditions.some((c) => c.id === 'grappled' && c.sourceId !== target.id)) {
     dis.push('attacker grappled');
   }
-  if (attacker.conditions.some((c) => c.id === 'frightened')) dis.push('attacker frightened');
+  // "Disadvantage on ability checks and attack rolls while the source of fear
+  // is within line of sight" (SRD 5.2.1, Frightened, line 13763). A fear with
+  // no source on the board (a pre-fight check) rattles regardless.
+  if (attacker.conditions.some((c) => c.id === 'frightened' && fearInSight(state, attacker, c.sourceId))) {
+    dis.push('attacker frightened');
+  }
 
   return { adv, dis };
+}
+
+/** The source of a fear is on the board and in sight — or there is none to look for. */
+export function fearInSight(state: GameState, c: Combatant, sourceId: Id | undefined): boolean {
+  const src = sourceId !== undefined ? state.combatants[sourceId] : undefined;
+  if (!src || src.id === c.id) return true;
+  return src.alive && hasLineOfSight(state.grid, c.position, src.position);
 }
 
 /**
