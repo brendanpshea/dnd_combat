@@ -813,11 +813,20 @@ Where the SRD does print B/P/S resistance it is still read as nonmagical
 ## 6. Grid, terrain, maps
 
 - Distance: Chebyshev × 5 ft. Melee reach 1 cell. Ranged: beyond normal range
-  = disadvantage; beyond long = illegal; adjacent enemy = disadvantage.
+  = disadvantage; beyond long = illegal; an enemy within 5 ft that can see the
+  shooter and is not Incapacitated = disadvantage (SRD's Ranged Attacks in
+  Close Combat — a ten-foot reach does not count).
+- Movement can't cut a wall's corner on a diagonal (SRD 5.2.1, Corners:
+  `stepNeighbors`); a barricade, being chest-high, is not a corner.
 - LoS: Bresenham center-to-center trace, blocked by walls. Deliberately not
-  supercover — a perfect diagonal squeezes between two orthogonal walls,
-  matching movement (which allows the same diagonal step), so sight and feet
-  agree about what a corner is.
+  supercover — a perfect diagonal squeezes between two orthogonal walls. Feet
+  no longer take that diagonal, so a creature can see through a crack it
+  cannot walk through.
+- Within 5 ft is where the helpless and the prone are easy: a paralyzed or
+  unconscious target is crit only by an attacker within 5 ft, and a prone one
+  has advantage against it only within 5 ft (disadvantage beyond, reach
+  weapons included). Damage can be reduced to 0; resistance and vulnerability
+  to one type both apply (halved, then doubled).
 - Terrain: `open`, `difficult` (double cost), `wall` (blocks move + LoS),
   `hazard` (1d4 fire per cell entered — also on forced movement).
 - Maps are ASCII data (`src/data/maps.ts`): `.` `#` `~` `^`, top rank first.

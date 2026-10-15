@@ -44,6 +44,26 @@ export function neighbors(grid: GridState, p: Position): Position[] {
 }
 
 /**
+ * The squares one step of movement reaches. "Diagonal movement can't cross the
+ * corner of a wall, a large tree, or another terrain feature that fills its
+ * space" (SRD 5.2.1, Playing on a Grid, line 636): a diagonal step is refused
+ * when either square beside it is a wall. A chest-high barricade does not fill
+ * its space and is not a corner.
+ *
+ * Sight still squeezes between two walls on a perfect diagonal (hasLineOfSight
+ * is not supercover), so a creature can now see through a gap it cannot walk
+ * through — a crack in the wall, which is the honest reading.
+ */
+export function stepNeighbors(grid: GridState, p: Position): Position[] {
+  return neighbors(grid, p).filter((n) => {
+    const dx = n.x - p.x, dy = n.y - p.y;
+    if (dx === 0 || dy === 0) return true;
+    return cellAt(grid, { x: p.x + dx, y: p.y })?.terrain !== 'wall' &&
+      cellAt(grid, { x: p.x, y: p.y + dy })?.terrain !== 'wall';
+  });
+}
+
+/**
  * WHAT FLYING CROSSES, AND WHAT IT DOES NOT.
  *
  * A barricade is chest-high — `terrainMoveCost` says so itself — so a flier goes
@@ -363,7 +383,7 @@ export function reachable(
     const cur = open.splice(bestIdx, 1)[0]!;
     const curCost = cost[at(cur)]!;
     const curRisk = risk[at(cur)]!;
-    for (const n of neighbors(grid, cur)) {
+    for (const n of stepNeighbors(grid, cur)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
       const stepCost = terrainMoveCost(cell, ignoreDifficult, undefined, flying);
@@ -449,7 +469,7 @@ function withDetours(
     const cur = queue.shift()!;
     // Dropped from its front by something that beat it after it was queued.
     if (!fronts[at(cur.pos)]!.includes(cur)) continue;
-    for (const n of neighbors(grid, cur.pos)) {
+    for (const n of stepNeighbors(grid, cur.pos)) {
       const cell = cellAt(grid, n)!;
       if (cell.occupantId !== undefined && blockedBy.has(cell.occupantId)) continue;
       const i = at(n);

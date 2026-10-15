@@ -538,7 +538,8 @@ function spellAttack(
     total -= d4.total;
   }
   const unconsciousAdjacent =
-    target.conditions.some((c) => c.id === 'unconscious') && opts.melee;
+    target.conditions.some((c) => c.id === 'unconscious' || c.id === 'paralyzed') && opts.melee &&
+    distanceFeet(caster.position, target.position) <= 5;
   const crit = d20.natural === 20 || unconsciousAdjacent;
   /**
    * Half cover applies to a ranged spell attack exactly as it does to an arrow.

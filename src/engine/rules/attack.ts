@@ -10,7 +10,7 @@ import { acOf, ARMOR, isShield, shieldRangedBonus } from '../../data/armor.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../dice.js';
 import { distanceFeet, adjacent, hasLineOfSight, clearWebBySource, clearFireBySource, clearSilenceBySource, coverBetween } from '../grid.js';
 import { dismissSummonedBy, dismissSummonsOfSpell, actsOnItsOwn } from './summon.js';
-import { withinReach, reachesCell, reachFeet } from './reach.js';
+import { withinReach, reachFeet } from './reach.js';
 import { attackableWeapons } from './equipment.js';
 import { savingThrow, dodgeHolds } from './saves.js';
 import { endHide, isHidden } from './hide.js';
@@ -125,11 +125,15 @@ export function collectAttackSources(
 
   if (!isMeleeAttack) {
     if (weapon.range && dist > weapon.range.normal) dis.push('long range');
-    // A hostile close enough to swing at the shooter. Its REACH, not plain
-    // adjacency: a giant looming from ten feet is exactly as distracting as an
-    // ogre at five, and that is the whole point of it having reach.
+    // "You have Disadvantage on the roll if you are within 5 feet of an enemy
+    // who can see you and doesn't have the Incapacitated condition" (SRD 5.2.1,
+    // Ranged Attacks in Close Combat). It used to count any hostile whose
+    // REACH covered the shooter, a giant at ten feet included, and a stunned
+    // or blinded one besides.
     for (const c of Object.values(state.combatants)) {
-      if (c.alive && !isDown(c) && c.team !== attacker.team && reachesCell(c, attacker.position)) {
+      if (c.alive && !isDown(c) && c.team !== attacker.team &&
+          distanceFeet(c.position, attacker.position) <= 5 && !isIncapacitated(c) &&
+          !c.conditions.some((k) => k.id === 'blinded')) {
         dis.push('enemy adjacent');
         break;
       }
@@ -214,8 +218,12 @@ export function collectAttackSources(
   if (attacker.featureIds.includes('assassinate') && !target.hasActed) {
     adv.push('assassinate');
   }
+  // Prone: "An attack roll against you has Advantage if the attacker is within
+  // 5 feet of you. Otherwise, that attack roll has Disadvantage" (SRD 5.2.1) —
+  // so a reach weapon's ten feet is the far side of that line, melee or not.
   if (target.conditions.some((c) => c.id === 'prone')) {
-    (isMeleeAttack ? adv : dis).push(isMeleeAttack ? 'target prone' : 'target prone (ranged)');
+    if (dist <= 5) adv.push('target prone');
+    else dis.push(isMeleeAttack ? 'target prone (out of reach)' : 'target prone (ranged)');
   }
   if (attacker.conditions.some((c) => c.id === 'prone')) dis.push('attacker prone');
   // Web restrains: attacks against the caught creature have advantage, its own
@@ -368,8 +376,10 @@ export function resolveAttack(
   const natCrit = d20.natural >= critFloor;
   // Adamantine armor: any crit against the wearer is downgraded to a normal hit.
   const targetNoCrit = target.equipped.armor !== undefined && (ARMOR[target.equipped.armor]?.noCrit ?? false);
-  // Auto-crit on hitting a helpless (unconscious/paralyzed) target from melee.
-  let crit = !targetNoCrit && (natCrit || (isHelpless(target) && isMeleeAttack));
+  // Auto-crit on hitting a helpless (unconscious/paralyzed) target "if the
+  // attacker is within 5 feet" (SRD 5.2.1) — not from a reach weapon's ten.
+  let crit = !targetNoCrit && (natCrit ||
+    (isHelpless(target) && distanceFeet(attacker.position, target.position) <= 5));
   // Half cover: +2 AC when a barricade sits on the line of the shot. The
   // barricade does not block sight, so this is the whole of its effect on an
   // attack — and it is why *where* you shoot from is now a question. Melee
@@ -716,7 +726,10 @@ export function resolveAttack(
     tags.push('Uncanny Dodge');
   }
 
-  amount = Math.max(1, amount);
+  // "If there's a penalty to the damage, it's possible to deal 0 damage but
+  // not negative damage" (SRD 5.2.1, Damage Rolls, line 794). It was floored
+  // at 1.
+  amount = Math.max(0, amount);
 
   // Empowered Strikes (Monk 6): the fists themselves count as magical, which
   // is what stops a monk falling off a cliff the moment the bestiary starts
@@ -1265,10 +1278,17 @@ export function applyDamage(
   // what is being swung at them.
   const raging = target.conditions.some((k) => k.id === 'raging') &&
     (damageType === 'slashing' || damageType === 'piercing' || damageType === 'bludgeoning');
+  // Immunity, then Resistance, then Vulnerability, each once (SRD 5.2.1,
+  // "Order of Application", line 817): a creature both resistant and
+  // vulnerable takes the halved amount doubled. Vulnerability used to be
+  // skipped whenever a resistance applied.
   if (target.immunities.includes(damageType)) amount = 0;
-  else if (target.resistances.includes(damageType) || energyWard || raging) amount = Math.floor(amount / 2);
-  else if (!opts.magical && (target.resistNonmagical ?? []).includes(damageType)) amount = Math.floor(amount / 2);
-  else if (target.vulnerabilities.includes(damageType)) amount *= 2;
+  else {
+    const resisted = target.resistances.includes(damageType) || energyWard || raging ||
+      (!opts.magical && (target.resistNonmagical ?? []).includes(damageType));
+    if (resisted) amount = Math.floor(amount / 2);
+    if (target.vulnerabilities.includes(damageType)) amount *= 2;
+  }
 
   // Warding Bond: the ward halves what reaches the target, and the other half
   // goes to the cleric who cast it. The party's total hit points are unchanged
