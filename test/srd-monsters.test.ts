@@ -54,6 +54,21 @@ function statLine(l: string): Omit<Block, 'name' | 'type' | 'size' | 'abilities'
   };
 }
 
+/**
+ * A fourth layout puts each field on its own line ("AC 12", "Initiative +1
+ * (11)", "HP 19 (3d10 + 3)", "Speed 40 ft., Climb 40 ft." — the Giant
+ * Lizard's), so an "AC" line that is not a whole stat line is read together
+ * with the three lines after it.
+ */
+function statAt(lines: string[], i: number): ReturnType<typeof statLine> {
+  const l = lines[i]!.trim();
+  if (!l.startsWith('AC ')) return null;
+  const whole = statLine(l);
+  if (whole || !/^AC \d+$/.test(l)) return whole;
+  const next = lines.slice(i + 1, i + 10).map((x) => x.trim()).filter(Boolean).slice(0, 3);
+  return statLine([l, ...next].join('  '));
+}
+
 function parseSrd(): Map<string, Block> {
   const lines = readFileSync(SRD, 'utf8').split('\n');
   const out = new Map<string, Block>();
@@ -61,7 +76,7 @@ function parseSrd(): Map<string, Block> {
   const kind = /^(Tiny|Small|Medium|Large|Huge|Gargantuan)(?: or \w+)? ([A-Za-z]+)/;
 
   for (let i = 0; i < lines.length; i++) {
-    const stat = statLine(lines[i]!.trim());
+    const stat = statAt(lines, i);
     if (!stat) continue;
     // Above the stat line: the size/type/alignment line, and above that the
     // name (sometimes with blank lines or a form feed between).
@@ -246,7 +261,7 @@ function srdAttacks(): Map<string, Array<{ name: string; bonus: number; dice?: s
   const kind = /^(Tiny|Small|Medium|Large|Huge|Gargantuan)(?: or \w+)? ([A-Za-z]+)/;
   const starts: Array<{ name: string; at: number }> = [];
   for (let i = 0; i < lines.length; i++) {
-    if (!statLine(lines[i]!.trim())) continue;
+    if (!statAt(lines, i)) continue;
     let k = i - 1;
     while (k > i - 6 && k >= 0 && !kind.test(lines[k]!.trim())) k--;
     if (k <= i - 6 || k < 0) continue;
@@ -289,6 +304,7 @@ const NO_ATTACK_ROLL: Record<string, string> = {
   'rust-monster-antennae': 'SRD Antennae is a Dexterity save against the armour; delivered as an attack that corrodes it.',
   'spawn-bite': 'SRD Bite is a Constitution save (DC 14) against a grappled or incapacitated creature; delivered as an attack.',
   'wight-drain': 'SRD Life Drain is a Constitution save (DC 13); delivered as an attack that drains the maximum.',
+  'vampire-bite': 'SRD Bite is a Constitution save (DC 17) against a grappled, incapacitated or restrained creature; delivered as an attack, as the spawn\'s is.',
 };
 
 /** Attacks whose damage deliberately differs from the print, with why. */

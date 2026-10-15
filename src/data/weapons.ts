@@ -1366,6 +1366,83 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'young-green-bite', name: 'Rend', damage: '2d6', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '2d6', type: 'poison' },
   },
+  // ---- SRD 5.2.1 stat blocks added for module authors (see monsters.ts) ----
+  'ankheg-bite': {
+    id: 'ankheg-bite', name: 'Bite', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'acid' },
+    onHitGrapple: { dc: 13, maxSize: 'large' },
+  },
+  'medusa-claw': {
+    id: 'medusa-claw', name: 'Claw', damage: '2d6', damageType: 'slashing',
+    attackAbility: 'dex', properties: [], melee: true,
+  },
+  'medusa-snake-hair': {
+    id: 'medusa-snake-hair', name: 'Snake Hair', damage: '1d4', damageType: 'piercing',
+    attackAbility: 'dex', properties: [], melee: true, extraDamage: { dice: '4d6', type: 'poison' },
+  },
+  'medusa-poison-ray': {
+    id: 'medusa-poison-ray', name: 'Poison Ray', damage: '2d8', damageType: 'poison',
+    attackAbility: 'cha', properties: [], range: { normal: 150, long: 150 }, melee: false,
+  },
+  'efreeti-heated-blade': {
+    id: 'efreeti-heated-blade', name: 'Heated Blade', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true, extraDamage: { dice: '2d12', type: 'fire' },
+  },
+  'efreeti-hurl-flame': {
+    id: 'efreeti-hurl-flame', name: 'Hurl Flame', damage: '7d6', damageType: 'fire',
+    attackAbility: 'cha', abilityDamage: false,
+    properties: [], range: { normal: 120, long: 120 }, melee: false,
+  },
+  'vampire-grave-strike': {
+    id: 'vampire-grave-strike', name: 'Grave Strike', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, extraDamage: { dice: '2d6', type: 'necrotic' },
+    onHitGrapple: { dc: 14, maxSize: 'large' },
+  },
+  // The SRD Bite is a DC 17 Constitution save against a creature that is
+  // grappled, incapacitated, restrained or willing, and it drains the hit point
+  // maximum to heal the vampire. Delivered as an attack, as the spawn's is.
+  'vampire-bite': {
+    id: 'vampire-bite', name: 'Bite', damage: '1d4', damageType: 'piercing',
+    properties: ['finesse'], melee: true, extraDamage: { dice: '3d8', type: 'necrotic' },
+  },
+  'drider-foreleg': {
+    id: 'drider-foreleg', name: 'Foreleg', damage: '2d8', damageType: 'piercing',
+    attackAbility: 'dex', properties: ['reach'], melee: true,
+  },
+  'drider-poison-burst': {
+    id: 'drider-poison-burst', name: 'Poison Burst', damage: '3d6', damageType: 'poison',
+    attackAbility: 'wis', properties: [], range: { normal: 120, long: 120 }, melee: false,
+  },
+  'phase-spider-bite': {
+    id: 'phase-spider-bite', name: 'Bite', damage: '1d10', damageType: 'piercing',
+    attackAbility: 'dex', properties: [], melee: true, extraDamage: { dice: '2d8', type: 'poison' },
+  },
+  'hippogriff-rend': {
+    id: 'hippogriff-rend', name: 'Rend', damage: '1d8', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  // "+3 to hit, 5 (1d6 + 2)" on a +1 Strength, as printed.
+  'giant-frog-bite': {
+    id: 'giant-frog-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true, damageBonus: 1,
+    onHitGrapple: { dc: 11, maxSize: 'medium' },
+  },
+  'boar-gore': {
+    id: 'boar-gore', name: 'Gore', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'stirge-proboscis': {
+    id: 'stirge-proboscis', name: 'Proboscis', damage: '1d6', damageType: 'piercing',
+    attackAbility: 'dex', properties: [], melee: true,
+  },
+  'giant-lizard-bite': {
+    id: 'giant-lizard-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'young-bronze-bite': {
+    id: 'young-bronze-bite', name: 'Rend', damage: '2d10', damageType: 'slashing',
+    properties: [], melee: true,
+  },
   'young-red-bite': {
     id: 'young-red-bite', name: 'Rend', damage: '2d6', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '1d6', type: 'fire' },

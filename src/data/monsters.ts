@@ -1741,6 +1741,164 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     multiattack: [['wyvern-bite', 'wyvern-sting']],
   },
+  // ---- SRD 5.2.1 stat blocks added for module authors ---------------------
+  // Each is the printed block's numbers, attacks and Multiattack. Held out of
+  // the arena's roster (arena/encounter.ts, ARENA_EXCLUDED) so the arena's
+  // tuned fights do not shift; take one off that list to field it there.
+  // What is not modelled is said beside each.
+  //
+  // Ankheg: Tunneler, the Bite's Advantage against a creature it grapples.
+  ankheg: {
+    id: 'ankheg', name: 'Ankheg',
+    ac: 14, hp: 45, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'large',
+    abilities: { str: 17, dex: 11, con: 14, int: 1, wis: 13, cha: 6 },
+    featureIds: ['burrow', 'breath-acid-ankheg'],
+    weaponIds: ['ankheg-bite'],
+  },
+  // Medusa: the gaze's second failure (Petrified) and its reflection clause.
+  medusa: {
+    id: 'medusa', name: 'Medusa',
+    ac: 15, cr: 6, hp: 127, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'medium',
+    abilities: { str: 10, dex: 17, con: 16, int: 12, wis: 13, cha: 15 },
+    savingThrowProfs: ['wis'],
+    featureIds: ['petrifying-gaze'],
+    weaponIds: ['medusa-claw', 'medusa-snake-hair', 'medusa-poison-ray'],
+    attacksPerAction: 3,
+    multiattack: [
+      ['medusa-claw', 'medusa-claw', 'medusa-snake-hair'],
+      ['medusa-poison-ray', 'medusa-poison-ray', 'medusa-poison-ray'],
+    ],
+  },
+  // Efreeti: its Spellcasting (Wall of Fire, Invisibility and the rest) and
+  // Wishes; Elemental Restoration is off the board.
+  efreeti: {
+    id: 'efreeti', fly: true, name: 'Efreeti',
+    ac: 17, cr: 11, hp: 212, speed: 40, flySpeed: 60,
+    creatureType: 'elemental',
+    size: 'large',
+    abilities: { str: 22, dex: 12, con: 24, int: 16, wis: 15, cha: 19 },
+    savingThrowProfs: ['wis', 'cha'],
+    immunities: ['fire'],
+    featureIds: ['magic-resistance'],
+    weaponIds: ['efreeti-heated-blade', 'efreeti-hurl-flame'],
+    attacksPerAction: 3,
+  },
+  // Vampire: Legendary Actions, Misty Escape, Shape-Shift, Spider Climb, the
+  // Vampire Weaknesses, and the Bite's drain (as the spawn's).
+  vampire: {
+    id: 'vampire', name: 'Vampire',
+    ac: 16, cr: 13, hp: 195, speed: 40,
+    creatureType: 'undead',
+    size: 'medium',
+    abilities: { str: 18, dex: 18, con: 18, int: 17, wis: 15, cha: 18 },
+    savingThrowProfs: ['dex', 'con', 'wis', 'cha'],
+    resistances: ['necrotic'],
+    featureIds: ['legendary-resistance', 'vampire-charm'],
+    weaponIds: ['vampire-grave-strike', 'vampire-bite'],
+    attacksPerAction: 3,
+    multiattack: [['vampire-grave-strike', 'vampire-grave-strike', 'vampire-bite']],
+  },
+  // Drider: Magic of the Spider Queen, Spider Climb, Sunlight Sensitivity,
+  // Web Walker.
+  drider: {
+    id: 'drider', name: 'Drider',
+    ac: 19, cr: 6, hp: 123, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'large',
+    abilities: { str: 16, dex: 19, con: 18, int: 13, wis: 16, cha: 12 },
+    weaponIds: ['drider-foreleg', 'drider-poison-burst'],
+    attacksPerAction: 3,
+  },
+  // Phase Spider: Ethereal Jaunt, Spider Climb, Web Walker, and the Bite's
+  // poisoned-and-paralyzed at 0 hit points.
+  'phase-spider': {
+    id: 'phase-spider', name: 'Phase Spider',
+    ac: 14, hp: 45, speed: 30,
+    creatureType: 'monstrosity',
+    size: 'large',
+    abilities: { str: 15, dex: 16, con: 12, int: 6, wis: 10, cha: 6 },
+    weaponIds: ['phase-spider-bite'],
+    attacksPerAction: 2,
+  },
+  // Hippogriff: Flyby.
+  hippogriff: {
+    id: 'hippogriff', fly: true, name: 'Hippogriff',
+    ac: 11, hp: 26, speed: 40, flySpeed: 60,
+    creatureType: 'monstrosity',
+    size: 'large',
+    abilities: { str: 17, dex: 13, con: 13, int: 2, wis: 12, cha: 8 },
+    weaponIds: ['hippogriff-rend'],
+    attacksPerAction: 2,
+  },
+  // Centaur Trooper: Trampling Charge (a bonus-action run through creatures).
+  // Its Pike and Longbow are the equipment table's.
+  'centaur-trooper': {
+    id: 'centaur-trooper', name: 'Centaur Trooper',
+    ac: 16, hp: 45, speed: 50,
+    creatureType: 'fey',
+    size: 'large',
+    abilities: { str: 18, dex: 14, con: 14, int: 9, wis: 13, cha: 11 },
+    weaponIds: ['pike', 'longbow'],
+    attacksPerAction: 2,
+  },
+  // Giant Frog: Swallow, Standing Leap, its swim speed.
+  'giant-frog': {
+    id: 'giant-frog', name: 'Giant Frog',
+    ac: 11, hp: 18, speed: 30,
+    creatureType: 'beast',
+    size: 'medium',
+    abilities: { str: 12, dex: 13, con: 11, int: 2, wis: 10, cha: 3 },
+    weaponIds: ['giant-frog-bite'],
+  },
+  // Boar: the Gore's charge is the giant boar's Charge (an extra weapon die
+  // after moving 15 feet) — the print says 20 feet straight, and knocks prone.
+  boar: {
+    id: 'boar', name: 'Boar',
+    ac: 11, hp: 13, speed: 40,
+    creatureType: 'beast',
+    size: 'medium',
+    abilities: { str: 13, dex: 11, con: 14, int: 2, wis: 9, cha: 5 },
+    featureIds: ['charge', 'bloodied-fury'],
+    weaponIds: ['boar-gore'],
+  },
+  // Stirge: attaching, and the 2d4 necrotic it drinks each turn after.
+  stirge: {
+    id: 'stirge', fly: true, name: 'Stirge',
+    ac: 13, hp: 5, speed: 10, flySpeed: 40,
+    creatureType: 'monstrosity',
+    size: 'tiny',
+    abilities: { str: 4, dex: 16, con: 11, int: 2, wis: 8, cha: 6 },
+    weaponIds: ['stirge-proboscis'],
+  },
+  // Giant Lizard: Spider Climb.
+  'giant-lizard': {
+    id: 'giant-lizard', name: 'Giant Lizard',
+    ac: 12, hp: 19, speed: 40,
+    creatureType: 'beast',
+    size: 'large',
+    abilities: { str: 15, dex: 12, con: 13, int: 2, wis: 10, cha: 5 },
+    savingThrowProfs: ['dex'],
+    weaponIds: ['giant-lizard-bite'],
+  },
+  // Young Bronze Dragon: Repulsion Breath (and replacing a Rend with it),
+  // its swim speed, Amphibious.
+  'young-bronze': {
+    id: 'young-bronze', fly: true, name: 'Young Bronze Dragon',
+    ac: 17, cr: 8, hp: 142, speed: 40, flySpeed: 80,
+    creatureType: 'dragon',
+    size: 'large',
+    abilities: { str: 21, dex: 10, con: 19, int: 14, wis: 13, cha: 17 },
+    savingThrowProfs: ['dex', 'wis'],
+    immunities: ['lightning'],
+    featureIds: ['breath-lightning-young-bronze', 'long-limbed'],
+    weaponIds: ['young-bronze-bite'],
+    attacksPerAction: 3,
+  },
+
   // Five heads, five bites: the hydra is the action-economy monster, a wall of
   // attacks on one body rather than the reverse.
   hydra: {
@@ -2136,6 +2294,10 @@ export const MONSTER_XP: Record<Id, number> = {
   'frost-giant': 3900, hydra: 3900, 'young-green': 3900,
   'fire-giant': 5000, 'young-blue': 5000,
   'young-red': 5900,
+  // The SRD 5.2.1 additions (arena-excluded; see their stat blocks).
+  ankheg: 450, medusa: 2300, efreeti: 7200, vampire: 10000, drider: 2300,
+  'phase-spider': 700, hippogriff: 200, 'centaur-trooper': 450, 'giant-frog': 50,
+  boar: 50, stirge: 25, 'giant-lizard': 50, 'young-bronze': 3900,
 };
 
 /**

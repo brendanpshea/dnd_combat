@@ -669,6 +669,17 @@ so (`WeaponData.attackAbility`, and `abilityDamage: false` for the attacks that
 add no modifier to damage). `test/srd-monsters.test.ts` holds every monster
 attack's to-hit and damage to the SRD print.
 
+Thirteen SRD 5.2.1 blocks were added for module authors — Ankheg, Medusa,
+Efreeti, Vampire, Drider, Phase Spider, Hippogriff, Centaur Trooper, Giant
+Frog, Boar, Stirge, Giant Lizard and Young Bronze Dragon — and are held out of
+the arena's roster (`ARENA_EXCLUDED`) so its tuned fights stay as they were.
+Their numbers, attacks and Multiattacks are the print's; the medusa's Petrifying
+Gaze (restrained, save ends, within 30 ft) and the vampire's Charm are bonus
+actions on a recharge, the boar has Bloodied Fury (advantage at half hit points
+or fewer). Not modelled, and said beside each block: legendary actions, spell
+lists (efreeti, drider), Swallow, the stirge's attaching, Ethereal Jaunt,
+Flyby, Trampling Charge, Repulsion Breath, climbing and swimming speeds.
+
 | Monster | Signature mechanics |
 | --- | --- |
 | Goblin Warrior (AC 15, 10) | Nimble Escape (bonus disengage), +1d4 damage on advantage |

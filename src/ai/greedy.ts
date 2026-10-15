@@ -2189,10 +2189,12 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   // Area restrain-on-failed-save (water elemental Whelm, gorgon Petrifying
   // Breath): value each unrestrained enemy in range like a soft lockdown,
   // weighted by its odds of failing.
-  if (a.featureId === 'whelm' || a.featureId === 'petrifying-breath') {
+  if (a.featureId === 'whelm' || a.featureId === 'petrifying-breath' || a.featureId === 'petrifying-gaze') {
     const ability = a.featureId === 'whelm' ? 'str' : 'con';
-    const range = a.featureId === 'whelm' ? 5 : 15;
-    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities[ability]);
+    const range = a.featureId === 'whelm' ? 5 : a.featureId === 'petrifying-gaze' ? 30 : 15;
+    // The medusa's gaze is DC 8 + PB + Charisma; the others' DC is the save's own ability.
+    const dcAbility = a.featureId === 'petrifying-gaze' ? 'cha' : ability;
+    const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities[dcAbility]);
     return Object.values(state.combatants)
       .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
         distanceFeet(actor.position, c.position) <= range &&
@@ -2217,14 +2219,15 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   // charmer, and a lured one is walking toward the singer with a fresh save
   // every turn. Pricing them as kills had the AI spend a once-per-fight action
   // on an effect the target can shrug off next turn.
-  if (a.featureId === 'fey-charm' || a.featureId === 'luring-song' || a.featureId === 'charm') {
+  if (a.featureId === 'fey-charm' || a.featureId === 'luring-song' || a.featureId === 'charm' ||
+      a.featureId === 'vampire-charm') {
     const worth = a.featureId === 'luring-song' ? 0.5 : 0.35;
     const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities.cha);
     let foes = Object.values(state.combatants).filter(
       (c) => c.alive && !isDown(c) && c.team !== actor.team &&
         distanceFeet(actor.position, c.position) <= 30,
     );
-    if (a.featureId === 'fey-charm') {
+    if (a.featureId === 'fey-charm' || a.featureId === 'vampire-charm') {
       foes = foes.sort((x, y) => distanceFeet(actor.position, x.position) - distanceFeet(actor.position, y.position)).slice(0, 1);
     }
     return foes.reduce((s, c) => s + saveFailProb(state, c, 'wis', dc) * damageValue(c.hp, c) * worth, 0);

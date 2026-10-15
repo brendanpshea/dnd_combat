@@ -185,6 +185,10 @@ export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
   // than faked with the wrong condition.
   'breath-mephit-fire':     { shape: 'cone',            save: 'dex', damageType: 'fire',      dice: '2d4' },
   'breath-mephit-cold':     { shape: 'cone',            save: 'dex', damageType: 'cold',      dice: '2d4' },
+  // The ankheg's Acid Spray: a 30-foot Line, DC 12 Dexterity, 4d6 acid.
+  'breath-acid-ankheg':     { shape: 'line', length: 6, save: 'dex', damageType: 'acid',      dice: '4d6' },
+  // The young bronze dragon's Lightning Breath: a 60-foot Line, 9d10.
+  'breath-lightning-young-bronze': { shape: 'line', length: 12, save: 'dex', damageType: 'lightning', dice: '9d10' },
 };
 
 /** The cells a breath covers when aimed a given direction. */
@@ -229,6 +233,31 @@ function charmNearestApply({ state, actorId }: FeatureContext): GameEvent[] {
     events.push(...applyCondition(state, target.id, { id: 'charmed', sourceId: me.id, repeatSave: { ability: 'wis', dc, magical: true } }, { magical: true }));
   }
   return events;
+}
+
+/**
+ * Save or start turning to stone: every enemy within `range` feet makes a
+ * Constitution save against 8 + PB + the `dcAbility` modifier, and a failure
+ * is Restrained with a save at the end of each turn — the engine's reading of
+ * petrification (gorgon, basilisk, medusa).
+ */
+function petrifyApply(range: number, dcAbility: Ability) {
+  return ({ state, actorId }: FeatureContext): GameEvent[] => {
+    const me = state.combatants[actorId]!;
+    const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities[dcAbility]);
+    const events: GameEvent[] = [];
+    for (const t of Object.values(state.combatants)) {
+      if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
+      if (distanceFeet(me.position, t.position) > range) continue;
+      if (t.conditions.some((c) => c.id === 'restrained')) continue;
+      const { success, event } = savingThrow(state, t.id, 'con', dc, { magical: false });
+      events.push(event);
+      if (!success) {
+        events.push(...applyCondition(state, t.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'con', dc } }, { magical: false }));
+      }
+    }
+    return events;
+  };
 }
 
 /** The `apply` hook for a breath feature: aim, then save-for-half everyone caught. */
@@ -463,6 +492,9 @@ export const FEATURES: Record<Id, FeatureData> = {
     },
   },
   'pack-tactics': { id: 'pack-tactics', name: 'Pack Tactics', trigger: 'passive' },
+  // Bloodied Fury (Boar): Advantage on attack rolls while Bloodied — at half
+  // its hit points or fewer. Read in collectAttackSources.
+  'bloodied-fury': { id: 'bloodied-fury', name: 'Bloodied Fury', trigger: 'passive' },
   'improved-critical': { id: 'improved-critical', name: 'Improved Critical (Champion)', trigger: 'passive' },
   assassinate: { id: 'assassinate', name: 'Assassinate', trigger: 'passive' },
   // --- levels 6 and 7 -------------------------------------------------------
@@ -1156,6 +1188,12 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'charm', name: 'Charm', trigger: 'action', uses: { count: 1, per: 'encounter' },
     apply: charmNearestApply,
   },
+  // Charm (Vampire, SRD 5.2.1): a Bonus Action, Recharge 5-6, Charm Person at
+  // DC 8 + PB + Cha (17). The nearest foe within 30 feet, as the succubus's.
+  'vampire-charm': {
+    id: 'vampire-charm', name: 'Charm', trigger: 'bonus', recharge: 5,
+    apply: charmNearestApply,
+  },
   // Luring Song (Harpy): every enemy within 30 ft that fails a Wisdom save is
   // charmed out of the fight.
   'luring-song': {
@@ -1185,22 +1223,16 @@ export const FEATURES: Record<Id, FeatureData> = {
   // engine's closest analogue to petrification.
   'petrifying-breath': {
     id: 'petrifying-breath', name: 'Petrifying Breath', trigger: 'action', uses: { count: 1, per: 'encounter' },
-    apply({ state, actorId }) {
-      const me = state.combatants[actorId]!;
-      const dc = 8 + proficiencyBonus(me.level) + abilityMod(me.abilities.con);
-      const events: GameEvent[] = [];
-      for (const t of Object.values(state.combatants)) {
-        if (!t.alive || t.hp <= 0 || t.team === me.team) continue;
-        if (distanceFeet(me.position, t.position) > 15) continue;
-        if (t.conditions.some((c) => c.id === 'restrained')) continue;
-        const { success, event } = savingThrow(state, t.id, 'con', dc, { magical: false });
-        events.push(event);
-        if (!success) {
-          events.push(...applyCondition(state, t.id, { id: 'restrained', sourceId: actorId, repeatSave: { ability: 'con', dc } }, { magical: false }));
-        }
-      }
-      return events;
-    },
+    apply: petrifyApply(15, 'con'),
+  },
+  // Petrifying Gaze (Medusa, SRD 5.2.1): a Bonus Action, Recharge 5-6, a DC 13
+  // Constitution save for each creature in a 30-foot Cone. Read as everyone
+  // within 30 feet, as the gorgon's breath reads its cone, and Restrained
+  // (save ends) for the first failure; the second failure's Petrified and the
+  // reflection clause are not modelled.
+  'petrifying-gaze': {
+    id: 'petrifying-gaze', name: 'Petrifying Gaze', trigger: 'bonus', recharge: 5,
+    apply: petrifyApply(30, 'cha'),
   },
   // Consume Life (Will-o'-Wisp): a bonus-action life drain on the nearest
   // adjacent living enemy — a Constitution save halves 3d8 necrotic, and the
@@ -1435,6 +1467,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   'breath-cold-winter-wolf': { id: 'breath-cold-winter-wolf', name: 'Cold Breath',     trigger: 'action', recharge: 5, apply: breathApply('breath-cold-winter-wolf') },
   'breath-mephit-fire':     { id: 'breath-mephit-fire',     name: 'Fire Breath',      trigger: 'action', recharge: 6, apply: breathApply('breath-mephit-fire') },
   'breath-mephit-cold':     { id: 'breath-mephit-cold',     name: 'Frost Breath',     trigger: 'action', recharge: 6, apply: breathApply('breath-mephit-cold') },
+  'breath-acid-ankheg':     { id: 'breath-acid-ankheg',     name: 'Acid Spray',       trigger: 'action', recharge: 6, apply: breathApply('breath-acid-ankheg') },
+  'breath-lightning-young-bronze': { id: 'breath-lightning-young-bronze', name: 'Lightning Breath', trigger: 'action', recharge: 5, apply: breathApply('breath-lightning-young-bronze') },
   // Colossus Slayer (Ranger, Hunter): once per turn, +1d8 on a hit against a
   // target below its HP max. Existence alone is the feature — the rider and
   // the once-per-turn gate live in resolveAttack, next to Sneak Attack.

@@ -39,6 +39,11 @@ export const ARENA_EXCLUDED = new Set<Id>([
   'unicorn',
   // Conjured allies: they exist only as what a spell puts on the PARTY's side.
   'otherworldly-steed', 'draconic-spirit', 'animated-object',
+  // SRD 5.2.1 stat blocks added for module authors. Held out so the arena's
+  // tuned roster — and every measurement taken over it — stays as it was;
+  // delete a line to field that monster here.
+  'ankheg', 'medusa', 'efreeti', 'vampire', 'drider', 'phase-spider', 'hippogriff',
+  'centaur-trooper', 'giant-frog', 'boar', 'stirge', 'giant-lizard', 'young-bronze',
 ]);
 
 /**

@@ -20,7 +20,7 @@ reuses this doc's style bible verbatim.
 `web/src/art.ts`) · ⬜ needed (still on the emoji fallback). **§5 has the
 full status by category and the per-monster list.** In short: every hero,
 species, and species×role portrait is ✅ and the forge matrix is fully
-covered; **143 of the 143 monsters are ✅, and the remaining 0 have
+covered; **143 of the 156 monsters are ✅, and the remaining 13 have
 prompts ready to generate in §8.**
 
 ---
@@ -666,7 +666,7 @@ Prompts for the 5 Chromatic Dragon Wyrmlings (various dragon archetypes):
 
 ---
 
-## 8. Still to draw — the queue (0), by creature type
+## 8. Still to draw — the queue (13), by creature type
 
 Everything here still needs drawing, and everything that needs drawing is
 here — the split is derived from the art directory by `npm run art-backlog`,
@@ -677,6 +677,59 @@ Each prompt is a **side-by-side design sheet** (portrait left, token right, on
 a #00FF00 chroma key) in the format `slice_side_by_side.py` expects — copy the
 whole line, generate, process. Sizes follow the §4 SIZE tiers so relative scale
 reads on the board.
+
+### Beasts
+
+**Boar** (`boar`) — SIZE M, CR 1/4
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi wild boar with coarse bristly brown fur, small fierce eyes, and two curved yellowed tusks. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a stocky boar lowering its head to charge, tusks forward, a ridge of bristles raised along its back. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. earth brown, tusk ivory, and dark grey palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Giant Frog** (`giant-frog`) — SIZE M, CR 1/4
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi giant frog with wide bulging golden eyes, a broad grinning mouth, and mottled green skin. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a squat dog-sized green frog crouched to leap, a long sticky tongue half out, a pale spotted belly. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. pond green, olive, and pale yellow palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Giant Lizard** (`giant-lizard`) — SIZE L, CR 1/4
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi giant lizard with a broad flat scaly head, a flicking forked tongue, and calm slit-pupiled eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a horse-sized lizard low on four splayed clawed legs with a long tail curling behind, green-and-tan banded scales. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. sage green, sand tan, and slate palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Fey
+
+**Centaur Trooper** (`centaur-trooper`) — SIZE L, CR 2
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi centaur trooper, a weathered woman with sun-browned skin, braided dark hair, and a steady watchful gaze under a light open helm. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a human torso in a steel breastplate on the body of a bay horse, a long pike held upright and a longbow and quiver across the back. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. bay brown, steel, and forest green palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Undead
+
+**Vampire** (`vampire`) — SIZE M, CR 13
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi vampire noble, a pale aristocratic man with slicked-back black hair, red eyes, and a fanged sneer above a high collar. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in a black tailcoat and a crimson-lined cloak spread like wings, clawed hands reaching, a faint mist curling at the feet. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. midnight black, blood crimson, and pale ivory palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Elementals
+
+**Efreeti** (`efreeti`) — SIZE L, CR 11
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi efreeti, a fire genie with red-basalt skin, a beard of living flame, curling horns, and burning orange eyes. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a muscular genie in brass armlets and a flowing sash, his lower body a swirling column of smoke and fire, a glowing heated scimitar in one hand and a ball of flame in the other. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. basalt red, brass, and flame orange palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+### Dragons
+
+**Young Bronze Dragon** (`young-bronze`) — SIZE L, CR 8
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi young bronze dragon with a gleaming bronze-scaled head, a frilled crest, sea-green eyes, and crackles of lightning between its horns. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a sleek bronze-scaled dragon with webbed wings and a finned tail, wings raised, a spark of lightning in its open jaws. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. burnished bronze, sea green, and electric blue palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+---
+
+### Monstrosities
+
+**Drider** (`drider`) — SIZE L, CR 6
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi drider, an elven torso with grey-violet skin, long white hair, and cruel red eyes under a spider-silk circlet. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character the elven upper body joined to a huge black spider body on eight jointed legs, two forelegs raised to strike, one hand cupping a bubble of green poison. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. obsidian black, violet, and poison green palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Medusa** (`medusa`) — SIZE M, CR 6
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi medusa, a woman with fine green scales on her cheeks, a crown of hissing green snakes for hair, glowing gold eyes, and a cold smile. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character in a tattered emerald gown with a scaled bodice, clawed hands raised, the snakes of her hair coiling outward and one palm glowing with a sickly green ray. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. emerald green, bronze, and venom yellow palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Phase Spider** (`phase-spider`) — SIZE L, CR 3
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi phase spider, a glossy spider head with eight glowing blue-violet eyes and dripping fangs, its outline flickering half-transparent. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a large eight-legged spider with a purple-black body patterned in shimmering blue, half of it fading into ghostly translucence as it blinks between planes. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. deep purple, ethereal blue, and black palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Ankheg** (`ankheg`) — SIZE L, CR 2
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi ankheg, a giant burrowing insect with a shiny chitinous head, long twitching antennae, compound eyes, and dripping acid-green mandibles. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a six-legged armored insect the size of a horse, segmented amber-brown carapace, mandibles open and spitting a thin stream of green acid. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. amber brown, chitin black, and acid green palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Hippogriff** (`hippogriff`) — SIZE L, CR 1
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi hippogriff with an eagle's hooked beak, keen amber eyes, and a ruff of brown-and-white feathers. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character an eagle's head, wings and forelegs on the body of a chestnut horse, wings half-spread, one taloned foreleg raised. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. chestnut brown, cream, and gold palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
+
+**Stirge** (`stirge`) — SIZE S, CR 1/8
+> A side-by-side character design sheet split vertically down the middle, against a solid bright green chroma-key background (#00FF00). Left side: PORTRAIT: head-and-shoulders bust, 3/4 facing, a chibi stirge, a bat-winged mosquito-like creature with a long needle proboscis, beady red eyes, and a fuzzy rust-colored body. Right side: TOKEN: full-body chibi, standing, facing the viewer, feet near the bottom edge of the same character a small flying bloodsucker with leathery bat wings, four clawed legs tucked in, and a long red-tipped proboscis pointed forward. Style for both sides: Chibi super-deformed character, modern JRPG / YA-graphic-novel style, about 2 heads tall, big head, large expressive eyes, small body. Clean confident cel-shaded cartoon: flat colors, one soft shadow tone, one small highlight, bold dark warm-brown ink outline (#2a2333), slightly heavier on the silhouette. No gradients, no painterly rendering, no photorealism, no text, no watermark. rust red, leather brown, and dark crimson palette. Soft top-front lighting, consistent. No ground shadow, no scenery, no base or platform.
 
 ---
 
@@ -726,13 +779,13 @@ lands incrementally.
 
 ---
 
-## 12. The queue at a glance (0)
+## 12. The queue at a glance (13)
 
-The same 0 monsters as §8, as a table rather than as prompts — §8 tells you
+The same 13 monsters as §8, as a table rather than as prompts — §8 tells you
 what to type into a generator, this tells you what to pick. Ordered by XP, so
 the ones a player meets as a set-piece get drawn first.
 
-0 of 143 monsters have no generated art. This is not a bug: the emoji
+13 of 156 monsters have no generated art. This is not a bug: the emoji
 reads fine at token size, and `ArtImage` falls back deliberately rather than
 shipping a broken image. The **Fallback** column is what the board shows today.
 
@@ -744,6 +797,20 @@ generator refuses: one without the other means one of the two views draws a
 broken image.
 
 | Monster | ID | Type | XP | Fallback | Size |
+| --- | --- | --- | --- | --- | --- |
+| Vampire | `vampire` | undead | 10000 | 🧛 | medium |
+| Efreeti | `efreeti` | elemental | 7200 | 🧞 | large |
+| Young Bronze Dragon | `young-bronze` | dragon | 3900 | 🐉 | large |
+| Drider | `drider` | monstrosity | 2300 | 🕷️ | large |
+| Medusa | `medusa` | monstrosity | 2300 | 🐍 | medium |
+| Phase Spider | `phase-spider` | monstrosity | 700 | 🕷️ | large |
+| Ankheg | `ankheg` | monstrosity | 450 | 🐜 | large |
+| Centaur Trooper | `centaur-trooper` | fey | 450 | 🐎 | large |
+| Hippogriff | `hippogriff` | monstrosity | 200 | 🦅 | large |
+| Boar | `boar` | beast | 50 | 🐗 | medium |
+| Giant Frog | `giant-frog` | beast | 50 | 🐸 | medium |
+| Giant Lizard | `giant-lizard` | beast | 50 | 🦎 | large |
+| Stirge | `stirge` | monstrosity | 25 | 🦟 | tiny |
 | --- | --- | --- | --- | --- | --- |
 
 ## 13. Already drawn — the prompts that produced the shipped art (85)

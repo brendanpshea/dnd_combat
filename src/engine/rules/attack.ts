@@ -190,6 +190,11 @@ export function collectAttackSources(
     );
     if (packed) adv.push('pack tactics');
   }
+  // Bloodied Fury (boar): "While Bloodied, the boar has Advantage on attack
+  // rolls" — Bloodied being half its hit points or fewer.
+  if (attacker.featureIds.includes('bloodied-fury') && attacker.hp <= attacker.maxHp / 2) {
+    adv.push('bloodied fury');
+  }
   if (target.conditions.some((c) => c.id === 'unconscious')) {
     adv.push('target unconscious');
   }

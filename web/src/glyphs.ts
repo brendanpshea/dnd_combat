@@ -61,6 +61,9 @@ const GLYPH: Record<string, string> = {
   'goblin-hexer': '🪬', 'kobold-emberling': '🎇', 'skeleton-bonechanter': '🦴',
   'apprentice-mage': '📖', 'gnoll-packcaller': '🐕', 'ettercap-snarecaller': '🪤',
   'azer-forgecaller': '🔨', druid: '🌿',
+  ankheg: '🐜', medusa: '🐍', efreeti: '🧞', vampire: '🧛', drider: '🕷️', 'phase-spider': '🕷️',
+  hippogriff: '🦅', 'centaur-trooper': '🐎', 'giant-frog': '🐸', boar: '🐗', stirge: '🦟',
+  'giant-lizard': '🦎', 'young-bronze': '🐉',
 };
 
 /** The glyph for a creature id, or a neutral one for anything unlisted. */
