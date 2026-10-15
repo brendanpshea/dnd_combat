@@ -64,7 +64,8 @@ export type GameEvent =
   /** A Mirror Image duplicate took the blow and popped. */
   | { type: 'mirrorImageStruck'; combatantId: Id; left: number }
   /** A Counterspell stopped a spell before it happened. */
-  | { type: 'counterspelled'; casterId: Id; byId: Id; spellId: Id }
+  /** `resisted`: the caster made its Constitution save and the spell went ahead. */
+  | { type: 'counterspelled'; casterId: Id; byId: Id; spellId: Id; resisted?: true }
   /** Confusion: what the d10 made this creature do with its turn. */
   | { type: 'confusedTurn'; combatantId: Id; roll: number; effect: 'nothing' | 'lashesOut' | 'normal'; targetId?: Id }
   /** Sanctuary turned an attack aside before it was ever rolled. */

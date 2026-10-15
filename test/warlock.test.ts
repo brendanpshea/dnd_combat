@@ -286,7 +286,7 @@ describe('multi-shot spells fire every shot', () => {
       if (!offered || offered.kind !== 'castSpell') continue;   // no slot for it
       // Every shot THIS CASTER has earned, not the spell's lifetime cap. A
       // level-8 warlock has two Eldritch Blast beams; the cap is four.
-      expect(offered.targets.length, `${id} against one enemy`).toBe(spellShots(spell, me));
+      expect(offered.targets.length, `${id} against one enemy`).toBe(spellShots(spell, me, Math.max(offered.slotLevel, spell.level)));
     }
   });
 });

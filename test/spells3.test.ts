@@ -110,13 +110,15 @@ describe('False Life', () => {
     expect(first).toBeGreaterThanOrEqual(5); // 1d4+4, min 5
     c.state.combatants['wiz']!.tempHp = 999; // simulate already having more
     c.state.combatants['wiz']!.turn.actionUsed = false; // re-arm the action for a second cast
+    c.state.combatants['wiz']!.turn.slotSpent = false;  // …and the turn's one spell slot
     c.apply({ kind: 'castSpell', spellId: 'false-life', slotLevel: 1, targets: [] });
     expect(c.state.combatants['wiz']!.tempHp).toBe(999); // unchanged — didn't stack down
   });
 });
 
 describe('Inflict Wounds', () => {
-  it('is a melee spell attack dealing necrotic damage', () => {
+  // SRD 5.2.1: a Constitution save now, not a spell attack (spells-srd-2024.test.ts).
+  it('deals necrotic damage', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const c = new Combat({
         seed,
@@ -129,7 +131,7 @@ describe('Inflict Wounds', () => {
       expect(dmg.type === 'damageDealt' && dmg.damageType).toBe('necrotic');
       return;
     }
-    throw new Error('inflict wounds never hit across 40 seeds');
+    throw new Error('inflict wounds never dealt damage across 40 seeds');
   });
 });
 

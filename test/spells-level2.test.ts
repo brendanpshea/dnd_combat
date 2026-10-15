@@ -118,7 +118,8 @@ describe('Counterspell', () => {
     c.state.combatants[me.id]!.turn.reactionUsed = true;
     expect(tryCounterspell(c.state, 'e1', 3), 'reacted twice in a round').toBeUndefined();
     c.state.combatants[me.id]!.turn.reactionUsed = false;
-    c.state.combatants[me.id]!.spellSlots[2]!.current = 0;
+    // Every slot that could pay: 3rd level or higher.
+    for (const s of c.state.combatants[me.id]!.spellSlots.slice(2)) s.current = 0;
     expect(tryCounterspell(c.state, 'e1', 3), 'countered with no slot').toBeUndefined();
   });
 });

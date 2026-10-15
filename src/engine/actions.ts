@@ -17,7 +17,7 @@ import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap, routineWeapon } from './rules/equipment.js';
 import { blocksMovement, distanceFeet, distanceCells, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, type Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
-import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell, stabilize } from './rules/attack.js';
+import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell, counterspellHolds, stabilize } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
 import { applyCondition, removeConditions, endGrapple, releaseBrokenGrapples } from './rules/conditions.js';
 import { bestSkill, rollSkill } from './rules/skills.js';
@@ -292,7 +292,7 @@ function spellAvailable(actor: Combatant, spell: SpellData, slotLevel: number): 
   return !!pool && pool.current > 0;
 }
 
-function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targets: Target[], weaponId?: Id): boolean {
+function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targets: Target[], weaponId?: Id, slotLevel: number = spell.level): boolean {
   const actor = state.combatants[actorId]!;
   const t = spell.targeting;
   if (t.kind === 'weaponAttack') {
@@ -308,7 +308,7 @@ function validSpellTargets(state: GameState, actorId: Id, spell: SpellData, targ
     // the maximum a spell ever reaches, so a level-1 warlock was allowed — and
     // by `spellTargetSets` below, asked — to pick two Eldritch Blast targets
     // when it has one beam. `cast` then dropped the extra silently.
-    if (targets.length < 1 || targets.length > spellShots(spell, actor)) return false;
+    if (targets.length < 1 || targets.length > spellShots(spell, actor, slotLevel)) return false;
     // All inside one cube of this size (Slow's 40 feet): no two targets further
     // apart, on either axis, than the cube is wide.
     if (t.cluster !== undefined) {
@@ -453,7 +453,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       if (action.slotLevel >= 1 && actor.turn.slotSpent) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
       return spellAvailable(actor, spell, action.slotLevel) &&
-        validSpellTargets(state, actorId, spell, action.targets, action.weaponId);
+        validSpellTargets(state, actorId, spell, action.targets, action.weaponId, Math.max(action.slotLevel, spell.level));
     }
     case 'useItem': {
       if (incap) return false;
@@ -556,7 +556,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
  * darts on the first enemy, etc.); the caller filters by legality.
  */
 export function spellTargetSets(
-  state: GameState, actor: Combatant, spell: SpellData,
+  state: GameState, actor: Combatant, spell: SpellData, slotLevel: number = spell.level,
 ): Array<{ targets: Target[]; weaponId?: Id }> {
   // A troll lying at 0 is a target too (see `risesAgain`).
   const enemies = Object.values(state.combatants).filter((c) => c.alive && (!isDown(c) || risesAgain(c)) && c.team !== actor.team);
@@ -570,7 +570,7 @@ export function spellTargetSets(
   } else if (t.kind === 'creature') {
     const pool = t.who === 'enemy' ? enemies : t.who === 'ally' ? allies : [...enemies, ...allies];
     const valid = pool.filter((c) => validTarget(state, actor.id, spell, c.id));
-    const shots = spellShots(spell, actor);
+    const shots = spellShots(spell, actor, slotLevel);
     if (shots === 1) {
       for (const v of valid) out.push({ targets: [{ combatantId: v.id }] });
     } else if (valid.length > 0) {
@@ -845,7 +845,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
       bends.push('empowered');
     }
     for (const slotLevel of levels) {
-      for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
+      for (const { targets, weaponId } of spellTargetSets(state, actor, spell, Math.max(slotLevel, spell.level))) {
         for (const bend of bends) {
           const a: Action = {
             kind: 'castSpell', spellId: sid, slotLevel, targets,
@@ -940,7 +940,7 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
           }
         }
         if (slotLevel === undefined) continue;
-        for (const { targets, weaponId } of spellTargetSets(state, actor, spell)) {
+        for (const { targets, weaponId } of spellTargetSets(state, actor, spell, Math.max(slotLevel, spell.level))) {
           const a: Action = {
             kind: 'castSpell', spellId: sid, slotLevel, targets, metamagic: meta.id,
             ...(weaponId ? { weaponId } : {}),
@@ -1128,13 +1128,25 @@ export function step(state: GameState, action: Action): { state: GameState; even
         type: 'spellCast', casterId: actorId, spellId: action.spellId,
         origin: actor.position, cells: spellFootprint(draft, actor, spell, action.targets),
       });
-      // Counterspell, after the slot is spent and the cast is telegraphed but
-      // before anything resolves — which is exactly when it happens at a table.
-      // The caster loses the slot either way; that is the spell's whole cost.
+      // Counterspell, after the cast is telegraphed but before anything
+      // resolves — which is exactly when it happens at a table. The 2024 spell
+      // gives the caster a Constitution save, and a countered spell's slot "isn't
+      // expended": it comes back, and so does the turn's one slot.
       const counteredBy = tryCounterspell(draft, actorId, spell.level);
       if (counteredBy) {
-        events.push({ type: 'counterspelled', casterId: actorId, byId: counteredBy, spellId: action.spellId });
-        break;
+        const held = counterspellHolds(draft, actorId, counteredBy);
+        events.push(held.event);
+        events.push({
+          type: 'counterspelled', casterId: actorId, byId: counteredBy, spellId: action.spellId,
+          ...(held.countered ? {} : { resisted: true as const }),
+        });
+        if (held.countered) {
+          if (action.slotLevel >= 1) {
+            actor.spellSlots[action.slotLevel - 1]!.current += 1;
+            actor.turn.slotSpent = false;
+          }
+          break;
+        }
       }
       // Heightened Spell rides on the state for the duration of this one cast:
       // a spell's `cast` rolls its own saves through the shared `savingThrow`,
@@ -1169,6 +1181,15 @@ export function step(state: GameState, action: Action): { state: GameState; even
       // the caster, and which slot it was. Reads the events the cast actually
       // produced, so a spell that healed nobody — everyone already full — pays
       // nothing back.
+      // Disciple of Life (Life Domain, Cleric 3): "When a spell you cast with a
+      // spell slot restores Hit Points to a creature, that creature regains
+      // additional Hit Points ... equal [to] 2 plus the spell slot's level" —
+      // every such spell, not Cure Wounds alone, which is where it used to be.
+      if (action.slotLevel >= 1 && actor.featureIds.includes('disciple-of-life')) {
+        const restored = new Set(castEvents.flatMap((e) =>
+          e.type === 'healed' && e.sourceId === actorId && e.amount > 0 ? [e.targetId] : []));
+        for (const id of restored) events.push(...applyHealing(draft, id, actorId, 2 + action.slotLevel));
+      }
       if (action.slotLevel >= 1 && actor.featureIds.includes('blessed-healer') &&
           castEvents.some((e) => e.type === 'healed' && e.targetId !== actorId && e.amount > 0)) {
         events.push(...applyHealing(draft, actorId, actorId, 2 + action.slotLevel));
@@ -1388,11 +1409,19 @@ function runEndOfTurnSaves(state: GameState, id: Id): GameEvent[] {
       // Dropped or killed: that already rewrote the conditions, and nothing
       // else on a creature that is down gets a save worth rolling.
       if (!c.alive || isDown(c)) return events;
+    } else if (cond.failDamage) {
+      // Phantasmal Killer: the damage again, on every failed save.
+      const dmg = rollDice(state.rng, cond.failDamage.dice);
+      state.rng = dmg.state;
+      events.push(...applyDamage(state, id, cond.sourceId ?? id, dmg.total, cond.failDamage.type, dmg.rolls, { magical: true }));
+      if (!c.alive || isDown(c)) return events;
     } else if (cond.id === 'incapacitated' && !cond.saveOnDamage) {
       const esc = {
         id: 'unconscious' as const,
         expiresAtRound: state.round + 10, // 1 minute
         ...(cond.sourceId !== undefined ? { sourceId: cond.sourceId } : {}),
+        // Still Sleep, still held by its caster's concentration.
+        ...(cond.concentration ? { concentration: true } : {}),
       };
       drop.add(cond);
       add.push(esc);

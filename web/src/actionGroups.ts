@@ -359,7 +359,7 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
           // beam, so it belongs on this single-tap path. Keying the first guard
           // on `t.count` and the second on the real number made it fall between
           // them and vanish from the chooser entirely.
-          const shots = spellShots(spell, actor!);
+          const shots = spellShots(spell, actor!, Math.max(a.slotLevel, spell.level));
           /*
            * CANTRIPS ONLY on the tapped-enemy chooser.
            *

@@ -1147,7 +1147,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         const t = state.combatants[(tg as { combatantId: Id }).combatantId]!;
         const missing = t.maxHp - t.hp;
         if (missing <= 0) continue;
-        const heal = Math.min(avgDice('1d4') + castMod, missing);
+        const heal = Math.min(avgDice(`${2 + Math.max(0, a.slotLevel - 3)}d4`) + castMod, missing);
         v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4);
       }
       return v - slotCost;
@@ -1411,8 +1411,10 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       return (amount - current) * (incomingPerRound(state, actor) > 0 ? 1 : 0) - slotCost;
     }
     case 'inflict-wounds': {
+      // A Constitution save for half, since 2024 — not a spell attack.
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
-      return damageValue(hitProb(spellAtkBonus, acOf(t), 'flat') * avgDice(spellDice('inflict-wounds', a.slotLevel, actor.level)), t) - slotCost;
+      const pFail = saveFailProb(state, t, 'con', dc);
+      return damageValue((pFail + (1 - pFail) * 0.5) * avgDice(spellDice('inflict-wounds', a.slotLevel, actor.level)), t) - slotCost;
     }
     case 'blindness': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -1733,9 +1735,11 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       if (actor.concentratingOn) return 0;
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       const dmg = avgDice(spellDice('phantasmal-killer', a.slotLevel, actor.level));
-      const fear = t.conditions.some((k) => k.id === 'frightened')
-        ? 0 : saveFailProb(state, t, 'wis', dc) * 4;
-      return damageValue(dmg, t) + fear - slotCost;
+      // Half on a save; on a failure the full roll, and about one more round
+      // of it before a repeat save lands.
+      const pFail = saveFailProb(state, t, 'wis', dc);
+      const fear = t.conditions.some((k) => k.id === 'frightened') ? 0 : pFail * 4;
+      return damageValue(dmg * (pFail * 2 + (1 - pFail) * 0.5), t) + fear - slotCost;
     }
     // Mirror Image: three illusions that eat attacks. Only worth an action when
     // something is close enough to swing, and never worth re-casting on top of

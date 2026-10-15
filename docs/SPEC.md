@@ -706,7 +706,26 @@ Heat Metal, Call Lightning, Moonbeam, Cure Wounds, Healing Word, False Life and
 Aid. All of them had slot-scaling code written from the start and none of it was
 reachable: nothing ever offered them a higher slot, so `slotLevel` was always
 their own level. A 7th-level caster's 4th-level slot is unspendable without
-this, since the game has no 4th-level spell every class can reach.
+this, since the game has no 4th-level spell every class can reach. (The flag
+has since spread to every spell whose SRD text upcasts — 33 of them now —
+including Magic Missile and Scorching Ray, whose extra dart or ray per slot
+level comes through `SpellData.shots(caster, slotLevel)`, Mass Healing Word and
+Phantasmal Killer.)
+
+**Spell texts checked against SRD 5.2.1.** Inflict Wounds is a Constitution
+save for 2d10 necrotic, half on a success, not the 2014 melee spell attack; Mass
+Healing Word heals 2d4 plus the modifier; Phantasmal Killer is half on a save
+(which ends it) and deals its damage again on each failed end-of-turn save
+(`ActiveCondition.failDamage`), its disadvantage carried by `frightened`; Cone of
+Cold fills the 15-ft cone template (the board's only cone — the SRD's is 60 ft)
+rather than the one cell naming its direction; Sleep and the concentration
+smites end with their concentration; Disciple of Life adds 2 + the slot level to
+every healing spell cast from a slot, applied in `step` from the `healed`
+events; True Strike deals radiant when the target would shrug off the weapon's
+type and adds 1d6 radiant from 5th level. Counterspell is the 2024 spell: the
+caster makes a Constitution save against the counterspeller's DC, a countered
+caster keeps its slot, and any slot of 3rd level or higher pays for it (a
+warlock's pact slots included).
 
 `baseLevel` stays in the candidate list even when upcasting: for an innate
 spell it is 0, meaning "cast from the species pool, spend no slot". Enumerating

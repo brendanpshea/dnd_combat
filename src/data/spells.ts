@@ -182,7 +182,7 @@ export interface SpellData {
    * list is exactly how Eldritch Blast got missed the last two times — see
    * `stacksOnOneTarget`. A spell that scales says so itself.
    */
-  shots?(caster: Combatant): number;
+  shots?(caster: Combatant, slotLevel: number): number;
   /**
    * While the caster concentrates on it, casting it again is its free repeat:
    * no slot, no new concentration — Vampiric Touch's "make the attack again on
@@ -197,8 +197,8 @@ export interface SpellData {
  * flat cap. The one place that answers this, so the legality check, the default
  * target set and the UI's target picker cannot disagree about it.
  */
-export function spellShots(spell: SpellData, caster: Combatant): number {
-  return spell.shots ? spell.shots(caster) : spell.targeting.kind === 'creature' ? spell.targeting.count : 1;
+export function spellShots(spell: SpellData, caster: Combatant, slotLevel: number = spell.level): number {
+  return spell.shots ? spell.shots(caster, slotLevel) : spell.targeting.kind === 'creature' ? spell.targeting.count : 1;
 }
 
 // --- shared helpers --------------------------------------------------------
@@ -425,7 +425,7 @@ export const SPELL_DICE: Record<Id, (slotLevel: number, casterLevel: number) => 
   'burning-hands': (slot) => `${2 + slot}d6`,         // 3d6 at 1st
   thunderwave: (slot) => `${1 + slot}d8`,             // 2d8 at 1st
   'guiding-bolt': (slot) => `${3 + slot}d6`,          // 4d6 at 1st
-  'inflict-wounds': (slot) => `${1 + slot}d10`,       // 2d10 at 1st
+  'inflict-wounds': (slot) => `${1 + slot}d10`,       // 2d10 at 1st, +1d10 a level
   'ray-of-sickness': (slot) => `${1 + slot}d8`,       // 2d8 at 1st
   'cure-wounds': (slot) => `${2 * slot}d8`,           // 2024: 2d8 at 1st, +2d8 per slot
   'healing-word': (slot) => `${2 * slot}d4`,          // 2024: 2d4 at 1st, +2d4 per slot
@@ -813,12 +813,6 @@ function heal(state: GameState, targetId: Id, sourceId: Id, amount: number): Gam
   return applyHealing(state, targetId, sourceId, amount);
 }
 
-/** Life Domain: level-1+ healing spells restore +2 + spell level. */
-function discipleOfLifeBonus(state: GameState, casterId: Id, slotLevel: number): number {
-  const c = state.combatants[casterId]!;
-  return c.featureIds.includes('disciple-of-life') && slotLevel >= 1 ? 2 + slotLevel : 0;
-}
-
 /**
  * Whichever mind is sharpest — True Strike is guided by insight, and the elf
  * doesn't care which kind. This is also what keeps the spell self-balancing
@@ -958,8 +952,19 @@ export const SPELLS: Record<Id, SpellData> = {
       // one that can reach, so the browse path still does something sensible.
       const weapon = weaponId ?? bestTrueStrikeWeapon(state, caster, targetId);
       if (!weapon || !WEAPONS[weapon]) return [];   // nothing that can reach
+      // "It can be Radiant damage or the weapon's normal damage type (your
+      // choice)": radiant whenever the target would shrug off the weapon's own.
+      const t = state.combatants[targetId]!;
+      const w = WEAPONS[weapon]!;
+      const shrugs = (type: DamageType, magical: boolean) => t.immunities.includes(type) ||
+        t.resistances.includes(type) || (!magical && (t.resistNonmagical ?? []).includes(type));
+      const radiant = shrugs(w.damageType, !!(w.magic || w.attackBonus || w.damageBonus)) && !shrugs('radiant', true);
+      // Cantrip Upgrade: extra radiant at 5th (1d6), 11th (2d6) and 17th (3d6).
+      const extra = caster.level >= 17 ? '3d6' : caster.level >= 11 ? '2d6' : caster.level >= 5 ? '1d6' : undefined;
       return resolveAttack(state, casterId, targetId, weapon, {
         abilityOverride: bestMentalAbility(caster),
+        ...(radiant ? { damageType: 'radiant' as const } : {}),
+        ...(extra ? { extraRadiant: extra } : {}),
       });
     },
   },
@@ -1271,7 +1276,9 @@ export const SPELLS: Record<Id, SpellData> = {
       const targetId = targetIds[0]!;
       const roll = rollDice(state.rng, spellDice('cure-wounds', slotLevel, state.combatants[casterId]!.level));
       state.rng = roll.state;
-      const amount = roll.total + spellMod(state, casterId) + discipleOfLifeBonus(state, casterId, slotLevel);
+      // Disciple of Life is added in step(), for every healing spell cast from
+      // a slot, rather than here for Cure Wounds alone.
+      const amount = roll.total + spellMod(state, casterId);
       return heal(state, targetId, casterId, amount);
     },
   },
@@ -1331,6 +1338,9 @@ export const SPELLS: Record<Id, SpellData> = {
     // `spellTargetSets` picks. The flag was missing even though the behaviour
     // was not, so every reader of it had to special-case this spell by id.
     stacksOnOneTarget: true,
+    // "One more dart for each spell slot level above 1."
+    upcast: true,
+    shots: (_caster, slotLevel) => 3 + Math.max(0, slotLevel - 1),
     icon: '✨',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];
@@ -1363,6 +1373,7 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '😴',
     cast({ state, casterId, positions }) {
       const events: GameEvent[] = [];
+      const held: Id[] = [];
       const dc = spellDc(state, casterId);
       const cells = sphere2x2(positions[0]!);
       for (const pos of cells) {
@@ -1374,16 +1385,19 @@ export const SPELLS: Record<Id, SpellData> = {
         const save = savingThrow(state, tid, 'wis', dc);
         events.push(save.event);
         if (!save.success) {
-          events.push(...applyCondition(state, tid, {
-            id: 'incapacitated', sourceId: casterId,
+          const slept = applyCondition(state, tid, {
+            id: 'incapacitated', sourceId: casterId, concentration: true,
             repeatSave: { ability: 'wis', dc, magical: true },
-          }, { magical: true }));
+          }, { magical: true });
+          events.push(...slept);
+          if (slept.length > 0) held.push(tid);
         }
       }
-      // Concentration is the *cost* half of the rule and the half that matters
-      // here: holding this means not holding anything else. Sleep ends when concentration
-      // does; the sleepers already get their own end-of-turn saves.
-      state.combatants[casterId]!.concentratingOn = { spellId: 'sleep', targetIds: [] };
+      // Held by concentration, as the SRD's duration says: when it ends, both
+      // stages lift (the Unconscious escalation keeps the flag — see
+      // runEndOfTurnSaves). It used to hold an empty list, so the sleepers
+      // slept on after the caster's concentration was long gone.
+      state.combatants[casterId]!.concentratingOn = { spellId: 'sleep', targetIds: held };
       return events;
     },
   },
@@ -1464,12 +1478,16 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'mass-healing-word', name: 'Mass Healing Word', level: 3, castingTime: 'bonus',
     targeting: { kind: 'creature', range: 60, who: 'ally', count: 6 },
     concentration: false,
+    upcast: true,
     icon: '💞',
-    cast({ state, casterId, targetIds }) {
+    // SRD 5.2.1 (line 12340): "2d4 plus your spellcasting ability modifier",
+    // and 1d4 more a slot level above 3rd. It rolled 1d4.
+    cast({ state, casterId, slotLevel, targetIds }) {
       const mod = spellMod(state, casterId);
       const events: GameEvent[] = [];
+      const dice = `${2 + Math.max(0, slotLevel - 3)}d4`;
       for (const tid of new Set(targetIds)) {
-        const heal = rollDice(state.rng, '1d4');
+        const heal = rollDice(state.rng, dice);
         state.rng = heal.state;
         events.push(...applyHealing(state, tid, casterId, heal.total + mod));
       }
@@ -2040,6 +2058,9 @@ export const SPELLS: Record<Id, SpellData> = {
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 3 },
     concentration: false,
     stacksOnOneTarget: true,
+    // "One additional ray for each spell slot level above 2."
+    upcast: true,
+    shots: (_caster, slotLevel) => 3 + Math.max(0, slotLevel - 2),
     icon: '☄️',
     cast({ state, casterId, targetIds }) {
       const events: GameEvent[] = [];
@@ -2350,15 +2371,16 @@ export const SPELLS: Record<Id, SpellData> = {
     concentration: false,
     upcast: true,
     icon: '👻',
+    // SRD 5.2.1 (line 12155): "makes a Constitution saving throw, taking 2d10
+    // Necrotic damage on a failed save or half as much damage on a successful
+    // one" — the 2014 melee spell attack for 3d10 is gone.
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
-      const atk = spellAttack(state, casterId, targetId, { melee: true });
-      const events: GameEvent[] = [atk.event];
-      if (atk.hit) {
-        const dmg = rollDice(state.rng, spellDice('inflict-wounds', slotLevel, state.combatants[casterId]!.level), atk.crit); // 2d10 at slot 1
-        state.rng = dmg.state;
-        events.push(...applyDamage(state, targetId, casterId, dmg.total, 'necrotic', dmg.rolls));
-      }
+      const save = savingThrow(state, targetId, 'con', spellDc(state, casterId));
+      const events: GameEvent[] = [save.event];
+      const dmg = rollSpellDice(state, casterId, spellDice('inflict-wounds', slotLevel, state.combatants[casterId]!.level), false, 'necrotic');
+      const amount = saveForHalf(state.combatants[targetId]!, 'con', dmg.total, save.success);
+      if (amount > 0) events.push(...applyDamage(state, targetId, casterId, amount, 'necrotic', dmg.rolls));
       return events;
     },
   },
@@ -2949,20 +2971,28 @@ export const SPELLS: Record<Id, SpellData> = {
     id: 'phantasmal-killer', name: 'Phantasmal Killer', level: 4, castingTime: 'action',
     targeting: { kind: 'creature', range: 120, who: 'enemy', count: 1 },
     concentration: true,
+    upcast: true,
     icon: '👁️',
+    // SRD 5.2.1 (line 12480): 4d10 psychic and disadvantage on a failed save,
+    // half and the spell ends on a success; each failed end-of-turn save deals
+    // the damage again; +1d10 a slot level above 4th. The disadvantage rides
+    // on `frightened`, the nearest condition this game has.
     cast({ state, casterId, slotLevel, targetIds }) {
       const targetId = targetIds[0]!;
       const target = state.combatants[targetId]!;
       const dc = spellDc(state, casterId);
       const save = savingThrow(state, targetId, 'wis', dc);
       const events: GameEvent[] = [save.event];
-      const dmg = rollDice(state.rng, spellDice('phantasmal-killer', slotLevel, state.combatants[casterId]!.level));
+      const dice = spellDice('phantasmal-killer', slotLevel, state.combatants[casterId]!.level);
+      const dmg = rollDice(state.rng, dice);
       state.rng = dmg.state;
-      events.push(...applyDamage(state, targetId, casterId, dmg.total, 'psychic', dmg.rolls));
+      const amount = save.success ? Math.floor(dmg.total / 2) : dmg.total;
+      if (amount > 0) events.push(...applyDamage(state, targetId, casterId, amount, 'psychic', dmg.rolls));
       if (!save.success && target.alive) {
         events.push(...applyCondition(state, targetId, {
           id: 'frightened', sourceId: casterId, concentration: true,
           repeatSave: { ability: 'wis', dc, magical: true },
+          failDamage: { dice, type: 'psychic' },
         }, { magical: true }));
         state.combatants[casterId]!.concentratingOn = { spellId: 'phantasmal-killer', targetIds: [targetId] };
       }
@@ -3697,7 +3727,13 @@ export const SPELLS: Record<Id, SpellData> = {
       const dc = spellDc(state, casterId);
       const dice = spellDice('cone-of-cold', slotLevel, state.combatants[casterId]!.level);
       const events: GameEvent[] = [];
-      for (const pos of positions) {
+      // The cone, from the caster in the direction the target cell names. It
+      // read `positions` — that one adjacent cell — so the spell only ever hit
+      // whoever stood right next to the caster. The SRD's cone is 60 ft; this
+      // board's one cone template is the 15-ft wedge Burning Hands uses, which
+      // is also what the AI has always priced it as.
+      const dir = directionFromDelta(caster.position, positions[0]!);
+      for (const pos of cone15(caster.position, dir)) {
         const tid = cellAt(state.grid, pos)?.occupantId;
         if (!tid) continue;
         const t = state.combatants[tid]!;

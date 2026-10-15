@@ -221,6 +221,7 @@ export function effectsFor(state: GameState, events: GameEvent[]): EffectBatch {
         break;
       }
       case 'counterspelled': {
+        if (e.resisted) break;
         // Counterspell fires by itself, out of turn, and costs a 3rd-level slot.
         // If the only trace is a log line, a player watching the board sees a
         // spell simply not happen and learns nothing about what they paid for.

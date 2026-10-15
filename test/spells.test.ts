@@ -123,10 +123,10 @@ describe('leveled spells', () => {
     until(c, 'clr');
     const before = c.state.combatants['clr']!.spellSlots[0]!.current;
     const events = c.apply({ kind: 'castSpell', spellId: 'cure-wounds', slotLevel: 1, targets: [{ combatantId: 'ftr' }] });
-    const healed = events.find((e) => e.type === 'healed')!;
-    if (healed.type !== 'healed') throw new Error();
-    // 2d8 (2..16) + wis 3 + life domain 3 = 8..22, capped at maxHp-1=12
-    expect(healed.amount).toBeGreaterThanOrEqual(8);
+    // 2d8 (2..16) + wis 3, then Disciple of Life's 3 as its own heal (it is
+    // applied to every slot healing spell, in step) = 8..22, capped at maxHp-1.
+    const healed = events.reduce((n, e) => n + (e.type === 'healed' && e.targetId === 'ftr' ? e.amount : 0), 0);
+    expect(healed).toBeGreaterThanOrEqual(8);
     // One slot, whatever the pool started at — that is the claim, and hard-
     // coding the count tied it to the cleric's level.
     expect(c.state.combatants['clr']!.spellSlots[0]!.current).toBe(before - 1);

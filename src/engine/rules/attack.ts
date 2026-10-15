@@ -94,6 +94,10 @@ export interface AttackContext {
   abilityOverride?: Ability;
   /** Internal guard: a Rampage bonus attack must not itself trigger Rampage. */
   noRampage?: boolean;
+  /** Deal this type instead of the weapon's (True Strike's radiant). */
+  damageType?: DamageType;
+  /** Extra radiant dice on a hit (True Strike's cantrip upgrade). */
+  extraRadiant?: string;
 }
 
 /**
@@ -678,8 +682,14 @@ export function resolveAttack(
   // is what stops a monk falling off a cliff the moment the bestiary starts
   // shrugging off nonmagical weapons.
   const empowered = weapon.id === 'unarmed-strike' && attacker.featureIds.includes('empowered-strikes');
-  events.push(...applyDamage(state, targetId, attackerId, amount, weapon.damageType, rolls,
-    { crit, tags, magical: isMagicWeapon(weapon) || empowered, melee: isMeleeAttack }));
+  events.push(...applyDamage(state, targetId, attackerId, amount, ctx.damageType ?? weapon.damageType, rolls,
+    { crit, tags, magical: isMagicWeapon(weapon) || empowered || ctx.damageType !== undefined, melee: isMeleeAttack }));
+  if (ctx.extraRadiant && target.alive) {
+    const extra = rollDice(state.rng, ctx.extraRadiant, crit);
+    state.rng = extra.state;
+    events.push(...applyDamage(state, targetId, attackerId, extra.total, 'radiant', extra.rolls,
+      { crit, magical: true, rider: true, tags: ['True Strike'] }));
+  }
 
   // Secondary damage of a different type (giant spider poison). A rider with a
   // `save` is halved on a success — the SRD shape for the big poison stings,
@@ -1481,7 +1491,9 @@ export function tryAutoShield(state: GameState, targetId: Id): boolean {
  * a waste, and countering a Fireball is the whole reason to hold the slot.
  *
  * So the bar is the incoming spell's level. Cantrips and 1st-level spells go
- * through; 2nd and above are stopped while a 3rd-level slot remains. Measured
+ * through; 2nd and above are answered while a slot of 3rd level or higher
+ * remains. Answered is not stopped: the caster then makes a Constitution save
+ * (`counterspellHolds`), and a countered caster keeps its slot. Measured
  * against the sixteen enemy casters actually in the game, that means Fireball,
  * Lightning Bolt, Fear, Spirit Guardians, Hold Person and Web get answered, and
  * a goblin hexer's Vicious Mockery never burns anything.
@@ -1496,13 +1508,29 @@ export function tryCounterspell(state: GameState, casterId: Id, spellLevel: numb
     // 60 feet and line of sight: you cannot stop what you cannot see.
     if (distanceFeet(c.position, caster.position) > 60) continue;
     if (!hasLineOfSight(state.grid, c.position, caster.position)) continue;
-    const slot = c.spellSlots[2];   // a 3rd-level slot, which is what it costs
-    if (!slot || slot.current <= 0) continue;
+    // The lowest slot of 3rd level or higher — which is what lets a warlock,
+    // whose pact slots all sit at one higher level, counter at all. It used to
+    // read the 3rd-level pool only.
+    const slot = c.spellSlots.slice(2).find((s) => s.current > 0);
+    if (!slot) continue;
     slot.current -= 1;
     c.turn.reactionUsed = true;
     return c.id;
   }
   return undefined;
+}
+
+/**
+ * The 2024 Counterspell's other half: "The creature makes a Constitution
+ * saving throw. On a failed save, the spell dissipates with no effect" (SRD
+ * 5.2.1, line 11301). True when the spell is stopped. The DC is the
+ * counterspeller's spell save DC.
+ */
+export function counterspellHolds(state: GameState, casterId: Id, byId: Id): { countered: boolean; event: GameEvent } {
+  const by = state.combatants[byId]!;
+  const dc = 8 + proficiencyBonus(by.level) + abilityMod(by.abilities[by.spellcastingAbility ?? 'int']);
+  const save = savingThrow(state, casterId, 'con', dc, { magical: true });
+  return { countered: !save.success, event: save.event };
 }
 
 export function breakConcentration(state: GameState, combatantId: Id): GameEvent[] {

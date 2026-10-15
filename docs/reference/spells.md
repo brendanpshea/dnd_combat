@@ -59,7 +59,7 @@ see `src/data/spells.ts`.
 | 🎯 Hunter's Mark | `hunters-mark` | bonus | 1 enemy within 90 ft | yes | — | — | Ranger 1 |
 | 👻 Inflict Wounds | `inflict-wounds` | action | 1 enemy you can touch | — | yes | — | Cleric 1, Skeleton Bonechanter |
 | 🛡️ Mage Armor | `mage-armor` | action | self (offered when it would reach someone) | — | — | — | Wizard 1, Sorcerer 1 |
-| ✨ Magic Missile | `magic-missile` | action | 3 enemys within 120 ft | — | — | — | Wizard 1, Sorcerer 1, Night Hag |
+| ✨ Magic Missile | `magic-missile` | action | 3 enemys within 120 ft | — | yes | — | Wizard 1, Sorcerer 1, Night Hag |
 | ✝️ Protection from Evil and Good | `protection-from-evil-and-good` | action | 1 ally you can touch | yes | — | — | Cleric 1, Warlock 1, Druid 1, Paladin 2 |
 | 🤢 Ray of Sickness | `ray-of-sickness` | action | 1 enemy within 60 ft | — | yes | — | Wizard (scroll), Sorcerer 1, Abyssal Tiefling |
 | ⛪ Sanctuary | `sanctuary` | bonus | 1 ally within 30 ft | — | — | — | Cleric 1, Priest Acolyte |
@@ -85,7 +85,7 @@ see `src/data/spells.ts`.
 | 👣 Misty Step | `misty-step` | bonus | an empty cell within 30 ft | — | — | — | Wizard 3, Warlock 3, Sorcerer 3, Mage |
 | 🌙 Moonbeam | `moonbeam` | action | 2×2 burst within 120 ft | yes | yes | — | Druid 3, Druid |
 | 🌫️ Pass without Trace | `pass-without-trace` | action | self (offered when it would reach someone) | yes | — | out of combat | Druid 3, Dryad |
-| ☄️ Scorching Ray | `scorching-ray` | action | 3 enemys within 120 ft | — | — | — | Wizard 3, Sorcerer 3 |
+| ☄️ Scorching Ray | `scorching-ray` | action | 3 enemys within 120 ft | — | yes | — | Wizard 3, Sorcerer 3 |
 | 💥 Shatter | `shatter` | action | 2×2 burst within 60 ft | — | yes | — | Wizard 3, Sorcerer 3, Bard 3 |
 | 🌟 Shining Smite | `shining-smite` | bonus | self (offered when it would reach someone) | yes | — | — | Paladin 5 |
 | 🔇 Silence | `silence` | action | 2×2 burst within 120 ft | yes | — | — | Cleric 3, Bard 3 |
@@ -109,7 +109,7 @@ see `src/data/spells.ts`.
 | 🐇 Haste | `haste` | action | 1 ally within 30 ft | yes | — | — | Wizard 5, Sorcerer 5 |
 | 🌀 Hypnotic Pattern | `hypnotic-pattern` | action | 5×5 burst within 120 ft | yes | — | — | Wizard 5, Warlock 5, Sorcerer 5, Bard 5 |
 | ⚡ Lightning Bolt | `lightning-bolt` | action | line to the board edge | — | yes | — | Wizard 5, Sorcerer 5 |
-| 💞 Mass Healing Word | `mass-healing-word` | bonus | 6 allys within 60 ft | — | — | — | Cleric 5, Bard 5 |
+| 💞 Mass Healing Word | `mass-healing-word` | bonus | 6 allys within 60 ft | — | yes | — | Cleric 5, Bard 5 |
 | 🔥 Protection from Energy | `protection-from-energy` | action | 1 ally you can touch | yes | — | — | Cleric 5, Sorcerer 5, Druid 5 |
 | ⏳ Slow | `slow` | action | 6 enemys within 120 ft | yes | — | — | Wizard 5, Sorcerer 5, Bard 5 |
 | 👼 Spirit Guardians | `spiritual-guardians` | action | self (offered when it would reach someone) | yes | yes | — | Cleric 5, Priest |
@@ -127,7 +127,7 @@ see `src/data/spells.ts`.
 | 🌀 Freedom of Movement | `freedom-of-movement` | action | 1 ally you can touch | — | — | — | Cleric 7, Bard 7, Druid 7 |
 | 🫥 Greater Invisibility | `greater-invisibility` | action | 1 ally you can touch | yes | — | — | Wizard 7, Sorcerer 7, Bard 7 |
 | 🧊 Ice Storm | `ice-storm` | action | 5×5 burst within 300 ft | — | yes | — | Wizard 7, Sorcerer 7, Druid 7 |
-| 👁️ Phantasmal Killer | `phantasmal-killer` | action | 1 enemy within 120 ft | yes | — | — | Wizard 7, Bard 7, Night Hag |
+| 👁️ Phantasmal Killer | `phantasmal-killer` | action | 1 enemy within 120 ft | yes | yes | — | Wizard 7, Bard 7, Night Hag |
 | 🦍 Polymorph | `polymorph` | action | 1 ally within 60 ft | yes | — | — | Wizard 7, Sorcerer 7, Druid 7 |
 | 🔥 Wall of Fire | `wall-of-fire` | action | 2×2 burst within 120 ft | yes | yes | — | Wizard 7, Sorcerer 7, Druid 7 |
 

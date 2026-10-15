@@ -315,6 +315,7 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     case 'mirrorImageStruck':
       return `  A duplicate of ${nm(e.combatantId)} shatters — ${e.left} left.`;
     case 'counterspelled':
+      if (e.resisted) return `  ${nm(e.casterId)} pushes through ${nm(e.byId)}'s counterspell!`;
       return `  ${nm(e.byId)} counters ${nm(e.casterId)}'s ${e.spellId.replace(/-/g, ' ')}!`;
     case 'confusedTurn':
       if (e.effect === 'nothing') return `  ${nm(e.combatantId)} reels, and does nothing at all.`;

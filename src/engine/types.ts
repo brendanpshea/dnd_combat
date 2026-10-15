@@ -258,6 +258,11 @@ export interface ActiveCondition {
   dc?: number;
   /** The damage type this condition is about (Protection from Energy). */
   damageType?: DamageType;
+  /**
+   * Damage dealt again each time `repeatSave` is failed — Phantasmal Killer's
+   * "On a failed save, it takes the Psychic damage again". From `sourceId`.
+   */
+  failDamage?: { dice: string; type: DamageType };
 }
 
 export interface ResourcePool {
