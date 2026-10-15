@@ -145,6 +145,7 @@ export function describeShort(a: Action): string {
         .replace(/^Channel Divinity: /, '').replace(/^Fighting Style: /, '');
     }
     case 'shakeAwake': return 'Shake awake';
+    case 'stabilize': return 'Stabilize';
     case 'escape': return a.condition === 'grappled' ? 'Break free of the grip' : `Break free (${a.condition})`;
     case 'dash': return 'Dash';
     case 'disengage': return 'Disengage';
@@ -284,6 +285,9 @@ export function groupActions(state: GameState, actorId: Id, actions: Action[]): 
         break;
       case 'shakeAwake':
         pushTarget(a.targetId, 'Shake awake', a, '🫱');
+        break;
+      case 'stabilize':
+        pushTarget(a.targetId, 'Stabilize', a, '🩹');
         break;
       // Hangs off the tapped enemy, like an attack: it is a thing you do TO
       // somebody standing next to you, and the tray is for things that need a

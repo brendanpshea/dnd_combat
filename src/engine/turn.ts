@@ -4,7 +4,7 @@
  */
 import type { GameState, Combatant, Id, TeamId, GridState } from './types.js';
 import { cellAt } from './types.js';
-import { abilityMod, proficiencyBonus, isDown, heldInPlace } from './types.js';
+import { abilityMod, proficiencyBonus, isDown, isDying, heldInPlace } from './types.js';
 import { rollDie, coinFlip } from './rng.js';
 import { rollD20 } from './dice.js';
 import { rollDice } from './dice.js';
@@ -16,7 +16,7 @@ import { discoverHidden } from './rules/hide.js';
 import { FEATURES } from '../data/features.js';
 import { activateSummons, strikeLightning, burnInMoonbeam, catchInSpirit } from '../data/spells.js';
 import { savingThrow } from './rules/saves.js';
-import { applyDamage, charmAway, resolveAttack } from './rules/attack.js';
+import { applyDamage, charmAway, resolveAttack, rollDeathSave } from './rules/attack.js';
 import { attackableWeapons } from './rules/equipment.js';
 import { WEAPONS } from '../data/weapons.js';
 import { applyHealing } from './rules/heal.js';
@@ -561,9 +561,10 @@ export function startTurn(state: GameState): GameEvent[] {
  * Downed heroes are skipped. They're alive, so they'd otherwise be handed a
  * turn in which the only legal action is to end it — dead air on the board, and
  * for a human player a "Sir Arthur's turn!" banner over a body that cannot do
- * anything. (There are no death saves here, so unlike 5e a downed hero's turn
- * has no content at all.) Sleep is deliberately not skipped: a slept creature
- * is above 0 HP, and its turn is where its repeat save is rolled.
+ * anything. (Without death saves a downed hero's turn has no content at all;
+ * with them — `rules.deathSaves` — its content is the save, rolled as the scan
+ * passes it.) Sleep is deliberately not skipped: a slept creature is above 0
+ * HP, and its turn is where its repeat save is rolled.
  */
 export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id: Id) => GameEvent[]): GameEvent[] {
   const events: GameEvent[] = [];
@@ -597,44 +598,27 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   // someone actually able to take a turn.
   for (let hop = 0; hop <= n; hop++) {
     let moved = false;
+    let wrapped = false;
     for (let i = 1; i <= n; i++) {
       const idx = (state.turnIndex + i) % n;
       const next = state.combatants[state.initiativeOrder[idx]!]!;
+      if (!next.alive) continue;
+      // A dying creature's turn is its death save and nothing else, so it is
+      // rolled here as the order passes it rather than handed over as a turn
+      // with nothing in it. A natural 20 brings it round with 1 HP — and then
+      // the turn is its own to take, so it stops the scan like anyone else.
+      if (isDying(state, next)) {
+        if (idx <= state.turnIndex && !wrapped) {
+          wrapped = true;
+          if (advanceRound(state, events)) return events;
+        }
+        events.push(...rollDeathSave(state, next.id));
+        if (state.winner) return events;
+      }
       if (!next.alive || isDown(next)) continue;
-      if (idx <= state.turnIndex) {
-        state.round += 1;
-        for (const p of expireIllusions(state.grid, state.round)) {
-          events.push({ type: 'illusionPopped', position: p });
-        }
-        expireChill(state.grid, state.round);
-        // Duration-held summons expire on the clock, for everyone, here.
-        //
-        // The sweep used to live only in activateSummons, which runs at the
-        // start of the *caster's* turn — and a caster who is down is skipped in
-        // initiative entirely (see the guard above). So a cleric who went down
-        // holding a Spiritual Weapon left it hovering on the board for the rest
-        // of the fight: its clock had run out, nothing was coming to read it,
-        // and breakConcentration doesn't touch it because a Spiritual Weapon is
-        // held by duration rather than concentration. Even for a caster still
-        // standing, the lazy sweep left an expired weapon on screen for up to a
-        // full round after it should have winked out.
-        events.push(...expireSummonsOnClock(state));
-        events.push({ type: 'roundStarted', round: state.round });
-        // Termination guard: a real fight ends inside ~15 rounds; anything past
-        // MAX_ROUNDS is a pathological stall (two sides that can't finish each
-        // other, e.g. a zombie surviving on Undead Fortitude while nothing lands
-        // radiant). Force a result so the game never hangs — the side with more
-        // standing HP wins, ties to team2 so a campaign party retries rather than
-        // gets an unearned pass.
-        if (state.round > MAX_ROUNDS && !state.winner) {
-          const standingHp = (team: TeamId) => Object.values(state.combatants)
-            .filter((cc) => cc.alive && cc.hp > 0 && cc.team === team)
-            .reduce((sum, cc) => sum + cc.hp, 0);
-          const winner: TeamId = standingHp('team1') > standingHp('team2') ? 'team1' : 'team2';
-          state.winner = winner;
-          events.push({ type: 'combatEnded', winner });
-          return events;
-        }
+      if (idx <= state.turnIndex && !wrapped) {
+        wrapped = true;
+        if (advanceRound(state, events)) return events;
       }
       state.turnIndex = idx;
       events.push(...startTurn(state));
@@ -647,4 +631,45 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
     if (active.alive && !isDown(active)) return events;
   }
   return events;
+}
+
+/**
+ * The order has come round: bump the round and run what happens once a round.
+ * True when the round limit has just ended the fight.
+ */
+function advanceRound(state: GameState, events: GameEvent[]): boolean {
+  state.round += 1;
+  for (const p of expireIllusions(state.grid, state.round)) {
+    events.push({ type: 'illusionPopped', position: p });
+  }
+  expireChill(state.grid, state.round);
+  // Duration-held summons expire on the clock, for everyone, here.
+  //
+  // The sweep used to live only in activateSummons, which runs at the
+  // start of the *caster's* turn — and a caster who is down is skipped in
+  // initiative entirely (see the guard above). So a cleric who went down
+  // holding a Spiritual Weapon left it hovering on the board for the rest
+  // of the fight: its clock had run out, nothing was coming to read it,
+  // and breakConcentration doesn't touch it because a Spiritual Weapon is
+  // held by duration rather than concentration. Even for a caster still
+  // standing, the lazy sweep left an expired weapon on screen for up to a
+  // full round after it should have winked out.
+  events.push(...expireSummonsOnClock(state));
+  events.push({ type: 'roundStarted', round: state.round });
+  // Termination guard: a real fight ends inside ~15 rounds; anything past
+  // MAX_ROUNDS is a pathological stall (two sides that can't finish each
+  // other, e.g. a zombie surviving on Undead Fortitude while nothing lands
+  // radiant). Force a result so the game never hangs — the side with more
+  // standing HP wins, ties to team2 so a campaign party retries rather than
+  // gets an unearned pass.
+  if (state.round > MAX_ROUNDS && !state.winner) {
+    const standingHp = (team: TeamId) => Object.values(state.combatants)
+      .filter((cc) => cc.alive && cc.hp > 0 && cc.team === team)
+      .reduce((sum, cc) => sum + cc.hp, 0);
+    const winner: TeamId = standingHp('team1') > standingHp('team2') ? 'team1' : 'team2';
+    state.winner = winner;
+    events.push({ type: 'combatEnded', winner });
+    return true;
+  }
+  return false;
 }

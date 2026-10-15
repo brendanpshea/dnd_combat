@@ -516,9 +516,20 @@ export interface Combatant {
    * A downed creature is `alive` with `hp === 0`. That pair is the whole state:
    * it can't act, can't be woken by damage (the Sleep wake rule already only
    * fires above 0 HP), and any healing brings it back. Nothing else is needed —
-   * no death saves, no second unconscious condition.
+   * no second unconscious condition. Death saves are a rules option on top of
+   * this (`CombatRules.deathSaves`), off by default.
    */
   unconsciousAtZero?: boolean;
+  /**
+   * Death Saving Throws, while this creature lies at 0 HP — only kept when the
+   * fight runs with `rules.deathSaves` (see `CombatRules`). Three successes
+   * make it Stable; three failures kill it, and a death from any cause leaves
+   * `failures` at 3, which is how the evaluator tells a hero who died from one
+   * who merely left the board. Cleared by any healing (SRD 5.2.1, "Death Saving
+   * Throws": "The number of both is reset to zero when you regain any Hit
+   * Points").
+   */
+  deathSaves?: { successes: number; failures: number; stable?: boolean };
   /** Round the combatant last spent Uncanny Dodge (once per round). */
   uncannyDodgeRound?: number;
   /**
@@ -795,6 +806,38 @@ export interface GameState {
    * `finally` as `metamagicCast`, for the same reason — see `rollSpellDice`.
    */
   elementalAffinityUsed?: boolean;
+  /** Optional rules this fight runs with. Absent means the engine's defaults. */
+  rules?: CombatRules;
+}
+
+/**
+ * Rules a host can switch on for a fight. Each one is off by default, because
+ * the arena and the story modules were balanced without it, and a rules option
+ * that changed how they play would have to be measured all over again.
+ */
+export interface CombatRules {
+  /**
+   * SRD death saving throws (SRD 5.2.1, "Dropping to 0 Hit Points").
+   *
+   * Off, a creature that drops rather than dies (`unconsciousAtZero`) is simply
+   * out of the fight until healed: it takes no turns and cannot be attacked.
+   * On, it is dying: at the start of each of its turns it rolls a death save
+   * (DC 10, three successes Stable, three failures dead, a 1 counts twice, a 20
+   * brings it back with 1 HP); damage while it is down is a failure (two from a
+   * critical hit), and damage of at least its hit point maximum kills it, as
+   * does a blow that drops it with that much left over (Massive Damage). It can
+   * be attacked, and an ally can stabilise it (Spare the Dying, or a DC 10
+   * Wisdom (Medicine) check as an action). Monsters still die at 0.
+   */
+  deathSaves?: boolean;
+}
+
+/**
+ * At 0 HP and still rolling death saves: down, under the death-save rule, and
+ * not yet Stable.
+ */
+export function isDying(state: GameState, c: Combatant): boolean {
+  return state.rules?.deathSaves === true && isDown(c) && !c.deathSaves?.stable;
 }
 
 /**
@@ -807,6 +850,10 @@ export interface GameState {
  * a 0 HP body as a guaranteed kill and every enemy spends the rest of the
  * battle hitting it. That is not a hypothetical; it deadlocked every mirror
  * match the moment downing went in.
+ *
+ * Under the death-save rule (`CombatRules.deathSaves`) a body CAN be attacked —
+ * each hit is a failed death save, so three at most end it, and the deadlock
+ * cannot come back. Spells and the rest of the targeting still pass it over.
  */
 export function isDown(c: Combatant): boolean {
   return c.alive && c.hp === 0;

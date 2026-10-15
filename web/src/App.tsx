@@ -895,7 +895,7 @@ export function Battle({ combat, aiTeams, aiLevel = 'normal', storyMode = false,
   /** The board cell a suggested action points at (for the hint highlight). */
   function hintCell(a: Action): string | undefined {
     if (a.kind === 'move') return posKey(a.to);
-    if (a.kind === 'attack' || a.kind === 'shakeAwake') return posKey(state.combatants[a.targetId]!.position);
+    if (a.kind === 'attack' || a.kind === 'shakeAwake' || a.kind === 'stabilize') return posKey(state.combatants[a.targetId]!.position);
     if (a.kind === 'castSpell' || a.kind === 'useItem') {
       const t = a.targets?.[0];
       if (t && 'combatantId' in t) return posKey(state.combatants[t.combatantId]!.position);

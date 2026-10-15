@@ -395,7 +395,9 @@ export const CLASSES: Record<Id, ClassData> = {
     spellcasting: {
       ability: 'wis',
       slotsByLevel: [[2], [3], [4, 2], [4, 3], [4, 3, 2], [4, 3, 3], [4, 3, 3, 1], [4, 3, 3, 2], [4, 3, 3, 3, 1]],
-      cantripsKnownByLevel: [2, 2, 2, 2, 2, 2, 2, 2, 2], // both cleric cantrips (Sacred Flame, Guidance)
+      // The SRD's column (3, rising to 4 at 4th). It was 2 while the cleric had
+      // only two cantrips to know; Spare the Dying is the third.
+      cantripsKnownByLevel: [3, 3, 3, 4, 4, 4, 4, 4, 4],
       // Cleric knows its whole leveled list (no spellbook); it prepares a subset.
       // Widened alongside the list: the point of the new spells is a choice, and
       // preparing 4 of 9 was already most of the 1st-level list.
@@ -404,7 +406,10 @@ export const CLASSES: Record<Id, ClassData> = {
       // wider here. The SRD's own increment over 6 and 7 is +1 a level either way.
       preparedByLevel: [4, 5, 7, 8, 11, 12, 13, 14, 15],
       spellsByLevel: {
-        1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good'],
+        1: ['sacred-flame', 'guidance', 'cure-wounds', 'bless', 'healing-word', 'command', 'inflict-wounds', 'bane', 'shield-of-faith', 'sanctuary', 'protection-from-evil-and-good',
+               // Last, so no default loadout changes for it: it only does
+               // anything in a fight that runs death saves.
+               'spare-the-dying'],
         2: ['guiding-bolt'],
         3: ['aid', 'spiritual-weapon', 'silence', 'blindness', 'warding-bond',
                'lesser-restoration', 'hold-person'],
@@ -853,7 +858,7 @@ export const CLASSES: Record<Id, ClassData> = {
         // document.
         1: ['starry-wisp', 'poison-spray', 'shillelagh', 'guidance', 'entangle', 'cure-wounds',
                'thunderwave', 'faerie-fire', 'healing-word', 'protection-from-evil-and-good',
-               'animal-friendship'],
+               'animal-friendship', 'spare-the-dying'],
         // Wild Companion (level 2): the 2024 druid spends a Wild Shape use to
         // conjure a familiar. Modelled as the ritual the wizard gets, arriving
         // with Wild Shape itself — a ritual is always known and costs no slot,

@@ -42,6 +42,7 @@ export function beatFor(events: GameEvent[]): number {
       case 'turnedUndead': hold(600); break;
       case 'downed': hold(950); break;
       case 'revived': hold(800); break;
+      case 'deathSave': case 'stabilized': hold(650); break;
       case 'damageDealt': hold(700); results++; break;
       case 'healed': hold(650); results++; break;
       case 'savingThrow': hold(550); results++; break;

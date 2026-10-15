@@ -39,7 +39,13 @@ export function applyHealing(state: GameState, targetId: Id, sourceId: Id, amoun
 
   const events: GameEvent[] = [{ type: 'healed', targetId, sourceId, amount: healed }];
   if (wasDowned && t.hp > 0) {
-    events.push(...removeConditions(t, (c) => c.id === 'unconscious' || c.id === 'prone'));
+    // Conscious again, but still on the floor: "When this condition ends, you
+    // remain Prone" (SRD 5.2.1, Unconscious). Standing up is the usual half
+    // of its movement on its next turn. It used to come up on its feet as well,
+    // which made a heal from 0 a better deal than the SRD's.
+    events.push(...removeConditions(t, 'unconscious'));
+    // "The number of both is reset to zero when you regain any Hit Points."
+    delete t.deathSaves;
     events.push({ type: 'revived', combatantId: targetId, hp: t.hp });
   }
   return events;
@@ -64,5 +70,7 @@ export function downCombatant(state: GameState, combatantId: Id): GameEvent[] {
     { id: 'prone', sourceId: combatantId },
   ];
   c.turn.attacksLeft = 0;
+  // Dying, under the death-save rule: a fresh tally.
+  if (state.rules?.deathSaves) c.deathSaves = { successes: 0, failures: 0 };
   return [{ type: 'downed', combatantId }];
 }

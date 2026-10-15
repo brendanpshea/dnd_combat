@@ -8,14 +8,14 @@
  * - cone: pick one of 8 directions (encoded as an adjacent cell position)
  */
 import type { GameState, Combatant, Id, Ability, Position, CreatureType, ConditionId, DamageType } from '../engine/types.js';
-import { abilityMod, proficiencyBonus, cellAt, isDown, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
+import { abilityMod, proficiencyBonus, cellAt, isDown, isDying, ignoresHalfCover, wardedAgainstMagicalBinding, isTurnOf, canReact } from '../engine/types.js';
 import { rollD20, rollDice, resolveRollMode, parseDice } from '../engine/dice.js';
 import { rollSpellDice } from '../engine/rules/metamagic.js';
 import { summonCombatant, removeFromOrder } from '../engine/rules/summon.js';
 import { MONSTERS } from './monsters.js';
 import { blocksMovement, adjacent, distanceFeet, distanceCells, sphere2x2, sphere5x5, cone15, cube15, line15, DIRECTIONS, type Direction8, hasLineOfSight, webCell, fireCell, hazardCell, silenceCell, coverBetween } from '../engine/grid.js';
 import { isHidden } from '../engine/rules/hide.js';
-import { applyDamage as rawApplyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration } from '../engine/rules/attack.js';
+import { applyDamage as rawApplyDamage, hexBonus, collectAttackSources, consumeFamiliarHelp, resolveAttack, canAttackWith, charmAway, tryAutoShield, breakConcentration, stabilize } from '../engine/rules/attack.js';
 import { applyLucky } from '../engine/rules/luck.js';
 import { attackableWeapons } from '../engine/rules/equipment.js';
 import { BREATH_WEAPONS } from './features.js';
@@ -67,6 +67,9 @@ export type SpellTargeting =
        * "up to six creatures of your choice in a 40-foot Cube").
        */
       cluster?: number;
+      /** Only a creature that is dying — at 0 HP and rolling death saves
+       *  (Spare the Dying). */
+      dying?: boolean;
     }
   /**
    * Anything you could hit with the weapon in your hand — True Strike.
@@ -1238,6 +1241,24 @@ export const SPELLS: Record<Id, SpellData> = {
     icon: '🔮',
     outOfCombat: true,
     cast() { return []; },
+  },
+
+  /**
+   * Spare the Dying (SRD 5.2.1): a creature at 0 HP that isn't dead becomes
+   * Stable. Only ever has a target when the fight runs death saves — without
+   * them nobody is dying, only down — so it is never offered in the arena.
+   * The cantrip upgrade (30 ft at 5th level) is not modelled: 15 ft throughout.
+   */
+  'spare-the-dying': {
+    id: 'spare-the-dying', name: 'Spare the Dying', level: 0, castingTime: 'action',
+    targeting: { kind: 'creature', range: 15, who: 'ally', count: 1, dying: true },
+    concentration: false,
+    icon: '🕯️',
+    cast({ state, casterId, targetIds }) {
+      const t = state.combatants[targetIds[0]!];
+      if (!t || !isDying(state, t)) return [];
+      return stabilize(state, t.id, casterId);
+    },
   },
 
   'cure-wounds': {
@@ -4017,6 +4038,7 @@ export function validTarget(
   // A downed creature can't be attacked — but healing it is the whole point.
   if (who === 'enemy' && isDown(t)) return false;
   if (who === 'ally' && t.team !== caster.team) return false;
+  if (spell.targeting.dying && !isDying(state, t)) return false;
   if (creatureType && t.creatureType !== creatureType) return false;
   if (creatureTypes && !(t.creatureType && creatureTypes.includes(t.creatureType))) return false;
   if (range === 0) {

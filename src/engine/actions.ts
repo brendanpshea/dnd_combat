@@ -8,7 +8,7 @@
  * spells; drivers may customize targets and step() re-validates.
  */
 import type { GameState, Id, Position, Combatant, ConditionId } from './types.js';
-import { posEq, cellAt, isDown, isIncapacitated, heldInPlace } from './types.js';
+import { posEq, cellAt, isDown, isDying, isIncapacitated, heldInPlace } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, type SpellData, validTarget, directionFromDelta, spellShots, damageReactions } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
@@ -17,7 +17,7 @@ import { classScrollPool } from '../data/classes.js';
 import { attackableWeapons, equippedWeapons, autoSwap } from './rules/equipment.js';
 import { blocksMovement, distanceFeet, distanceCells, adjacent, hasLineOfSight, sphere2x2, sphere5x5, DIRECTIONS, cone15, cube15, line15, type Direction8, inBounds } from './grid.js';
 import { currentCombatant, endTurn } from './turn.js';
-import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell } from './rules/attack.js';
+import { resolveAttack, breakConcentration, canAttackWith, applyDamage, SMITE_SPECS, tryCounterspell, stabilize } from './rules/attack.js';
 import { applyHealing } from './rules/heal.js';
 import { applyCondition, removeConditions, endGrapple, releaseBrokenGrapples } from './rules/conditions.js';
 import { bestSkill, rollSkill } from './rules/skills.js';
@@ -63,6 +63,14 @@ export type Action =
   | { kind: 'dodge' }
   | { kind: 'hide' }
   | { kind: 'shakeAwake'; targetId: Id }
+  /**
+   * First aid for a dying ally (only under `rules.deathSaves`): an action and
+   * a DC 10 Wisdom (Medicine) check, and on a success the ally is Stable — "You
+   * can take the Help action to try to stabilize a creature with 0 Hit Points"
+   * (SRD 5.2.1). Its own kind rather than another use of `shakeAwake`, which
+   * rouses a sleeper with no roll at all.
+   */
+  | { kind: 'stabilize'; targetId: Id }
   /**
    * The Unarmed Strike's Shove: five feet back, or flat on the floor.
    *
@@ -460,6 +468,12 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
         adjacent(actor.position, t.position) &&
         t.conditions.some((c) => c.id === 'unconscious' || c.endsOnDamage === true);
     }
+    case 'stabilize': {
+      if (incap || actor.turn.actionUsed) return false;
+      const t = state.combatants[action.targetId];
+      return !!t && isDying(state, t) && t.team === actor.team && t.id !== actorId &&
+        adjacent(actor.position, t.position);
+    }
     case 'escape': {
       if (incap || actor.turn.actionUsed) return false;
       return actor.conditions.some((k) => k.escape && k.id === action.condition && k.sourceId === action.fromId);
@@ -626,8 +640,14 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
     }
   }
 
+  // Who a weapon may be turned on. The standing enemies, and — only when the
+  // fight runs death saves — the dying ones too, which `canAttackWith` allows
+  // there and nowhere else.
+  const attackable = state.rules?.deathSaves
+    ? Object.values(state.combatants).filter((c) => c.alive && c.team !== actor.team)
+    : enemies;
   for (const wid of attackableWeapons(actor)) {
-    for (const t of enemies) {
+    for (const t of attackable) {
       const main: Action = { kind: 'attack', weaponId: wid, targetId: t.id };
       if (isLegalAction(state, actorId, main)) actions.push(main);
     }
@@ -882,6 +902,8 @@ export function legalActions(state: GameState, actorId: Id): Action[] {
   for (const t of allies) {
     const a: Action = { kind: 'shakeAwake', targetId: t.id };
     if (isLegalAction(state, actorId, a)) actions.push(a);
+    const aid: Action = { kind: 'stabilize', targetId: t.id };
+    if (state.rules?.deathSaves && isLegalAction(state, actorId, aid)) actions.push(aid);
   }
   // Shove: two entries per adjacent enemy, which is a handful at most. The two
   // modes are genuinely different plays — five feet into the fire, or flat on
@@ -1150,6 +1172,18 @@ export function step(state: GameState, action: Action): { state: GameState; even
       actor.turn.actionUsed = true;
       const t = draft.combatants[action.targetId]!;
       events.push(...removeConditions(t, (k) => k.id === 'unconscious' || k.endsOnDamage === true));
+      break;
+    }
+    case 'stabilize': {
+      actor.turn.actionUsed = true;
+      const check = rollSkill(draft, actorId, 'medicine');
+      const success = check.total >= 10;
+      events.push({
+        type: 'firstAid', combatantId: actorId, targetId: action.targetId,
+        natural: check.natural, total: check.total, success,
+        ...(check.luck ? { luck: check.luck } : {}),
+      });
+      if (success) events.push(...stabilize(draft, action.targetId, actorId));
       break;
     }
     case 'shove':

@@ -252,12 +252,37 @@ function livingOnTeam(state: GameState, team: TeamId): number {
   return n;
 }
 
+/**
+ * What one failed death save costs, as a share of the unit's worth — only under
+ * `rules.deathSaves`. Small on purpose. A hit on a body (two failures, since a
+ * melee hit crits it) comes to about a tenth of a hero's worth, and finishing
+ * it a little more: worth doing when nobody is standing in reach, and well
+ * below a real hit on a creature still fighting, so a monster is not drawn off
+ * the fight to beat on the fallen.
+ */
+const DEATH_SAVE_WEIGHT = 0.05;
+/** A downed unit's standing before any death saves: the 0.35 alive share, less
+ *  the unconscious and prone weights it always carries. */
+const DOWNED_BASE = 0.35 + (CONDITION_WEIGHT.unconscious ?? 0) + (CONDITION_WEIGHT.prone ?? 0);
+
 function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
   let score = 0;
   // Hoisted: evaluate is the AI's hot path, and this is constant across the loop.
   const share = isPov ? 1 : Math.max(1, livingOnTeam(state, team));
+  const deathSaves = state.rules?.deathSaves === true;
   for (const c of Object.values(state.combatants)) {
-    if (c.team !== team || !c.alive) continue;
+    if (c.team !== team) continue;
+    if (!c.alive) {
+      // Under the death-save rule a hero can die, and death has to score below
+      // lying dying — otherwise a body is worth LESS to its own side than a
+      // corpse (it carries the unconscious and prone weights), and no monster
+      // would ever finish one off nor any ally hurry to save one. Pitched one
+      // step past three failures; see DEATH_SAVE_WEIGHT.
+      if (deathSaves && (c.deathSaves?.failures ?? 0) >= 3) {
+        score += unitWorth(c) * (DOWNED_BASE - DEATH_SAVE_WEIGHT * 5);
+      }
+      continue;
+    }
     const worth = unitWorth(c);
 
     // Alive matters a lot; remaining HP matters proportionally.
@@ -269,6 +294,11 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
 
     for (const cond of c.conditions) {
       unit += worth * (CONDITION_WEIGHT[cond.id] ?? 0);
+    }
+    // Dying: each failed save so far, plus the next roll still to come. A
+    // Stable creature carries neither, which is what stabilising buys.
+    if (deathSaves && isDown(c) && !c.deathSaves?.stable) {
+      unit -= worth * DEATH_SAVE_WEIGHT * ((c.deathSaves?.failures ?? 0) + 1);
     }
 
     // Resources not yet spent retain option value.

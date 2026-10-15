@@ -1,7 +1,7 @@
 /**
  * Combat setup and the thin stateful facade over the pure core.
  */
-import type { GameState, Combatant, Id, TeamId } from './types.js';
+import type { GameState, Combatant, Id, TeamId, CombatRules } from './types.js';
 import { cellAt } from './types.js';
 import { blocksMovement, makeGrid } from './grid.js';
 import { MAPS, parseMap } from '../data/maps.js';
@@ -34,6 +34,8 @@ export interface CombatSetup {
    * against the whole enemy line, which is most of a fight.
    */
   surprisedTeam?: TeamId;
+  /** Optional rules for this fight (death saves). See `CombatRules`. */
+  rules?: CombatRules;
 }
 
 export function startCombat(setup: CombatSetup): { state: GameState; events: GameEvent[] } {
@@ -64,6 +66,7 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
     initiativeOrder: [],
     turnIndex: 0,
     winner: null,
+    ...(setup.rules ? { rules: { ...setup.rules } } : {}),
   };
   const events = rollInitiative(state, setup.surprisedTeam);
   return { state, events };

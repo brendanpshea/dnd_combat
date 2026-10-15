@@ -4,7 +4,7 @@
  * state — no engine backdoors, exactly the Action API the CLI uses.
  */
 import type { GameState, Id, Combatant, Position } from '../engine/types.js';
-import { isDown, isIncapacitated } from '../engine/types.js';
+import { isDown, isDying, isIncapacitated } from '../engine/types.js';
 import { abilityMod, proficiencyBonus, cellAt } from '../engine/types.js';
 import { parseDice } from '../engine/dice.js';
 import { next } from '../engine/rng.js';
@@ -222,6 +222,15 @@ function denialValue(state: GameState, target: Combatant, failProb: number, roun
   return failProb * outputPerRound(target) * rounds;
 }
 
+/**
+ * The chance a dying creature dies if nobody helps it, by failures so far —
+ * near enough the death-save odds (each roll 45% to fail, a 1 counting twice)
+ * worked through to three of a kind.
+ */
+function dyingRisk(c: Combatant): number {
+  return [0.4, 0.6, 0.8][Math.min(2, c.deathSaves?.failures ?? 0)]!;
+}
+
 /** What raising an ally's output is worth: the same units, from the other side. */
 function upliftValue(ally: Combatant, fraction: number, rounds: number): number {
   return outputPerRound(ally) * fraction * rounds;
@@ -313,6 +322,23 @@ function scoreAttack(state: GameState, actor: Combatant, a: Action & { kind: 'at
   // weapon data, so no policy names a weapon (which `src/ai` may not do).
   const bonus = abilityMod(actor.abilities[ability]) + proficiencyBonus(actor.level) +
     (weapon.attackBonus ?? 0);
+  // A body on the floor: only attackable when the fight runs death saves, and
+  // then a hit is a failed save — two from a melee hit, which crits an
+  // unconscious target — and the third kills. Worth something, but never more
+  // than a creature still fighting: while anyone standing can be hit from here,
+  // the body is left alone. With nobody else in reach it is finished off, which
+  // is what a monster with nothing better to do would do. The damage maths
+  // below would read the 0 HP as a guaranteed kill every swing — the exact
+  // trap that once deadlocked the game (types.ts, isDown).
+  if (isDown(target)) {
+    const standingInReach = Object.values(state.combatants).some((e) =>
+      e.alive && !isDown(e) && e.team !== actor.team &&
+      attackableWeapons(actor).some((w) => canAttackWith(state, actor, w, e.id)));
+    if (standingInReach) return 0;
+    const failures = isMelee ? 2 : 1;
+    const finishes = (target.deathSaves?.failures ?? 0) + failures >= 3;
+    return hitProb(bonus, acOf(target), mode) * (finishes ? 3 : 1.5);
+  }
   let dmg = avgDice(weapon.damage) + (a.offhand ? 0 : abilityMod(actor.abilities[ability])) +
     (weapon.damageBonus ?? 0);
   if (weapon.extraDamage) {
@@ -561,6 +587,14 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       const v = a.targets.length * avgDice('1d4+1');
       const first = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
       return damageValue(v, first) - slotCost;
+    }
+    // Stabilising a dying ally keeps it from dying, and so keeps it revivable:
+    // its output, at the chance it would otherwise die, for a couple of rounds
+    // of it. Below any heal that brings it back up — a cleric with a slot to
+    // spend is better off spending it.
+    case 'spare-the-dying': {
+      const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId];
+      return t && isDying(state, t) ? upliftValue(t, dyingRisk(t), 2) : 0;
     }
     case 'cure-wounds': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -2601,6 +2635,14 @@ export function chooseAction(state: GameState, actorId: Id): Action {
         s = !actions.some((x) => x.kind === 'attack' || x.kind === 'castSpell') ? 0.7 : 0;
         break;
       case 'shakeAwake': s = 2; break;
+      case 'stabilize': {
+        // The Medicine check behind it is DC 10; priced like Spare the Dying,
+        // times the chance of passing.
+        const t = state.combatants[a.targetId];
+        const pass = Math.max(0.05, Math.min(0.95, (11 + skillMod(actor, 'medicine')) / 20));
+        s = t ? pass * upliftValue(t, dyingRisk(t), 2) : 0;
+        break;
+      }
       case 'shove': s = scoreShove(state, actor, a); break;
       case 'escape': s = scoreEscape(actor, a); break;
       case 'endTurn': continue;

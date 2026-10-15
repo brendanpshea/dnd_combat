@@ -96,15 +96,15 @@ Spellcasting ability: **CHA**.
 
 | Level | 1st | 2nd | 3rd | 4th | 5th | Cantrips | Prepared |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 2 | — | — | — | — | 2 | 4 |
-| 2 | 3 | — | — | — | — | 2 | 5 |
-| 3 | 4 | 2 | — | — | — | 2 | 7 |
-| 4 | 4 | 3 | — | — | — | 2 | 8 |
-| 5 | 4 | 3 | 2 | — | — | 2 | 11 |
-| 6 | 4 | 3 | 3 | — | — | 2 | 12 |
-| 7 | 4 | 3 | 3 | 1 | — | 2 | 13 |
-| 8 | 4 | 3 | 3 | 2 | — | 2 | 14 |
-| 9 | 4 | 3 | 3 | 3 | 1 | 2 | 15 |
+| 1 | 2 | — | — | — | — | 3 | 4 |
+| 2 | 3 | — | — | — | — | 3 | 5 |
+| 3 | 4 | 2 | — | — | — | 3 | 7 |
+| 4 | 4 | 3 | — | — | — | 4 | 8 |
+| 5 | 4 | 3 | 2 | — | — | 4 | 11 |
+| 6 | 4 | 3 | 3 | — | — | 4 | 12 |
+| 7 | 4 | 3 | 3 | 1 | — | 4 | 13 |
+| 8 | 4 | 3 | 3 | 2 | — | 4 | 14 |
+| 9 | 4 | 3 | 3 | 3 | 1 | 4 | 15 |
 
 Spellcasting ability: **WIS**.
 
@@ -112,7 +112,7 @@ Spellcasting ability: **WIS**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Sacred Flame, Guidance, Cure Wounds, Bless, Healing Word, Command, Inflict Wounds, Bane, Shield of Faith, Sanctuary, Protection from Evil and Good |
+| 1 | Sacred Flame, Guidance, Cure Wounds, Bless, Healing Word, Command, Inflict Wounds, Bane, Shield of Faith, Sanctuary, Protection from Evil and Good, Spare the Dying |
 | 2 | Guiding Bolt |
 | 3 | Aid, Spiritual Weapon, Silence, Blindness, Warding Bond, Lesser Restoration, Hold Person |
 | 5 | Mass Healing Word, Spirit Guardians, Protection from Energy, Dispel Magic, Bestow Curse |
@@ -159,7 +159,7 @@ Spellcasting ability: **WIS**.
 
 | Arrives at character level | Spells (in priority order — the auto-loadout takes the first few) |
 | --- | --- |
-| 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Thunderwave, Faerie Fire, Healing Word, Protection from Evil and Good, Animal Friendship |
+| 1 | Starry Wisp, Poison Spray, Shillelagh, Guidance, Entangle, Cure Wounds, Thunderwave, Faerie Fire, Healing Word, Protection from Evil and Good, Animal Friendship, Spare the Dying |
 | 2 | Find Familiar |
 | 3 | Moonbeam, Spike Growth, Pass without Trace, Hold Person, Heat Metal, Flaming Sphere, Aid, Lesser Restoration |
 | 5 | Call Lightning, Conjure Animals, Protection from Energy, Dispel Magic |

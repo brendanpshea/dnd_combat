@@ -49,7 +49,7 @@ fix the file.
 | Initiative | Rolled: d20 + Dex mod, individual turns, teams interleaved. Ties: higher Dex, then seeded coin flip |
 | RNG | Seedable and injected; every roll goes through it; `(seed, actions[])` replays exactly |
 | Visibility | Full — both players see all HP, AC, slots, conditions |
-| Death | Monsters: 0 HP = dead and removed. **Player characters: 0 HP = unconscious**, still on the board, revived by any healing. No death saves |
+| Death | Monsters: 0 HP = dead and removed. **Player characters: 0 HP = unconscious**, still on the board, revived by any healing. Death saves are an opt-in rule (`rules.deathSaves`, §3), off in the arena and the story modules |
 | Win | Last team still *standing* wins — a party whose members are all down has lost (they are alive, but out) |
 | Board | 8 wide; 8×8 for the fixed maps, 12 or 16 deep in the arena. Parties deploy on rank 0; enemies use one of four seeded patterns (see §7d) |
 | Concentration | Implemented, including the Con save (DC max(10, ⌊damage/2⌋)) when the concentrator takes damage |
@@ -331,11 +331,36 @@ square, and any healing brings it back — every heal routes through
 Wounds does. Damage can't finish it off (it is already at 0), so the stake is
 losing its sword until someone reaches it, not losing it for good.
 
+Healing wakes a downed creature but leaves it **prone** (SRD: "When this
+condition ends, you remain Prone"), so it spends half its movement standing up
+on its next turn.
+
 Sleep needs no special case: "damage wakes you unless you're at 0" is one rule,
 and healing only revives from 0, so healing a *sleeping* ally doesn't wake it.
 
-**A downed creature is not a combatant**, and this is load-bearing rather than
-cosmetic. It can't be attacked, targeted by hostile spells, shaken awake, or
+**Death saves (opt-in).** `CombatSetup.rules = { deathSaves: true }` turns on
+the SRD's Dropping to 0 Hit Points rules for `unconsciousAtZero` creatures
+(monsters still die at 0). The tally lives on `Combatant.deathSaves`. A dying
+creature's turn is its death save, rolled as the initiative scan passes it (DC
+10, three successes Stable, three failures dead, a 1 is two failures, a 20
+brings it round with 1 HP and its turn to take) — no empty turn is handed to a
+driver. Damage at 0 HP is a failure, two from a critical hit (a melee hit on an
+unconscious target within 5 ft is one), and damage of at least its hit point
+maximum kills; one hit is one failure however many damage types it carries
+(`applyDamage`'s `rider`). Massive Damage applies when dropping too, before
+Relentless Endurance (Death Ward and Polymorph still catch the blow). Allies can
+stabilise: the `stabilize` action (DC 10 Wisdom (Medicine), an action, adjacent)
+or Spare the Dying (cleric and druid cantrip, 15 ft — the 30 ft upgrade is not
+modelled). Under this rule a downed creature can be **attacked** with weapons;
+targeted hostile spells still pass it over, area effects catch it. The AIs leave
+a body alone while anyone standing is in reach and finish it otherwise (greedy:
+a body scores zero while a standing enemy can be hit; the evaluator prices each
+failure at `DEATH_SAVE_WEIGHT` of the unit's worth, and death one step past
+three). Not modelled: Aura of Protection on death saves, start-of-turn effects
+(Moonbeam, a Stench) on a dying creature, whose turn is only its save.
+
+**A downed creature is not a combatant** (without death saves), and this is
+load-bearing rather than cosmetic. It can't be attacked, targeted by hostile spells, shaken awake, or
 counted as an enemy for reach, cover or approach; it doesn't block a path (you
 step over a body — but can't stop on it); and it takes no turn, having nothing
 to do with one. Each of those was found the hard way:
@@ -1429,8 +1454,8 @@ point:
 ## 11. Deliberately out of scope
 
 Cover, reactions beyond opportunity attacks (and the Shield spell's autocast),
-readied actions, death saves, spell components, multiclassing, feats (the ASIs
+readied actions, spell components, multiclassing, feats (the ASIs
 are a fixed +2), exhaustion, mounts, elevation, lighting/vision, and creature
 size (each combatant occupies one cell). Formerly on this list but since
 implemented: hiding/stealth (§3), rituals (Find Familiar), rests (hit dice,
-§7b), and upcasting (§3) — scope is a decision, not a fence.
+§7b), upcasting (§3), and death saves (opt-in, §3) — scope is a decision, not a fence.

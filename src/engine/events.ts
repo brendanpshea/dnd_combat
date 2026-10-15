@@ -73,6 +73,21 @@ export type GameEvent =
   | { type: 'armorCorroded'; combatantId: Id; ac: number }
   /** Healed off 0 HP and back on their feet. */
   | { type: 'revived'; combatantId: Id; hp: number }
+  /**
+   * A death saving throw (only under `rules.deathSaves`), with the running
+   * tally after it. `natural` is the d20; it is absent when the failure came
+   * from taking damage at 0 HP rather than from a roll.
+   */
+  | { type: 'deathSave'; combatantId: Id; natural?: number; successes: number; failures: number }
+  /** Stable at 0 HP: no more death saves. `byId` is whoever stabilised it, if
+   *  anyone did — three successes need nobody. */
+  | { type: 'stabilized'; combatantId: Id; byId?: Id }
+  /** A DC 10 Wisdom (Medicine) check to stabilise a dying ally. */
+  | {
+      type: 'firstAid'; combatantId: Id; targetId: Id;
+      natural: number; total: number; success: boolean;
+      luck?: string;
+    }
   | {
       type: 'savingThrow';
       combatantId: Id; ability: Ability; dc: number;

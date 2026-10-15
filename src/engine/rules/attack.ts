@@ -15,7 +15,7 @@ import { attackableWeapons } from './equipment.js';
 import { savingThrow } from './saves.js';
 import { endHide, isHidden } from './hide.js';
 import { pushCreature } from './movement.js';
-import { downCombatant } from './heal.js';
+import { downCombatant, applyHealing } from './heal.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 import { applyCondition, removeConditions, grapple, heldWith } from './conditions.js';
@@ -40,7 +40,9 @@ export function canAttackWith(state: GameState, actor: Combatant, weaponId: Id, 
   const w = WEAPONS[weaponId];
   const t = state.combatants[targetId];
   if (!w || !t || !t.alive || t.team === actor.team) return false;
-  if (isDown(t)) return false;   // already out of the fight; nothing to gain
+  // Already out of the fight; nothing to gain — unless the fight runs death
+  // saves, where each hit on a body is a failed save and three end it.
+  if (isDown(t) && !state.rules?.deathSaves) return false;
   if (isHidden(t)) return false;
   // "Whatever part a grappler uses, it can grapple only one creature at a time
   // with that part, and can't use that part to target another creature."
@@ -664,7 +666,7 @@ export function resolveAttack(
       events.push(save.event);
       if (save.success) amount = Math.floor(amount / 2);
     }
-    events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { magical: isMagicWeapon(weapon), crit }));
+    events.push(...applyDamage(state, targetId, attackerId, amount, weapon.extraDamage.type, extra.rolls, { magical: isMagicWeapon(weapon), crit, rider: true }));
   }
 
   // Sword of Life Stealing: a natural 20 tears something loose. Flat 15 per the
@@ -675,7 +677,7 @@ export function resolveAttack(
     const before = target.hp;
     events.push(...applyDamage(
       state, targetId, attackerId, weapon.lifeSteal.amount, 'necrotic', [],
-      { tags: [weapon.name], magical: true },
+      { tags: [weapon.name], magical: true, rider: true },
     ));
     const stolen = Math.max(0, before - target.hp);
     if (stolen > 0) {
@@ -694,7 +696,7 @@ export function resolveAttack(
     events.push(...applyDamage(
       state, targetId, attackerId, bane.total,
       weapon.slays.damageType ?? weapon.damageType, bane.rolls,
-      { crit, tags: [weapon.name], magical: isMagicWeapon(weapon) },
+      { crit, tags: [weapon.name], magical: isMagicWeapon(weapon), rider: true },
     ));
   }
 
@@ -1014,7 +1016,7 @@ export function dischargeSmite(state: GameState, attackerId: Id, targetId: Id, c
   }, { type: 'conditionRemoved', combatantId: attackerId, condition: 'smiting' }];
   if (!spec.damageless) {
     events.push(...applyDamage(state, targetId, attackerId, roll.total, spec.damageType, roll.rolls,
-      { magical: true, crit, tags: [spec.name] }));
+      { magical: true, crit, tags: [spec.name], rider: true }));
   }
   if (spec.rider) {
     events.push(...spec.rider(state, attackerId, targetId, 8 + proficiencyBonus(attacker.level) +
@@ -1074,6 +1076,13 @@ export function applyDamage(
     crit?: boolean; tags?: string[]; via?: string; shared?: boolean;
     /** A weapon swing in reach — the only thing Deflect Attacks can catch. */
     melee?: boolean;
+    /**
+     * More damage from a hit whose own damage has already landed — a poisoned
+     * bite's venom, a smite, a bane weapon's extra dice. One hit is one
+     * instance of damage, so on a creature at 0 HP it is one failed death save
+     * (two on a crit), not one for each damage type it happens to carry.
+     */
+    rider?: boolean;
   },
 ): GameEvent[] {
   const events: GameEvent[] = [];
@@ -1156,7 +1165,20 @@ export function applyDamage(
 
   const absorbed = Math.min(target.tempHp ?? 0, amount);
   if (absorbed > 0) target.tempHp = (target.tempHp ?? 0) - absorbed;
+  const hpBefore = target.hp;
   target.hp = Math.max(0, target.hp - (amount - absorbed));
+  // Massive Damage (SRD 5.2.1, "Instant Death"), under the death-save rule:
+  // "When damage reduces a character to 0 Hit Points and damage remains, the
+  // character dies if the remainder equals or exceeds their Hit Point maximum."
+  // Decided before Relentless Endurance, which only works "when you are reduced
+  // to 0 Hit Points but not killed outright". Death Ward and Polymorph are left
+  // to dropToZero: the first keeps the target off 0 altogether, and the second
+  // drops the beast's form rather than the creature.
+  const deathSaves = state.rules?.deathSaves === true && target.unconsciousAtZero === true;
+  const massive = deathSaves && !wasDown && target.hp === 0 && !opts.rider &&
+    (amount - absorbed) - hpBefore >= target.maxHp &&
+    !target.conditions.some((k) => k.id === 'deathWarded') &&
+    target.wildShape?.original.hp === undefined;
   events.push({
     type: 'damageDealt', targetId, sourceId, amount, damageType, rolls,
     ...(() => {
@@ -1175,7 +1197,7 @@ export function applyDamage(
   // Undead Fortitude: unless radiant or a crit, Con save DC 5 + damage to
   // drop to 1 HP instead of 0.
   if (
-    target.hp === 0 && target.featureIds.includes('relentless-endurance') &&
+    target.hp === 0 && !wasDown && !massive && target.featureIds.includes('relentless-endurance') &&
     target.featureUses['relentless-endurance']?.current
   ) {
     target.hp = 1;
@@ -1237,12 +1259,87 @@ export function applyDamage(
     // Heroes drop; monsters die. A downed hero can't be finished off — further
     // damage finds it already at 0 and changes nothing — so the fight's stake
     // is losing its sword until someone reaches it, not losing it for good.
+    // Under the death-save rule it can: see `CombatRules.deathSaves`.
     if (target.unconsciousAtZero && target.alive) {
-      if (!wasDown) events.push(...dropToZero(state, targetId));
+      if (!wasDown) {
+        events.push(...(massive ? kill(state, targetId) : dropToZero(state, targetId)));
+      } else if (deathSaves && amount > 0 && !opts.rider) {
+        // "If you take any damage while you have 0 Hit Points, you suffer a
+        // Death Saving Throw failure. If the damage is from a Critical Hit, you
+        // suffer two failures instead. If the damage equals or exceeds your Hit
+        // Point maximum, you die."
+        events.push(...failDeathSaves(state, targetId,
+          amount >= target.maxHp ? 3 : opts.crit ? 2 : 1));
+      }
     } else {
       events.push(...kill(state, targetId));
     }
   }
+  return events;
+}
+
+/**
+ * Death saving throw failures, from damage taken at 0 HP or from the roll.
+ * Damage also ends Stable: "If the creature takes damage, it stops being
+ * Stable and starts making Death Saving Throws again." The third failure kills.
+ */
+export function failDeathSaves(state: GameState, combatantId: Id, count: number): GameEvent[] {
+  const c = state.combatants[combatantId]!;
+  const tally = { successes: c.deathSaves?.successes ?? 0, failures: Math.min(3, (c.deathSaves?.failures ?? 0) + count) };
+  c.deathSaves = tally;
+  const events: GameEvent[] = [
+    { type: 'deathSave', combatantId, successes: tally.successes, failures: tally.failures },
+  ];
+  if (tally.failures >= 3) events.push(...kill(state, combatantId));
+  return events;
+}
+
+/**
+ * Stable at 0 HP: still unconscious, but no longer rolling. "The number of both
+ * is reset to zero when you regain any Hit Points or become Stable."
+ */
+export function stabilize(state: GameState, combatantId: Id, byId?: Id): GameEvent[] {
+  const c = state.combatants[combatantId]!;
+  c.deathSaves = { successes: 0, failures: 0, stable: true };
+  return [{ type: 'stabilized', combatantId, ...(byId !== undefined ? { byId } : {}) }];
+}
+
+/**
+ * The death saving throw a dying creature makes as its turn comes round (SRD
+ * 5.2.1, "Death Saving Throws"): a d20, no modifier, 10 or higher succeeds.
+ * Three successes make it Stable and three failures kill it; a 1 is two
+ * failures and a 20 brings it back with 1 Hit Point.
+ *
+ * Lucky and Fated reroll it as they do any d20 test. Nothing adds to it: the
+ * roll "isn't tied to an ability score", and Bless and its kin were stripped
+ * when the creature dropped. (Aura of Protection would, by the letter, add to
+ * it as a saving throw; it is left out, which is a small mercy the other way.)
+ */
+export function rollDeathSave(state: GameState, combatantId: Id): GameEvent[] {
+  const c = state.combatants[combatantId]!;
+  const d20 = applyLucky(state, combatantId, rollD20(state.rng, 'flat'), 'flat');
+  state.rng = d20.state;
+  const n = d20.natural;
+  if (n === 20) {
+    // Regaining hit points resets the tally (applyHealing does), and the
+    // creature comes round — on its own turn, with its turn still to take.
+    return [
+      { type: 'deathSave', combatantId, natural: n, successes: c.deathSaves?.successes ?? 0, failures: c.deathSaves?.failures ?? 0 },
+      ...applyHealing(state, combatantId, combatantId, 1),
+    ];
+  }
+  if (n === 1 || n < 10) {
+    const events = failDeathSaves(state, combatantId, n === 1 ? 2 : 1);
+    const first = events[0];
+    if (first?.type === 'deathSave') first.natural = n;
+    return events;
+  }
+  const successes = (c.deathSaves?.successes ?? 0) + 1;
+  c.deathSaves = { successes, failures: c.deathSaves?.failures ?? 0 };
+  const events: GameEvent[] = [
+    { type: 'deathSave', combatantId, natural: n, successes, failures: c.deathSaves.failures },
+  ];
+  if (successes >= 3) events.push(...stabilize(state, combatantId));
   return events;
 }
 
@@ -1603,6 +1700,12 @@ export function kill(state: GameState, combatantId: Id): GameEvent[] {
   c.alive = false;
   c.hp = 0;
   c.conditions = [];
+  // A death under the death-save rule reads as three failures, however it came
+  // (see Combatant.deathSaves) — so a hero who died can be told from one who
+  // left the board, which `alive` alone cannot do.
+  if (state.rules?.deathSaves && c.unconsciousAtZero) {
+    c.deathSaves = { successes: c.deathSaves?.successes ?? 0, failures: 3 };
+  }
   const cell = cellAt(state.grid, c.position);
   if (cell && cell.occupantId === combatantId) delete cell.occupantId;
   events.push(

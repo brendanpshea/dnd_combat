@@ -45,7 +45,10 @@ function kindOf(e: GameEvent): string {
     case 'wildShapeEnded': return 'cond';
     case 'lightningStruck': return 'dmg';   // a loss healing cannot undo — read it as gravely as a drop
     case 'revived':
+    case 'stabilized':
     case 'healed': return 'heal';
+    case 'deathSave': return e.natural !== undefined && e.natural >= 10 ? 'saved' : 'failed';
+    case 'firstAid': return e.success ? 'saved' : 'failed';
     case 'damageDealt': return e.tags?.includes('Critical Hit') ? 'dmg crit' : 'dmg';
     case 'attackRolled': return e.hit ? 'hit' : 'miss';
     case 'smited': return 'hit';
@@ -86,6 +89,9 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'fled':
     case 'downed':
     case 'revived':
+    case 'deathSave':
+    case 'stabilized':
+    case 'firstAid':
     case 'dashed':
     case 'recharged':
     case 'disengaged':

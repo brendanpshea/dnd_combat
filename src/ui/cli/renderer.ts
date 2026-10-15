@@ -331,7 +331,19 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     case 'downed':
       return `*** ${nm(e.combatantId)} is down! (unconscious — heal them to revive) ***`;
     case 'revived':
-      return `${nm(e.combatantId)} is back on their feet with ${e.hp} HP!`;
+      return `${nm(e.combatantId)} comes round with ${e.hp} HP!`;
+    case 'deathSave': {
+      const tally = `${e.successes} saved, ${e.failures} failed`;
+      if (e.natural === undefined) return `  ${nm(e.combatantId)} is hurt while dying — ${tally}.`;
+      if (e.natural === 20) return `  ${nm(e.combatantId)} rolls a 20 on a death save!`;
+      return `  ${nm(e.combatantId)} makes a death save: ${e.natural} — ${tally}.`;
+    }
+    case 'stabilized':
+      return e.byId !== undefined
+        ? `  ${nm(e.byId)} stabilizes ${nm(e.combatantId)}.`
+        : `  ${nm(e.combatantId)} is stable.`;
+    case 'firstAid':
+      return `  ${nm(e.combatantId)} tends to ${nm(e.targetId)} (Medicine ${e.total} vs DC 10)${e.success ? '' : ' — not enough'}.`;
     case 'combatEnded':
       return `\n##### ${e.winner === 'team1' ? 'TEAM 1' : 'TEAM 2'} WINS! #####`;
   }
@@ -366,6 +378,7 @@ export function describeAction(state: GameState, a: Action): string {
     case 'dodge': return 'Dodge';
     case 'hide': return 'Hide';
     case 'shakeAwake': return `Shake ${name(state, a.targetId)} awake`;
+    case 'stabilize': return `Stabilize ${name(state, a.targetId)} (Medicine, DC 10)`;
     case 'endTurn': return 'End turn';
   }
 }
