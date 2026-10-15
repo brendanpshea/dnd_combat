@@ -1790,7 +1790,7 @@ export function dropToZero(state: GameState, combatantId: Id): GameEvent[] {
     ];
   }
   // Gift of the Protectors: a warlock's ward on the whole party. An ally who
-  // would drop is left standing on 1 instead, once per short rest.
+  // would drop is left standing on 1 instead, once per long rest.
   //
   // Here beside Death Ward because this is the single place every route to zero
   // passes through, and because the two are the same promise made by different

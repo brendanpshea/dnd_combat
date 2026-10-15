@@ -543,7 +543,15 @@ Spellcasting ability: **CHA**.
 
 | Option | Grants | Blurb |
 | --- | --- | --- |
-| Gift of the Protectors *(default)* | Gift of the Protectors | Once a rest, an ally who would drop to 0 is left on 1 instead. |
+| Armor of Shadows *(default)* | Armor of Shadows | Mage Armor on yourself, always, for free. |
+| Repelling Blast | Repelling Blast | Each beam of Eldritch Blast shoves its target 10 ft. |
+| Fiendish Vigor | Fiendish Vigor | Start every fight with False Life already up. |
+
+### Choice: Eldritch Invocation (5th) (level 9)
+
+| Option | Grants | Blurb |
+| --- | --- | --- |
+| Gift of the Protectors *(default)* | Gift of the Protectors | Once a long rest, an ally who would drop to 0 is left on 1 instead. |
 | Armor of Shadows | Armor of Shadows | Mage Armor on yourself, always, for free. |
 | Repelling Blast | Repelling Blast | Each beam of Eldritch Blast shoves its target 10 ft. |
 

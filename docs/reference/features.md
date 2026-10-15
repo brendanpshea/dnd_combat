@@ -90,7 +90,7 @@ something else) or `passive` (always on).
 | Font of Magic | `font-of-magic` | passive | level/long rest | — | read by the rules, no action of its own |
 | Frenzy | `frenzy` | passive | — | — | read by the rules, no action of its own |
 | Frost Breath | `breath-mephit-cold` | action | recharge 6 | — | 15 ft cone, 2d4 cold, DEX save |
-| Gift of the Protectors | `gift-of-the-protectors` | passive | 1/short rest | — | read by the rules, no action of its own |
+| Gift of the Protectors | `gift-of-the-protectors` | passive | 1/long rest | — | read by the rules, no action of its own |
 | Gloves of Thievery | `gloves-thievery` | passive | — | — | read by the rules, no action of its own |
 | Gnomish Cunning | `gnomish-cunning` | passive | — | — | read by the rules, no action of its own |
 | Healing Touch | `healing-touch` | bonus | 1/long rest | — | — |

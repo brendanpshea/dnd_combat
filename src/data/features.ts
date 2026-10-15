@@ -717,13 +717,20 @@ export const FEATURES: Record<Id, FeatureData> = {
    */
   'repelling-blast': { id: 'repelling-blast', name: 'Repelling Blast', trigger: 'passive' },
   /**
-   * Gift of the Protectors: an ally who would drop to 0 drops to 1 instead,
-   * once per short rest. Rides `dropToZero`, the single place every route to
-   * zero passes through — the same hook Death Ward uses, for the same reason.
+   * Gift of the Protectors (warlock 9+): an ally who would drop to 0 drops to 1
+   * instead. "Once this magic is triggered, no creature can benefit from it
+   * until you finish a Long Rest" (SRD 5.2.1, line 7098) — it came back on a
+   * short rest. Rides `dropToZero`, the single place every route to zero
+   * passes through — the same hook Death Ward uses, for the same reason — and
+   * so never catches a creature killed outright by massive damage, which goes
+   * straight to `kill`.
+   *
+   * ADAPTED: the page holds Charisma-modifier names, and everyone on the
+   * warlock's side is taken to have signed it.
    */
   'gift-of-the-protectors': {
     id: 'gift-of-the-protectors', name: 'Gift of the Protectors', trigger: 'passive',
-    uses: { count: 1, per: 'shortRest' },
+    uses: { count: 1, per: 'longRest' },
   },
   /**
    * Dark One's Blessing (Fiend patron): temporary hit points when you drop

@@ -482,10 +482,23 @@ describe('what the invocations actually do', () => {
     expect(moved, 'a landed beam never once shoved anything').toBe(true);
   });
 
+  it('Gift of the Protectors waits for level 9 (SRD 5.2.1: "Level 9+ Warlock")', () => {
+    const offeredAt = (CLASSES.warlock!.choices ?? [])
+      .filter((p) => p.options.some((o) => o.id === 'gift-of-the-protectors'))
+      .map((p) => p.atLevel);
+    expect(offeredAt).toEqual([9]);
+    expect(warlock(8).featureIds).not.toContain('gift-of-the-protectors');
+    expect(warlock(9).featureIds).toContain('gift-of-the-protectors');
+  });
+
+  it('Gift of the Protectors comes back on a long rest, not a short one', () => {
+    expect(FEATURES['gift-of-the-protectors']!.uses?.per).toBe('longRest');
+  });
+
   it('Gift of the Protectors leaves an ally standing on 1, once per rest', () => {
     const me = buildCharacter({
-      classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 7,
-      choices: { 'invocation-4': 'gift-of-the-protectors' },
+      classId: 'warlock', team: 'team1', position: { x: 0, y: 3 }, level: 9,
+      choices: { 'invocation-5': 'gift-of-the-protectors' },
     });
     const friend = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 1, y: 3 }, level: 5 }), id: 'a0' };
     const foe = { ...buildMonster('orc', 'team2', { x: 6, y: 6 }), id: 'e9' };

@@ -547,7 +547,10 @@ and Empowered — it had all three); the Evoker's Potent Cantrip deals half a
 cantrip's damage on a miss or a made save (it was +Int on a hit); the
 dragonborn's Breath Weapon has Proficiency Bonus uses and takes the place of
 one attack of the Attack action (`SpellData.replacesAttack`); the fighter has
-Indomitable at 9th and the rogue Reliable Talent at 7th. The
+Indomitable at 9th and the rogue Reliable Talent at 7th. Gift of the
+Protectors is a warlock invocation from 9th (its prerequisite; it was offered at
+7th, where Armor of Shadows now defaults) and returns on a long rest, not a
+short one; everyone on the warlock's side counts as signed on its page. The
 Berserker's Frenzy is the 2024 feature — Rage Damage d6 extra on the first target
 hit with a Strength attack on a reckless, raging turn — not the 2014 bonus-action
 swing; Rage's damage applies to thrown Strength weapons; the monk has Unarmored

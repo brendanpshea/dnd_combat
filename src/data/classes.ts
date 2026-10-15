@@ -659,9 +659,19 @@ export const CLASSES: Record<Id, ClassData> = {
         { id: 'repelling-blast', name: 'Repelling Blast', blurb: 'Each beam of Eldritch Blast shoves its target 10 ft.', grants: { featureIds: ['repelling-blast'] } },
       ],
     }, {
-      id: 'invocation-4', label: 'Eldritch Invocation (4th)', atLevel: 7, default: 'gift-of-the-protectors',
+      id: 'invocation-4', label: 'Eldritch Invocation (4th)', atLevel: 7, default: 'armor-of-shadows',
       options: [
-        { id: 'gift-of-the-protectors', name: 'Gift of the Protectors', blurb: 'Once a rest, an ally who would drop to 0 is left on 1 instead.', grants: { featureIds: ['gift-of-the-protectors'] } },
+        { id: 'armor-of-shadows', name: 'Armor of Shadows', blurb: 'Mage Armor on yourself, always, for free.', grants: { featureIds: ['armor-of-shadows'] } },
+        { id: 'repelling-blast', name: 'Repelling Blast', blurb: 'Each beam of Eldritch Blast shoves its target 10 ft.', grants: { featureIds: ['repelling-blast'] } },
+        { id: 'fiendish-vigor', name: 'Fiendish Vigor', blurb: 'Start every fight with False Life already up.', grants: { featureIds: ['fiendish-vigor'] } },
+      ],
+    }, {
+      // Gift of the Protectors' prerequisite is "Level 9+ Warlock, Pact of the
+      // Tome Invocation" (SRD 5.2.1, line 7094); it was offered at 7. The Tome
+      // is granted outright at 1, so level is the whole gate.
+      id: 'invocation-5', label: 'Eldritch Invocation (5th)', atLevel: 9, default: 'gift-of-the-protectors',
+      options: [
+        { id: 'gift-of-the-protectors', name: 'Gift of the Protectors', blurb: 'Once a long rest, an ally who would drop to 0 is left on 1 instead.', grants: { featureIds: ['gift-of-the-protectors'] } },
         { id: 'armor-of-shadows', name: 'Armor of Shadows', blurb: 'Mage Armor on yourself, always, for free.', grants: { featureIds: ['armor-of-shadows'] } },
         { id: 'repelling-blast', name: 'Repelling Blast', blurb: 'Each beam of Eldritch Blast shoves its target 10 ft.', grants: { featureIds: ['repelling-blast'] } },
       ],
@@ -691,6 +701,7 @@ export const CLASSES: Record<Id, ClassData> = {
       6: ['dark-ones-own-luck'],
       // 7: a fourth invocation (choice point above).
       // 8: Ability Score Increase (builder).
+      // 9: a fifth invocation, the first that may be Gift of the Protectors.
     },
     weaponMasteries: [],
     equipment: {
