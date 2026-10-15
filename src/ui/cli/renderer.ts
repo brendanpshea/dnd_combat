@@ -241,9 +241,8 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     case 'shoved': {
       const who = `${nm(e.shoverId)} shoves ${nm(e.targetId)}`;
       /**
-       * The contest totals, so a failed shove reads as a contest lost rather
-       * than as nothing happening — and so a reroll that decided it is visible.
-       * Shove is an opposed Athletics check (see rules/shove.ts).
+       * The contest totals, for a replay from when shoves were opposed
+       * checks. A shove now is a saving throw, logged as its own line.
        */
       const c = e.contest;
       const how = c ? ` [${c.attackerTotal} vs ${c.defenderTotal} ${c.defenderSkill}` +

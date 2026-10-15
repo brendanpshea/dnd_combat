@@ -111,7 +111,9 @@ export type GameEvent =
     }
   | { type: 'recharged'; combatantId: Id; featureId: Id }
   /** An Unarmed Strike's Shove: pushed five feet, or knocked prone. `success`
-   *  is false when the target made its save and nothing happened. */
+   *  is false when the target made its save and nothing happened (the save is
+   *  its own event, just before). `contest` is from replays made while shoves
+   *  were opposed checks. */
   | {
       type: 'shoved'; shoverId: Id; targetId: Id; mode: 'push' | 'prone' | 'grapple'; success: boolean;
       /**

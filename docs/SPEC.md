@@ -593,7 +593,11 @@ wielder's reach, attacking and threatening (`reachCells(c, weaponId)`); the
 Light extra attack keeps a negative modifier. Every character has an Unarmed
 Strike (1 + Strength bludgeoning, no Dueling bonus) and it is their
 opportunity attack when nothing melee is in hand; monsters have only what
-their stat block prints.
+their stat block prints. Its Shove and Grapple options are the 2024 ones: the
+target saves (its better of Strength and Dexterity) against 8 + Strength +
+Proficiency Bonus, and either takes the place of one attack of the Attack
+action (`rules/shove.ts`). They were opposed Athletics checks costing the
+whole action.
 
 **Ranger (Hunter) and Paladin (Devotion)**, the fifth and sixth classes,
 follow the 2024 half-caster progression — spellcasting from 1st level, slots

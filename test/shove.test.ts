@@ -1,5 +1,6 @@
 /**
- * Shove — the Unarmed Strike option nothing in this game could do.
+ * Shove — the Unarmed Strike option nothing in this game could do. A save, and
+ * one attack of the Attack action, as SRD 5.2.1 has it.
  *
  * `pushCreature` has been in the engine since Thunderwave, and forced movement
  * existed only as a rider on something else: the blast, the warlock's Repelling
@@ -17,7 +18,6 @@ import { buildMonster } from '../src/data/monsters.js';
 import { Combat } from '../src/engine/combat.js';
 import { legalActions, isLegalAction, type Action } from '../src/engine/actions.js';
 import { canShove, shoveDc } from '../src/engine/rules/shove.js';
-import { skillMod } from '../src/engine/rules/skills.js';
 import { chooseAction, scoreShoveForTest } from '../src/ai/greedy.js';
 import { cellAt } from '../src/engine/types.js';
 import type { Combatant, Position } from '../src/engine/types.js';
@@ -45,16 +45,10 @@ function scoreOf(c: Combat, meId: string, a: Action): number {
 }
 
 describe('the rule', () => {
-  it('is centred on the shover\'s Athletics, not a flat save DC', () => {
-    // Shove is an opposed check now (see rules/shove.ts for why), so `shoveDc`
-    // is the middle of the contest rather than a number to roll against: the
-    // shover's Athletics modifier plus the mean of a d20.
+  it('is a save against 8 + Strength + Proficiency Bonus', () => {
     const { me } = board();
-    expect(shoveDc(me)).toBe(11 + skillMod(me, 'athletics'));
-    // And training is part of it — that is the entire point of the change.
-    const trained = { ...me, skillProfs: ['athletics' as const] };
-    const untrained = { ...me, skillProfs: [] };
-    expect(shoveDc(trained)).toBeGreaterThan(shoveDc(untrained));
+    const str = Math.floor((me.abilities.str - 10) / 2);
+    expect(shoveDc(me)).toBe(8 + str + 3);   // level 5: PB +3
   });
 
   it('needs the target within reach', () => {
@@ -74,54 +68,39 @@ describe('the rule', () => {
     expect(canShove(ape.me, ape.foe), 'two sizes larger is not').toBe(false);
   });
 
-  it('lets the target resist with whichever skill it is better at', () => {
-    /**
-     * "It chooses which" — so a rational defender picks its better option:
-     * Athletics if strong, Acrobatics if nimble. Rolling the shover against the
-     * defender's WORSE option would make shove roughly twice as good as intended,
-     * and would be invisible without checking which skill the contest names.
-     */
+  it('lets the target save with whichever of Strength and Dexterity it is better at', () => {
+    // "It chooses which" — so a rational defender picks its better save.
     const { c } = board();
     const foe = c.state.combatants['foe']!;
     foe.abilities = { ...foe.abilities, str: 20, dex: 6 };
-    const strong = c.apply(shove('foe', 'prone')).find((e) => e.type === 'shoved');
-    expect(strong?.type === 'shoved' && strong.contest?.defenderSkill).toBe('athletics');
+    const strong = c.apply(shove('foe', 'prone')).find((e) => e.type === 'savingThrow' && e.combatantId === 'foe');
+    expect(strong?.type === 'savingThrow' && strong.ability).toBe('str');
 
     const b = board();
     b.c.state.combatants['foe']!.abilities = { ...b.foe.abilities, str: 6, dex: 20 };
-    const nimble = b.c.apply(shove('foe', 'prone')).find((e) => e.type === 'shoved');
-    expect(nimble?.type === 'shoved' && nimble.contest?.defenderSkill).toBe('acrobatics');
+    const nimble = b.c.apply(shove('foe', 'prone')).find((e) => e.type === 'savingThrow' && e.combatantId === 'foe');
+    expect(nimble?.type === 'savingThrow' && nimble.ability).toBe('dex');
   });
 
-  it('reports both totals, so the log can say why it failed', () => {
-    const { c } = board();
-    const shoved = c.apply(shove('foe', 'prone')).find((e) => e.type === 'shoved');
-    const detail = shoved?.type === 'shoved' ? shoved.contest : undefined;
-    expect(detail).toBeDefined();
-    expect(detail!.attackerTotal).toBeGreaterThan(0);
-    expect(detail!.defenderTotal).toBeGreaterThan(0);
-    // The winner and the reported totals must agree, or the log is a fiction.
-    const won = shoved?.type === 'shoved' && shoved.success;
-    expect(won).toBe(detail!.attackerTotal > detail!.defenderTotal);
-  });
-
-  it('gives ties to the defender', () => {
-    // The contest rule, and the right default for something the attacker is
-    // trying to make happen.
-    const { c } = board();
-    let ties = 0, tiesLost = 0;
-    for (let i = 0; i < 300; i++) {
-      const b = board({ seed: i + 1 });
-      const e = b.c.apply(shove('foe', 'prone')).find((x) => x.type === 'shoved');
-      if (e?.type !== 'shoved' || !e.contest) continue;
-      if (e.contest.attackerTotal === e.contest.defenderTotal) {
-        ties++;
-        if (!e.success) tiesLost++;
-      }
+  it('succeeds exactly when the save fails, and logs the save', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const { c, me } = board({ seed });
+      const events = c.apply(shove('foe', 'prone'));
+      const save = events.find((e) => e.type === 'savingThrow' && e.combatantId === 'foe');
+      const shoved = events.find((e) => e.type === 'shoved');
+      expect(save?.type === 'savingThrow' && save.dc).toBe(shoveDc(me));
+      expect(shoved?.type === 'shoved' && shoved.success).toBe(save?.type === 'savingThrow' && !save.success);
     }
-    expect(c).toBeTruthy();
-    expect(ties, 'no ties observed — the test proves nothing').toBeGreaterThan(0);
-    expect(tiesLost).toBe(ties);
+  });
+
+  it('is one attack of the Attack action, so Extra Attack still swings after it', () => {
+    // SRD 5.2.1, Unarmed Strike: Grapple and Shove are options of an attack.
+    const { c, meId } = board();
+    c.apply(shove('foe', 'prone'));
+    const me = c.state.combatants[meId]!;
+    expect(me.turn.actionUsed).toBe(true);
+    expect(me.turn.attacksLeft).toBe(1);
+    expect(legalActions(c.state, meId).some((a) => a.kind === 'attack' && a.targetId === 'foe')).toBe(true);
   });
 });
 
@@ -159,7 +138,7 @@ describe('what it does', () => {
   it('does nothing when the defender wins the contest', () => {
     const { c } = board();
     c.state.combatants['foe']!.abilities = { ...c.state.combatants['foe']!.abilities, str: 30, dex: 30 };
-    c.state.combatants['foe']!.skillProfs = ['athletics', 'acrobatics'];
+    c.state.combatants['foe']!.savingThrowProfs = ['str', 'dex'];
     const at = { ...c.state.combatants['foe']!.position };
     const events = c.apply(shove('foe', 'prone'));
     const shoved = events.find((e) => e.type === 'shoved');

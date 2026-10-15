@@ -547,7 +547,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       return actor.conditions.some((k) => k.escape && k.id === action.condition && k.sourceId === action.fromId);
     }
     case 'shove': {
-      if (incap || actor.turn.actionUsed) return false;
+      // One attack of the Attack action (SRD 5.2.1, Unarmed Strike): open while
+      // the action is unspent or still has an attack in it.
+      if (incap || (actor.turn.actionUsed && actor.turn.attacksLeft <= 0)) return false;
       const t = state.combatants[action.targetId];
       // Hostiles only. Shoving an ally out of a fire is a lovely idea and a
       // different feature; offering it here would double every tray entry.
@@ -1309,7 +1311,18 @@ export function step(state: GameState, action: Action): { state: GameState; even
       break;
     }
     case 'shove':
-      actor.turn.actionUsed = true;
+      // In place of one attack: the first opens the Attack action and banks
+      // the rest, a later one spends one of those.
+      if (!actor.turn.actionUsed) {
+        actor.turn.actionUsed = true;
+        actor.turn.attackedThisTurn = true;
+        const haste = actor.conditions.some((c) => c.id === 'hasted') ? 1 : 0;
+        if (!actor.conditions.some((c) => c.id === 'lethargic')) {
+          actor.turn.attacksLeft += actor.attacksPerAction - 1 + haste;
+        }
+      } else {
+        actor.turn.attacksLeft -= 1;
+      }
       // Shoving is hostile: it breaks a Sanctuary exactly as an attack does.
       events.push(...removeConditions(actor, 'sanctuary'));
       events.push(...endHide(actor));
