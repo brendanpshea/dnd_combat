@@ -249,7 +249,8 @@ export function acOf(c: Combatant): number {
  * wizard's item, and useless to the fighter in splint.
  */
 function trinketAc(c: Combatant): number {
-  const cloak = c.featureIds.includes('cloak-protection') ? 1 : 0;
+  const cloak = (c.featureIds.includes('cloak-protection') ? 1 : 0) +
+    (c.featureIds.includes('ring-protection') ? 1 : 0);   // Ring of Protection
   const bracers = c.featureIds.includes('bracers-defense') &&
     c.equipped.armor === undefined && !isShield(c.equipped.offHand) ? 2 : 0;
   return cloak + bracers;

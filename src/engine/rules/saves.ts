@@ -182,6 +182,7 @@ export function savingThrow(
     abilityMod(c.abilities[ability]) +
     (c.savingThrowProfs.includes(ability) ? proficiencyBonus(c.level) : 0) +
     (c.featureIds.includes('cloak-protection') ? 1 : 0) + // Cloak of Protection
+    (c.featureIds.includes('ring-protection') ? 1 : 0) + // Ring of Protection
     (c.conditions.some((k) => k.id === 'bonded') ? 1 : 0) + // Warding Bond
     (ability === 'dex' && c.conditions.some((k) => k.id === 'lethargic') ? -2 : 0) + // Slow
     auraOfProtection(state, c);

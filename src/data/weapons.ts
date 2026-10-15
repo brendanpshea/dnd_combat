@@ -150,10 +150,12 @@ export interface WeaponData {
  *  always proficient). Magic/silvered variants resolve to their base. */
 const SIMPLE_WEAPONS = new Set<Id>([
   'dagger', 'mace', 'quarterstaff', 'javelin', 'handaxe', 'spear', 'sling', 'light-crossbow', 'shortbow',
+  'club', 'dart',
 ]);
 const MARTIAL_WEAPONS = new Set<Id>([
   'longsword', 'shortsword', 'greatsword', 'greataxe', 'longbow', 'warhammer',
   'battleaxe', 'morningstar', 'rapier', 'hand-crossbow',
+  'flail', 'glaive', 'halberd', 'pike', 'trident', 'war-pick', 'heavy-crossbow',
   // Martial in the SRD table. Missing here, it read as a natural weapon — and
   // a natural weapon is proficient in anyone's hands.
   'scimitar',
@@ -348,6 +350,47 @@ export const WEAPONS: Record<Id, WeaponData> = {
   morningstar: {
     id: 'morningstar', name: 'Morningstar', damage: '1d8', damageType: 'piercing',
     properties: [], melee: true, mastery: 'sap', cost: 15,
+  },
+  /*
+   * The rest of the SRD 5.2.1 table's simple and martial weapons (line 9120
+   * on): damage, properties, mastery and price as printed. A price under a
+   * gold piece is rounded up to 1, as the quarterstaff's 2 SP already was.
+   */
+  club: {
+    id: 'club', name: 'Club', damage: '1d4', damageType: 'bludgeoning',
+    properties: ['light'], melee: true, mastery: 'slow', cost: 1,   // 1 SP
+  },
+  dart: {
+    id: 'dart', name: 'Dart', damage: '1d4', damageType: 'piercing',
+    properties: ['finesse', 'thrown'], range: { normal: 20, long: 60 }, melee: false, mastery: 'vex', cost: 1,   // 5 CP
+  },
+  flail: {
+    id: 'flail', name: 'Flail', damage: '1d8', damageType: 'bludgeoning',
+    properties: [], melee: true, mastery: 'sap', cost: 10,
+  },
+  glaive: {
+    id: 'glaive', name: 'Glaive', damage: '1d10', damageType: 'slashing',
+    properties: ['heavy', 'reach', 'two-handed'], melee: true, mastery: 'graze', cost: 20,
+  },
+  halberd: {
+    id: 'halberd', name: 'Halberd', damage: '1d10', damageType: 'slashing',
+    properties: ['heavy', 'reach', 'two-handed'], melee: true, mastery: 'cleave', cost: 20,
+  },
+  pike: {
+    id: 'pike', name: 'Pike', damage: '1d10', damageType: 'piercing',
+    properties: ['heavy', 'reach', 'two-handed'], melee: true, mastery: 'push', cost: 5,
+  },
+  trident: {
+    id: 'trident', name: 'Trident', damage: '1d8', damageType: 'piercing',
+    properties: ['thrown', 'versatile'], versatile: '1d10', range: { normal: 20, long: 60 }, melee: true, mastery: 'topple', cost: 5,
+  },
+  'war-pick': {
+    id: 'war-pick', name: 'War Pick', damage: '1d8', damageType: 'piercing',
+    properties: ['versatile'], versatile: '1d10', melee: true, mastery: 'sap', cost: 5,
+  },
+  'heavy-crossbow': {
+    id: 'heavy-crossbow', name: 'Heavy Crossbow', damage: '1d10', damageType: 'piercing',
+    properties: ['heavy', 'loading', 'two-handed'], range: { normal: 100, long: 400 }, melee: false, mastery: 'push', cost: 50,
   },
 
   'lion-rend': {

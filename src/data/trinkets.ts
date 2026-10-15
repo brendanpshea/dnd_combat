@@ -48,6 +48,12 @@ export interface TrinketData {
    * is the same lever the class-gated bounties pull.
    */
   classes?: Id[];
+  /**
+   * "Requires Attunement", as the SRD prints it. Data for a game that holds a
+   * character to three attuned items; the arena, with one trinket slot and one
+   * ring, never reaches the limit and does not read it.
+   */
+  attunement?: true;
 }
 
 /** Where a wondrous item is worn (see TrinketData.slot). */
@@ -58,31 +64,37 @@ export function trinketSlot(t: TrinketData): 'trinket' | 'ring' {
 export const TRINKETS: Record<Id, TrinketData> = {
   'gauntlets-ogre-power': {
     id: 'gauntlets-ogre-power', name: 'Gauntlets of Ogre Power', cost: 400, rarity: 'uncommon', icon: '🧤',
+    attunement: true,
     blurb: 'Your Strength is 19.',
     grants: { abilityFloor: { str: 19 } },
   },
   'headband-intellect': {
     id: 'headband-intellect', name: 'Headband of Intellect', cost: 400, rarity: 'uncommon', icon: '🎗️',
+    attunement: true,
     blurb: 'Your Intelligence is 19.',
     grants: { abilityFloor: { int: 19 } },
   },
   'cloak-protection': {
     id: 'cloak-protection', name: 'Cloak of Protection', cost: 500, rarity: 'uncommon', icon: '🧥',
+    attunement: true,
     blurb: '+1 to AC and all saving throws.',
     grants: { featureIds: ['cloak-protection'] },
   },
   'brooch-shielding': {
     id: 'brooch-shielding', name: 'Brooch of Shielding', cost: 400, rarity: 'uncommon', icon: '📌',
+    attunement: true,
     blurb: 'Resistance to force damage; immune to Magic Missile.',
     grants: { featureIds: ['brooch-shielding'], resistances: ['force'] },
   },
   'bracers-archery': {
     id: 'bracers-archery', name: 'Bracers of Archery', cost: 400, rarity: 'uncommon', icon: '🏹',
+    attunement: true,
     blurb: '+2 damage with ranged weapons.',
     grants: { featureIds: ['bracers-archery'] },
   },
   'boots-winterlands': {
     id: 'boots-winterlands', name: 'Boots of the Winterlands', cost: 350, rarity: 'uncommon', icon: '🥾',
+    attunement: true,
     blurb: 'Cold resistance; ignore difficult terrain.',
     grants: { featureIds: ['boots-winterlands'], resistances: ['cold'] },
   },
@@ -100,6 +112,7 @@ export const TRINKETS: Record<Id, TrinketData> = {
   // Bag of Holding is a fine item and changes no decision on a grid.
   'amulet-health': {
     id: 'amulet-health', name: 'Amulet of Health', cost: 900, rarity: 'rare', icon: '📿',
+    attunement: true,
     blurb: 'Your Constitution is 19.',
     // Exactly the Gauntlets pattern, and worth more than it looks: Constitution
     // is the one score that pays every character, because hit points are rolled
@@ -108,6 +121,7 @@ export const TRINKETS: Record<Id, TrinketData> = {
   },
   'bracers-defense': {
     id: 'bracers-defense', name: 'Bracers of Defense', cost: 900, rarity: 'rare', icon: '🦾',
+    attunement: true,
     blurb: '+2 AC while wearing no armour and no shield.',
     // The condition is what stops this being a flat +2 for the whole party: it
     // is the wizard's and the unarmoured rogue's item, and useless to the
@@ -116,16 +130,19 @@ export const TRINKETS: Record<Id, TrinketData> = {
   },
   'cloak-displacement': {
     id: 'cloak-displacement', name: 'Cloak of Displacement', cost: 1200, rarity: 'rare', icon: '🌀',
+    attunement: true,
     blurb: 'Attacks against you have disadvantage — until something hits you.',
     grants: { featureIds: ['cloak-displacement'] },
   },
   'mantle-spell-resistance': {
     id: 'mantle-spell-resistance', name: 'Mantle of Spell Resistance', cost: 1100, rarity: 'rare', icon: '🧿',
+    attunement: true,
     blurb: 'Advantage on saving throws against spells.',
     grants: { featureIds: ['mantle-spell-resistance'] },
   },
   'belt-giant-strength-hill': {
     id: 'belt-giant-strength-hill', name: 'Belt of Hill Giant Strength', cost: 1000, rarity: 'rare', icon: '🎽',
+    attunement: true,
     blurb: 'Your Strength is 21.',
     // The SRD's belt comes in five grades — hill 21, frost/stone 23, fire 25,
     // cloud 27, storm 29 — and only the hill belt is Rare. The rest are Very
@@ -217,17 +234,20 @@ export const TRINKETS: Record<Id, TrinketData> = {
   // would be adding an item nothing could ever offer.
   'wand-war-mage-1': {
     id: 'wand-war-mage-1', name: 'Wand of the War Mage +1', cost: 500, rarity: 'uncommon', icon: '🪄',
+    attunement: true,
     blurb: '+1 to spell attack rolls, and your spells ignore half cover.',
     grants: { featureIds: ['war-mage-1'] },
   },
   'wand-war-mage-2': {
     id: 'wand-war-mage-2', name: 'Wand of the War Mage +2', cost: 1400, rarity: 'rare', icon: '🪄',
+    attunement: true,
     blurb: '+2 to spell attack rolls, and your spells ignore half cover.',
     grants: { featureIds: ['war-mage-2'] },
   },
 
   'ring-free-action': {
     id: 'ring-free-action', name: 'Ring of Free Action', cost: 1300, rarity: 'rare', icon: '💍',
+    attunement: true,
     slot: 'ring',
     blurb: 'Difficult terrain costs you nothing, and magic cannot Restrain or Paralyze you.',
     // The direct answer to the game's strongest control. Web, Entangle and
@@ -239,13 +259,26 @@ export const TRINKETS: Record<Id, TrinketData> = {
   },
   'ring-evasion': {
     id: 'ring-evasion', name: 'Ring of Evasion', cost: 1300, rarity: 'rare', icon: '💍',
+    attunement: true,
     slot: 'ring',
     blurb: 'Three times a fight, turn a failed Dexterity save into a success.',
     grants: { featureIds: ['ring-evasion'] },
   },
+  'ring-protection': {
+    id: 'ring-protection', name: 'Ring of Protection', cost: 1000, rarity: 'rare', icon: '💍',
+    attunement: true,
+    slot: 'ring',
+    blurb: '+1 to AC and all saving throws.',
+    // SRD 5.2.1 line 16661: "+1 bonus to Armor Class and saving throws while
+    // wearing this ring". The Cloak of Protection's bonus in the ring slot,
+    // so the two stack, as two items' bonuses do. Priced between the
+    // resistance rings and Free Action.
+    grants: { featureIds: ['ring-protection'] },
+  },
 
   'necklace-prayer-beads': {
     id: 'necklace-prayer-beads', name: 'Necklace of Prayer Beads', cost: 1200, rarity: 'rare', icon: '📿',
+    attunement: true,
     blurb: 'Cleric, druid or paladin only. Bless, as a bonus action, once per rest.',
     classes: ['cleric', 'druid', 'paladin'],
     // The SRD's necklace carries 1d4+2 beads drawn from six kinds. Rolling a

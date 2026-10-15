@@ -8,6 +8,11 @@ import { WEAPONS, weaponCategory } from '../src/data/weapons.js';
 import { seedRng } from '../src/engine/rng.js';
 import type { Combatant, GameState, Position } from '../src/engine/types.js';
 import type { GameEvent } from '../src/engine/events.js';
+import { TRINKETS } from '../src/data/trinkets.js';
+import { acOf } from '../src/data/armor.js';
+import { savingThrow } from '../src/engine/rules/saves.js';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 /** Weapon properties and masteries against SRD 5.2.1 (lines 9071-9118). */
 
@@ -132,5 +137,94 @@ describe('Unarmed Strike (line 14124)', () => {
     expect(away).toBeDefined();
     const evs = c.apply(away!);
     expect(evs.some((e) => e.type === 'attackRolled' && e.opportunity && e.weaponId === 'unarmed-strike')).toBe(true);
+  });
+});
+
+describe('the rest of the weapon table (line 9120 on)', () => {
+  // Damage, properties, mastery and category, as printed.
+  const TABLE: Record<string, [string, string, string[], string, 'simple' | 'martial']> = {
+    club: ['1d4', 'bludgeoning', ['light'], 'slow', 'simple'],
+    dart: ['1d4', 'piercing', ['finesse', 'thrown'], 'vex', 'simple'],
+    flail: ['1d8', 'bludgeoning', [], 'sap', 'martial'],
+    glaive: ['1d10', 'slashing', ['heavy', 'reach', 'two-handed'], 'graze', 'martial'],
+    halberd: ['1d10', 'slashing', ['heavy', 'reach', 'two-handed'], 'cleave', 'martial'],
+    pike: ['1d10', 'piercing', ['heavy', 'reach', 'two-handed'], 'push', 'martial'],
+    trident: ['1d8', 'piercing', ['thrown', 'versatile'], 'topple', 'martial'],
+    'war-pick': ['1d8', 'piercing', ['versatile'], 'sap', 'martial'],
+    'heavy-crossbow': ['1d10', 'piercing', ['heavy', 'loading', 'two-handed'], 'push', 'martial'],
+  };
+  for (const [id, [dice, type, props, mastery, cat]] of Object.entries(TABLE)) {
+    it(`${id} is as printed`, () => {
+      const w = WEAPONS[id]!;
+      expect(w, id).toBeDefined();
+      expect([w.damage, w.damageType, [...w.properties].sort(), w.mastery]).toEqual([dice, type, [...props].sort(), mastery]);
+      expect(weaponCategory(id)).toBe(cat);
+      expect(w.cost).toBeGreaterThan(0);
+    });
+  }
+
+  it('the versatile ones roll a d10 in two hands, the thrown ones reach 20/60', () => {
+    expect(WEAPONS['trident']!.versatile).toBe('1d10');
+    expect(WEAPONS['war-pick']!.versatile).toBe('1d10');
+    expect(WEAPONS['trident']!.range).toEqual({ normal: 20, long: 60 });
+    expect(WEAPONS['dart']!.range).toEqual({ normal: 20, long: 60 });
+    expect(WEAPONS['heavy-crossbow']!.range).toEqual({ normal: 100, long: 400 });
+  });
+
+  it('a pike reaches ten feet', () => {
+    const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [
+      hero({ x: 0, y: 0 }, 'h', { equipped: { mainHand: 'pike', armor: 'scale-mail' } }),
+      dummy({ x: 2, y: 0 }, 'd'),
+    ] });
+    turnOf(c, 'h');
+    expect(isLegalAction(c.state, 'h', { kind: 'attack', weaponId: 'pike', targetId: 'd' })).toBe(true);
+    expect(isLegalAction(c.state, 'h', { kind: 'attack', weaponId: 'flail', targetId: 'd' })).toBe(false);
+  });
+
+  it('a heavy crossbow is one bolt an action', () => {
+    const c = new Combat({ seed: 1, width: 8, height: 8, combatants: [
+      hero({ x: 0, y: 0 }, 'h', { equipped: { mainHand: 'heavy-crossbow', armor: 'scale-mail' } }),
+      dummy({ x: 5, y: 5 }, 'd'),
+    ] });
+    turnOf(c, 'h');
+    const shoot = { kind: 'attack' as const, weaponId: 'heavy-crossbow', targetId: 'd' };
+    c.apply(shoot);
+    expect(isLegalAction(c.state, 'h', shoot)).toBe(false);
+  });
+});
+
+describe('Ring of Protection (line 16661)', () => {
+  it('is a ring for +1 to AC and every save, and stacks with the cloak', () => {
+    expect(TRINKETS['ring-protection']).toMatchObject({ slot: 'ring', rarity: 'rare', attunement: true });
+    const ringed = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 1 }, level: 5,
+      equipped: { mainHand: 'longsword', armor: 'chain-mail', ring: 'ring-protection' } }), id: 'b' };
+    const both = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 2 }, level: 5,
+      equipped: { mainHand: 'longsword', armor: 'chain-mail', ring: 'ring-protection', trinket: 'cloak-protection' } }), id: 'k' };
+    const bare = { ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x: 0, y: 3 }, level: 5,
+      equipped: { mainHand: 'longsword', armor: 'chain-mail' } }), id: 'p' };
+    expect(acOf(ringed) - acOf(bare)).toBe(1);
+    expect(acOf(both) - acOf(bare)).toBe(2);
+    const c = new Combat({ seed: 4, width: 8, height: 8, combatants: [ringed, bare, dummy({ x: 6, y: 6 }, 'd')] });
+    for (const ab of ['str', 'wis'] as const) {
+      const s1: GameState = structuredClone(c.state);
+      const s2: GameState = structuredClone(c.state);
+      const r = savingThrow(s1, 'b', ab, 15, { magical: false }).event;
+      const n = savingThrow(s2, 'p', ab, 15, { magical: false }).event;
+      expect(r.type === 'savingThrow' && n.type === 'savingThrow' && r.total - n.total).toBe(1);
+    }
+  });
+
+  it('every worn item says whether it needs attunement, as the SRD does', () => {
+    const srd = readFileSync(fileURLToPath(new URL('../SRD_CC_v5.2.1.txt', import.meta.url)), 'utf8').split('\n');
+    const name = (t: string) => t
+      .replace(/^Ring of \w+ Resistance$/, 'Ring of Resistance')
+      .replace(/^Belt of Hill Giant Strength$/, 'Belt of Giant Strength')
+      .replace(/^Wand of the War Mage \+\d$/, 'Wand of the War Mage, +1, +2, or +3');
+    for (const t of Object.values(TRINKETS)) {
+      const at = srd.findIndex((l) => l.trim() === name(t.name));
+      expect(at, `${t.name} not found in the SRD`).toBeGreaterThan(0);
+      const needs = /Requires Attunement/.test(srd[at + 1]!);
+      expect(t.attunement === true, t.name).toBe(needs);
+    }
   });
 });

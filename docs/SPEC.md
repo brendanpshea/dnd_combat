@@ -587,6 +587,12 @@ trains that weapon (`weaponMasteries`), and only as many kinds as the class
 table's Weapon Mastery column allows at its level (`masteriesByLevel`: fighter
 3/4/5, barbarian 2/3/4, paladin, ranger and rogue 2; the 2024 monk has none).
 
+The simple and martial weapons are the SRD table's, Club, Dart, Flail, Glaive,
+Halberd, Pike, Trident, War Pick and Heavy Crossbow included, with their
+printed properties, masteries and prices (under a gold piece rounds up to 1).
+The arena shop does not stock those nine; their silvered versions join the
+generated silvered set like every buyable melee weapon's.
+
 **Weapon properties** follow the SRD table: Versatile weapons roll their
 two-handed die (`WeaponData.versatile`) in melee with the other hand empty;
 Heavy imposes disadvantage below 13 Strength (melee) or Dexterity (ranged);
@@ -1073,14 +1079,17 @@ armor, equipped and priced through the same generic `equipBlocked`/
 `equipItem`/`itemPrice` machinery (a trinket blocks in every other slot and
 only unblocks in its own). Each trinket declares a `grants` bundle the builder
 folds exactly like a species/choice-point grant: feature ids (whose effects
-live in the relevant rule — Cloak of Protection's +1 AC/saves in `armor.ts`/
-`saves.ts`, Brooch of Shielding's Magic Missile immunity in `spells.ts`,
+live in the relevant rule — Cloak of Protection's and the Ring of
+Protection's +1 AC/saves in `armor.ts`/`saves.ts` (they stack), Brooch of Shielding's Magic Missile immunity in `spells.ts`,
 Bracers of Archery's ranged damage in `attack.ts`, Boots of the Winterlands'
 difficult-terrain-ignore threaded through `reachable`'s new `ignoreDifficult`
 parameter, Gloves of Thievery's Sleight of Hand bonus in `bestAtSkill`), damage
 resistances, or an ability-score floor (Gauntlets of Ogre Power, Headband of
 Intellect) applied before HP/AC-relevant modifiers are computed. Adding a new
 trinket is data plus, at most, one feature check in the rule it touches.
+Each carries the SRD's "Requires Attunement" as `attunement: true` (all but the
+Gloves of Thievery and the Rings of Resistance), for a game that enforces the
+three-item limit; the arena does not need to.
 
 Loot and XP use the battle's final RNG state, so seeded campaigns are
 reproducible end-to-end. Old saves migrate: a missing `xp` is back-filled from

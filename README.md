@@ -22,7 +22,7 @@ installable to a phone home screen, works offline.
 | Spells | 101 — cantrips through 5th level |
 | Monsters | 146, of which 17 cast spells |
 | Authored encounters | 102 |
-| Weapons / items / features | 254 / 103 / 153 |
+| Weapons / items / features | 271 / 108 / 160 |
 | Maps | 11 hand-built across 6 themes, plus a generator |
 
 Those numbers come from `src/data/`; [docs/reference/](docs/reference/README.md)

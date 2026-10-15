@@ -914,6 +914,8 @@ export const FEATURES: Record<Id, FeatureData> = {
   'uncanny-dodge': { id: 'uncanny-dodge', name: 'Uncanny Dodge', trigger: 'passive' },
   // Trinket-granted passives; their effects live in the rules that read them.
   'cloak-protection': { id: 'cloak-protection', name: 'Cloak of Protection', trigger: 'passive' },
+  // Ring of Protection: the same +1 to AC (armor.ts) and saves (saves.ts).
+  'ring-protection': { id: 'ring-protection', name: 'Ring of Protection', trigger: 'passive' },
   // Bracers of Defense: +2 AC, but only with no armour and no shield — read in
   // acOf, which is where every other AC grant is read.
   'bracers-defense': { id: 'bracers-defense', name: 'Bracers of Defense', trigger: 'passive' },

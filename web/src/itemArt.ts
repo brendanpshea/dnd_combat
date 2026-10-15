@@ -34,6 +34,17 @@ import { assetUrl } from './assetUrl.js';
 const SHAPE_PREFIXES = /^(silvered|vicious|adamantine)-/;
 
 /**
+ * Weapons with no icon yet, drawn as the nearest shape that has one: the rest
+ * of the SRD weapon table, added after the art was. Mundane gear, so a
+ * stand-in says nothing wrong about it; delete a line when its icon lands.
+ */
+const STAND_IN: Record<string, string> = {
+  club: 'mace', dart: 'javelin', flail: 'morningstar', 'war-pick': 'warhammer',
+  glaive: 'spear', halberd: 'spear', pike: 'spear', trident: 'spear',
+  'heavy-crossbow': 'light-crossbow',
+};
+
+/**
  * The drawn shape an item id resolves to, or `undefined` if nothing fits.
  *
  * Returns the base id rather than a URL so this stays testable in Node — the
@@ -62,6 +73,7 @@ export function itemArtId(itemId: string): string | undefined {
   // Brazier, bowl, censer and stone: four vessels that each summon an
   // elemental. One vessel is enough — the element is in the name.
   if (base.endsWith('-elemental')) base = 'elemental-focus';
+  if (!HAS_ITEM_ART.has(base) && STAND_IN[base]) base = STAND_IN[base]!;
   return HAS_ITEM_ART.has(base) ? base : undefined;
 }
 
