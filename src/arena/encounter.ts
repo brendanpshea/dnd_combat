@@ -44,6 +44,9 @@ export const ARENA_EXCLUDED = new Set<Id>([
   // delete a line to field that monster here.
   'ankheg', 'medusa', 'efreeti', 'vampire', 'drider', 'phase-spider', 'hippogriff',
   'centaur-trooper', 'giant-frog', 'boar', 'stirge', 'giant-lizard', 'young-bronze',
+  // More SRD 5.2.1 stat blocks, added the same way.
+  'crocodile', 'mastiff', 'baboon', 'tiger', 'hobgoblin-warrior', 'hobgoblin-captain', 'pirate',
+  'commoner', 'frog', 'scorpion', 'shambling-mound', 'minotaur-skeleton', 'ogre-zombie',
 ]);
 
 /**

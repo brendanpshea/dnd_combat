@@ -2219,6 +2219,149 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['cold'],
     attacksPerAction: 2,
   },
+
+  // ---- More SRD 5.2.1 stat blocks, for the people and beasts a module meets ----
+  // The printed AC, HP, speed, abilities, attacks and Multiattack. Held out of
+  // the arena's roster (ARENA_EXCLUDED), as the earlier additions are. What is
+  // not modelled is said beside each block.
+  //
+  // Crocodile: Hold Breath.
+  crocodile: {
+    id: 'crocodile', name: 'Crocodile',
+    ac: 12, hp: 13, speed: 20, swimSpeed: 30,
+    creatureType: 'beast',
+    size: 'large',
+    abilities: { str: 15, dex: 10, con: 13, int: 2, wis: 10, cha: 5 },
+    weaponIds: ['small-crocodile-bite'],
+  },
+  // Mastiff.
+  mastiff: {
+    id: 'mastiff', name: 'Mastiff',
+    ac: 12, hp: 5, speed: 40,
+    creatureType: 'beast',
+    size: 'medium',
+    abilities: { str: 13, dex: 14, con: 12, int: 3, wis: 12, cha: 7 },
+    weaponIds: ['mastiff-bite'],
+  },
+  // Baboon: Pack Tactics (its Climb Speed is not modelled).
+  baboon: {
+    id: 'baboon', name: 'Baboon',
+    ac: 12, hp: 3, speed: 30,
+    creatureType: 'beast',
+    size: 'small',
+    abilities: { str: 8, dex: 14, con: 11, int: 4, wis: 12, cha: 6 },
+    featureIds: ['pack-tactics'],
+    weaponIds: ['baboon-bite'],
+  },
+  // Tiger: Nimble Escape.
+  tiger: {
+    id: 'tiger', name: 'Tiger',
+    ac: 13, hp: 30, speed: 40,
+    creatureType: 'beast',
+    size: 'large',
+    abilities: { str: 17, dex: 16, con: 14, int: 3, wis: 12, cha: 8 },
+    featureIds: ['nimble-escape'],
+    weaponIds: ['tiger-rend'],
+  },
+  // Hobgoblin Warrior: Pack Tactics; AC 18 is half plate and a shield.
+  'hobgoblin-warrior': {
+    id: 'hobgoblin-warrior', name: 'Hobgoblin Warrior',
+    ac: 18, hp: 11, speed: 30,
+    // Fey since 2024, with the rest of the goblinoids.
+    creatureType: 'fey',
+    size: 'medium',
+    abilities: { str: 13, dex: 12, con: 12, int: 10, wis: 10, cha: 9 },
+    featureIds: ['pack-tactics'],
+    weaponIds: ['hobgoblin-longsword', 'hobgoblin-longbow'],
+    metalArmor: true,
+  },
+  // Hobgoblin Captain: its Aura of Authority (Advantage on attacks and saves
+  // for it and its allies within 10 feet) is not modelled.
+  'hobgoblin-captain': {
+    id: 'hobgoblin-captain', name: 'Hobgoblin Captain',
+    ac: 17, cr: 3, hp: 58, speed: 30,
+    creatureType: 'fey',
+    size: 'medium',
+    abilities: { str: 15, dex: 14, con: 14, int: 12, wis: 10, cha: 13 },
+    weaponIds: ['hobgoblin-captain-greatsword', 'hobgoblin-captain-longbow'],
+    attacksPerAction: 2,
+    metalArmor: true,
+  },
+  // Pirate: two Dagger attacks; Enthralling Panache (a Wisdom save against
+  // Charmed) is not modelled.
+  pirate: {
+    id: 'pirate', name: 'Pirate',
+    ac: 14, hp: 33, speed: 30,
+    creatureType: 'humanoid',
+    size: 'medium',
+    abilities: { str: 10, dex: 16, con: 12, int: 8, wis: 12, cha: 14 },
+    savingThrowProfs: ['dex', 'cha'],
+    weaponIds: ['dagger'],
+    attacksPerAction: 2,
+  },
+  commoner: {
+    id: 'commoner', name: 'Commoner',
+    ac: 10, hp: 4, speed: 30,
+    creatureType: 'humanoid',
+    size: 'medium',
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    weaponIds: ['club'],
+  },
+  // Frog and Scorpion: Amphibious and Standing Leap; the scorpion's Blindsight.
+  frog: {
+    id: 'frog', name: 'Frog',
+    ac: 11, hp: 1, speed: 20, swimSpeed: 20,
+    creatureType: 'beast',
+    size: 'tiny',
+    abilities: { str: 1, dex: 13, con: 8, int: 1, wis: 8, cha: 3 },
+    weaponIds: ['frog-bite'],
+  },
+  scorpion: {
+    id: 'scorpion', name: 'Scorpion',
+    ac: 11, hp: 1, speed: 10,
+    creatureType: 'beast',
+    size: 'tiny',
+    abilities: { str: 2, dex: 11, con: 8, int: 1, wis: 8, cha: 2 },
+    weaponIds: ['tiny-scorpion-sting'],
+  },
+  // Shambling Mound: three Charged Tendrils (reach 10 feet). Lightning
+  // Absorption (it heals by lightning damage), Engulf and the pull are not
+  // modelled.
+  'shambling-mound': {
+    id: 'shambling-mound', name: 'Shambling Mound',
+    ac: 15, cr: 5, hp: 110, speed: 30, swimSpeed: 20,
+    creatureType: 'plant',
+    size: 'large',
+    abilities: { str: 18, dex: 8, con: 16, int: 5, wis: 10, cha: 5 },
+    weaponIds: ['shambling-mound-tendril'],
+    attacksPerAction: 3,
+    resistances: ['cold', 'fire'],
+    immunities: ['lightning'],
+  },
+  // Minotaur Skeleton: Gore or Slam (the Gore's charge is not modelled).
+  'minotaur-skeleton': {
+    id: 'minotaur-skeleton', name: 'Minotaur Skeleton',
+    ac: 12, hp: 45, speed: 40,
+    creatureType: 'undead',
+    size: 'large',
+    abilities: { str: 18, dex: 11, con: 15, int: 6, wis: 8, cha: 5 },
+    conditionImmunities: ['poisoned'],
+    weaponIds: ['minotaur-skeleton-gore', 'minotaur-skeleton-slam'],
+    vulnerabilities: ['bludgeoning'],
+    immunities: ['poison'],
+  },
+  // Ogre Zombie: Undead Fortitude.
+  'ogre-zombie': {
+    id: 'ogre-zombie', name: 'Ogre Zombie',
+    ac: 8, hp: 85, speed: 30,
+    creatureType: 'undead',
+    size: 'large',
+    abilities: { str: 19, dex: 6, con: 18, int: 3, wis: 6, cha: 5 },
+    conditionImmunities: ['poisoned'],
+    featureIds: ['undead-fortitude'],
+    weaponIds: ['ogre-zombie-slam'],
+    immunities: ['poison'],
+  },
 };
 
 /**
@@ -2397,6 +2540,10 @@ export const MONSTER_XP: Record<Id, number> = {
   ankheg: 450, medusa: 2300, efreeti: 7200, vampire: 10000, drider: 2300,
   'phase-spider': 700, hippogriff: 200, 'centaur-trooper': 450, 'giant-frog': 50,
   boar: 50, stirge: 25, 'giant-lizard': 50, 'young-bronze': 3900,
+  // More SRD 5.2.1 stat blocks (arena-excluded).
+  crocodile: 100, mastiff: 25, baboon: 10, tiger: 200, 'hobgoblin-warrior': 100, 'hobgoblin-captain': 700,
+  pirate: 200, commoner: 10, frog: 10, scorpion: 10, 'shambling-mound': 1800, 'minotaur-skeleton': 450,
+  'ogre-zombie': 450,
 };
 
 /**

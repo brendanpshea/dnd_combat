@@ -141,7 +141,7 @@ something else) or `passive` (always on).
 | Potent Cantrip (Evoker) | `enhanced-cantrip` | passive | — | — | read by the rules, no action of its own |
 | Potent Spellcasting | `potent-spellcasting` | passive | — | — | read by the rules, no action of its own |
 | Prayer Bead: Bless | `prayer-bead-bless` | bonus | 1/fight | — | — |
-| Rage | `rage` | bonus | rages/long rest | — | — |
+| Rage | `rage` | bonus | rages/long rest (1 back on a short rest) | — | — |
 | Rampage | `rampage` | passive | — | — | read by the rules, no action of its own |
 | Reckless Attack | `reckless-attack` | free | — | — | — |
 | Relentless Endurance | `relentless-endurance` | passive | 1/fight | — | read by the rules, no action of its own |

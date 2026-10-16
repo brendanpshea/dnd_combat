@@ -1451,6 +1451,70 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'young-white-bite', name: 'Rend', damage: '2d4', damageType: 'slashing',
     properties: [], melee: true, extraDamage: { dice: '1d4', type: 'cold' },
   },
+  // ---- More SRD 5.2.1 stat blocks, for the people and beasts a module meets ----
+  // Crocodile: the giant's bite, one size down (grapple DC 12, Medium or smaller).
+  'small-crocodile-bite': {
+    id: 'small-crocodile-bite', name: 'Bite', damage: '1d8', damageType: 'piercing',
+    properties: [], melee: true, onHitGrapple: { dc: 12, restrains: true, maxSize: 'medium' },
+  },
+  'mastiff-bite': {
+    id: 'mastiff-bite', name: 'Bite', damage: '1d6', damageType: 'piercing',
+    properties: [], melee: true, onHitCondition: 'prone',
+  },
+  'baboon-bite': {
+    id: 'baboon-bite', name: 'Bite', damage: '1d4', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'tiger-rend': {
+    id: 'tiger-rend', name: 'Rend', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true, onHitCondition: 'prone',
+  },
+  // Hobgoblin Warrior: "12 (2d10 + 1)" with the sword, as printed.
+  'hobgoblin-longsword': {
+    id: 'hobgoblin-longsword', name: 'Longsword', damage: '2d10', damageType: 'slashing',
+    properties: [], melee: true,
+  },
+  'hobgoblin-longbow': {
+    id: 'hobgoblin-longbow', name: 'Longbow', damage: '1d8', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false,
+    extraDamage: { dice: '3d4', type: 'poison' },
+  },
+  'hobgoblin-captain-greatsword': {
+    id: 'hobgoblin-captain-greatsword', name: 'Greatsword', damage: '2d6', damageType: 'slashing',
+    properties: [], melee: true, extraDamage: { dice: '1d6', type: 'poison' },
+  },
+  'hobgoblin-captain-longbow': {
+    id: 'hobgoblin-captain-longbow', name: 'Longbow', damage: '1d8', damageType: 'piercing',
+    properties: ['two-handed'], range: { normal: 150, long: 600 }, melee: false,
+    extraDamage: { dice: '2d4', type: 'poison' },
+  },
+  // Frog and Scorpion: one point of damage is the whole attack ("1d1" is how
+  // the dice parser spells a flat 1), with no ability modifier added.
+  'frog-bite': {
+    id: 'frog-bite', name: 'Bite', damage: '1d1', damageType: 'piercing',
+    attackAbility: 'dex', abilityDamage: false, properties: ['finesse'], melee: true,
+  },
+  'tiny-scorpion-sting': {
+    id: 'tiny-scorpion-sting', name: 'Sting', damage: '1d1', damageType: 'piercing',
+    attackAbility: 'dex', abilityDamage: false, properties: ['finesse'], melee: true,
+    extraDamage: { dice: '1d6', type: 'poison' },
+  },
+  'minotaur-skeleton-gore': {
+    id: 'minotaur-skeleton-gore', name: 'Gore', damage: '2d6', damageType: 'piercing',
+    properties: [], melee: true,
+  },
+  'minotaur-skeleton-slam': {
+    id: 'minotaur-skeleton-slam', name: 'Slam', damage: '2d10', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'ogre-zombie-slam': {
+    id: 'ogre-zombie-slam', name: 'Slam', damage: '2d8', damageType: 'bludgeoning',
+    properties: [], melee: true,
+  },
+  'shambling-mound-tendril': {
+    id: 'shambling-mound-tendril', name: 'Charged Tendril', damage: '1d6', damageType: 'bludgeoning',
+    properties: ['reach'], melee: true, extraDamage: { dice: '2d4', type: 'lightning' },
+  },
 };
 
 /**

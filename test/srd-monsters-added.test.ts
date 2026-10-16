@@ -18,7 +18,9 @@ import type { Combatant, GameState } from '../src/engine/types.js';
  */
 
 const ADDED = ['ankheg', 'medusa', 'efreeti', 'vampire', 'drider', 'phase-spider', 'hippogriff',
-  'centaur-trooper', 'giant-frog', 'boar', 'stirge', 'giant-lizard', 'young-bronze'];
+  'centaur-trooper', 'giant-frog', 'boar', 'stirge', 'giant-lizard', 'young-bronze',
+  'crocodile', 'mastiff', 'baboon', 'tiger', 'hobgoblin-warrior', 'hobgoblin-captain', 'pirate',
+  'commoner', 'frog', 'scorpion', 'shambling-mound', 'minotaur-skeleton', 'ogre-zombie'];
 
 const hero = (id: string, x: number, y: number): Combatant =>
   ({ ...buildCharacter({ classId: 'fighter', team: 'team1', position: { x, y }, level: 5 }), id, hp: 500, maxHp: 500 });
@@ -126,5 +128,45 @@ describe('their other actions', () => {
     expect(src()).not.toContain('bloodied fury');
     m.hp = Math.floor(m.maxHp / 2);
     expect(src()).toContain('bloodied fury');
+  });
+});
+
+describe('the people and beasts added with them', () => {
+  it('a crocodile grapples and restrains a Medium or smaller target', () => {
+    const w = WEAPONS['small-crocodile-bite']!;
+    expect(w.onHitGrapple).toMatchObject({ dc: 12, restrains: true, maxSize: 'medium' });
+    expect(MONSTERS['crocodile']!.size).toBe('large');
+  });
+
+  it('a mastiff bites a target down, and a tiger rends one', () => {
+    expect(WEAPONS['mastiff-bite']!.onHitCondition).toBe('prone');
+    expect(WEAPONS['tiger-rend']!.onHitCondition).toBe('prone');
+  });
+
+  it('a hobgoblin captain makes two attacks, sword or bow, and both poison', () => {
+    const m = MONSTERS['hobgoblin-captain']!;
+    expect(m.attacksPerAction).toBe(2);
+    for (const id of m.weaponIds) expect(WEAPONS[id]!.extraDamage?.type, id).toBe('poison');
+    const c = duel('hobgoblin-captain', { x: 3, y: 5 });
+    expect(canAttackWith(c.state, c.state.combatants['m']!, 'hobgoblin-captain-longbow', 'h')).toBe(true);
+  });
+
+  it('a hobgoblin warrior shoots a poisoned arrow from behind a shield', () => {
+    expect(WEAPONS['hobgoblin-longbow']!.extraDamage).toMatchObject({ dice: '3d4', type: 'poison' });
+    expect(MONSTERS['hobgoblin-warrior']!.ac).toBe(18);
+    expect(MONSTERS['hobgoblin-warrior']!.featureIds).toContain('pack-tactics');
+  });
+
+  it('a pirate daggers twice; a shambling mound lashes three times with reach', () => {
+    expect(MONSTERS['pirate']!.attacksPerAction).toBe(2);
+    expect(MONSTERS['shambling-mound']!.attacksPerAction).toBe(3);
+    expect(WEAPONS['shambling-mound-tendril']!.properties).toContain('reach');
+    expect(MONSTERS['shambling-mound']!.immunities).toContain('lightning');
+  });
+
+  it('the undead are as the SRD has them: a minotaur skeleton breaks to a mace, an ogre zombie will not stay down', () => {
+    expect(MONSTERS['minotaur-skeleton']!.vulnerabilities).toContain('bludgeoning');
+    expect(MONSTERS['minotaur-skeleton']!.conditionImmunities).toContain('poisoned');
+    expect(MONSTERS['ogre-zombie']!.featureIds).toContain('undead-fortitude');
   });
 });

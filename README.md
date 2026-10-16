@@ -20,7 +20,7 @@ installable to a phone home screen, works offline.
 | Classes | 12 (levels 1–9) |
 | Ancestries | 8 |
 | Spells | 101 — cantrips through 5th level |
-| Monsters | 159, of which 17 cast spells |
+| Monsters | 172, of which 17 cast spells |
 | Authored encounters | 102 |
 | Weapons / items / features | 271 / 108 / 160 |
 | Maps | 11 hand-built across 6 themes, plus a generator |

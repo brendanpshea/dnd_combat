@@ -146,6 +146,12 @@ TYPES = {
     "ooze":
         "M6 44c0-11 11-19 26-19s26 8 26 19c0 9-11 14-26 14S6 53 6 44zM20 22"
         "c0-5 4-9 9-9s9 4 9 9c0 4-4 7-9 7s-9-3-9-7z",
+    # A leafy crown over a thick trunk and splayed roots: the one type whose
+    # outline is mostly foliage, with a broken edge top and bottom.
+    "plant":
+        "M32 3c8 0 14 5 15 12 5 1 9 5 9 10 0 6-5 10-11 10h-2l3 10 5 12h-6"
+        "l-5-8-3-6v14h-10V43l-3 6-5 8h-6l5-12 3-10h-2C13 35 8 31 8 25c0-5 4-9 9-10"
+        "C18 8 24 3 32 3z",
     # A cowled shape with nothing inside it.
     "undead":
         "M32 6c10 0 17 8 17 18 0 6-2 10-6 14l5 24H16l5-24"

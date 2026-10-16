@@ -680,6 +680,13 @@ or fewer). Not modelled, and said beside each block: legendary actions, spell
 lists (efreeti, drider), Swallow, the stirge's attaching, Ethereal Jaunt,
 Flyby, Trampling Charge, Repulsion Breath, climbing and swimming speeds.
 
+Thirteen more followed, for the people and beasts a module meets — Crocodile,
+Mastiff, Baboon, Tiger, Hobgoblin Warrior, Hobgoblin Captain, Pirate, Commoner,
+Frog, Scorpion, Shambling Mound, Minotaur Skeleton and Ogre Zombie — added the
+same way and held out of the arena. Not modelled: the hobgoblin captain's Aura
+of Authority, the pirate's Enthralling Panache, the shambling mound's Lightning
+Absorption and Engulf, the minotaur skeleton's charge.
+
 | Monster | Signature mechanics |
 | --- | --- |
 | Goblin Warrior (AC 15, 10) | Nimble Escape (bonus disengage), +1d4 damage on advantage |
