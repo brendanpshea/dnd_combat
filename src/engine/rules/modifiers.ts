@@ -14,7 +14,10 @@
  *   - suppressed resistances, immunities and regeneration are taken off the
  *     creature's own lists at the start (and off anything conjured later),
  *     so the damage rules need no new branch;
- *   - extra damage is a rider on a weapon hit, as a bane weapon's is.
+ *   - extra damage is a rider on a weapon hit, as a bane weapon's is;
+ *   - sunlight and running water switch on the weaknesses a stat block carries
+ *     (`Combatant.weaknesses`): disadvantage read here, the damage they do in
+ *     rules/boons.ts.
  *
  * This module is the pure half — who a modifier reaches, what it adds to a
  * roll, and the log line — and imports nothing but types, so the attack and
@@ -22,6 +25,7 @@
  * rules/boons.ts.
  */
 import type { Ability, Combatant, CreatureType, DamageType, FightModifier, GameState, ModifierTarget } from '../types.js';
+import { cellAt } from '../types.js';
 
 /** Whether `target` reaches `c`: every field given must match. */
 export function reaches(target: ModifierTarget, c: Combatant): boolean {
@@ -33,6 +37,17 @@ export function reaches(target: ModifierTarget, c: Combatant): boolean {
     if (c.creatureType === undefined || !types.includes(c.creatureType)) return false;
   }
   return true;
+}
+
+/** The fight says `c` stands in sunlight (a 'sunlight' modifier reaches it). */
+export function inSunlight(state: GameState, c: Combatant): boolean {
+  return (state.modifiers ?? []).some((m) => m.effect.kind === 'sunlight' && reaches(m.target, c));
+}
+
+/** `c` stands in the board's water, and the fight says that water runs. */
+export function inRunningWater(state: GameState, c: Combatant): boolean {
+  return cellAt(state.grid, c.position)?.water === true &&
+    (state.modifiers ?? []).some((m) => m.effect.kind === 'runningWater' && reaches(m.target, c));
 }
 
 /** The rolls a modifier can tilt: `c`'s attack rolls, attack rolls against `c`,
@@ -55,6 +70,13 @@ export function modifierSources(
     if (e.ability !== undefined && e.ability !== ability) continue;
     if (!reaches(m.target, c)) continue;
     (e.kind === 'advantage' ? adv : dis).push(m.source);
+  }
+  // A sunlight weakness, in the sun: disadvantage on attack rolls and ability
+  // checks (Sunlight Sensitivity), and on saving throws too where it is every
+  // D20 Test (the shadow's Sunlight Weakness).
+  const sun = c.weaknesses?.sunlight;
+  if (sun && on !== 'attacked' && (on !== 'save' || sun.disadvantage === 'd20Tests') && inSunlight(state, c)) {
+    dis.push('sunlight');
   }
   return { adv, dis };
 }
@@ -171,6 +193,12 @@ export function describeModifier(state: GameState, m: FightModifier): string {
       break;
     case 'tempHp':
       what = `${who} ${verb('gains', 'gain')} ${e.amount} temporary hit points`;
+      break;
+    case 'sunlight':
+      what = Object.keys(m.target).length === 0 ? 'the fight is in sunlight' : `${who} ${verb('stands', 'stand')} in sunlight`;
+      break;
+    case 'runningWater':
+      what = 'the water here runs';
       break;
   }
   const source = m.source.charAt(0).toUpperCase() + m.source.slice(1);

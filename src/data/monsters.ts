@@ -9,7 +9,7 @@
  * looks at ENCOUNTERS, so a file that held both was two things in a trench
  * coat — and the bestiary is the half that keeps growing.
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura, Lair, BossPhase } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura, Lair, BossPhase, Weaknesses } from '../engine/types.js';
 import { FEATURES, useCount } from './features.js';
 import { WEAPONS } from './weapons.js';
 
@@ -122,6 +122,12 @@ export interface MonsterData {
   lair?: Lair;
   /** A module villain's phases (`BossPhase`), copied onto every one built. */
   phases?: BossPhase[];
+  /**
+   * The SRD weaknesses that wait on the battlefield: sunlight, running water.
+   * Inert unless a fight's setup puts the sun up or the water running
+   * (`FightModifier` 'sunlight', 'runningWater').
+   */
+  weaknesses?: Weaknesses;
 }
 
 export const MONSTERS: Record<Id, MonsterData> = {
@@ -306,6 +312,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 7, dex: 15, con: 9, int: 8, wis: 7, cha: 8 },
     featureIds: ['pack-tactics'],
     weaponIds: ['dagger'],
+    // Sunlight Sensitivity (SRD 5.2.1): in sunlight, Disadvantage on attack
+    // rolls and ability checks — when a fight says the sun is up.
+    weaknesses: { sunlight: { disadvantage: 'attacksAndChecks' } },
   },
   'kobold-emberling': {
     id: 'kobold-emberling', name: 'Kobold Emberling',
@@ -319,6 +328,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     // it makes standing shoulder to shoulder cost something. The cheapest
     // possible teacher of "don't bunch up".
     spellcasting: { ability: 'cha', slots: [2], spellIds: ['fire-bolt', 'burning-hands'] },
+    // Sunlight Sensitivity (SRD 5.2.1): in sunlight, Disadvantage on attack
+    // rolls and ability checks — when a fight says the sun is up.
+    weaknesses: { sunlight: { disadvantage: 'attacksAndChecks' } },
   },
   scout: {
     id: 'scout', name: 'Scout',
@@ -1291,6 +1303,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     resistances: ['acid', 'cold', 'fire'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
     immunities: ['necrotic', 'poison'],
+    // Sunlight Sensitivity (SRD 5.2.1): in sunlight, Disadvantage on attack
+    // rolls and ability checks — when a fight says the sun is up.
+    weaknesses: { sunlight: { disadvantage: 'attacksAndChecks' } },
   },
   'vampire-spawn': {
     id: 'vampire-spawn', name: 'Vampire Spawn',
@@ -1304,6 +1319,15 @@ export const MONSTERS: Record<Id, MonsterData> = {
     multiattack: [['spawn-claws', 'spawn-claws', 'spawn-bite']],
     resistances: ['necrotic'],
     featureIds: ['cunning-dash', 'cunning-disengage'],
+    // Vampire Weakness (SRD 5.2.1), the two a fight can show: Sunlight (20
+    // Radiant as its turn starts there, and Disadvantage on attack rolls and
+    // ability checks) and Running Water (20 Acid ending its turn in it). Each
+    // waits on a fight that says so. Forbiddance and Stake to the Heart are
+    // not things a battle on this board can show.
+    weaknesses: {
+      sunlight: { disadvantage: 'attacksAndChecks', damage: 20 },
+      runningWater: { damage: 20, type: 'acid' },
+    },
   },
 
   // Beasts stopped at the giant boar (CR 2). A dinosaur is a legitimate arena
@@ -1850,9 +1874,17 @@ export const MONSTERS: Record<Id, MonsterData> = {
         { name: 'Deathless Strike', effects: [{ kind: 'attack', weaponId: 'vampire-grave-strike' }] },
       ],
     },
+    // Vampire Weakness (SRD 5.2.1), the two a fight can show: Sunlight (20
+    // Radiant as its turn starts there, and Disadvantage on attack rolls and
+    // ability checks) and Running Water (20 Acid ending its turn in it). Each
+    // waits on a fight that says so. Forbiddance and Stake to the Heart are
+    // not things a battle on this board can show.
+    weaknesses: {
+      sunlight: { disadvantage: 'attacksAndChecks', damage: 20 },
+      runningWater: { damage: 20, type: 'acid' },
+    },
   },
-  // Drider: Magic of the Spider Queen, Spider Climb, Sunlight Sensitivity,
-  // Web Walker.
+  // Drider: Magic of the Spider Queen, Spider Climb, Web Walker.
   drider: {
     id: 'drider', name: 'Drider',
     ac: 19, cr: 6, hp: 123, speed: 30,
@@ -1861,6 +1893,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     abilities: { str: 16, dex: 19, con: 18, int: 13, wis: 16, cha: 12 },
     weaponIds: ['drider-foreleg', 'drider-poison-burst'],
     attacksPerAction: 3,
+    // Sunlight Sensitivity (SRD 5.2.1): in sunlight, Disadvantage on attack
+    // rolls and ability checks — when a fight says the sun is up.
+    weaknesses: { sunlight: { disadvantage: 'attacksAndChecks' } },
   },
   // Phase Spider: Ethereal Jaunt, Spider Climb, Web Walker, and the Bite's
   // poisoned-and-paralyzed at 0 hit points.
@@ -2063,6 +2098,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     vulnerabilities: ['radiant'],
     immunities: ['necrotic', 'poison'],
     resistances: ['acid', 'cold', 'fire', 'lightning', 'thunder'],
+    // Sunlight Weakness (SRD 5.2.1): in sunlight, Disadvantage on D20 Tests —
+    // saving throws as well as attacks and checks.
+    weaknesses: { sunlight: { disadvantage: 'd20Tests' } },
   },
   specter: {
     id: 'specter', fly: true, name: 'Specter',
@@ -2075,6 +2113,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     immunities: ['necrotic', 'poison'],
     resistances: ['acid', 'cold', 'fire', 'lightning', 'thunder'],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
+    // Sunlight Sensitivity (SRD 5.2.1): in sunlight, Disadvantage on attack
+    // rolls and ability checks — when a fight says the sun is up.
+    weaknesses: { sunlight: { disadvantage: 'attacksAndChecks' } },
   },
   'will-o-wisp': {
     id: 'will-o-wisp', fly: true, name: "Will-o'-Wisp",
@@ -2100,6 +2141,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 2,
     immunities: ['poison'],
     resistances: ['necrotic'],
+    // Sunlight Sensitivity (SRD 5.2.1): in sunlight, Disadvantage on attack
+    // rolls and ability checks — when a fight says the sun is up.
+    weaknesses: { sunlight: { disadvantage: 'attacksAndChecks' } },
   },
   mummy: {
     id: 'mummy', name: 'Mummy',
@@ -2290,6 +2334,7 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
       : {}),
     ...(m.holdDamage ? { holdDamage: { ...m.holdDamage } } : {}),
     ...(m.deathBurst ? { deathBurst: { ...m.deathBurst, save: { ...m.deathBurst.save } } } : {}),
+    ...(m.weaknesses ? { weaknesses: JSON.parse(JSON.stringify(m.weaknesses)) as Weaknesses } : {}),
     // Copied, not shared: each one built marks its own phases done.
     ...(m.phases?.length
       ? { phases: (JSON.parse(JSON.stringify(m.phases)) as BossPhase[]).sort((a, b) => b.at - a.at) }

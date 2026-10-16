@@ -24,6 +24,7 @@ import type { GameEvent } from './events.js';
 import { applyCondition, removeConditions, releaseBrokenGrapples } from './rules/conditions.js';
 import { ownerTurnEndAuras, turnStartAuras } from './rules/aura.js';
 import { lairAtRoundEnd, lairBefore } from './rules/setpiece.js';
+import { runningWaterBurn, sunlightBurn } from './rules/boons.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -578,6 +579,9 @@ export function startTurn(state: GameState): GameEvent[] {
     if (amount > 0) events.push(...applyDamage(state, c.id, other.id, amount, 'radiant', dmg.rolls, { magical: true }));
     if (!c.alive) break;
   }
+  // Sunlight on a vampire: radiant as its turn starts, if the fight is in the
+  // sun (rules/boons.ts).
+  if (c.alive) events.push(...sunlightBurn(state, c.id));
   // A monster's Stench, which works the same way without a spell behind it.
   if (c.alive) events.push(...turnStartAuras(state, c.id));
 
@@ -604,6 +608,8 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   events.push(...runRepeatSaves(state, ending.id));
   // Fire Aura and its kin burn whoever is close as their owner's turn ends.
   events.push(...ownerTurnEndAuras(state, ending.id));
+  // A vampire ending its turn in running water (rules/boons.ts).
+  events.push(...runningWaterBurn(state, ending.id));
   // "Until the end of your next turn": those whose turn this was end now —
   // except any applied during this very turn, which wait for the next one.
   for (const holder of Object.values(state.combatants)) {

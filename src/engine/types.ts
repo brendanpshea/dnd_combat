@@ -788,6 +788,12 @@ export interface Combatant {
   /** A Swim Speed: deep water (`Cell.water`) costs it no extra movement. */
   swimSpeed?: number;
   /**
+   * The SRD weaknesses that wait on where the fight is: sunlight, running
+   * water. Inert unless the fight's setup says the sun is up or the water runs
+   * (`FightModifier` 'sunlight' and 'runningWater') — see rules/modifiers.ts.
+   */
+  weaknesses?: Weaknesses;
+  /**
    * Lair actions, while it fights in its lair (rules/setpiece.ts): one a round,
    * on initiative count 20, losing ties. Put on by the fight's setup, never by
    * the stat block alone — a vampire met on the road has no lair to call on.
@@ -799,6 +805,23 @@ export interface Combatant {
    * to or below `at` of its maximum (rules/setpiece.ts). `done` once fired.
    */
   phases?: Array<BossPhase & { done?: true }>;
+}
+
+/**
+ * SRD weaknesses that depend on the battlefield (SRD 5.2.1). Data on the stat
+ * block; a fight switches them on with a `FightModifier`.
+ */
+export interface Weaknesses {
+  /**
+   * "While in sunlight": disadvantage on attack rolls and ability checks
+   * (Sunlight Sensitivity — the wight, the wraith, the kobold), or on every
+   * D20 Test, saving throws too (the shadow's Sunlight Weakness); `damage` is
+   * Radiant taken at the start of each of its turns in sunlight (the
+   * vampire's 20).
+   */
+  sunlight?: { disadvantage: 'attacksAndChecks' | 'd20Tests'; damage?: number };
+  /** Damage taken when it ends its turn in running water (the vampire's 20 Acid). */
+  runningWater?: { damage: number; type: DamageType };
 }
 
 // ---------------------------------------------------------------------------
@@ -838,6 +861,10 @@ export interface ModifierTarget {
  *                  their enemies, or from `by` if given (a bane weapon's rule,
  *                  for the fight: the blessed oil, the silvered arrows).
  *   tempHp         temporary hit points at the start.
+ *   sunlight       they stand in sunlight: a creature with a sunlight weakness
+ *                  (`Weaknesses`) suffers it.
+ *   runningWater   the board's water (`Cell.water`) runs: a creature with that
+ *                  weakness that ends its turn in it is hurt.
  */
 export type ModifierEffect =
   | { kind: 'advantage' | 'disadvantage'; on: 'attack' | 'attacked' | 'save' | 'check'; ability?: Ability }
@@ -847,7 +874,9 @@ export type ModifierEffect =
     }
   | { kind: 'suppress'; what: 'resistance' | 'immunity' | 'regeneration'; types?: DamageType[] }
   | { kind: 'extraDamage'; dice: string; type: DamageType; by?: ModifierTarget }
-  | { kind: 'tempHp'; amount: number };
+  | { kind: 'tempHp'; amount: number }
+  | { kind: 'sunlight' }
+  | { kind: 'runningWater' };
 
 /**
  * A boon or bane the story brought to this fight: the lamp that keeps the dead
