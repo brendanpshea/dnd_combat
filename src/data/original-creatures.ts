@@ -36,9 +36,8 @@ export const ORIGINAL_CREATURE_IDS = [
 ] as const;
 
 export const ORIGINAL_MONSTERS: Record<Id, MonsterData> = {
-  // Panopt: a floating orb ringed with stalked eyes, each eye a different ray.
+  // Panopt: a floating cage of bronze rings with loose eyes circling it, each eye a different ray.
   // The three rays it fires each turn cut, still and unmake; it shrugs off spells.
-  // Not modelled: the central eye's field that smothers magic.
   panopt: {
     id: 'panopt', fly: true, name: 'Panopt',
     ac: 17, cr: 12, hp: 135, speed: 0, flySpeed: 20,
