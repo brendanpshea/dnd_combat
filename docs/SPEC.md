@@ -835,6 +835,50 @@ elementals lost the 2014 "nonmagical B/P/S" resistance the 2024 blocks dropped.
 Where the SRD does print B/P/S resistance it is still read as nonmagical
 (`resistNonmagical`), this engine's standing choice.
 
+### Story set pieces: boons and banes, lairs, phases, weaknesses
+
+Three things a host (a story module) can put on one fight's `CombatSetup`;
+each is off unless the setup names it, so the arena and the existing modules
+play as they did.
+
+**Boons and banes** (`modifiers: FightModifier[]`, rules/modifiers.ts and
+rules/boons.ts): for the whole fight, to a side, creatures of a type, a stat
+block or one creature — advantage or disadvantage on attack rolls by or against
+them, on saves (of one ability) or checks; a condition at the start (after a
+save, with a repeat save, a number of rounds or an escape DC); resistances,
+immunities or regeneration suppressed; extra damage on weapon hits against
+them; temporary hit points; sunlight and running water. Advantage sources are
+named on the roll ("the vigil lamp") and cancel the usual way; conditions go
+through `applyCondition`; suppression edits the creature's own lists, also for
+anything conjured later. Each is logged once as the fight starts
+(`fightModifier`).
+
+**Lairs and phases** (`setPieces: SetPiece[]`, rules/setpiece.ts). A creature
+with a lair takes one lair action a round on initiative count 20, losing ties
+(after everyone on 20+, before the first below, or closing the round), not
+while down or incapacitated; the engine picks the one that reaches most and
+never repeats when another will do, or takes them in order. A phase fires once,
+between actions, the first time hit points fall to a share of the maximum.
+Both run `SetPieceEffect`s through existing machinery: saves with damage and
+conditions, conditions, one weapon attack, a spell cast slot-free and aimed by
+the engine, summons (`summonCombatant`), difficult ground or a hazard (grid
+overlays), healing, temporary hit points, immunities, new attacks. SRD 5.2.1
+prints no lair actions — a lair is one more use of Legendary Resistance and
+Legendary Actions — so `MonsterData.lair` holds the extra Legendary Resistance
+and, as lair actions, the printed Legendary Actions (vampire: Beguile,
+Deathless Strike without its move; aboleth: Lash, Psychic Drain), given only
+with `inLair`. Not modelled: Legendary Actions after other creatures' turns;
+Counterspell against a lair's spell.
+
+**Weaknesses** (`MonsterData.weaknesses`): Sunlight Sensitivity (drider,
+kobold, specter, wight, wraith: disadvantage on attacks and checks), the
+shadow's Sunlight Weakness (every D20 Test), and the vampire's and spawn's
+Sunlight (20 Radiant at turn start, disadvantage) and Running Water (20 Acid
+ending a turn in `Cell.water`). They wait on a `sunlight` / `runningWater`
+modifier. Not modelled: Forbiddance, Stake to the Heart, the fire elemental's
+Water Susceptibility and the flesh golem's Aversion to Fire (these two would
+change fights nobody set up).
+
 ## 6. Grid, terrain, maps
 
 - Distance: Chebyshev × 5 ft. Melee reach 1 cell. Ranged: beyond normal range
