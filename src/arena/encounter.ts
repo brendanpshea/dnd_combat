@@ -20,6 +20,7 @@
 import type { Id } from '../engine/types.js';
 import type { CreatureType } from '../engine/types.js';
 import { MONSTERS, MONSTER_XP, canThreatenAtRange } from '../data/monsters.js';
+import { ORIGINAL_CREATURE_IDS } from '../data/original-creatures.js';
 import { SPELLS } from '../data/spells.js';
 import { next, type RngState } from '../engine/rng.js';
 
@@ -47,6 +48,8 @@ export const ARENA_EXCLUDED = new Set<Id>([
   // More SRD 5.2.1 stat blocks, added the same way.
   'crocodile', 'mastiff', 'baboon', 'tiger', 'hobgoblin-warrior', 'hobgoblin-captain', 'pirate',
   'commoner', 'frog', 'scorpion', 'shambling-mound', 'minotaur-skeleton', 'ogre-zombie',
+  // The original creatures (CC0), added for module authors the same way.
+  ...ORIGINAL_CREATURE_IDS,
 ]);
 
 /**

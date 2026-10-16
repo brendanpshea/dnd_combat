@@ -147,8 +147,9 @@ export function collectAttackSources(
   // until something connects, which switches the illusion off until its next
   // turn. Suppressed at Speed 0 per the SRD: an illusion of being a step to the
   // left is no use to something that cannot take the step.
-  if (target.featureIds.includes('cloak-displacement') && !target.displacementBroken &&
-      target.speed > 0) {
+  // A Shimmerpard's Shimmer Hide is the same trick, worn on the body.
+  if ((target.featureIds.includes('cloak-displacement') || target.featureIds.includes('shimmer-hide')) &&
+      !target.displacementBroken && target.speed > 0) {
     dis.push('displacement');
   }
   // Bestow Curse: the cursed creature swings badly at everything.
@@ -1346,7 +1347,7 @@ export function applyDamage(
   // until the wearer's next turn comes round. Set before the hit point maths so
   // it fires even on a blow that is entirely soaked by temporary hit points —
   // the SRD's trigger is taking damage, not losing hit points.
-  if (amount > 0 && target.featureIds.includes('cloak-displacement')) {
+  if (amount > 0 && (target.featureIds.includes('cloak-displacement') || target.featureIds.includes('shimmer-hide'))) {
     target.displacementBroken = true;
   }
 

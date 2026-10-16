@@ -2189,16 +2189,17 @@ function scoreFeature(state: GameState, actor: Combatant, a: Action & { kind: 'u
   // Area restrain-on-failed-save (water elemental Whelm, gorgon Petrifying
   // Breath): value each unrestrained enemy in range like a soft lockdown,
   // weighted by its odds of failing.
-  if (a.featureId === 'whelm' || a.featureId === 'petrifying-breath' || a.featureId === 'petrifying-gaze') {
+  if (a.featureId === 'whelm' || a.featureId === 'petrifying-breath' || a.featureId === 'petrifying-gaze' ||
+      a.featureId === 'lulling-gaze') {
     const ability = a.featureId === 'whelm' ? 'str' : 'con';
-    const range = a.featureId === 'whelm' ? 5 : a.featureId === 'petrifying-gaze' ? 30 : 15;
+    const range = a.featureId === 'whelm' ? 5 : a.featureId === 'petrifying-gaze' || a.featureId === 'lulling-gaze' ? 30 : 15;
     // The medusa's gaze is DC 8 + PB + Charisma; the others' DC is the save's own ability.
-    const dcAbility = a.featureId === 'petrifying-gaze' ? 'cha' : ability;
+    const dcAbility = a.featureId === 'petrifying-gaze' || a.featureId === 'lulling-gaze' ? 'cha' : ability;
     const dc = 8 + proficiencyBonus(actor.level) + abilityMod(actor.abilities[dcAbility]);
     return Object.values(state.combatants)
       .filter((c) => c.alive && !isDown(c) && c.team !== actor.team &&
         distanceFeet(actor.position, c.position) <= range &&
-        !c.conditions.some((k) => k.id === 'restrained'))
+        !c.conditions.some((k) => k.id === 'restrained' || (a.featureId === 'lulling-gaze' && k.id === 'paralyzed')))
       .reduce((s, c) => s + saveFailProb(state, c, ability, dc) * 3, 0);
   }
   // Whirlwind (air elemental): 3d8 to each adjacent enemy, half on a save.

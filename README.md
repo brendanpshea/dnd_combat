@@ -13,6 +13,15 @@ installable to a phone home screen, works offline.
 > [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode).
 > Not affiliated with or endorsed by Wizards of the Coast.
 
+**Licence.** The rules data derived from the SRD 5.2.1 — its stat blocks,
+spells, classes and items — is [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode),
+with the attribution above. The game's own original creatures
+(`src/data/original-creatures.ts` and `src/data/original-features.ts`: fourteen
+monsters, their attacks and abilities, each filling the role of a well-known
+monster without being it) are released to the public domain under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/): use them anywhere,
+for anything, without asking or crediting.
+
 ## What's in it
 
 | | |
@@ -20,7 +29,7 @@ installable to a phone home screen, works offline.
 | Classes | 12 (levels 1–9) |
 | Ancestries | 8 |
 | Spells | 101 — cantrips through 5th level |
-| Monsters | 172, of which 17 cast spells |
+| Monsters | 186, of which 17 cast spells |
 | Authored encounters | 102 |
 | Weapons / items / features | 271 / 108 / 160 |
 | Maps | 11 hand-built across 6 themes, plus a generator |

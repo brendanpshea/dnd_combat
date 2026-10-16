@@ -3,7 +3,7 @@
  * consulted by the rules (Dueling, Sneak Attack, Disciple of Life) via their
  * presence in combatant.featureIds.
  */
-import type { GameState, Id, Ability, AbilityScores, DamageType, Combatant, Position } from '../engine/types.js';
+import type { GameState, Id, Ability, AbilityScores, DamageType, Combatant, Position, ConditionId } from '../engine/types.js';
 import { proficiencyBonus, cellAt, isDown } from '../engine/types.js';
 import type { SkillId } from './classes.js';
 import { MONSTERS } from './monsters.js';
@@ -18,6 +18,8 @@ import { distanceFeet, cone15, line15, sphere2x2, DIRECTIONS, type Direction8 } 
 import { abilityMod } from '../engine/types.js';
 import type { GameEvent } from '../engine/events.js';
 import { applyCondition, grapple } from '../engine/rules/conditions.js';
+import { ORIGINAL_BREATH } from './original-creatures.js';
+import { ORIGINAL_FEATURES } from './original-features.js';
 
 export interface FeatureContext {
   state: GameState;
@@ -144,6 +146,12 @@ export interface BreathSpec {
   save: Ability;             // the ability the *target* rolls
   damageType: DamageType;
   dice: string;              // SRD wyrmling dice — red breathes hardest
+  /**
+   * A breath that does more than burn: whoever fails the save also gains this
+   * condition, save ends (the same save, each turn). The original creatures'
+   * breaths use it; no SRD dragon's does.
+   */
+  onFail?: { condition: ConditionId };
 }
 
 export const BREATH_WEAPONS: Record<Id, BreathSpec> = {
@@ -280,6 +288,11 @@ function breathApply(featureId: Id) {
       state.rng = roll.state;
       const amount = saveForHalf(t, spec.save, roll.total, success);
       if (amount > 0) events.push(...applyDamage(state, t.id, actorId, amount, spec.damageType, roll.rolls, { magical: false }));
+      if (!success && spec.onFail && t.alive && !t.conditions.some((k) => k.id === spec.onFail!.condition)) {
+        events.push(...applyCondition(state, t.id, {
+          id: spec.onFail.condition, sourceId: actorId, repeatSave: { ability: spec.save, dc },
+        }, { magical: false }));
+      }
     }
     return events;
   };
@@ -2013,3 +2026,10 @@ export const FEATURES: Record<Id, FeatureData> = {
     id: 'magical-discoveries', name: 'Magical Discoveries', trigger: 'passive',
   }
 };
+
+// The original creatures' abilities (CC0; see original-creatures.ts). Their
+// breath is declared with the other breath specs and gets its apply hook here.
+Object.assign(BREATH_WEAPONS, ORIGINAL_BREATH);
+Object.assign(FEATURES, ORIGINAL_FEATURES);
+FEATURES['breath-grave-chill'] = { id: 'breath-grave-chill', name: 'Grave-Chill Breath', trigger: 'action', recharge: 5, apply: breathApply('breath-grave-chill') };
+FEATURES['breath-arc-surge'] = { id: 'breath-arc-surge', name: 'Arc Surge', trigger: 'action', recharge: 5, apply: breathApply('breath-arc-surge') };

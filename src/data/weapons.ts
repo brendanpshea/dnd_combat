@@ -2,6 +2,7 @@
  * Weapon data. Adding a weapon is an entry here — never an engine edit.
  */
 import type { Id, DamageType, Ability, ConditionId, WeaponProfs, CreatureType, CreatureSize } from '../engine/types.js';
+import { ORIGINAL_WEAPONS } from './original-creatures.js';
 
 /**
  * The SRD 5.2.1 weapon properties the grid uses (line 9071 on). `heavy`:
@@ -1515,6 +1516,8 @@ export const WEAPONS: Record<Id, WeaponData> = {
     id: 'shambling-mound-tendril', name: 'Charged Tendril', damage: '1d6', damageType: 'bludgeoning',
     properties: ['reach'], melee: true, extraDamage: { dice: '2d4', type: 'lightning' },
   },
+  // The original creatures' attacks (CC0), kept in their own file.
+  ...ORIGINAL_WEAPONS,
 };
 
 /**

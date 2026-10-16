@@ -12,6 +12,7 @@
 import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura, Lair, BossPhase, Weaknesses } from '../engine/types.js';
 import { FEATURES, useCount } from './features.js';
 import { WEAPONS } from './weapons.js';
+import { ORIGINAL_MONSTERS, ORIGINAL_XP } from './original-creatures.js';
 
 export interface MonsterData {
   id: Id;
@@ -2362,6 +2363,9 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['ogre-zombie-slam'],
     immunities: ['poison'],
   },
+
+  // The original creatures (CC0): see original-creatures.ts.
+  ...ORIGINAL_MONSTERS,
 };
 
 /**
@@ -2544,6 +2548,8 @@ export const MONSTER_XP: Record<Id, number> = {
   crocodile: 100, mastiff: 25, baboon: 10, tiger: 200, 'hobgoblin-warrior': 100, 'hobgoblin-captain': 700,
   pirate: 200, commoner: 10, frog: 10, scorpion: 10, 'shambling-mound': 1800, 'minotaur-skeleton': 450,
   'ogre-zombie': 450,
+  // The original creatures'.
+  ...ORIGINAL_XP,
 };
 
 /**

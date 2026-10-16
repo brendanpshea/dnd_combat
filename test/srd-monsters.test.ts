@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { MONSTERS, MONSTER_XP } from '../src/data/monsters.js';
+import { ORIGINAL_CREATURE_IDS } from '../src/data/original-creatures.js';
 
 /**
  * Every monster stat block, checked against the SRD text vendored at
@@ -158,6 +159,9 @@ const NOT_IN_SRD: Record<string, string> = {
   'banshee': 'In the 2014 SRD but not in SRD 5.2.1.',
   'scarecrow': 'In the 2014 SRD but not in SRD 5.2.1.',
   'lizardfolk': 'In the 2014 SRD but not in SRD 5.2.1. Presented as a Lizardfolk Skirmisher, after the SRD\'s own Merfolk Skirmisher.',
+  // This game's own creatures, public domain (CC0) and in no SRD;
+  // test/original-creatures.test.ts holds them to their challenge rating.
+  ...Object.fromEntries(ORIGINAL_CREATURE_IDS.map((id) => [id, 'An original creature of this game, released to the public domain (CC0): see src/data/original-creatures.ts.'])),
 };
 
 /**

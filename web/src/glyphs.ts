@@ -67,6 +67,10 @@ const GLYPH: Record<string, string> = {
   crocodile: '🐊', mastiff: '🐕', baboon: '🐒', tiger: '🐅', 'hobgoblin-warrior': '👺',
   'hobgoblin-captain': '🎖️', pirate: '🏴‍☠️', commoner: '🧑', frog: '🐸', scorpion: '🦂',
   'shambling-mound': '🌿', 'minotaur-skeleton': '💀', 'ogre-zombie': '🧟',
+  // The original creatures.
+  panopt: '👁️', 'gloomthicket-titan': '🌳', shimmerpard: '🐆', barrowwyrm: '🐲', 'vitriol-slug': '🐌',
+  viperveil: '🐍', bramblekin: '🌵', 'bramblekin-warden': '🌱', 'midden-behemoth': '🪱', clatterkin: '🦗',
+  whirligig: '🧚', emberhaunt: '🔥', 'hedge-mantis': '🦗', veilcat: '🎭',
 };
 
 /** The glyph for a creature id, or a neutral one for anything unlisted. */
