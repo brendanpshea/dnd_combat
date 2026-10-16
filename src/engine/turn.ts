@@ -190,10 +190,11 @@ export function startTurn(state: GameState): GameEvent[] {
   // Reckless Attack is the same clock, and that clock is the whole gamble: the
   // advantage is spent on this turn's swings, and every enemy in reach gets a
   // free round of hitting back at advantage before it lifts.
-  const selfClearing = (k: { id: string; repeatSave?: unknown }) =>
+  const selfClearing = (k: { id: string; repeatSave?: unknown; lasting?: true }) =>
     k.id === 'dodging' || k.id === 'noReactions' || k.id === 'shielded' ||
     k.id === 'reckless' ||
-    (k.id === 'blinded' && !k.repeatSave);
+    // …unless the fight's setup put it on for the whole fight (a story's bane).
+    (k.id === 'blinded' && !k.repeatSave && !k.lasting);
   events.push(...removeConditions(c, selfClearing));
 
   // Expire round-limited conditions (e.g. Unconscious's 1-minute cap).

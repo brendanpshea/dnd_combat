@@ -23,8 +23,9 @@
 import type { GameState, Id, Combatant } from '../types.js';
 import { abilityMod, proficiencyBonus } from '../types.js';
 import { SKILL_ABILITY, type SkillId } from '../../data/classes.js';
-import { rollD20, type RollMode } from '../dice.js';
+import { rollD20, resolveRollMode, type RollMode } from '../dice.js';
 import { applyLuck } from './luck.js';
+import { modifierSources } from './modifiers.js';
 
 /** A creature's flat bonus for a skill: ability modifier plus proficiency. */
 export function skillMod(c: Combatant, skill: SkillId): number {
@@ -46,6 +47,17 @@ export function rollSkill(
   state: GameState, combatantId: Id, skill: SkillId, mode: RollMode = 'flat',
 ): SkillRollResult {
   const c = state.combatants[combatantId]!;
+  // The story's boons and banes on ability checks (rules/modifiers.ts), folded
+  // into whatever the caller asked for, cancelling the usual way.
+  if (state.modifiers) {
+    const story = modifierSources(state, c, 'check', SKILL_ABILITY[skill]);
+    if (story.adv.length + story.dis.length > 0) {
+      mode = resolveRollMode(
+        [...story.adv, ...(mode === 'advantage' ? ['the roll'] : [])],
+        [...story.dis, ...(mode === 'disadvantage' ? ['the roll'] : [])],
+      );
+    }
+  }
   const d20 = applyLuck(state, combatantId, rollD20(state.rng, mode), mode);
   state.rng = d20.state;
   // Reliable Talent (Rogue 7): a proficient check's d20 is never below 10.

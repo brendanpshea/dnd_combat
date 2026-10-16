@@ -275,6 +275,13 @@ export interface ActiveCondition {
    * "On a failed save, it takes the Psychic damage again". From `sourceId`.
    */
   failDamage?: { dice: string; type: DamageType };
+  /**
+   * Put on for the whole fight by its setup — a story's bane (see
+   * `FightModifier`). Such a condition is never one of the per-turn markers
+   * startTurn clears: a Blinded with no repeat save is otherwise Color Spray's,
+   * and gone at its holder's next turn.
+   */
+  lasting?: true;
 }
 
 export interface ResourcePool {
@@ -782,6 +789,69 @@ export interface Combatant {
   swimSpeed?: number;
 }
 
+// ---------------------------------------------------------------------------
+// Story boons and banes: modifiers a fight's setup carries for the whole fight
+// (rules/modifiers.ts).
+// ---------------------------------------------------------------------------
+
+/**
+ * Who a fight modifier reaches. Every field given must match; a target with no
+ * fields is everyone on the board.
+ */
+export interface ModifierTarget {
+  team?: TeamId;
+  /** One SRD creature type, or any of several. */
+  creatureType?: CreatureType | CreatureType[];
+  /** One creature, by combatant id. */
+  id?: Id;
+  /** Every creature of a stat block, by monster id (its `classId`): 'troll'. */
+  monster?: Id;
+}
+
+/**
+ * What a fight modifier does to those it reaches, all fight long.
+ *
+ *   advantage / disadvantage  on their attack rolls ('attack'), on attack rolls
+ *                  against them ('attacked'), on their saving throws ('save',
+ *                  of one `ability` if given) or ability checks ('check').
+ *   condition      they start the fight with it — after a save, if one is
+ *                  given (`repeatSave`: and shake it off with that save at the
+ *                  end of each of their turns); for `rounds` rounds, else the
+ *                  whole fight; `escapeDc` lets them spend an action to break
+ *                  free (a net, a snare), as from a grapple.
+ *   suppress       their resistances, immunities (`types`, else all of them),
+ *                  or regeneration don't work in this fight. Condition
+ *                  immunities are untouched.
+ *   extraDamage    weapon hits on them deal this much more, of this type — from
+ *                  their enemies, or from `by` if given (a bane weapon's rule,
+ *                  for the fight: the blessed oil, the silvered arrows).
+ *   tempHp         temporary hit points at the start.
+ */
+export type ModifierEffect =
+  | { kind: 'advantage' | 'disadvantage'; on: 'attack' | 'attacked' | 'save' | 'check'; ability?: Ability }
+  | {
+      kind: 'condition'; condition: ConditionId;
+      save?: { ability: Ability; dc: number }; repeatSave?: boolean; rounds?: number; escapeDc?: number;
+    }
+  | { kind: 'suppress'; what: 'resistance' | 'immunity' | 'regeneration'; types?: DamageType[] }
+  | { kind: 'extraDamage'; dice: string; type: DamageType; by?: ModifierTarget }
+  | { kind: 'tempHp'; amount: number };
+
+/**
+ * A boon or bane the story brought to this fight: the lamp that keeps the dead
+ * down, the troll's cave flooded with lamp oil, the blessing on the party.
+ * Logged once as the fight starts — `text`, or a line made from `source` and
+ * the effect ("The vigil lamp: the undead have disadvantage on attack rolls.").
+ */
+export interface FightModifier {
+  target: ModifierTarget;
+  effect: ModifierEffect;
+  /** What the story calls it, for the log: 'the vigil lamp'. */
+  source: string;
+  /** The log line, instead of the one made up from the rest. */
+  text?: string;
+}
+
 /**
  * SRD size. Used for cover: half cover comes from a chest-high barricade, and
  * a Large creature is not hiding behind one. Nothing else reads it — every
@@ -853,6 +923,8 @@ export interface GameState {
   elementalAffinityUsed?: boolean;
   /** Optional rules this fight runs with. Absent means the engine's defaults. */
   rules?: CombatRules;
+  /** The story's boons and banes for this fight (rules/modifiers.ts). Never changed after the start. */
+  modifiers?: FightModifier[];
 }
 
 /**

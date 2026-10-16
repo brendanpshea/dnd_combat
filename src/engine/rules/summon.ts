@@ -29,6 +29,7 @@ import type { GameEvent } from '../events.js';
 import { cellAt } from '../types.js';
 import { buildMonster } from '../../data/monsters.js';
 import { blocksMovement } from '../grid.js';
+import { applySuppression } from './modifiers.js';
 
 /**
  * Does this creature run itself?
@@ -156,6 +157,9 @@ export function summonCombatant(state: GameState, opts: SummonOptions): GameEven
     position: spot,
     team: summoner.team,
   };
+  // Under the fight's boons and banes like everything already on the board: a
+  // ghoul called up beneath the lamp has no resistance the lamp has taken.
+  applySuppression(state, beast);
   state.combatants[id] = beast;
   const cell = cellAt(state.grid, spot);
   if (cell) cell.occupantId = id;

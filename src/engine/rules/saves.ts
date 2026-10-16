@@ -10,6 +10,7 @@ import { FEATURES, bardicDie } from '../../data/features.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 import { removeConditions } from './conditions.js';
+import { modifierSources } from './modifiers.js';
 
 /**
  * Countercharm (Bard 7), simplified: the bard and allies within 30 ft roll
@@ -158,9 +159,12 @@ export function savingThrow(
     };
   }
 
+  // The story's boons and banes (rules/modifiers.ts).
+  const story = state.modifiers ? modifierSources(state, c, 'save', ability) : undefined;
   // Gnomish Cunning and the like: advantage on saves of a listed ability.
   // Magic Resistance (Satyr/Unicorn): advantage on saves against spells.
   const hasAdvantage =
+    (story?.adv.length ?? 0) > 0 ||
     opts.advantage === true ||
     c.featureIds.some((f) => FEATURES[f]?.saveAdvantage?.includes(ability)) ||
     // Rage: advantage on Strength saves. A condition rather than a feature, so
@@ -176,6 +180,7 @@ export function savingThrow(
   // 2024: Restrained imposes disadvantage on Dexterity saving throws.
   // Bestow Curse: disadvantage on every saving throw the cursed creature makes.
   const hasDisadvantage =
+    (story?.dis.length ?? 0) > 0 ||
     (ability === 'dex' && c.conditions.some((k) => k.id === 'restrained')) ||
     c.conditions.some((k) => k.id === 'cursed') ||
     // Heightened Spell: the sorcerer picked this creature out of the cast that

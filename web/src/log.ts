@@ -73,6 +73,8 @@ function kindOf(e: GameEvent): string {
     // same state, two colours, and the quieter one was the half that mattered.
     case 'dodging':
     case 'disengaged': return 'cond';
+    // The story's boon or bane for this fight: worth reading, so not grey.
+    case 'fightModifier': return 'cond';
     case 'combatEnded': return 'end';
     case 'moved': return 'move';
     default: return 'misc';

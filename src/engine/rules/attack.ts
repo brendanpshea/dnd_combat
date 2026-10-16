@@ -20,6 +20,7 @@ import { downCombatant, applyHealing } from './heal.js';
 import { applyLucky } from './luck.js';
 import type { GameEvent } from '../events.js';
 import { applyCondition, removeConditions, grapple, heldWith } from './conditions.js';
+import { modifierSources, extraDamageOn } from './modifiers.js';
 
 /**
  * Which ability powers an attack with this weapon: the stat block's own when
@@ -246,6 +247,14 @@ export function collectAttackSources(
   // no source on the board (a pre-fight check) rattles regardless.
   if (attacker.conditions.some((c) => c.id === 'frightened' && fearInSight(state, attacker, c.sourceId))) {
     dis.push('attacker frightened');
+  }
+  // The story's boons and banes (rules/modifiers.ts), named by their source:
+  // the vigil lamp, the blessing at the shrine.
+  if (state.modifiers) {
+    const by = modifierSources(state, attacker, 'attack');
+    const against = modifierSources(state, target, 'attacked');
+    adv.push(...by.adv, ...against.adv);
+    dis.push(...by.dis, ...against.dis);
   }
 
   return { adv, dis };
@@ -794,6 +803,20 @@ export function resolveAttack(
       weapon.slays.damageType ?? weapon.damageType, bane.rolls,
       { crit, tags: [weapon.name], magical: isMagicWeapon(weapon), rider: true },
     ));
+  }
+
+  // The story's extra damage (rules/modifiers.ts) — a bane weapon's rule for
+  // the length of one fight, tagged with what the story calls it.
+  if (state.modifiers) {
+    for (const extra of extraDamageOn(state, attacker, target)) {
+      if (!target.alive) break;
+      const roll = rollDice(state.rng, extra.dice, crit);
+      state.rng = roll.state;
+      events.push(...applyDamage(
+        state, targetId, attackerId, roll.total, extra.type, roll.rolls,
+        { crit, tags: [extra.source], magical: isMagicWeapon(weapon), rider: true },
+      ));
+    }
   }
 
   // Corrosion (rust monster): a hit pits metal armour or a shield, one point of

@@ -1,7 +1,8 @@
 /**
  * Combat setup and the thin stateful facade over the pure core.
  */
-import type { GameState, Combatant, Id, TeamId, CombatRules } from './types.js';
+import type { GameState, Combatant, Id, TeamId, CombatRules, FightModifier } from './types.js';
+import { applyFightModifiers } from './rules/boons.js';
 import { cellAt } from './types.js';
 import { blocksMovement, makeGrid } from './grid.js';
 import { MAPS, parseMap } from '../data/maps.js';
@@ -36,6 +37,12 @@ export interface CombatSetup {
   surprisedTeam?: TeamId;
   /** Optional rules for this fight (death saves). See `CombatRules`. */
   rules?: CombatRules;
+  /**
+   * The story's boons and banes, for the whole fight: to a side, to creatures
+   * of a type, or to one creature (`FightModifier`; rules/modifiers.ts).
+   * Logged once as the fight starts.
+   */
+  modifiers?: FightModifier[];
 }
 
 export function startCombat(setup: CombatSetup): { state: GameState; events: GameEvent[] } {
@@ -67,8 +74,13 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
     turnIndex: 0,
     winner: null,
     ...(setup.rules ? { rules: { ...setup.rules } } : {}),
+    // A copy: the setup is the host's, and a story may reuse it.
+    ...(setup.modifiers?.length ? { modifiers: JSON.parse(JSON.stringify(setup.modifiers)) as FightModifier[] } : {}),
   };
-  const events = rollInitiative(state, setup.surprisedTeam);
+  // Boons and banes before initiative, so a starting condition holds from the
+  // first turn and the log opens with what the story brought.
+  const opening = applyFightModifiers(state);
+  const events = [...opening, ...rollInitiative(state, setup.surprisedTeam)];
   return { state, events };
 }
 

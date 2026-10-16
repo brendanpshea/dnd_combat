@@ -167,4 +167,9 @@ export type GameEvent =
   | { type: 'webCleared'; sourceId: Id; cells: Position[] }
   /** A conjured ally arrived on the board and in the initiative order. */
   | { type: 'summoned'; combatantId: Id; summonerId: Id; position: Position }
+  /**
+   * A boon or bane the story brought to this fight (`FightModifier`), logged
+   * once as it starts: what the log says, and whom it reaches.
+   */
+  | { type: 'fightModifier'; source: string; text: string; combatantIds: Id[] }
   | { type: 'combatEnded'; winner: TeamId };

@@ -346,6 +346,9 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
         : `  ${nm(e.combatantId)} is stable.`;
     case 'firstAid':
       return `  ${nm(e.combatantId)} tends to ${nm(e.targetId)} (Medicine ${e.total} vs DC 10)${e.success ? '' : ' — not enough'}.`;
+    case 'fightModifier':
+      // What the story brought to the fight, as it starts.
+      return `✦ ${e.text}`;
     case 'combatEnded':
       return `\n##### ${e.winner === 'team1' ? 'TEAM 1' : 'TEAM 2'} WINS! #####`;
   }
