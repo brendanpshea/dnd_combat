@@ -165,8 +165,8 @@ export const ORIGINAL_MONSTERS: Record<Id, MonsterData> = {
     attacksPerAction: 3,
     multiattack: [['midden-arm', 'midden-arm', 'midden-maw']],
   },
-  // Clatterkin: four-armed, chitin-clad desert raiders that click when they
-  // talk. A scratch from the sting numbs.
+  // Clatterkin: squat, shell-backed beetle-folk raiders whose wing-cases
+  // clatter when they talk. Two hooked arms; a scratch from the sting numbs.
   clatterkin: {
     id: 'clatterkin', name: 'Clatterkin',
     ac: 15, cr: 3, hp: 52, speed: 40,

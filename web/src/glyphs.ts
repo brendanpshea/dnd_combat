@@ -69,7 +69,7 @@ const GLYPH: Record<string, string> = {
   'shambling-mound': '🌿', 'minotaur-skeleton': '💀', 'ogre-zombie': '🧟',
   // The original creatures.
   panopt: '👁️', 'gloomthicket-titan': '🌳', shimmerpard: '🐆', barrowwyrm: '🐲', 'vitriol-slug': '🐌',
-  viperveil: '🐍', bramblekin: '🌵', 'bramblekin-warden': '🌱', 'midden-behemoth': '🪱', clatterkin: '🦗',
+  viperveil: '🐍', bramblekin: '🌵', 'bramblekin-warden': '🌱', 'midden-behemoth': '🪱', clatterkin: '🪲',
   whirligig: '🧚', emberhaunt: '🔥', 'hedge-mantis': '🦗', veilcat: '🎭',
 };
 
