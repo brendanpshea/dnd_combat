@@ -787,6 +787,18 @@ export interface Combatant {
   flying?: boolean;
   /** A Swim Speed: deep water (`Cell.water`) costs it no extra movement. */
   swimSpeed?: number;
+  /**
+   * Lair actions, while it fights in its lair (rules/setpiece.ts): one a round,
+   * on initiative count 20, losing ties. Put on by the fight's setup, never by
+   * the stat block alone — a vampire met on the road has no lair to call on.
+   * `taken` counts the lair actions spent, `last` is the index of the latest.
+   */
+  lair?: { actions: LairAction[]; choose: 'best' | 'inOrder'; taken: number; last?: number };
+  /**
+   * A set piece's turns: each fires once, the first time its hit points fall
+   * to or below `at` of its maximum (rules/setpiece.ts). `done` once fired.
+   */
+  phases?: Array<BossPhase & { done?: true }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -850,6 +862,117 @@ export interface FightModifier {
   source: string;
   /** The log line, instead of the one made up from the rest. */
   text?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Set pieces: lair actions and a boss's phases (rules/setpiece.ts).
+// ---------------------------------------------------------------------------
+
+/**
+ * Whom a lair action or a phase reaches. Default: every enemy of the creature
+ * on the board.
+ *
+ * With `radius` it is everyone of `who` in a sphere of that many feet, set down
+ * where it catches the most of them (within `within` feet of the creature);
+ * otherwise single creatures, nearest first, up to `count`.
+ */
+export interface SetPieceTargets {
+  who?: 'enemies' | 'allies' | 'self';
+  count?: number;
+  /** Only within this many feet of the creature. */
+  within?: number;
+  radius?: number;
+  /** Only creatures that have one of these conditions from this creature
+   *  (the aboleth's Psychic Drain: Charmed or Grappled by it). */
+  heldBy?: ConditionId[];
+}
+
+/** How long a set piece's condition lasts: until a repeat save at the end of
+ *  each of the target's turns, the start or end of its next turn, or all fight. */
+export type EffectUntil = 'save' | 'startOfTurn' | 'endOfTurn' | 'fight';
+
+/**
+ * One thing a lair action or a phase does, through the engine's own machinery:
+ * a saving throw (damage, half on a success, and a condition on a failure), a
+ * condition outright, one weapon attack, a spell cast with no slot, allies
+ * called up (rules/summon.ts), the ground changed under an area, hit points,
+ * temporary hit points, new immunities (shaking off any such condition it
+ * has), or new attacks.
+ */
+export type SetPieceEffect =
+  | {
+      kind: 'save'; targets?: SetPieceTargets; ability: Ability; dc: number;
+      damage?: { dice: string; type: DamageType };
+      /** Default true: a success halves the damage. False: a success takes none. */
+      halfOnSave?: boolean;
+      condition?: ConditionId;
+      /** Default 'save'. */
+      until?: EffectUntil;
+    }
+  | { kind: 'condition'; targets?: SetPieceTargets; condition: ConditionId; until?: Exclude<EffectUntil, 'save'> }
+  /** One attack with this weapon (default: any it can swing) at the enemy in reach with the fewest hit points. */
+  | { kind: 'attack'; weaponId?: Id }
+  /** It casts this spell, no slot spent, aimed where it does the most; `ability`
+   *  is the spellcasting ability for this cast ("using Charisma"). */
+  | { kind: 'spell'; spellId: Id; slotLevel?: number; ability?: Ability }
+  | { kind: 'summon'; monsterId: Id; count?: number }
+  /**
+   * The ground under the targeted area: difficult for `rounds` rounds (rubble,
+   * ice; default 1), or a hazard for the rest of the fight that deals `damage`
+   * to whoever enters it (`save` for half, else none).
+   */
+  | {
+      kind: 'terrain'; targets?: SetPieceTargets; ground: 'difficult' | 'hazard'; rounds?: number;
+      damage?: { dice: string; type: DamageType }; save?: { ability: Ability; dc: number };
+    }
+  /** Hit points back: a number, or dice ('2d10'). */
+  | { kind: 'heal'; amount: number | string }
+  | { kind: 'tempHp'; amount: number }
+  | { kind: 'immunity'; conditions?: ConditionId[]; damage?: DamageType[] }
+  /** Its attacks change: these weapons (the first in hand), this many a turn. */
+  | { kind: 'attacks'; weaponIds?: Id[]; attacksPerAction?: number };
+
+export interface LairAction {
+  name: string;
+  /** The log line, instead of "<creature>'s lair: <name>." */
+  text?: string;
+  /** Only taken when these targets exist (Psychic Drain needs someone held). */
+  requires?: SetPieceTargets;
+  effects: SetPieceEffect[];
+}
+
+/**
+ * A creature's lair: on initiative count 20 (losing ties) each round it takes
+ * one of `actions` — the best for the moment and never the same twice running
+ * if another will do ('best', the default), or each in turn ('inOrder').
+ * `legendaryResistance` is the extra uses its lair gives ("3/Day, or 4/Day in
+ * Lair", SRD 5.2.1).
+ */
+export interface Lair {
+  actions: LairAction[];
+  choose?: 'best' | 'inOrder';
+  legendaryResistance?: number;
+}
+
+/** A boss's turn: the first time its hit points fall to or below `at` (a share
+ *  of its maximum, 0.5 = half), these effects and this line. */
+export interface BossPhase {
+  at: number;
+  name?: string;
+  text?: string;
+  effects: SetPieceEffect[];
+}
+
+/**
+ * A story's villain, set up for its fight: `creature` (a combatant id) fights
+ * in its lair (`inLair`: its stat block's lair, if it has one), and/or with
+ * these lair actions and phases besides.
+ */
+export interface SetPiece {
+  creature: Id;
+  inLair?: boolean;
+  lair?: Lair;
+  phases?: BossPhase[];
 }
 
 /**
@@ -925,6 +1048,8 @@ export interface GameState {
   rules?: CombatRules;
   /** The story's boons and banes for this fight (rules/modifiers.ts). Never changed after the start. */
   modifiers?: FightModifier[];
+  /** The round whose lair actions have been taken (rules/setpiece.ts). */
+  lairRound?: number;
 }
 
 /**

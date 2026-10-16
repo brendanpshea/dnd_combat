@@ -172,4 +172,11 @@ export type GameEvent =
    * once as it starts: what the log says, and whom it reaches.
    */
   | { type: 'fightModifier'; source: string; text: string; combatantIds: Id[] }
+  /** A lair action, on initiative count 20: whose lair, which action, and the
+   *  story's line for it if it has one. Its effects follow as their own events. */
+  | { type: 'lairAction'; combatantId: Id; name: string; text?: string }
+  /** A boss's hit points have fallen past one of its phases; the effects follow. */
+  | { type: 'bossPhase'; combatantId: Id; name?: string; text?: string }
+  /** A lair action or a phase changed the ground: difficult for a while, or a hazard. */
+  | { type: 'groundChanged'; sourceId: Id; ground: 'difficult' | 'hazard'; cells: Position[] }
   | { type: 'combatEnded'; winner: TeamId };

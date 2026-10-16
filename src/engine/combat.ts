@@ -1,8 +1,9 @@
 /**
  * Combat setup and the thin stateful facade over the pure core.
  */
-import type { GameState, Combatant, Id, TeamId, CombatRules, FightModifier } from './types.js';
+import type { GameState, Combatant, Id, TeamId, CombatRules, FightModifier, SetPiece } from './types.js';
 import { applyFightModifiers } from './rules/boons.js';
+import { armPhases, installSetPieces } from './rules/setpiece.js';
 import { cellAt } from './types.js';
 import { blocksMovement, makeGrid } from './grid.js';
 import { MAPS, parseMap } from '../data/maps.js';
@@ -43,6 +44,12 @@ export interface CombatSetup {
    * Logged once as the fight starts.
    */
   modifiers?: FightModifier[];
+  /**
+   * A story's villains, set up for this fight: a named creature fights in its
+   * lair (its stat block's lair actions and Legendary Resistance), and/or with
+   * lair actions and phases of the story's own (`SetPiece`; rules/setpiece.ts).
+   */
+  setPieces?: SetPiece[];
 }
 
 export function startCombat(setup: CombatSetup): { state: GameState; events: GameEvent[] } {
@@ -80,6 +87,8 @@ export function startCombat(setup: CombatSetup): { state: GameState; events: Gam
   // Boons and banes before initiative, so a starting condition holds from the
   // first turn and the log opens with what the story brought.
   const opening = applyFightModifiers(state);
+  if (setup.setPieces?.length) installSetPieces(state, setup.setPieces);
+  armPhases(state);
   const events = [...opening, ...rollInitiative(state, setup.surprisedTeam)];
   return { state, events };
 }

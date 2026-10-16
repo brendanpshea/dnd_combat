@@ -23,6 +23,7 @@ import { applyHealing } from './rules/heal.js';
 import type { GameEvent } from './events.js';
 import { applyCondition, removeConditions, releaseBrokenGrapples } from './rules/conditions.js';
 import { ownerTurnEndAuras, turnStartAuras } from './rules/aura.js';
+import { lairAtRoundEnd, lairBefore } from './rules/setpiece.js';
 
 /**
  * Sweep every summon whose duration has run out, whoever owns it. Concentration
@@ -94,12 +95,23 @@ export function rollInitiative(state: GameState, surprisedTeam?: TeamId): GameEv
   state.initiativeOrder = entries.map((e) => e.id);
   state.turnIndex = 0;
   state.round = 1;
-  return [
+  const events: GameEvent[] = [
     ...swaps,
     { type: 'combatStarted', order: entries.map((e) => ({ id: e.id, initiative: e.initiative })) },
     { type: 'roundStarted', round: 1 },
-    ...startTurn(state),
   ];
+  // A lair acts on count 20 of the first round too — before the first turn,
+  // when nobody rolled 20 or more (rules/setpiece.ts; nothing without a lair).
+  const first = currentCombatant(state);
+  events.push(...lairBefore(state, first));
+  if (state.winner) return events;
+  if (!first.alive || (isDown(first) && !risesAgain(first))) {
+    // The lair struck the first in the order down before it could act.
+    advanceTurn(state, events);
+    return events;
+  }
+  events.push(...startTurn(state));
+  return events;
 }
 
 /**
@@ -607,7 +619,15 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
   events.push({ type: 'turnEnded', combatantId: ending.id });
 
   if (state.winner) return events;
+  advanceTurn(state, events);
+  return events;
+}
 
+/**
+ * Hand the turn on to the next combatant who can take one, bumping the round
+ * when the order wraps, and taking the lair actions where count 20 falls.
+ */
+function advanceTurn(state: GameState, events: GameEvent[]): void {
   const n = state.initiativeOrder.length;
   // Advancing can need more than one hop. A creature can die *inside* its own
   // startTurn -- Spirit Guardians burns it down before it ever acts -- and
@@ -630,28 +650,38 @@ export function endTurn(state: GameState, runRepeatSaves: (state: GameState, id:
       if (isDying(state, next)) {
         if (idx <= state.turnIndex && !wrapped) {
           wrapped = true;
-          if (advanceRound(state, events)) return events;
+          // Count 20 never came this round: its lair actions close it.
+          events.push(...lairAtRoundEnd(state));
+          if (state.winner) return;
+          if (advanceRound(state, events)) return;
         }
-        events.push(...rollDeathSave(state, next.id));
-        if (state.winner) return events;
+        events.push(...lairBefore(state, next));
+        if (state.winner) return;
+        if (isDying(state, next)) events.push(...rollDeathSave(state, next.id));
+        if (state.winner) return;
       }
       // Down is skipped — except a troll, whose turn is when it gets up.
       if (!next.alive || (isDown(next) && !risesAgain(next))) continue;
       if (idx <= state.turnIndex && !wrapped) {
         wrapped = true;
-        if (advanceRound(state, events)) return events;
+        events.push(...lairAtRoundEnd(state));
+        if (state.winner) return;
+        if (advanceRound(state, events)) return;
       }
+      // Lair actions on count 20, losing ties: before the first creature below it.
+      events.push(...lairBefore(state, next));
+      if (state.winner) return;
+      if (!next.alive || (isDown(next) && !risesAgain(next))) continue;
       state.turnIndex = idx;
       events.push(...startTurn(state));
       moved = true;
       break;
     }
-    if (!moved) return events;   // no living combatants — combat already ended
-    if (state.winner) return events;
+    if (!moved) return;   // no living combatants — combat already ended
+    if (state.winner) return;
     const active = currentCombatant(state);
-    if (active.alive && !isDown(active)) return events;
+    if (active.alive && !isDown(active)) return;
   }
-  return events;
 }
 
 /**

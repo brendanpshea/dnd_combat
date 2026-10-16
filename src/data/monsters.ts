@@ -9,7 +9,7 @@
  * looks at ENCOUNTERS, so a file that held both was two things in a trench
  * coat — and the bestiary is the half that keeps growing.
  */
-import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura } from '../engine/types.js';
+import type { Combatant, TeamId, Position, AbilityScores, Ability, DamageType, Id, ResourcePool, CreatureType, CreatureSize, ConditionId, MonsterAura, Lair, BossPhase } from '../engine/types.js';
 import { FEATURES, useCount } from './features.js';
 import { WEAPONS } from './weapons.js';
 
@@ -108,6 +108,20 @@ export interface MonsterData {
   holdDamage?: { dice: string; type: DamageType };
   /** Death Burst: explodes when killed, save for half (magmin, mephits). */
   deathBurst?: { dice: string; type: DamageType; save: { ability: Ability; dc: number }; radius: number };
+  /**
+   * What its lair gives it, when a fight's setup says it is in one
+   * (`SetPiece.inLair`; rules/setpiece.ts). Never put on by buildMonster: a
+   * vampire met on the road has no lair to call on, and the arena's fights are
+   * balanced without them.
+   *
+   * SRD 5.2.1 prints no lair actions. A lair gives one more use of Legendary
+   * Resistance and of Legendary Actions ("3 (4 in Lair)"), and this engine has
+   * no Legendary Actions — so the lair actions here ARE the stat block's
+   * Legendary Actions, taken once a round on initiative count 20.
+   */
+  lair?: Lair;
+  /** A module villain's phases (`BossPhase`), copied onto every one built. */
+  phases?: BossPhase[];
 }
 
 export const MONSTERS: Record<Id, MonsterData> = {
@@ -1181,6 +1195,27 @@ export const MONSTERS: Record<Id, MonsterData> = {
     // feature. Acid Splash stays because of the cantrip rule at the top of
     // this table.
     spellcasting: { ability: 'int', slots: [], spellIds: ['acid-splash'] },
+    // In its lair: Legendary Resistance 4/Day, and its two Legendary Actions
+    // as lair actions (see `MonsterData.lair`). Psychic Drain is Consume
+    // Memories — DC 16 Intelligence, 3d6 Psychic, half on a success — on one
+    // creature within 30 feet it has Charmed or Grappled, and 1d10 hit points.
+    lair: {
+      legendaryResistance: 1,
+      actions: [
+        { name: 'Lash', effects: [{ kind: 'attack', weaponId: 'aboleth-tentacle' }] },
+        {
+          name: 'Psychic Drain',
+          requires: { count: 1, within: 30, heldBy: ['charmed', 'grappled'] },
+          effects: [
+            {
+              kind: 'save', targets: { count: 1, within: 30, heldBy: ['charmed', 'grappled'] },
+              ability: 'int', dc: 16, damage: { dice: '3d6', type: 'psychic' },
+            },
+            { kind: 'heal', amount: '1d10' },
+          ],
+        },
+      ],
+    },
   },
 
   // The one hole left in the beasts.
@@ -1803,6 +1838,18 @@ export const MONSTERS: Record<Id, MonsterData> = {
     weaponIds: ['vampire-grave-strike', 'vampire-bite'],
     attacksPerAction: 3,
     multiattack: [['vampire-grave-strike', 'vampire-grave-strike', 'vampire-bite']],
+    // In its lair: Legendary Resistance 4/Day, and its two Legendary Actions
+    // as lair actions (see `MonsterData.lair`). Beguile casts Command with
+    // Charisma (DC 17). Deathless Strike is one Grave Strike, without the move
+    // of half its Speed that comes before it — nothing moves a creature off
+    // its own turn here.
+    lair: {
+      legendaryResistance: 1,
+      actions: [
+        { name: 'Beguile', effects: [{ kind: 'spell', spellId: 'command', ability: 'cha' }] },
+        { name: 'Deathless Strike', effects: [{ kind: 'attack', weaponId: 'vampire-grave-strike' }] },
+      ],
+    },
   },
   // Drider: Magic of the Spider Queen, Spider Climb, Sunlight Sensitivity,
   // Web Walker.
@@ -2243,6 +2290,10 @@ export function buildMonster(monsterId: Id, team: TeamId, position: Position, su
       : {}),
     ...(m.holdDamage ? { holdDamage: { ...m.holdDamage } } : {}),
     ...(m.deathBurst ? { deathBurst: { ...m.deathBurst, save: { ...m.deathBurst.save } } } : {}),
+    // Copied, not shared: each one built marks its own phases done.
+    ...(m.phases?.length
+      ? { phases: (JSON.parse(JSON.stringify(m.phases)) as BossPhase[]).sort((a, b) => b.at - a.at) }
+      : {}),
   };
 }
 

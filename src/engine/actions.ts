@@ -28,6 +28,7 @@ import { canHide, attemptHide, endHide, isHidden } from './rules/hide.js';
 import { METAMAGIC, SORCERY_POINTS, knownMetamagic, canMetamagic, heightenedTarget, sorceryPoints, type MetamagicId } from './rules/metamagic.js';
 import { canShove, resolveShove, type ShoveMode } from './rules/shove.js';
 import type { GameEvent } from './events.js';
+import { checkPhases } from './rules/setpiece.js';
 
 export type Target = { combatantId: Id } | { position: Position };
 
@@ -1355,6 +1356,9 @@ export function step(state: GameState, action: Action): { state: GameState; even
   // Reactions to being hurt (Hellish Rebuke), after the action has resolved:
   // every path that deals damage ends here, so none has to remember them.
   events.push(...damageReactions(draft, events));
+  // A boss whose hit points have just fallen past one of its phases
+  // (rules/setpiece.ts): between this action and the next, never inside one.
+  events.push(...checkPhases(draft));
 
   // The Slow spell: an action or a bonus action on its turn, never both.
   const acted = draft.combatants[actorId];

@@ -349,6 +349,12 @@ export function renderEvent(state: GameState, e: GameEvent, opts: RenderOpts = {
     case 'fightModifier':
       // What the story brought to the fight, as it starts.
       return `✦ ${e.text}`;
+    case 'lairAction':
+      return e.text ?? `${nm(e.combatantId)}'s lair: ${e.name}.`;
+    case 'bossPhase':
+      return e.text ?? (e.name ? `${nm(e.combatantId)}: ${e.name}!` : `${nm(e.combatantId)} rallies!`);
+    case 'groundChanged':
+      return `  The ground turns ${e.ground === 'difficult' ? 'treacherous' : 'deadly'} (${e.cells.length} square${e.cells.length === 1 ? '' : 's'}).`;
     case 'combatEnded':
       return `\n##### ${e.winner === 'team1' ? 'TEAM 1' : 'TEAM 2'} WINS! #####`;
   }

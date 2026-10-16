@@ -75,6 +75,10 @@ function kindOf(e: GameEvent): string {
     case 'disengaged': return 'cond';
     // The story's boon or bane for this fight: worth reading, so not grey.
     case 'fightModifier': return 'cond';
+    // A lair acting, or a boss turning: the fight just changed, read it.
+    case 'lairAction':
+    case 'bossPhase': return 'recharge';
+    case 'groundChanged': return 'cond';
     case 'combatEnded': return 'end';
     case 'moved': return 'move';
     default: return 'misc';
@@ -124,6 +128,8 @@ function subjectOf(e: GameEvent): string | undefined {
     case 'hiddenRevealed': return e.combatantId;
     case 'summonPlaced': return e.casterId;
     case 'summoned': return e.summonerId;
+    case 'lairAction':
+    case 'bossPhase': return e.combatantId;
     default: return undefined;
   }
 }
