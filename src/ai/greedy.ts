@@ -231,6 +231,18 @@ function dyingRisk(c: Combatant): number {
   return [0.4, 0.6, 0.8][Math.min(2, c.deathSaves?.failures ?? 0)]!;
 }
 
+/**
+ * What getting a dying ally up, or stable, is worth beyond this fight when the
+ * dead stay dead (`rules.deathIsFinal`): the chance it dies if left, times a
+ * long stretch of its output. More than most single blows, so a healer gets
+ * the fallen up and anyone beside them tries the Medicine check first.
+ */
+const FINAL_ROUNDS = 10;
+function lifeStake(state: GameState, actor: Combatant, t: Combatant | undefined): number {
+  if (!t || state.rules?.deathIsFinal !== actor.team || t.team !== actor.team || !isDying(state, t)) return 0;
+  return dyingRisk(t) * outputPerRound(t) * FINAL_ROUNDS;
+}
+
 /** What raising an ally's output is worth: the same units, from the other side. */
 function upliftValue(ally: Combatant, fraction: number, rounds: number): number {
   return outputPerRound(ally) * fraction * rounds;
@@ -610,7 +622,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
     // spend is better off spending it.
     case 'spare-the-dying': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId];
-      return t && isDying(state, t) ? upliftValue(t, dyingRisk(t), 2) : 0;
+      return t && isDying(state, t) ? upliftValue(t, dyingRisk(t), 2) + lifeStake(state, actor, t) : 0;
     }
     case 'cure-wounds': {
       const t = state.combatants[(a.targets[0] as { combatantId: Id }).combatantId]!;
@@ -618,7 +630,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       const heal = Math.min(avgDice(spellDice('cure-wounds', a.slotLevel, actor.level)) + castMod + (actor.featureIds.includes('disciple-of-life') ? 3 : 0), missing);
       // Healing matters most when the ally is badly hurt.
       const urgency = missing >= t.maxHp / 2 ? 1.4 : 0.5;
-      return heal * urgency - slotCost;
+      return heal * urgency + lifeStake(state, actor, t) - slotCost;
     }
     case 'bless': {
       if (actor.concentratingOn) return 0;
@@ -1120,7 +1132,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         const missing = t.maxHp - t.hp;
         if (missing <= 0) continue;
         const heal = Math.min(avgDice(spellDice('mass-cure-wounds', a.slotLevel, actor.level)) + castMod, missing);
-        v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4);
+        v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) + lifeStake(state, actor, t);
       }
       return v - slotCost;
     }
@@ -1148,7 +1160,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
         const missing = t.maxHp - t.hp;
         if (missing <= 0) continue;
         const heal = Math.min(avgDice(`${2 + Math.max(0, a.slotLevel - 3)}d4`) + castMod, missing);
-        v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4);
+        v += heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) + lifeStake(state, actor, t);
       }
       return v - slotCost;
     }
@@ -1157,7 +1169,7 @@ function scoreSpellInner(state: GameState, actor: Combatant, a: Action & { kind:
       const missing = t.maxHp - t.hp;
       if (missing <= 0) return -slotCost;
       const heal = Math.min(avgDice(spellDice('healing-word', a.slotLevel, actor.level)) + castMod, missing);
-      return heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) - slotCost;
+      return heal * (missing >= t.maxHp / 2 ? 1.4 : 0.4) + lifeStake(state, actor, t) - slotCost;
     }
     case 'suggestion': {
       // Would silently drop whatever is already held, and nothing here prices that.
@@ -2405,7 +2417,7 @@ function scoreItem(state: GameState, actor: Combatant, a: Action & { kind: 'useI
       const missing = t.maxHp - t.hp;
       if (missing < t.maxHp / 2) return 0;
       const heal = Math.min(avgDice(dice), missing);
-      return heal * 1.2;
+      return heal * 1.2 + lifeStake(state, actor, t);
     }
     case 'thrown': {
       const tid = targets[0] && 'combatantId' in targets[0] ? targets[0].combatantId : undefined;
@@ -2664,7 +2676,7 @@ export function chooseAction(state: GameState, actorId: Id): Action {
         // times the chance of passing.
         const t = state.combatants[a.targetId];
         const pass = Math.max(0.05, Math.min(0.95, (11 + skillMod(actor, 'medicine')) / 20));
-        s = t ? pass * upliftValue(t, dyingRisk(t), 2) : 0;
+        s = t ? pass * (upliftValue(t, dyingRisk(t), 2) + lifeStake(state, actor, t)) : 0;
         break;
       }
       case 'shove': s = scoreShove(state, actor, a); break;

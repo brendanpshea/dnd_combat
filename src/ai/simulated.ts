@@ -102,6 +102,32 @@ function actionKey(a: Action): number {
   return h;
 }
 
+/**
+ * The Medicine check to stabilise a dying ally, priced at its odds rather than
+ * sampled: the value of each outcome, weighed by the chance of passing. One d20
+ * decides it and a life can hang on it (`rules.deathIsFinal`), and three
+ * samples of a near coin flip all come up failures about one time in eleven,
+ * when an AI that imagined three failures would never try. Computed, like
+ * `lethalRisk`, for the same reason. Null when the step rolls no check.
+ */
+function scoreStabilize(state: GameState, action: Action, team: TeamId): { meanV: number; next: GameState } | null {
+  const key = actionKey(action);
+  let pass: GameState | undefined;
+  let fail: GameState | undefined;
+  let chance = 0.5;
+  for (let s = 0; s < 32 && !(pass && fail); s++) {
+    const { state: after, events } = step({ ...state, rng: sampleSeed(state.rng, key, s) }, action);
+    const aid = events.find((e) => e.type === 'firstAid');
+    if (!aid || aid.type !== 'firstAid') return null;
+    // DC 10: a natural roll of 10 less the modifier or better passes.
+    chance = Math.max(0, Math.min(1, (11 + aid.total - aid.natural) / 20));
+    if (aid.success) pass ??= after;
+    else fail ??= after;
+  }
+  if (!pass || !fail) return { meanV: evaluate((pass ?? fail)!, team), next: (pass ?? fail)! };
+  return { meanV: chance * evaluate(pass, team) + (1 - chance) * evaluate(fail, team), next: chance >= 0.5 ? pass : fail };
+}
+
 /** Average post-action evaluation over RNG samples; returns one sampled state to continue from. */
 function scoreAction(
   state: GameState,
@@ -109,6 +135,10 @@ function scoreAction(
   team: TeamId,
   samples: number,
 ): { meanV: number; next: GameState } {
+  if (action.kind === 'stabilize') {
+    const priced = scoreStabilize(state, action, team);
+    if (priced) return priced;
+  }
   let total = 0;
   let representative: GameState | undefined;
   const key = actionKey(action);

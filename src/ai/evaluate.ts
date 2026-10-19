@@ -261,6 +261,16 @@ function livingOnTeam(state: GameState, team: TeamId): number {
  * the fight to beat on the fallen.
  */
 const DEATH_SAVE_WEIGHT = 0.05;
+/**
+ * For a side whose dead stay dead (`rules.deathIsFinal`), in its own
+ * reckoning: a death is the member gone for good, twice their worth below
+ * nothing, and lying dying costs that times the chance of dying if nobody
+ * helps (greedy.ts, dyingRisk: near enough the death-save odds, by failures so
+ * far). So getting the dying up, or stable, outweighs most blows, as it should
+ * where a death is the end of a character and not of a fight.
+ */
+const FINAL_DEATH = 2;
+const DYING_RISK = [0.4, 0.6, 0.8] as const;
 /** A downed unit's standing before any death saves: the 0.35 alive share, less
  *  the unconscious and prone weights it always carries. */
 const DOWNED_BASE = 0.35 + (CONDITION_WEIGHT.unconscious ?? 0) + (CONDITION_WEIGHT.prone ?? 0);
@@ -270,9 +280,14 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
   // Hoisted: evaluate is the AI's hot path, and this is constant across the loop.
   const share = isPov ? 1 : Math.max(1, livingOnTeam(state, team));
   const deathSaves = state.rules?.deathSaves === true;
+  const final = isPov && state.rules?.deathIsFinal === team;
   for (const c of Object.values(state.combatants)) {
     if (c.team !== team) continue;
     if (!c.alive) {
+      if (final && c.unconsciousAtZero) {
+        score -= unitWorth(c) * FINAL_DEATH;
+        continue;
+      }
       // Under the death-save rule a hero can die, and death has to score below
       // lying dying — otherwise a body is worth LESS to its own side than a
       // corpse (it carries the unconscious and prone weights), and no monster
@@ -307,7 +322,8 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Dying: each failed save so far, plus the next roll still to come. A
     // Stable creature carries neither, which is what stabilising buys.
     if (deathSaves && isDown(c) && !c.deathSaves?.stable) {
-      unit -= worth * DEATH_SAVE_WEIGHT * ((c.deathSaves?.failures ?? 0) + 1);
+      const failures = c.deathSaves?.failures ?? 0;
+      unit -= final && c.unconsciousAtZero ? worth * FINAL_DEATH * DYING_RISK[Math.min(2, failures)]! : worth * DEATH_SAVE_WEIGHT * (failures + 1);
     }
 
     // Resources not yet spent retain option value.

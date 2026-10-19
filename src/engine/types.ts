@@ -1101,6 +1101,14 @@ export interface CombatRules {
    * Wisdom (Medicine) check as an action). Monsters still die at 0.
    */
   deathSaves?: boolean;
+  /**
+   * The team whose dead stay dead (a campaign's party, where the arena's are
+   * back for the next fight). Its own AI counts a death as the member lost for
+   * good, not just their turns in this fight, so it puts getting the dying up,
+   * or stable, ahead of nearly anything else. Only its own reckoning: the other
+   * side is not drawn off the fight to finish the fallen.
+   */
+  deathIsFinal?: TeamId;
 }
 
 /**

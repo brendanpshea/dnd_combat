@@ -318,3 +318,65 @@ describe('the AI and the dying', () => {
     }
   }, 60000);
 });
+
+describe('when the dead stay dead (rules.deathIsFinal)', () => {
+  /** A fighter dying beside its mate, an ogre beside them both; the mate to move. Null if the fighter rolled back up. */
+  function beside(final: boolean): Combat | null {
+    const c = new Combat({
+      seed: 4, mapId: 'open',
+      rules: { deathSaves: true, ...(final ? { deathIsFinal: 'team1' as const } : {}) },
+      combatants: [
+        pc('fighter', 'team1', { x: 3, y: 3 }, 'ftr'),
+        pc('fighter', 'team1', { x: 4, y: 4 }, 'mate'),
+        { ...buildMonster('ogre', 'team2', { x: 4, y: 3 }), id: 'ogre' },
+      ],
+    });
+    applyDamage(c.state, 'ftr', 'ogre', c.state.combatants['ftr']!.hp, 'bludgeoning', [], { magical: false });
+    let guard = 0;
+    while (c.activeId !== 'mate' && guard++ < 20) c.apply({ kind: 'endTurn' });
+    return isDying(c.state, c.state.combatants['ftr']!) ? c : null;
+  }
+
+  /** Whom an action helps up: the Medicine check's patient, or a potion's. */
+  const tends = (a: ReturnType<typeof chooseAction>) =>
+    a.kind === 'stabilize' ? a.targetId : a.kind === 'useItem' && a.targets?.[0] && 'combatantId' in a.targets[0] ? a.targets[0].combatantId : a.kind;
+
+  it('its side gets a dying friend up, or stable, before it fights on, under both AIs', () => {
+    const c = beside(true);
+    if (!c) return;
+    expect(tends(chooseAction(c.state, 'mate'))).toBe('ftr');
+    // The look-ahead player may swing first and give the potion with its bonus action: by the turn's end, it's up.
+    let turn: GameState = structuredClone(c.state);
+    for (let i = 0; i < 10; i++) {
+      const a = chooseActionSim(turn, 'mate', SIM_PRESETS.normal);
+      if (a.kind === 'endTurn') break;
+      turn = step(turn, a).state;
+    }
+    expect(turn.combatants['ftr']!.hp).toBeGreaterThan(0);
+    // With nothing to give, the Medicine check.
+    c.state.combatants['mate']!.inventory = [];
+    expect(chooseAction(c.state, 'mate')).toEqual({ kind: 'stabilize', targetId: 'ftr' });
+    expect(chooseActionSim(c.state, 'mate', SIM_PRESETS.normal)).toEqual({ kind: 'stabilize', targetId: 'ftr' });
+  });
+
+  it('where the dead come back, the same friend fights on', () => {
+    const c = beside(false);
+    if (!c) return;
+    c.state.combatants['mate']!.inventory = [];
+    expect(chooseAction(c.state, 'mate').kind).not.toBe('stabilize');
+  });
+
+  it('the other side is not drawn to the fallen by it', () => {
+    for (const final of [false, true]) {
+      const c = beside(final);
+      if (!c) return;
+      c.apply({ kind: 'endTurn' });
+      let guard = 0;
+      while (c.activeId !== 'ogre' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      if (!isDying(c.state, c.state.combatants['ftr']!)) return;
+      const a = chooseAction(c.state, 'ogre');
+      const s = chooseActionSim(c.state, 'ogre', SIM_PRESETS.normal);
+      expect([a, s].map((x) => (x.kind === 'attack' ? x.targetId : x.kind)), String(final)).toEqual(['mate', 'mate']);
+    }
+  });
+});
