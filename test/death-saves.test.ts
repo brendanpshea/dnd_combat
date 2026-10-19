@@ -380,3 +380,27 @@ describe('when the dead stay dead (rules.deathIsFinal)', () => {
     }
   });
 });
+
+describe('when the downed are spared (rules.downedSpared)', () => {
+  it('the other side may not attack, shove or aim a spell at one who is down; off the rule it may', () => {
+    for (const spare of [true, false]) {
+      const c = new Combat({
+        seed: 4, mapId: 'open',
+        rules: { deathSaves: true, ...(spare ? { downedSpared: 'team1' as const } : {}) },
+        combatants: [pc('fighter', 'team1', { x: 3, y: 3 }, 'ftr'), pc('wizard', 'team1', { x: 0, y: 7 }, 'wiz'), { ...buildMonster('ogre', 'team2', { x: 4, y: 3 }), id: 'ogre' }],
+      });
+      applyDamage(c.state, 'ftr', 'ogre', c.state.combatants['ftr']!.hp, 'bludgeoning', [], { magical: false });
+      let guard = 0;
+      while (c.activeId !== 'ogre' && guard++ < 20) c.apply({ kind: 'endTurn' });
+      if (!isDying(c.state, c.state.combatants['ftr']!)) return;
+      const at = legalActions(c.state, 'ogre').filter((a) => (a.kind === 'attack' || a.kind === 'shove') && a.targetId === 'ftr');
+      expect(at.length > 0, String(spare)).toBe(!spare);
+      if (spare) {
+        // Whatever the ogre does (a javelin at the wizard, a walk), it isn't to the fighter on the floor.
+        for (const a of [chooseAction(c.state, 'ogre'), chooseActionSim(c.state, 'ogre', SIM_PRESETS.normal)]) {
+          expect(a.kind === 'attack' || a.kind === 'shove' ? a.targetId : 'none').not.toBe('ftr');
+        }
+      }
+    }
+  });
+});

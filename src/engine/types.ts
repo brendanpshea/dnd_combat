@@ -1109,6 +1109,14 @@ export interface CombatRules {
    * side is not drawn off the fight to finish the fallen.
    */
   deathIsFinal?: TeamId;
+  /**
+   * The team whose members, once down, the other side leaves alone (a
+   * campaign's party, where a fight lost to a monster beating on the fallen
+   * is no fun to lose): no attack, shove or spell aimed at them alone. They
+   * still roll their death saves, and a spell over an area still catches
+   * them.
+   */
+  downedSpared?: TeamId;
 }
 
 /**
@@ -1145,6 +1153,11 @@ export function risesAgain(c: Combatant): boolean {
  */
 export function isDown(c: Combatant): boolean {
   return c.alive && c.hp === 0;
+}
+
+/** Down, and left alone by the other side under `rules.downedSpared`: not to be attacked or aimed at by `by`. */
+export function spared(state: GameState, by: Combatant, target: Combatant): boolean {
+  return state.rules?.downedSpared === target.team && by.team !== target.team && isDown(target);
 }
 
 /**

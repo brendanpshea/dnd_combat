@@ -8,7 +8,7 @@
  * spells; drivers may customize targets and step() re-validates.
  */
 import type { GameState, Id, Position, Combatant, ConditionId } from './types.js';
-import { posEq, cellAt, isDown, isDying, risesAgain, isIncapacitated, heldInPlace } from './types.js';
+import { posEq, cellAt, isDown, isDying, risesAgain, isIncapacitated, heldInPlace, spared } from './types.js';
 import { WEAPONS } from '../data/weapons.js';
 import { SPELLS, type SpellData, validTarget, directionFromDelta, spellShots, damageReactions } from '../data/spells.js';
 import { FEATURES } from '../data/features.js';
@@ -413,8 +413,10 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       // speed, but gate here too so no stale budget slips a step through).
       if (cannotMove(actor)) return false;
       return moveDestinations(state, actor).some((p) => posEq(p, action.to));
-    case 'attack':
+    case 'attack': {
       if (incap) return false;
+      const target = state.combatants[action.targetId];
+      if (target && spared(state, actor, target)) return false;
       if (action.frenzy) {
         return canMartialArts(actor, action.weaponId) &&
           canAttackWith(state, actor, action.weaponId, action.targetId);
@@ -427,6 +429,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
         // Loading: one shot per action, however many attacks it has.
         !(actor.turn.actionUsed && loadingSpent(actor, action.weaponId)) &&
         canAttackWith(state, actor, action.weaponId, action.targetId);
+    }
     case 'castSpell': {
       if (incap) return false;
       // A beast has no hands and no voice for it: Wild Shape stops spellcasting
@@ -460,6 +463,9 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       // spends none, and nor does an innate cast or a cantrip (slot level 0).
       if (action.slotLevel >= 1 && actor.turn.slotSpent) return false;
       if (!costsAction && actor.turn.bonusActionUsed) return false;
+      // A spell aimed at foes, at one who is down and spared (rules.downedSpared).
+      if (spell.targeting.kind === 'creature' && spell.targeting.who !== 'ally' &&
+          action.targets.some((t) => 'combatantId' in t && state.combatants[t.combatantId] && spared(state, actor, state.combatants[t.combatantId]!))) return false;
       return spellAvailable(actor, spell, action.slotLevel) &&
         validSpellTargets(state, actorId, spell, action.targets, action.weaponId, Math.max(action.slotLevel, spell.level));
     }
@@ -552,6 +558,7 @@ export function isLegalAction(state: GameState, actorId: Id, action: Action): bo
       // the action is unspent or still has an attack in it.
       if (incap || (actor.turn.actionUsed && actor.turn.attacksLeft <= 0)) return false;
       const t = state.combatants[action.targetId];
+      if (t && spared(state, actor, t)) return false;
       // Hostiles only. Shoving an ally out of a fire is a lovely idea and a
       // different feature; offering it here would double every tray entry.
       return !!t && t.team !== actor.team && !isHidden(t) && canShove(actor, t, action.mode);
