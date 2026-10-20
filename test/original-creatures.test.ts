@@ -30,6 +30,7 @@ const CR: Record<string, number> = {
   panopt: 12, 'gloomthicket-titan': 10, shimmerpard: 3, barrowwyrm: 15, 'vitriol-slug': 6, viperveil: 4,
   bramblekin: 0.5, 'bramblekin-warden': 2, 'midden-behemoth': 7, clatterkin: 3, whirligig: 1,
   emberhaunt: 11, 'hedge-mantis': 4, veilcat: 5,
+  'kobold-chief': 1, 'orc-chieftain': 2, 'hobgoblin-sergeant': 1, 'ogre-chieftain': 3,
 };
 
 /** The DMG's "monster statistics by challenge rating" bands: hit points and armor class, each with a margin. */
@@ -68,8 +69,8 @@ function turnDamage(id: string): number {
 }
 
 describe('the original creatures', () => {
-  it('are fourteen, all here, priced by their challenge rating, and out of the arena', () => {
-    expect(ORIGINAL_CREATURE_IDS).toHaveLength(14);
+  it('are eighteen, all here, priced by their challenge rating, and out of the arena', () => {
+    expect(ORIGINAL_CREATURE_IDS).toHaveLength(18);
     expect(Object.keys(ORIGINAL_MONSTERS).sort()).toEqual([...ORIGINAL_CREATURE_IDS].sort());
     for (const id of ORIGINAL_CREATURE_IDS) {
       expect(MONSTERS[id], id).toBeDefined();
@@ -141,6 +142,12 @@ describe('the original creatures', () => {
 });
 
 describe('their abilities', () => {
+  it("a Kobold Chief has a ranger's ways: two shots or two blades a turn, and more for one already hurt", () => {
+    expect(MONSTERS['kobold-chief']).toMatchObject({ attacksPerAction: 2, creatureType: 'dragon', size: 'small' });
+    expect(MONSTERS['kobold-chief']!.featureIds).toEqual(expect.arrayContaining(['colossus-slayer', 'pack-tactics']));
+    expect(MONSTERS['kobold-chief']!.multiattack).toEqual([['shortsword', 'shortsword'], ['shortbow', 'shortbow']]);
+  });
+
   it('a Panopt fires its three rays in a turn, and the stilling one paralyses on a hit that fails the save', () => {
     const c = duel('panopt', { x: 3, y: 6 });
     const m = c.state.combatants['m']!;

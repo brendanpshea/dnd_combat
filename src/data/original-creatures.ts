@@ -33,6 +33,7 @@ export const ORIGINAL_CREATURE_IDS = [
   'panopt', 'gloomthicket-titan', 'shimmerpard', 'barrowwyrm', 'vitriol-slug', 'viperveil',
   'bramblekin', 'bramblekin-warden', 'midden-behemoth', 'clatterkin', 'whirligig',
   'emberhaunt', 'hedge-mantis', 'veilcat',
+  'kobold-chief', 'orc-chieftain', 'hobgoblin-sergeant', 'ogre-chieftain',
 ] as const;
 
 export const ORIGINAL_MONSTERS: Record<Id, MonsterData> = {
@@ -233,6 +234,60 @@ export const ORIGINAL_MONSTERS: Record<Id, MonsterData> = {
     multiattack: [['veilcat-claw', 'veilcat-claw'], ['veilcat-murmur', 'veilcat-murmur']],
     resistNonmagical: ['bludgeoning', 'piercing', 'slashing'],
   },
+
+  // Band leaders: a band's own kind, grown into what it follows, each with the look of a class (built as a
+  // monster, so at 0 hit points it dies, as monsters do).
+
+  // Kobold Chief: a kobold with a ranger's ways, a blade in each hand and a bow on its back. It shoots twice or
+  // fights two-handed, and finishes what's already bleeding (a hunter's Colossus Slayer).
+  'kobold-chief': {
+    id: 'kobold-chief', name: 'Kobold Chief',
+    ac: 15, hp: 33, speed: 30,
+    creatureType: 'dragon',
+    size: 'small',
+    abilities: { str: 8, dex: 16, con: 12, int: 10, wis: 12, cha: 10 },
+    featureIds: ['pack-tactics', 'colossus-slayer'],
+    weaponIds: ['shortsword', 'shortbow'],
+    attacksPerAction: 2,
+    multiattack: [['shortsword', 'shortsword'], ['shortbow', 'shortbow']],
+  },
+  // Orc Chieftain: the biggest of the raiders, in rings of iron, with a fighter's two swings of the greataxe.
+  'orc-chieftain': {
+    id: 'orc-chieftain', name: 'Orc Chieftain',
+    ac: 16, hp: 52, speed: 30,
+    creatureType: 'humanoid',
+    size: 'medium',
+    abilities: { str: 18, dex: 12, con: 16, int: 9, wis: 11, cha: 14 },
+    featureIds: ['adrenaline-rush'],
+    weaponIds: ['greataxe', 'javelin'],
+    metalArmor: true,
+    attacksPerAction: 2,
+    multiattack: [['greataxe', 'greataxe'], ['javelin', 'javelin']],
+  },
+  // Hobgoblin Sergeant: a veteran in mail with a shield, who holds the line and keeps the band in it.
+  'hobgoblin-sergeant': {
+    id: 'hobgoblin-sergeant', name: 'Hobgoblin Sergeant',
+    ac: 18, hp: 39, speed: 30,
+    creatureType: 'fey',
+    size: 'medium',
+    abilities: { str: 15, dex: 12, con: 14, int: 10, wis: 10, cha: 12 },
+    featureIds: ['pack-tactics'],
+    weaponIds: ['hobgoblin-longsword', 'hobgoblin-longbow'],
+    metalArmor: true,
+  },
+  // Ogre Chieftain: a head taller than its ogres, crowned in bent iron, swinging a tree trunk with a barbarian's
+  // abandon: twice a turn, and recklessly when it pays.
+  'ogre-chieftain': {
+    id: 'ogre-chieftain', name: 'Ogre Chieftain',
+    ac: 14, hp: 85, speed: 40,
+    creatureType: 'giant',
+    size: 'large',
+    abilities: { str: 21, dex: 10, con: 19, int: 7, wis: 9, cha: 11 },
+    featureIds: ['reckless-attack'],
+    weaponIds: ['chieftain-club', 'ogre-javelin'],
+    attacksPerAction: 2,
+    multiattack: [['chieftain-club', 'chieftain-club']],
+  },
 };
 
 /** What each is worth, by challenge rating (the SRD's table). */
@@ -240,6 +295,7 @@ export const ORIGINAL_XP: Record<Id, number> = {
   panopt: 8400, 'gloomthicket-titan': 5900, shimmerpard: 700, barrowwyrm: 13000, 'vitriol-slug': 2300,
   viperveil: 1100, bramblekin: 100, 'bramblekin-warden': 450, 'midden-behemoth': 2900, clatterkin: 700,
   whirligig: 200, emberhaunt: 7200, 'hedge-mantis': 1100, veilcat: 1800,
+  'kobold-chief': 200, 'orc-chieftain': 450, 'hobgoblin-sergeant': 200, 'ogre-chieftain': 700,
 };
 
 /** Their attacks. */
@@ -351,6 +407,10 @@ export const ORIGINAL_WEAPONS: Record<Id, WeaponData> = {
     id: 'veilcat-murmur', name: 'Mocking Murmur', damage: '3d8', damageType: 'psychic',
     attackAbility: 'cha', abilityDamage: false, properties: [], range: { normal: 60, long: 60 }, melee: false,
     onHitSave: { condition: 'frightened', ability: 'wis', dc: 14 },
+  },
+  'chieftain-club': {
+    id: 'chieftain-club', name: 'Tree-Trunk Club', damage: '2d6', damageType: 'bludgeoning',
+    properties: ['two-handed'], melee: true,
   },
 };
 

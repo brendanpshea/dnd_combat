@@ -687,7 +687,7 @@ same way and held out of the arena. Not modelled: the hobgoblin captain's Aura
 of Authority, the pirate's Enthralling Panache, the shambling mound's Lightning
 Absorption and Engulf, the minotaur skeleton's charge.
 
-Fourteen **original creatures** (`src/data/original-creatures.ts`, public domain
+Eighteen **original creatures** (`src/data/original-creatures.ts`, public domain
 under CC0) fill the roles of well-known monsters the SRD leaves out — a
 many-eyed floating tyrant (Panopt), a phasing panther (Shimmerpard), an
 undead dragon (Barrowwyrm), a plant god's fragment (Gloomthicket Titan) and so
@@ -695,9 +695,14 @@ on — with their own names, looks and stat blocks built only from SRD
 mechanics: attack rolls, save-or-condition riders, recharge breath, and two
 small pieces of new rules (`shimmer-hide`, attacks against it at Disadvantage
 until it is hit, as the Cloak of Displacement does; and a breath that also
-gives a condition on a failed save, `BreathSpec.onFail`). They are held out of
-the arena like the SRD additions, and `test/original-creatures.test.ts` holds
-each to its challenge rating.
+gives a condition on a failed save, `BreathSpec.onFail`). Four more lead a
+band of their own kind, with a class's look and a monster's stat block (so they
+die at 0 hit points, as monsters do): a Kobold Chief with a ranger's ways (two
+shots or two blades, Colossus Slayer), an Orc Chieftain who swings a greataxe
+twice, a Hobgoblin Sergeant in mail and shield, and a Large Ogre Chieftain who
+swings a tree trunk twice, recklessly. They are held out of the arena like the
+SRD additions, and `test/original-creatures.test.ts` holds each to its
+challenge rating.
 
 | Monster | Signature mechanics |
 | --- | --- |
