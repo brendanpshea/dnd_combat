@@ -13,6 +13,7 @@ import { FEATURES } from '../data/features.js';
 import { ITEMS } from '../data/items.js';
 import { parseDice } from '../engine/dice.js';
 import { distanceCells, hasLineOfSight, terrainCoverBetween } from '../engine/grid.js';
+import { walkToFoes } from './walk.js';
 import { cellAt } from '../engine/types.js';
 import { equippedWeapons, stowedWeapons } from '../engine/rules/equipment.js';
 import { isHidden } from '../engine/rules/hide.js';
@@ -353,7 +354,9 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     // Engagement: a unit contributes nothing from across the board. Melee
     // kits want to be adjacent; ranged kits want a comfortable middle band.
     const melee = prefersMelee(c);
-    let nearest = Infinity;
+    // How far the nearest foe is to walk, not as the crow flies: a foe beyond a wall is as far as the way round,
+    // so closing on it is going round (walk.ts). The aura counts below stay as the crow flies, as an aura does.
+    const nearest = walkToFoes(state, team)(c.position);
     let seesAnyEnemy = false;
     // Enemies inside a 15 ft aura, counted here so the aura term below costs no
     // second sweep of the roster. Only meaningful when this unit has one.
@@ -361,7 +364,6 @@ function teamScore(state: GameState, team: TeamId, isPov: boolean): number {
     for (const e of Object.values(state.combatants)) {
       if (!e.alive || isDown(e) || e.team === team) continue;
       const d = distanceCells(e.position, c.position);
-      nearest = Math.min(nearest, d);
       // In the aura now, or one move from walking into it. The approaching
       // half is what makes raising the aura *before* contact worth anything.
       if (d <= 3) enemiesInAura += 1;

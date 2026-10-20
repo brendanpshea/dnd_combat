@@ -23,6 +23,7 @@ import { attackableWeapons } from '../engine/rules/equipment.js';
 import { isHidden } from '../engine/rules/hide.js';
 import { FEATURES } from '../data/features.js';
 import { blocksMovement, distanceCells, distanceFeet, adjacent, sphere2x2, sphere5x5, cone15, cube15, line15 } from '../engine/grid.js';
+import { walkToFoes } from './walk.js';
 import { directionFromDelta } from '../data/spells.js';
 import { BREATH_WEAPONS, bestBreathDirection } from '../data/features.js';
 import { attackAbility, collectAttackSources, smiteDice, PROTECTED_FROM, canAttackWith, shillelaghDamage, weaponDice } from '../engine/rules/attack.js';
@@ -1994,8 +1995,10 @@ function walksFor(state: GameState, actor: Combatant): Map<string, WalkRead> {
 }
 
 function scoreMove(state: GameState, actor: Combatant, to: Position): number {
-  const now = nearestEnemyDist(state, actor.position, actor.team);
-  const after = nearestEnemyDist(state, to, actor.team);
+  // Cells to walk, not as the crow flies: the way round a wall is a way closer (walk.ts).
+  const walk = walkToFoes(state, actor.team);
+  const now = walk(actor.position);
+  const after = walk(to);
   const cost = walkCost(walksFor(state, actor).get(`${to.x},${to.y}`), actor);
   if (isMeleeFighter(actor)) {
     // Close distance; reaching adjacency this turn is what makes attacks possible.
